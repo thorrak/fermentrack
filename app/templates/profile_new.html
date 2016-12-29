@@ -1,0 +1,33 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">New Fermentation Profile</h1>
+
+<form action="{% url "profile_new" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="fermentationProfileOverviewSection">
+        <h3 class="form-header">Initialize Fermentation Profile</h3> {# I mean, I COULD use form.as_p, but I'm not going to do that #}
+        {% form_generic form.name %}
+    </div>
+
+
+
+    <input type="submit" value="Submit" class="btn btn-default" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+Django>=1.10,<1.11
+configobj       # required by brewpi.py
+psutil>=2.0     # required by BrewPiProcess.py
+simplejson      # required by brewpi.py
+# TODO - Clean this up (before release)
+#requests
+#pytz
+#MySQL-python
+#django-suit
+#BeautifulSoup
+#fabric
+raven
+-e git://github.com/darklow/django-suit.git@v2#egg=django-suit

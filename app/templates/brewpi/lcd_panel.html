@@ -1,0 +1,21 @@
+<div class="col-xs-12">
+Device: {{ this_device }}
+</div>
+
+<div class="col-xs-12">
+    <div class="col-xs-8">
+        {#  LCD Display goes here #}
+        <div id="lcd" class="lcddisplay">
+            <span class="lcd-text">
+                <span class="lcd-line" id="lcd-line-0">{{ lcd_text.0|safe }}</span>
+                <span class="lcd-line" id="lcd-line-1">{{ lcd_text.1|safe }}</span>
+                <span class="lcd-line" id="lcd-line-2">{{ lcd_text.2|safe }}</span>
+                <span class="lcd-line" id="lcd-line-3">{{ lcd_text.3|safe }}</span>
+            </span>
+        </div>
+    </div>
+    <div class="col-xs-4">
+        {# Controls go here #}
+    </div>
+</div>
+

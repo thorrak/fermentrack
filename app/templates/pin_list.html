@@ -1,0 +1,317 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h1 class="unmargined-page-header">Configure Sensors/Pins</h1>
+
+<div id="sensorStatus">
+    <div class="row">{#  This section displays the heating/cooling pin, fridge sensor statuses #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row">
+            {% if active_device.heat_pin %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-bolt fa-stack-1x" style="color: #d43f3a;"></i>
+                </span>
+            </div>
+            <div class="row">
+                Heating pin set to pin {{ active_device.heat_pin.pin }}
+            {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x" style="color: #d43f3a;"></i>
+                  <i class="fa fa-bolt fa-stack-1x" style="color: #d43f3a;"></i>
+                </span>
+            </div>
+            <div class="row">
+                Heating pin NOT set<br />Heating cannot take place<br />Configure below to correct
+            {% endif %}  {# TODO - Add support for OneWire actuators #}
+            </div>
+        </div>
+
+        {# Cooling Pin #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row ">
+            {% if active_device.cool_pin %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-bolt fa-stack-1x text-info"></i>
+                </span>
+            </div>
+            <div class="row">
+                Cooling pin set to pin {{ active_device.cool_pin.pin }}
+        {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-error" style="color: #d43f3a;"></i>
+                  <i class="fa fa-bolt fa-stack-1x text-info"></i>
+                </span>
+            </div>
+            <div class="row">
+                Cooling pin NOT set<br />Cooling cannot take place<br />Configure below to correct
+        {% endif %}  {# TODO - Add support for OneWire actuators #}
+            </div>
+        </div>
+
+        {# Fridge/Chamber Sensor #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row ">
+            {% if active_device.chamber_sensor %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-cube fa-stack-1x text-success"></i>
+                </span>
+            </div>
+            <div class="row">
+                Chamber sensor set to address {{ chamber_sensor.addresss }}
+        {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-error" style="color: #d43f3a;"></i>
+                  <i class="fa fa-cube fa-stack-1x" style="color: #d43f3a;"></i>
+                </span>
+            </div>
+            <div class="row">
+                Chamber sensor NOT configured<br />Heating/Cooling cannot take place<br />Configure below to correct
+        {% endif %}  {# TODO - Add support for OneWire actuators #}
+            </div>
+        </div>
+    </div>{# /heating/cooling/fridge row #}
+
+
+    <div class="row">{#  This section displays the heating/cooling pin, fridge sensor statuses #}
+        {# Beer Sensor #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row ">
+            {% if active_device.beer_sensor %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-beer fa-stack-1x text-success"></i>
+                </span>
+            </div>
+            <div class="row">
+                Beer sensor set to pin {{ active_device.beer_sensor.pin }}
+        {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-warn"></i>
+                  <i class="fa fa-beer fa-stack-1x text-warn"></i>
+                </span>
+            </div>
+            <div class="row">
+                Beer sensor NOT configured<br />Profiles/Beer Constant mode will not be available
+        {% endif %}  {# TODO - Add support for OneWire actuators #}
+            </div>
+        </div>
+
+        {# Room Sensor #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row ">
+            {% if active_device.room_sensor %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-bolt fa-stack-1x text-info"></i>
+                </span>
+            </div>
+            <div class="row">
+                Room sensor set to pin {{ active_device.room_sensor.pin }}
+        {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x" style="color: #d43f3a;"></i>
+                  <i class="fa fa-home fa-stack-1x" style="color: #d43f3a;"></i>
+                </span>
+            </div>
+            <div class="row">
+                Room sensor NOT set<br />No room logging will occur
+        {% endif %}
+            </div>
+        </div>
+
+        {# Door Sensor #}
+        <div class="col-sm-4 sensor-setup-grid-box">
+            <div class="row ">
+            {% if active_device.door_pin %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-success"></i>
+                  <i class="fa fa-upload fa-stack-1x text-success"></i>
+                </span>
+            </div>
+            <div class="row">
+                Door sensor pin set to pin {{ active_device.door_pin.pin }}
+        {% else %}
+                <span class="fa-stack fa-5x">
+                  <i class="fa fa-square-o fa-stack-2x text-error" style="color: #d43f3a;"></i>
+                  <i class="fa fa-upload fa-stack-1x" style="color: #d43f3a;"></i>
+                </span>
+            </div>
+            <div class="row">
+                Door pin NOT set<br />Door annotations will not be logged
+        {% endif %}
+            </div>
+        </div>
+    </div>{# /heating/cooling/fridge row #}
+
+
+</div>
+
+<h2 class="double-border">Available Devices</h2>
+{% for this_sensor in available_devices %}
+<div class="row">
+    <div class="col-sm-4">
+        {% if this_sensor.hardware == 1 %}{# Pin #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-thermometer fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+        </span>
+        {% endif %}
+    </div>
+    <div class="col-sm-8">
+
+        {% if this_sensor.hardware == 1 %}{# Pin #}
+            <div class="row col-sm-12">
+                Pin {{ this_sensor.pin }} ({{ this_sensor.pin_data.text }})
+            </div>
+            <form action="{% url "sensor_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                <div class="row">
+                        <label for="{{ this_sensor.device_form.device_function.id }}" data-toggle="tooltip" title="{{ this_sensor.device_form.device_function.help_text }}" class="col-sm-4">{{ this_sensor.device_form.device_function.label_tag }}</label>
+                        <div class="col-sm-8">{{ this_sensor.device_form.device_function }}</div>
+                </div>
+                <div class="row">
+                    <label for="{{ this_sensor.device_form.invert.id }}" data-toggle="tooltip" title="{{ this_sensor.device_form.invert.help_text }}" class="col-sm-4">{{ this_sensor.device_form.invert.label_tag }}</label>
+                    <div class="col-sm-8">
+                        {{ this_sensor.device_form.invert }}<input type="hidden" name="pin" value="{{ this_sensor.pin }}">
+                    </div>
+                </div>
+                <div class="row col-sm-12">
+                    {% for hidden in this_sensor.device_form.hidden_fields %}
+                    {{ hidden }}
+                    {% endfor %}
+                    <input type="submit" value="Assign" class="btn btn-block btn-lg btn-primary" />
+                </div>
+            </form>
+        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
+            <div class="row col-sm-12">
+                OneWire Temp Sensor
+            </div>
+            <div class="row col-sm-12">
+                Address {{ this_sensor.address }}
+            </div>
+            <form action="{% url "sensor_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                <div class="row">
+                    <label for="{{ this_sensor.device_form.device_function.id }}" data-toggle="tooltip" title="{{ this_sensor.device_form.device_function.help_text }}" class="col-sm-4">{{ this_sensor.device_form.device_function.label_tag }}</label>
+                    <div class="col-sm-8">{{ this_sensor.device_form.device_function }}</div>
+                </div>
+                <div class="row col-sm-12">
+                    {% for hidden in this_sensor.device_form.hidden_fields %}
+                    {{ hidden }}
+                    {% endfor %}
+                    <input type="submit" value="Assign" class="btn btn-block btn-lg btn-primary" />
+                </div>
+            </form>
+        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
+            OneWire 2413 {# TODO - Add support for OneWire actuators #}
+        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
+            OneWire 2408 {# TODO - Add support for OneWire actuators #}
+        {% endif %}
+
+
+    </div>
+</div>
+{% endfor %}
+
+
+
+
+
+<h2 class="double-border">Installed Devices</h2>
+{% for this_sensor in installed_devices %}
+<div class="row">
+    <div class="col-sm-4">
+        {% if this_sensor.hardware == 1 %}{# Pin #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-thermometer fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+        </span>
+        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
+        <span class="fa-stack fa-5x">
+          <i class="fa fa-circle fa-stack-2x text-info"></i>
+          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+        </span>
+        {% endif %}
+    </div>
+    <div class="col-sm-8">
+
+        {% if this_sensor.hardware == 1 %}{# Pin #}
+            <div class="row col-sm-12">
+                Pin {{ this_sensor.pin }} ({{ this_sensor.pin_data.text }})
+            </div>
+        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
+            <div class="row col-sm-12">
+                OneWire Temp Sensor
+            </div>
+            <div class="row col-sm-12">
+                Address {{ this_sensor.address }}
+            </div>
+        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
+            OneWire 2413 {# TODO - Add support for OneWire actuators #}
+        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
+            OneWire 2408 {# TODO - Add support for OneWire actuators #}
+        {% endif %}
+            <div class="row col-sm-12">
+                Device Function: {{ this_sensor.get_device_function_display }}
+            </div>
+            <form action="{% url "sensor_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                <div class="row col-sm-12">
+                    {% for hidden in this_sensor.device_form.hidden_fields %}
+                    {{ hidden }}
+                    {% endfor %}
+                    <input type="submit" value="Unassign" class="btn btn-block btn-lg btn-danger" />
+                </div>
+            </form>
+
+
+    </div>
+</div>
+{% endfor %}
+
+
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

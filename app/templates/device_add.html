@@ -1,0 +1,111 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Add Device</h1>
+
+<form action="{% url "device_add" %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="deviceConstantsSection">
+        <h4 class="form-header">Device Constants</h4>
+        {% form_generic form.device_name %}
+        {% form_generic form.temp_format %}
+        {% form_generic form.data_point_log_interval %}
+        {% form_generic form.board_type %}
+    </div>
+
+
+    <div id="brewpiWwwSection">
+        <h4 class="form-header">Old-style Interface Support</h4>
+        {% form_generic form.has_old_brewpi_www %}
+        <div id="brewpiWwwHidden" style="display: none">
+            {% form_generic form.wwwPath %}
+        </div>
+    </div>
+
+    <div id="inetSocketSection">
+        <h4 class="form-header">Connect Interface to Script</h4>
+        {% form_generic form.useInetSocket %}
+
+        <div id="localSocketHidden" style="display: none">{# Although I don't recommend local sockets, some people might want them #}
+            {% form_generic form.socket_name %}
+        </div>
+
+        <div id="inetSocketHidden" style="display: none">
+            {% form_generic form.socketHost %}
+            {% form_generic form.socketPort %}
+        </div>
+    </div>
+
+
+    <div id="connectivitySection">
+        <h4 class="form-header">Connect Script to Device</h4>
+        {% form_generic form.connection_type %}
+        <div id="serialSocketSection" style="display: none"> {# The javascript below will show the relevant section (serial or wifi) #}
+                {% form_generic form.serial_port %}
+                {% form_generic form.serial_alt_port %}
+        </div>
+
+        <div id="wifiSection" style="display: none">
+                {% form_generic form.wifi_host %}
+                {% form_generic form.wifi_port %}
+        </div>
+    </div>
+
+    <input type="submit" value="Submit" class="btn btn-default" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function brewpiWWWHide() {
+    if(document.getElementById('id_has_old_brewpi_www').checked) {
+         document.getElementById('brewpiWwwHidden').style.display = '';
+    } else {
+         document.getElementById('brewpiWwwHidden').style.display = 'none';
+    }
+}
+
+function InetSocketHide() {
+    if(document.getElementById('id_useInetSocket').checked) {
+         document.getElementById('localSocketHidden').style.display = 'none';
+         document.getElementById('inetSocketHidden').style.display = '';
+    } else {
+         document.getElementById('localSocketHidden').style.display = '';
+         document.getElementById('inetSocketHidden').style.display = 'none';
+    }
+}
+
+function ConnectionTypeHide() {
+    if(document.getElementById('id_connection_type').options[document.getElementById('id_connection_type').selectedIndex].value == "serial") {
+         document.getElementById('wifiSection').style.display = 'none';
+         document.getElementById('serialSocketSection').style.display = '';
+    } else {
+         document.getElementById('wifiSection').style.display = '';
+         document.getElementById('serialSocketSection').style.display = 'none';
+    }
+}
+
+
+window.onload = function() {
+    document.getElementById('id_connection_type').onchange = ConnectionTypeHide;
+    document.getElementById('id_has_old_brewpi_www').onchange = brewpiWWWHide;
+    document.getElementById('id_useInetSocket').onchange = InetSocketHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    brewpiWWWHide();
+    InetSocketHide();
+    ConnectionTypeHide();
+};
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
