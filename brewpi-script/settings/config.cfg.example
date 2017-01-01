@@ -1,0 +1,25 @@
+# ======= settings above this line have been added automatically =======
+# uncomment settings here, these override the settings in defaults.cfg
+
+# scriptPath = /home/brewpi/
+# wwwPath = /var/www/
+# port = /dev/ttyACM0
+# altport = /dev/ttyACM1
+# boardType = leonardo
+# startupDelay = 1.0
+# debug = true
+
+
+# On a standard pi installation, the defaults should work.
+# If you are using a different linux flavor or Windows, you can set the tool locations here
+
+# arduinoHome = c:/arduino-1.0.4/
+# avrdudeHome = # location of avr tools, defaults to arduinohome/hardware/tools
+# avrsizeHome = # defaults to empty string because avrsize is on path on Linux
+# avrConf = # location of global avr conf. Defaults to avrdudeHome/avrdude.conf
+
+# on Windows, the scripts defaults to an Internet socket instead of a system socket.
+# useInetSocket=true
+# socketPort=6332
+# socketHost=127.0.0.1
+

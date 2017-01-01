@@ -1,0 +1,298 @@
+# Copyright 2013 BrewPi
+# This file is part of BrewPi.
+
+# BrewPi is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# BrewPi is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+import time
+import sys
+import os
+import serial
+import autoSerial
+import tcpSerial
+
+import app.models as models  # This SHOULD work due to the sys.path.append above.
+
+
+try:
+    import configobj
+except ImportError:
+    print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
+    sys.exit(1)
+
+
+def addSlash(path):
+    """
+    Adds a slash to the path, but only when it does not already have a slash at the end
+    Params: a string
+    Returns: a string
+    """
+    if not path.endswith('/'):
+        path += '/'
+    return path
+
+
+def read_config_file_with_defaults(cfg):
+    """
+    Reads a config file with the default config file as fallback
+
+    Params:
+    cfg: string, path to cfg file
+
+    Returns:
+    ConfigObj of settings
+    """
+    if not cfg:
+        cfg = addSlash(sys.path[0]) + 'settings/config.cfg'
+
+    defaultCfg = scriptPath() + '/settings/defaults.cfg'
+    config = configobj.ConfigObj(defaultCfg)
+
+    if cfg:
+        try:
+            userConfig = configobj.ConfigObj(cfg)
+            config.merge(userConfig)
+        except configobj.ParseError:
+            logMessage("ERROR: Could not parse user config file %s" % cfg)
+        except IOError:
+            logMessage("Could not open user config file %s. Using only default config file" % cfg)
+    return config
+
+
+def read_config_from_database_without_defaults(db_config_object):
+    """
+    Reads configuration parameters from the database without
+
+    Params:
+    db_config_object: models.BrewPiDevice, BrewPiDevice object
+
+    Returns:
+    ConfigObj of settings
+    """
+
+    config = {}
+
+    # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
+    config['scriptPath'] = db_config_object.script_path
+    config['wwwPath'] = db_config_object.wwwPath
+    config['port'] = db_config_object.serial_port
+    if db_config_object.serial_alt_port <> 'None':
+        config['altport'] = db_config_object.serial_alt_port
+    config['boardType'] = db_config_object.board_type
+    config['beerName'] = db_config_object.get_active_beer_name()
+    config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file
+    config['dataLogging'] = db_config_object.logging_status
+    config['use_brewpi_www'] = db_config_object.has_old_brewpi_www
+    config['socket_name'] = db_config_object.socket_name
+    config['profileName'] = None  # TODO - Implement this
+    config['connection_type'] = db_config_object.connection_type
+    config['wifiHost'] = db_config_object.wifi_host
+    config['wifiPort'] = db_config_object.wifi_port
+    config['useInetSocket'] = db_config_object.useInetSocket
+    config['socketPort'] = db_config_object.socketPort
+    config['socketHost'] = db_config_object.socketHost
+
+    return config
+
+
+def configSet(configFile, db_config_object, settingName, value):
+    if configFile:
+        if not os.path.isfile(configFile):
+            logMessage("User config file %s does not exist yet, creating it..." % configFile)
+        try:
+            config = configobj.ConfigObj(configFile)
+            config[settingName] = value
+            config.write()
+        except IOError as e:
+            logMessage("I/O error(%d) while updating %s: %s " % (e.errno, configFile, e.strerror))
+            logMessage("Probably your permissions are not set correctly. " +
+                       "To fix this, run 'sudo sh /home/brewpi/fixPermissions.sh'")
+        return read_config_file_with_defaults(configFile)  # return updated ConfigObj
+    else:
+        # Assuming we have a valid db_config_object here
+        if settingName == "scriptPath":
+            db_config_object.script_path = value
+        elif settingName == "port":
+            db_config_object.serial_port = value
+        elif settingName == "altport":
+            db_config_object.serial_alt_port = value
+        elif settingName == "boardType":
+            db_config_object.board_type = value
+        elif settingName == "beerName":
+            # As of right now, setting the beerName doesn't do anything, as setting the beer is done in brewpi.startBeer
+            # TODO - Make sure this actually works as intended
+            pass
+        elif settingName == "profileName":
+            # TODO - Implement this
+            pass
+        elif settingName == "socket_name":
+            db_config_object.socket_name = value
+        elif settingName == "interval":
+            # TODO - Check if the interval gets updated in the script. If so, make sure we do proper type conversion.
+            db_config_object.data_point_log_interval = value
+        elif settingName == "dataLogging":
+            db_config_object.logging_status = value
+        elif settingName == "use_brewpi_www":
+            db_config_object.has_old_brewpi_www = value
+        else:
+            # In all other cases, just try to set the field directly
+            setattr(db_config_object, settingName, value)
+        db_config_object.save()
+        return read_config_from_database_without_defaults(db_config_object)
+
+def save_beer_log_point(db_config_object, beer_row):
+    """
+    Saves a row of data to the database
+    :param db_config_object:
+    :param beer_row:
+    :return:
+    """
+    # TODO - Check if I need to do anything to save 'null's here
+    new_log_point = models.BeerLogPoint()
+
+    new_log_point.beer_temp = beer_row['BeerTemp']
+    new_log_point.beer_set = beer_row['BeerSet']
+    new_log_point.beer_ann = beer_row['BeerAnn']
+
+    new_log_point.fridge_temp = beer_row['FridgeTemp']
+    new_log_point.fridge_set = beer_row['FridgeSet']
+    new_log_point.fridge_ann = beer_row['FridgeAnn']
+
+    new_log_point.room_temp = beer_row['RoomTemp']
+    new_log_point.state = beer_row['State']
+
+    new_log_point.temp_format = db_config_object.temp_format
+    new_log_point.associated_beer = db_config_object.active_beer
+
+    new_log_point.save()
+
+def printStdErr(*objs):
+    print("", *objs, file=sys.stderr)
+
+def logMessage(message):
+    """
+    Prints a timestamped message to stderr
+    """
+    printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
+
+
+def scriptPath():
+    """
+    Return the path of BrewPiUtil.py. __file__ only works in modules, not in the main script.
+    That is why this function is needed.
+    """
+    return os.path.dirname(__file__)
+
+
+def removeDontRunFile(path='/var/www/do_not_run_brewpi'):
+    if os.path.isfile(path):
+        os.remove(path)
+        if not sys.platform.startswith('win'):  # cron not available
+            print("BrewPi script will restart automatically.")
+    else:
+        print("File do_not_run_brewpi does not exist at " + path)
+
+def findSerialPort(bootLoader):
+    (port, name) = autoSerial.detect_port(bootLoader)
+    return port
+
+def setupSerial(config, baud_rate=57600, time_out=0.1):
+    ser = None
+    dumpSerial = config.get('dumpSerial', False)
+
+    error1 = None
+    error2 = None
+    # open serial port
+    tries = 0
+    connection_type = config.get('connection_type', 'auto')
+    if connection_type == "serial" or connection_type == "auto":
+        logMessage("Opening serial port")
+        while tries < 10:
+            error = ""
+            for portSetting in [config['port'], config['altport']]:
+                if portSetting == None or portSetting == 'None' or portSetting == "none":
+                    continue  # skip None setting
+                if portSetting == "auto":
+                    port = findSerialPort(bootLoader=False)
+                    if not port:
+                        error = "Could not find compatible serial devices \n"
+                        continue # continue with altport
+                else:
+                    port = portSetting
+                try:
+                    ser = serial.Serial(port, baudrate=baud_rate, timeout=time_out, write_timeout=0)
+                    if ser:
+                        break
+                except (IOError, OSError, serial.SerialException) as e:
+                    # error += '0}.\n({1})'.format(portSetting, str(e))
+                    error += str(e) + '\n'
+            if ser:
+                break
+            tries += 1
+            time.sleep(1)
+
+    if connection_type == "wifi" or connection_type == "auto":
+        if not(ser):
+            tries=0
+            logMessage("No serial attached BrewPi found.  Trying TCP serial (WiFi)")
+            while tries < 10:
+                error = ""
+
+                if config['wifiHost'] == 'auto':
+                    pass
+                    # mdns=tcpSerial.MDNSBrowser()
+                    # (tcpHost, tcpPort)=mdns.discoverBrewpis()
+                    # ser = tcpSerial.TCPSerial(tcpHost,tcpPort)
+                else:
+                    if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
+                        ser = tcpSerial.TCPSerial(config['wifiHost'],int(config['wifiPort']))
+                if ser:
+                    break
+                tries += 1
+                time.sleep(1)
+        if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
+            pass  # TODO - Make this die gracefully
+
+
+    if ser:
+        # discard everything in serial buffers
+        ser.flushInput()
+        ser.flushOutput()
+    else:
+         logMessage("Errors while opening serial port: \n" + error)
+
+    # yes this is monkey patching, but I don't see how to replace the methods on a dynamically instantiated type any other way
+    if dumpSerial:
+        ser.readOriginal = ser.read
+        ser.writeOriginal = ser.write
+
+        def readAndDump(size=1):
+            r = ser.readOriginal(size)
+            sys.stdout.write(r)
+            return r
+
+        def writeAndDump(data):
+            ser.writeOriginal(data)
+            sys.stderr.write(data)
+
+        ser.read = readAndDump
+        ser.write = writeAndDump
+
+    return ser
+
+
+# remove extended ascii characters from string, because they can raise UnicodeDecodeError later
+def asciiToUnicode(s):
+    s = s.replace(chr(0xB0), '&deg')
+    return unicode(s, 'ascii', 'ignore')
