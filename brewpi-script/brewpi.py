@@ -21,13 +21,12 @@ import os, sys
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-proj_path = os.path.join(BASE_DIR, '..')
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "brewpi_django.settings")
-sys.path.append(proj_path)
+sys.path.append(BASE_DIR)
 
 # This is so my local_settings.py gets loaded.
-os.chdir(proj_path)
+os.chdir(BASE_DIR)
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
