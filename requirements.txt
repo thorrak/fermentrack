@@ -2,9 +2,9 @@ Django>=1.10,<1.11
 configobj       # required by brewpi.py
 psutil>=2.0     # required by BrewPiProcess.py
 simplejson      # required by brewpi.py
+pytz
 # TODO - Clean this up (before release)
 #requests
-#pytz
 #MySQL-python
 #django-suit
 #BeautifulSoup
