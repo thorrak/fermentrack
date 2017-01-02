@@ -2,7 +2,7 @@ Django>=1.10,<1.11
 configobj       # required by brewpi.py
 psutil>=2.0     # required by BrewPiProcess.py
 simplejson      # required by brewpi.py
-pytz
+pytz            # required by manage.py migrate
 # TODO - Clean this up (before release)
 #requests
 #MySQL-python
