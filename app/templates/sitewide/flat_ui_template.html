@@ -12,7 +12,6 @@
         <link href="{% static "css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" >
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
-
         <link rel="shortcut icon" href="img/favicon.ico">
            {% block header_scripts %}{% endblock %}
           <script type="text/javascript" src="{% static "js/dygraph-combined.js" %}"></script>
@@ -81,6 +80,9 @@
 
 
     {# TODO - Clean this up #}
+    <!-- TODO: bundle vuejs -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="{% static "js/lcd.js" %}"></script>
     <script src="{% static "js/vendor/jquery.min.js" %}"></script>
 {#    <script src="{% static "js/bootstrap.min.js" %}"></script>#}
 {#    <script src="{% static "js/vendor/video.js" %}"></script>#}
