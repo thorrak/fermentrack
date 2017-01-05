@@ -17,6 +17,7 @@ from django.conf.urls import url
 from django.contrib import admin
 
 import app.views
+import app.api.lcd
 
 admin.autodiscover()
 
@@ -45,5 +46,9 @@ urlpatterns = [
     # TODO - Add views for fermentation profile that won't lose the device ID
     url(r'^fermentation_profile/new/$', app.views.beer_active_csv, name='profile_new'),
     url(r'^fermentation_profile/(\d{1,20})/$', app.views.beer_active_csv, name='profile_view'),
+
+    # Api Views
+    url(r'^api/lcd/(?P<device_name>\w+)$', app.api.lcd.getLCD, name="getLCD"),
+    url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),
 
 ]
