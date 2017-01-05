@@ -1,0 +1,17 @@
+site_name: BrewPi Django Edition
+repo_url: https://github.com/thorrak/brewpi-django
+repo_name: brewpi-django
+theme: readthedocs
+pages:
+  - Home: 'index.md'
+  - Install:
+    - 'Rpi Installation': 'install/rpi.md'
+  - Configuration:
+    - 'Configuration': 'config/config.md'
+  - Hardware:
+    - 'The esp8266': 'hardware/esp8266.md'
+  - About:
+    - 'Contribute': 'about/contribute.md'
+    - 'Changelog': 'about/changelog.md'
+    - 'License': 'about/license.md'
+    
