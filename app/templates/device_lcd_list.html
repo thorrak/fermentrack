@@ -12,11 +12,12 @@
 {% endfor %}
 {% endcomment %}
 
+    {# Vue.js uses the same template tags ({{ and }}) as does Django. Use verbatim to escape. #}
 {% verbatim %}
 <div id="lcdapp">
     <div v-for="lcd in lcds">
         <div class="col-xs-12">
-            Device: {{ lcd.device_name }}
+            <a v-bind:href="lcd.device_url">Device: {{ lcd.device_name }}</a>
         </div>
 
         <div class="col-xs-12">

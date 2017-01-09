@@ -22,7 +22,7 @@
                   <ul class="dropdown-menu">
 {% for this_device in all_devices %}
                     <li><a href="{% url 'device_dashboard' this_device.id %}">{{ this_device.device_name }}</a></li>{% endfor %}
-                    <li><a href="#">Another Device</a></li>
+                    <li><a href="#">Another Device</a></li>{# TODO - Delete these #}
                     <li><a href="#">And one more</a></li>
                     <li class="divider"></li>
                     <li><a href="{% url 'device_add' %}"><i class="fa fa-fw fa-plus"></i> Add New Device</a></li>

@@ -32,11 +32,11 @@ urlpatterns = [
     url(r'^devices/$', app.views.device_list, name='device_list'),
     url(r'^devices/add/$', app.views.add_device, name='device_add'),
 
-    url(r'^devices/(\d{1,20})/config/$', app.views.device_config, name='device_config'),
-    url(r'^devices/(\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
+    url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
+    url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
 
     # Device Utility & Internal Views
-    url(r'^devices/(\d{1,20})/beer/csv/active_beer.csv$', app.views.beer_active_csv, name='csv_active_beer'),
+    url(r'^devices/(?P<device_id>\d{1,20})/beer/csv/active_beer.csv$', app.views.beer_active_csv, name='csv_active_beer'),
     # url(r'^devices/(\d{1,20})/beer/csv/(\d{1,20}).csv$', app.views.device_config, name='csv_numbered'),
 
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/$', app.views.sensor_list, name='sensor_list'),
