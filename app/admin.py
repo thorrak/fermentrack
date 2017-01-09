@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.models import InstallSettings, BrewPiDevice, Beer, BeerLogPoint
+from app.models import InstallSettings, BrewPiDevice, Beer, BeerLogPoint, FermentationProfile, FermentationProfilePoint
 
 @admin.register(InstallSettings)
 class installSettingsAdmin(admin.ModelAdmin):
@@ -18,7 +18,7 @@ class beerAdmin(admin.ModelAdmin):
 class beerLogPointAdmin(admin.ModelAdmin):
     list_display = ('associated_beer', 'log_time', 'beer_temp', 'fridge_temp')
 
-# admin.site.register(InstallSettings, installSettingsAdmin)
-# admin.site.register(BrewPiDevice, brewPiDeviceAdmin)
-#admin.site.register(structureTimer, structureTimerAdmin)
+@admin.register(FermentationProfile)
+class fermentationProfileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'status')
 

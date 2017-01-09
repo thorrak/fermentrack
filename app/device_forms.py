@@ -133,20 +133,3 @@ class SensorFormRevised(forms.Form):
 
         return cleaned_data
 
-
-class FermentationProfileForm(ModelForm):
-    class Meta:
-        model = OldControlConstants
-        fields = OldControlConstants.firmware_field_list
-        # fields = ['tempSetMin', 'tempSetMax', 'Kp', 'Ki', 'Kd', 'pidMax', 'iMaxErr', 'idleRangeH', 'idleRangeL',
-        #           'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL', 'maxHeatTimeForEst', 'maxCoolTimeForEst',
-        #           'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt', 'fridgeFastFilt', 'fridgeSlowFilt',
-        #           'fridgeSlopeFilt', 'lah', 'hs',]
-
-
-    def __init__(self, *args, **kwargs):
-        super(FermentationProfileForm, self).__init__(*args, **kwargs)
-        for this_field in self.fields:
-            self.fields[this_field].widget.attrs['class'] = "form-control"
-
-

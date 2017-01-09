@@ -1,0 +1,40 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+    <h1>Available Fermentation Profiles</h1>{# Is there a better name for this?? #}
+
+    {% if all_profiles %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Profile Name</th>
+                    <th>Target Points</th>
+                    <th>In Use?</th>
+                </tr>
+            </thead>
+
+            {% for this_profile in all_profiles %}
+                <tr>
+                    <td><a href="#">{{ this_profile.name }}</a></td>
+                    <td>{{ this_profile.fermentationprofilepoint_set.all|length }}</td>
+                    <td>{{ this_profile.currently_in_use }}
+                        {# TODO - Add an icon here if the profile is active instead of true/false #}
+                        {# TODO - Add something here if the profile is pending deletion #}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h2>There are no available fermentation profiles</h2>
+    {% endif %}
+
+    <p>{# TODO - Fix the style for the button #}
+        <a href="{% url "profile_new" %}" type="button" class="btn btn-sm btn-success">Create New Profile</a>
+    </p>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}

@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 
 import device_forms
+import profile_forms
 
 import json, time
 

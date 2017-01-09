@@ -447,6 +447,9 @@ class BrewPiDevice(models.Model):
     # The active fermentation profile (if any!)
     active_profile = models.ForeignKey('FermentationProfile', null=True, blank=True, default=None)
 
+    # The time the fermentation profile was applied (all our math is based on this)
+    time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
+
     # Other things that aren't persisted in the database
     # available_devices = []
     # installed_devices = []
@@ -705,7 +708,7 @@ class BeerLogPoint(models.Model):
 
         return [time_value, beerTemp, fridgeTemp]
 
-# A model representing
+# A model representing the fermentation profile as a whole
 class FermentationProfile(models.Model):
     STATUS_ACTIVE = 1
     STATUS_PENDING_DELETE = 2
@@ -729,7 +732,6 @@ class FermentationProfile(models.Model):
             return True
         else:
             return False
-
 
 
 class FermentationProfilePoint(models.Model):
