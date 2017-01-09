@@ -82,19 +82,11 @@
     {# TODO - Clean this up #}
     <!-- TODO: bundle vuejs -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <script type="text/javascript" src="{% static "js/lcd.js" %}"></script>
     <script src="{% static "js/vendor/jquery.min.js" %}"></script>
-{#    <script src="{% static "js/bootstrap.min.js" %}"></script>#}
-{#    <script src="{% static "js/vendor/video.js" %}"></script>#}
     <script src="{% static "js/flat-ui.min.js" %}"></script>  {# Overwrites parts of bootstrap.js #}
 {#    <script src="{% static "js/application.js" %}"></script>#}
 
     {% block scripts %}{% endblock %}
 
-{#    <script src="docs/assets/js/application.js"></script>#}
-
-{#    <script>#}
-{#      videojs.options.flash.swf = "dist/js/vendors/video-js.swf"#}
-{#    </script>#}
   </body>
 </html>

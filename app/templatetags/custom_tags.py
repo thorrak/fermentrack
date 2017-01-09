@@ -5,7 +5,7 @@ from app.models import BrewPiDevice
 
 register = template.Library()
 
-
+# TODO - Delete this if it is no longer used in active code (
 @register.inclusion_tag('brewpi/lcd_panel.html')
 def show_lcd(this_device):
     return {'lcd_text': this_device.read_lcd(), 'this_device': this_device}
