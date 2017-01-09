@@ -43,6 +43,7 @@
 
 
 {% block scripts %}
+{% load static %}
     {# Moving this here as this page is the one that loads the LCDs #}
     {# TODO - Possibly move the vue.js load directive here as well if this is the only place we need it?? #}
     <script type="text/javascript" src="{% static "js/lcd.js" %}"></script>
