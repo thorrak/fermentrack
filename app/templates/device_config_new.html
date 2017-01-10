@@ -1,10 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
 
-</body>
-</html>
+{# This is the device config page for the "new" (see: master) branch devices.  #}
+{# This template is NOT yet implemented #}
+{# TODO - Actually convert this to match the new control constants #}
+
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Configure Control Constants</h1>
+
+<form action="{% url "device_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="deviceConstantsSection">
+        <h3 class="form-header">Device Constants</h3>
+        {% form_generic form.tempSetMin %}
+        {% form_generic form.tempSetMax %}
+        {% form_generic form.Kp %}
+        {% form_generic form.Ki %}
+        {% form_generic form.Kd %}
+        {% form_generic form.pidMax %}
+        {% form_generic form.iMaxErr %}
+        {% form_generic form.idleRangeH %}
+        {% form_generic form.idleRangeL %}
+        {% form_generic form.heatTargetH %}
+        {% form_generic form.heatTargetL %}
+        {% form_generic form.coolTargetH %}
+        {% form_generic form.coolTargetL %}
+        {% form_generic form.maxHeatTimeForEst %}
+        {% form_generic form.maxCoolTimeForEst %}
+        {% form_generic form.beerFastFilt %}
+        {% form_generic form.beerSlowFilt %}
+        {% form_generic form.beerSlopeFilt %}
+        {% form_generic form.fridgeFastFilt %}
+        {% form_generic form.fridgeSlowFilt %}
+        {% form_generic form.fridgeSlopeFilt %}
+    </div>
+
+
+
+    <input type="submit" value="Submit" class="btn btn-default" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
