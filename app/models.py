@@ -191,9 +191,12 @@ class SensorDevice(models.Model):
     pio = models.IntegerField(null=True, default=None)
     invert = models.IntegerField(default=1, choices=INVERT_CHOICES)
 
-    pin_data = models.ForeignKey(PinDevice, null=True, blank=True, default=None)
+    # For the two ForeignKey fields, due to the fact that managed=False, we don't want Django attempting to enforce
+    # referential integrity when a controller/PinDevice is deleted as there is no database table to enforce upon.
+    # (You'll get a 'no_such_table' error)
+    pin_data = models.ForeignKey(PinDevice, null=True, blank=True, default=None, on_delete=models.DO_NOTHING)
 
-    controller = models.ForeignKey('BrewPiDevice', null=True, default=None)
+    controller = models.ForeignKey('BrewPiDevice', null=True, default=None,  on_delete=models.DO_NOTHING)
 
     # Defining the name as something readable for debugging
     def __str__(self):
