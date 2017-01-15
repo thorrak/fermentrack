@@ -751,6 +751,81 @@ class FermentationProfile(models.Model):
         else:
             return False
 
+    # Due to the way we're implementing this, we don't want a user to be able to edit a profile that is currently in use
+    def is_editable(self):
+        return not self.currently_in_use()
+
+    # If we attempt to delete a profile that is in use, we instead change the status. This runs through profiles in
+    # this status and deletes those that are no longer in use.
+    @classmethod
+    def cleanup_pending_delete(cls):
+        profiles_pending_delete = cls.objects.filter(status=cls.STATUS_PENDING_DELETE)
+        for profile in profiles_pending_delete:
+            if not profile.currently_in_use():
+                profile.delete()
+
+
+    # This function is designed to create a more "human readable" version of a temperature profile (to help people
+    # better understand what a given profile is actually going to do).
+
+    # I would prefer to implement this as part of a template (given that it's honestly display logic) but the Django
+    # template language doesn't provide quite what I would need to pull it off.
+    def to_english(self):
+        profile_points = self.fermentationprofilepoint_set.order_by('ttl')
+
+        description = []
+        past_first_point=False  # There's guaranteed to be a better way to do this
+        previous_setpoint = 0.0
+        previous_ttl = 0.0
+        previous_format = 'F'  #
+
+        if profile_points.__len__() < 1:
+            description.append("This profile contains no setpoints and cannot be assigned.")
+
+        # TODO - Make the timedelta objects more human readable (I don't like the 5:20:30 format that much)
+        for this_point in profile_points:
+            if not past_first_point:
+                desc_text = "Start off by heating/cooling to {} degrees {}".format(this_point.temperature_setting, this_point.temp_format)
+
+                if this_point.ttl == 0:  # TODO - Test to make sure this works with timedelta objects the way I think it does
+                    desc_text += "."
+                else:
+                    desc_text += " and hold this temperature for {}".format(this_point.ttl)
+
+                description.append(desc_text)
+                previous_setpoint = this_point.temperature_setting
+                previous_ttl = this_point.ttl
+                past_first_point = True
+                previous_format = this_point.temp_format
+            else:
+                if previous_setpoint == this_point.temperature_setting:
+                    desc_text = "Hold this temperature for {}".format((this_point.ttl - previous_ttl))
+                    desc_text += "(until {} after the profile was assigned).".format(this_point.ttl)
+                else:
+                    if previous_setpoint > this_point.temperature_setting:
+                        desc_text = "Cool to"
+                    else:  # If previous_setpoint is less than the current setpoint
+                        desc_text = "Heat to"
+
+                    # Breaking this up to reduce line length
+                    desc_text += " {} degrees {} ".format(this_point.temperature_setting, this_point.temp_format)
+                    desc_text += "over the next {} ".format(this_point.ttl - previous_ttl)
+                    desc_text += "(reaching this temperature {}".format(this_point.ttl)
+                    desc_text += " after the profile was assigned)."
+
+                description.append(desc_text)
+                previous_setpoint = this_point.temperature_setting
+                previous_ttl = this_point.ttl
+                previous_format = this_point.temp_format
+
+        if past_first_point:
+            desc_text = "Finally, permanently hold the beer at {} degrees {}.".format(previous_setpoint, previous_format)
+            description.append(desc_text)
+
+        return description
+
+
+
 
 class FermentationProfilePoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))

@@ -4,37 +4,79 @@
 {% block title %}{{ pagetitle }}{% endblock %}
 
 {% block content %}
-    <h1>Available Fermentation Profiles</h1>{# Is there a better name for this?? #}
+    <h1>Profile: {{ this_profile.name }}</h1>
 
-    {% if all_profiles %}
+    {# TODO - Add profile graph here. #}
+
+    <h2>Profile Setpoints</h2>
+
+    {% if this_profile_points %}
         <table class="table">
             <thead>
                 <tr>
-                    <th>Profile Name</th>
-                    <th>Target Points</th>
-                    <th>In Use?</th>
+                    <th>TTL</th>
+                    <th>Temperature (Deg. {{ config.TEMPERATURE_FORMAT }})</th>
+                    <th></th>
                 </tr>
             </thead>
 
-            {% for this_profile in all_profiles %}
+            {% for this_point in this_profile_points %}
                 <tr>
-                    <td><a href="{% url 'profile_edit' this_profile.id %}">{{ this_profile.name }}</a></td>
-                    <td>{{ this_profile.fermentationprofilepoint_set.all|length }}</td>
-                    <td>{{ this_profile.currently_in_use }}
-                        {# TODO - Add an icon here if the profile is active instead of true/false #}
-                        {# TODO - Add something here if the profile is pending deletion #}</td>
+                    <td>{{ this_point.ttl }}</td>
+                    <td>{{ this_point.temp_to_preferred }}</td>
+                    <td>{% if this_profile.is_editable %}<a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a>{% endif %}</td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
-        <h2>There are no available fermentation profiles</h2>
+        <h2>There are no setpoints configured for this profile</h2>
     {% endif %}
 
-    <p>{# TODO - Fix the style for the button #}
-        <a href="{% url "profile_new" %}" type="button" class="btn btn-sm btn-success">Create New Profile</a>
+
+    <h2>Add Setpoint</h2>
+
+    {# TODO - Rewrite this to use divs instead of tables #}
+    <table class="table">
+        <form action="{% url "profile_edit" this_profile.id %}" method="post">
+            {% csrf_token %}
+            <thead>
+                <tr>
+                    <th>TTL <label for="{{ form.ttl.id_for_label }}" data-toggle="tooltip" title="{{ form.ttl.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
+                    <th>Temperature (Deg. {{ config.TEMPERATURE_FORMAT }}) <label for="{{ form.temperature_setting.id_for_label }}" data-toggle="tooltip" title="{{ form.temperature_setting.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            {# TODO - Add form errors view #}
+            <tr>
+                <td>{{ form.ttl }}{# TODO - Prepopulate example text in form #}</td>
+                <td>{{ form.temperature_setting }} {# TODO - Replace Deg. with the degree symbol #}Deg. {{ config.TEMPERATURE_FORMAT }}</td>
+                <td><input type="submit" value="Add Setpoint" class="btn btn-block btn-sm btn-primary" /></td>
+            </tr>
+        </form>
+    </table>
+
+    {% if this_profile_points %}
+        <h2>Profile (English Description)</h2>
+
+        {% for this_line in this_profile.to_english %}
+            {{ this_line }}<br>
+        {% endfor %}
+    {% endif %}
+
+    <p>
+        <a href="{% url "profile_delete" this_profile.id %}" type="button" class="btn btn-sm btn-danger">Delete Profile</a>
     </p>
+
+
 
 {% endblock %}
 
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+{% endblock %}
