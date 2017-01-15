@@ -125,5 +125,8 @@ class TCPSerial(object):
         mdnsLocator.locate_brewpi_services()  # This causes all the BrewPi devices to resend their mDNS info
         try:
             self.sock.connect((self.host, self.port))
-        except socket.gaierror:
+        except socket.gaierror as e:
             BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port))
+        # except socket.error as e:  # Catches "bad file descriptor" error
+        #     BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port))
+

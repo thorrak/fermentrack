@@ -97,7 +97,10 @@ from backgroundserial import BackGroundSerial
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
 
-compatibleHwVersion = "0.4.0"
+legacyHwVersion = "0.2.4"  # Minimum hardware version for 'legacy' branch support
+developHwVersion = "0.4.0"  # Minimum hardware version for 'develop' branch support
+compatibleHwVersion = legacyHwVersion  # Minimum supported version is 'legacy'
+hwMode = ""  # Unused for now - either set to 'legacy' or '0.4.x'
 
 # Control Settings
 cs = dict(mode='b', beerSet=20.0, fridgeSet=20.0)
@@ -419,8 +422,21 @@ else:
                " on port " + ser.name + "\n")
     if LooseVersion( hwVersion.toString() ) < LooseVersion(compatibleHwVersion):
         logMessage("Warning: minimum BrewPi version compatible with this script is " +
-                   compatibleHwVersion +
-                   " but version number received is " + hwVersion.toString())
+                   compatibleHwVersion + " but version number received is " + hwVersion.toString())
+    elif LooseVersion( hwVersion.toString() ) < LooseVersion(legacyHwVersion):
+        # This will generally never happen given that we are setting compatible = legacy above
+        logMessage("Warning: minimum BrewPi version compatible with this script for legacy support is " +
+                   legacyHwVersion + " but version number received is " + hwVersion.toString())
+    elif LooseVersion( hwVersion.toString() ) < LooseVersion(developHwVersion):
+        logMessage("BrewPi version received was {} which this script supports in 'legacy' " +
+                   "branch mode.".format(hwVersion.toString()))
+        hwMode = "legacy"
+    else:
+        logMessage("BrewPi version received was {} which this script supports in 'develop' " +
+                   "branch mode.".format(hwVersion.toString()))
+        hwMode = "0.4.x"
+
+
     if int(hwVersion.log) != int(expandLogMessage.getVersion()):
         logMessage("Warning: version number of local copy of logMessages.h " +
                    "does not match log version number received from controller." +
