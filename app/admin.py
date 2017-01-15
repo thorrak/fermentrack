@@ -1,10 +1,11 @@
 from django.contrib import admin
 
-from app.models import InstallSettings, BrewPiDevice, Beer, BeerLogPoint, FermentationProfile, FermentationProfilePoint
+from app.models import BrewPiDevice, Beer, BeerLogPoint, FermentationProfile, FermentationProfilePoint
 
-@admin.register(InstallSettings)
-class installSettingsAdmin(admin.ModelAdmin):
-    list_display = ('date_time_format', 'date_time_format_display')
+# TODO - Delete once we're confirmed to no longer be using InstallSettings
+# @admin.register(InstallSettings)
+# class installSettingsAdmin(admin.ModelAdmin):
+#     list_display = ('date_time_format', 'date_time_format_display')
 
 @admin.register(BrewPiDevice)
 class brewPiDeviceAdmin(admin.ModelAdmin):

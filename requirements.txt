@@ -4,10 +4,9 @@ psutil>=2.0     # required by BrewPiProcess.py
 simplejson      # required by brewpi.py
 pytz            # required by manage.py migrate
 # TODO - Clean this up (before release)
-#requests
 #MySQL-python
 #django-suit
-#BeautifulSoup
 #fabric
 raven
 -e git://github.com/darklow/django-suit.git@v2#egg=django-suit
+django-constance[database]   # for managing user-configured constants

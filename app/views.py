@@ -9,17 +9,18 @@ import mdnsLocator
 import json, time
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, InstallSettings, BeerLogPoint
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
-    site_config = InstallSettings.objects.all()
+    # TODO - Delete once we're confirmed to no longer be using InstallSettings
+    # site_config = InstallSettings.objects.all()
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
         context['all_devices'] = all_devices
     else:
         context={'all_devices': all_devices}
-    if len(site_config)>1:  # TODO - Make this grab the first siteconfig
-        context['site_config'] = site_config
+    # if len(site_config)>1:  # TODO - Make this grab the first siteconfig
+    #     context['site_config'] = site_config
 
     return render(request, template_name, context, content_type, status, using)
 
@@ -252,33 +253,6 @@ def device_dashboard(request, device_id):
     return render_with_devices(request, template_name="device_dashboard.html",
                                context={'active_device': active_device,})
 
-
-def profile_new(request, device_id=None):
-    # TODO - Add user permissioning
-    # if not request.user.has_perm('app.add_fermentation_profile'):
-    #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
-    #     return redirect("/")
-
-    if device_id is not None:
-        active_device = BrewPiDevice.objects.get(id=device_id)
-    else:
-        active_device = None
-
-    if request.POST:
-        form = device_forms.FermentationProfileForm(request.POST)
-        if form.is_valid():
-            # Generate the new_control_constants object from the form data
-            new_fermentation_profile = form.save()
-            messages.success(request, 'New fermentation profile created')
-            return redirect("/")  # TODO - Change this to redirect to the fermentation profile view screen
-
-        else:
-            return render_with_devices(request, template_name='profile_new.html',
-                                       context={'form': form, 'active_device': active_device})
-    else:
-        form = device_forms.FermentationProfileForm()
-        return render_with_devices(request, template_name='profile_new.html',
-                                   context={'form': form, 'active_device': active_device})
 
 
 def find_new_mdns_brewpi_controller(request):

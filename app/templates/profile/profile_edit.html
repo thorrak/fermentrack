@@ -18,7 +18,7 @@
 
             {% for this_profile in all_profiles %}
                 <tr>
-                    <td><a href="#">{{ this_profile.name }}</a></td>
+                    <td><a href="{% url 'profile_edit' this_profile.id %}">{{ this_profile.name }}</a></td>
                     <td>{{ this_profile.fermentationprofilepoint_set.all|length }}</td>
                     <td>{{ this_profile.currently_in_use }}
                         {# TODO - Add an icon here if the profile is active instead of true/false #}

@@ -6,6 +6,7 @@ from django.utils import timezone
 
 import socket
 import json, time, datetime
+from constance import config
 
 
 # BrewPiDevice
@@ -24,26 +25,28 @@ import json, time, datetime
 #
 
 
-class InstallSettings(models.Model):
-    """
-    This is going to be a singleton object to hold the installation settings. There may be a better way to do this...
-    """
-    class Meta:
-        verbose_name = "Install Settings"
-        verbose_name_plural = "Install Settings"
-
-
-    DATE_TIME_FORMAT_DISPLAY_CHOICES = (
-        ("mm/dd/yy", "mm/dd/yy"),
-        ("dd/mm/yy", "dd/mm/yy"),
-    )
-
-    brewery_name = models.CharField(max_length=25, default="BrewPi-Django", help_text="Name to be displayed in the upper left of each page")
-    # TODO - Determine if date_time_format is used anywhere
-    date_time_format = models.CharField(max_length=20, default="yy-mm-dd", null=False, blank=False)
-    date_time_format_display = models.CharField(max_length=20, default="mm/dd/yy", choices=DATE_TIME_FORMAT_DISPLAY_CHOICES,
-                                                null=False, blank=False)
-    require_login_for_dashboard = models.BooleanField(default=False, help_text="Should a logged out user be able to see device status?")
+# Attempting to use django-constance instead of a singleton object here.
+# TODO - Delete once we're confirmed to no longer be using InstallSettings
+# class InstallSettings(models.Model):
+#     """
+#     This is going to be a singleton object to hold the installation settings. There may be a better way to do this...
+#     """
+#     class Meta:
+#         verbose_name = "Install Settings"
+#         verbose_name_plural = "Install Settings"
+#
+#
+#     DATE_TIME_FORMAT_DISPLAY_CHOICES = (
+#         ("mm/dd/yy", "mm/dd/yy"),
+#         ("dd/mm/yy", "dd/mm/yy"),
+#     )
+#
+#     brewery_name = models.CharField(max_length=25, default="BrewPi-Django", help_text="Name to be displayed in the upper left of each page")
+#     # TODO - Determine if date_time_format is used anywhere
+#     date_time_format = models.CharField(max_length=20, default="yy-mm-dd", null=False, blank=False)
+#     date_time_format_display = models.CharField(max_length=20, default="mm/dd/yy", choices=DATE_TIME_FORMAT_DISPLAY_CHOICES,
+#                                                 null=False, blank=False)
+#     require_login_for_dashboard = models.BooleanField(default=False, help_text="Should a logged out user be able to see device status?")
 
 
 class PinDevice(models.Model):
@@ -754,6 +757,26 @@ class FermentationProfilePoint(models.Model):
     temperature_setting = models.DecimalField(max_digits=5, decimal_places=2, null=True,
                                               help_text="The temperature the beer should be when TTL has passed")
     temp_format = models.CharField(max_length=1, default='F')
+
+    def temp_to_f(self):
+        if self.temp_format == 'F':
+            return self.temperature_setting
+        else:
+            return (self.temperature_setting*9/5) + 32
+
+    def temp_to_c(self):
+        if self.temp_format == 'C':
+            return self.temperature_setting
+        else:
+            return (self.temperature_setting-32) * 5 / 9
+
+    def temp_to_preferred(self):
+        # Check Constance
+        if config.TEMPERATURE_FORMAT == 'F':
+            return self.temp_to_f()
+        elif config.TEMPERATURE_FORMAT == 'C':
+            return self.temp_to_c()
+        pass
 
 
 # The old (0.2.x/Arduino) Control Constants Model

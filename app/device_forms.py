@@ -1,5 +1,5 @@
 from django import forms
-from app.models import BrewPiDevice, InstallSettings, OldControlConstants, NewControlConstants, SensorDevice
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice
 from django.core import validators
 import brewpi_django.settings as settings
 
@@ -8,8 +8,6 @@ from django.forms import ModelForm
 import re
 import datetime
 import pytz
-
-
 
 
 class DeviceForm(forms.Form):
@@ -57,9 +55,9 @@ class DeviceForm(forms.Form):
 
 
 
-class ScriptSettingsForm(forms.Form):
-
-    date_time_format_display = forms.ChoiceField(initial="mm/dd/yy", choices=InstallSettings.DATE_TIME_FORMAT_DISPLAY_CHOICES)
+# class ScriptSettingsForm(forms.Form):
+#
+#     date_time_format_display = forms.ChoiceField(initial="mm/dd/yy", choices=InstallSettings.DATE_TIME_FORMAT_DISPLAY_CHOICES)
 
 
 
@@ -132,4 +130,6 @@ class SensorFormRevised(forms.Form):
         cleaned_data['installed'] = installed
 
         return cleaned_data
+
+
 

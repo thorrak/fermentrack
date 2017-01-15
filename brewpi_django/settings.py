@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
+    'constance',
+    'constance.backends.database',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +122,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Constance configuration
+# https://github.com/jazzband/django-constance
+
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
+CONSTANCE_ADDITIONAL_FIELDS = {
+    'date_time_format_select': ['django.forms.fields.ChoiceField', {  # TODO - Update/finish this
+        'widget': 'django.forms.Select',
+        'choices': ((None, "-----"), ("yy-mm-dd", "yy-mm-dd"), ("dd/mm/yy", "dd/mm/yy"))
+    }],
+    'date_time_display_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': ((None, "-----"), ("mm/dd/yy", "mm/dd/yy"), ("dd/mm/yy", "dd/mm/yy"))
+    }],
+    'temperature_format_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': ((None, "-----"), ("F", "Fahrenheit"), ("C", "Celsius"))
+    }],
+}
+
+CONSTANCE_CONFIG = {
+    'BREWERY_NAME': ('BrewPi-Django', 'Name to be displayed in the upper left of each page', str),
+    'DATE_TIME_FORMAT': ('yy-mm-dd', '', 'date_time_format_select'),  # TODO - Determine if date_time_format is used anywhere
+    'DATE_TIME_FORMAT_DISPLAY': ('mm/dd/yy', '', 'date_time_display_select'),
+    'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
+    'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
+                           'temperature_format_select')
+}
