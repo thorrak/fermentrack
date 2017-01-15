@@ -32,6 +32,7 @@ urlpatterns = [
     ### Device Views
     url(r'^devices/$', app.views.device_list, name='device_list'),
     url(r'^devices/add/$', app.views.add_device, name='device_add'),
+    url(r'^devices/mdns/$', app.views.find_new_mdns_brewpi_controller, name='device_mdns'),
 
     url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),

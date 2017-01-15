@@ -1,0 +1,27 @@
+{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+    <h1>Available (Uninstalled) Devices</h1>
+
+    {% if available_devices %}
+        {% for this_device in available_devices %}
+            {{ this_device.mDNSname }}
+        {% endfor %}
+    {% else %}
+        No uninstalled mDNS BrewPi devices{# TODO - Add some kind of popup or mouseover help text to this message #}
+    {% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}
+
+
+
+
+

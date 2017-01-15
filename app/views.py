@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response, redirect
 
 import device_forms
 import profile_forms
+import mdnsLocator
 
 import json, time
 
@@ -278,3 +279,33 @@ def profile_new(request, device_id=None):
         form = device_forms.FermentationProfileForm()
         return render_with_devices(request, template_name='profile_new.html',
                                    context={'form': form, 'active_device': active_device})
+
+
+def find_new_mdns_brewpi_controller(request):
+    services = mdnsLocator.locate_brewpi_services()
+
+    installed_devices = []
+    available_devices = []
+    found_device = {}
+
+
+    for this_service in services:
+        found_device['mDNSname'] = services[this_service].server[:-1]
+        found_device['board'] = services[this_service].properties['board']
+        found_device['branch'] = services[this_service].properties['branch']
+        found_device['revision'] = services[this_service].properties['revision']
+        found_device['version'] = services[this_service].properties['version']
+
+        try:
+            # If we found the device, then we're golden - it's already installed (in theory)
+            found_device['device'] = BrewPiDevice.objects.get(wifi_host=found_device['mDNSname'])
+            installed_devices.append(found_device.copy())
+        except:
+            found_device['device'] = None
+            available_devices.append(found_device.copy())
+
+    return render_with_devices(request, template_name="device_mdns_locate.html",
+                               context={'installed_devices': installed_devices,
+                                        'available_devices': available_devices})
+
+

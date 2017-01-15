@@ -28,6 +28,10 @@ class InstallSettings(models.Model):
     """
     This is going to be a singleton object to hold the installation settings. There may be a better way to do this...
     """
+    class Meta:
+        verbose_name = "Install Settings"
+        verbose_name_plural = "Install Settings"
+
 
     DATE_TIME_FORMAT_DISPLAY_CHOICES = (
         ("mm/dd/yy", "mm/dd/yy"),
@@ -76,6 +80,8 @@ class PinDevice(models.Model):
 class SensorDevice(models.Model):
     class Meta:
         managed = False
+        verbose_name = "Sensor Device"
+        verbose_name_plural = "Sensor Devices"
 
     # DEVICE_NONE = 0, // End of chamber device list
     # DEVICE_CHAMBER_DOOR = 1, // switch sensor
@@ -366,6 +372,12 @@ class BrewPiDevice(models.Model):
     """
     BrewPiDevice is the rough equivalent to an individual installation of brewpi-www
     """
+
+    class Meta:
+        verbose_name = "BrewPi Device"
+        verbose_name_plural = "BrewPi Devices"
+
+
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
     DATA_LOGGING_CHOICES = (('active', 'Active'), ('paused', 'Paused'), ('stopped', 'Stopped'))
     DATA_POINT_TIME_CHOICES = (
