@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 
+from constance import config  # For the explicitly user-configurable stuff
+
 import device_forms
 import profile_forms
 import mdnsLocator
@@ -183,23 +185,28 @@ def sensor_list(request, device_id):
     # TODO - Add error message if device_id is invalid
     active_device = BrewPiDevice.objects.get(id=device_id)
 
-    active_device.load_sensors_from_device()
+    devices_loaded = active_device.load_sensors_from_device()
 
     # TODO - Add error handling here -- If we can't reach brewpi-script, we can't read available devices, etc.
-    for this_device in active_device.available_devices:
-        data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                'address': this_device.address, 'pin': this_device.pin}
-        this_device.device_form = device_forms.SensorFormRevised(data)
+    if devices_loaded:
+        for this_device in active_device.available_devices:
+            data = {'device_function': this_device.device_function, 'invert': this_device.invert,
+                    'address': this_device.address, 'pin': this_device.pin}
+            this_device.device_form = device_forms.SensorFormRevised(data)
 
-    for this_device in active_device.installed_devices:
-        data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                'address': this_device.address, 'pin': this_device.pin, 'installed': True,
-                'perform_uninstall': True}
-        this_device.device_form = device_forms.SensorFormRevised(data)
+        for this_device in active_device.installed_devices:
+            data = {'device_function': this_device.device_function, 'invert': this_device.invert,
+                    'address': this_device.address, 'pin': this_device.pin, 'installed': True,
+                    'perform_uninstall': True}
+            this_device.device_form = device_forms.SensorFormRevised(data)
+    else:
+        # If we weren't able to load devices, we should have set an error message instead. Display it.
+        # (we can't display it directly from load_sensors_from_device() because we aren't passing request)
+        messages.error(request, active_device.error_message)
 
     return render_with_devices(request, template_name="pin_list.html",
                                context={'available_devices': active_device.available_devices, 'active_device': active_device,
-                                        'installed_devices': active_device.installed_devices})
+                                        'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
 
 def sensor_config(request, device_id):
@@ -254,14 +261,12 @@ def device_dashboard(request, device_id):
                                context={'active_device': active_device,})
 
 
-
 def find_new_mdns_brewpi_controller(request):
     services = mdnsLocator.locate_brewpi_services()
 
     installed_devices = []
     available_devices = []
     found_device = {}
-
 
     for this_service in services:
         found_device['mDNSname'] = services[this_service].server[:-1]

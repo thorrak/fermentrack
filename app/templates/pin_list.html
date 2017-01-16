@@ -7,6 +7,9 @@
 
 <h1 class="unmargined-page-header">Configure Sensors/Pins</h1>
 
+
+{% if devices_loaded %}{# If the devices didn't load, we're going to replace the page with an error message #}
+
 <div id="sensorStatus">
     <div class="row">{#  This section displays the heating/cooling pin, fridge sensor statuses #}
         <div class="col-sm-4 sensor-setup-grid-box">
@@ -298,7 +301,13 @@
 </div>
 {% endfor %}
 
+{% else %}
 
+    <p>An error was found when attempting to load the sensors/pins on the device. Attempt to resolve the error,
+    then click the button below to refresh this page.</p>
+    <a href="{% url 'sensor_list' active_device.id %}" class="btn btn-block btn-lg btn-primary">Reload Sensor/Pin List</a>
+
+{% endif %}
 
 
 

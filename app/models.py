@@ -614,16 +614,27 @@ class BrewPiDevice(models.Model):
         device_response = self.send_and_receive_from_socket("getDeviceList")
         while device_response == "device-list-not-up-to-date" and loop_number < 6:
             self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
-            time.sleep(5)  # This is a horrible practice, and I feel dirty just writing it.
+            time.sleep(4)  # This is a horrible practice, and I feel dirty just writing it.
             device_response = self.send_and_receive_from_socket("getDeviceList")
             loop_number += 1
 
         if not device_response:
-            # TODO - Modify this to return an actual error message
-            return None
+            # We weren't able to reach brewpi-script
+            self.all_pins = None
+            self.available_devices = None
+            self.installed_devices = None
+            self.devices_are_loaded = False
+            self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
+            return self.devices_are_loaded  # False
         elif device_response == "device-list-not-up-to-date":
-            # TODO - Modify this to return an actual error message
-            return None
+            # We were able to reach brewpi-script, but it wasn't able to reach the controller
+            self.all_pins = None
+            self.available_devices = None
+            self.installed_devices = None
+            self.devices_are_loaded = False
+            self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
+            self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
+            return self.devices_are_loaded  # False
 
         devices = json.loads(device_response)
         self.all_pins = PinDevice.load_all_from_pinlist(devices['pinList'])
@@ -646,9 +657,7 @@ class BrewPiDevice(models.Model):
             elif this_device.device_function == SensorDevice.DEVICE_FUNCTION_BEER_TEMP:  # (9, 'BEER_TEMP'),
                 self.beer_sensor = this_device
 
-        return True
-
-
+        return self.devices_are_loaded  # True
 
 
 class Beer(models.Model):
