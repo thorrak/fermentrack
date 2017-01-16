@@ -187,7 +187,6 @@ def sensor_list(request, device_id):
 
     devices_loaded = active_device.load_sensors_from_device()
 
-    # TODO - Add error handling here -- If we can't reach brewpi-script, we can't read available devices, etc.
     if devices_loaded:
         for this_device in active_device.available_devices:
             data = {'device_function': this_device.device_function, 'invert': this_device.invert,

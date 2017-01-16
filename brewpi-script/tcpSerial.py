@@ -122,6 +122,15 @@ class TCPSerial(object):
             return False
 
     def open(self):
+        # TODO - Determine if we should error out of brewpi-script when catching errors below
+        # Background-- Right now, I keep getting the following trace:
+        #   File "brewpi-script/tcpSerial.py", line 136, in open
+        #     self.sock.connect((self.host, self.port))
+        #   File "python2.7/socket.py", line 228, in meth
+        #     return getattr(self._sock,name)(*args)
+        #   File "python2.7/socket.py", line 174, in _dummy
+        #     raise error(EBADF, 'Bad file descriptor')
+        # ...and then brewpi-script stops communicating with the controller.
         mdnsLocator.locate_brewpi_services()  # This causes all the BrewPi devices to resend their mDNS info
         try:
             self.sock.connect((self.host, self.port))

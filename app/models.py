@@ -360,7 +360,7 @@ class SensorDevice(models.Model):
 
     @staticmethod
     def find_device_from_address_or_pin(device_list, address=None, pin=None):
-        if address is not None:
+        if address is not None and len(address) > 0:
             for this_device in device_list:
                 if this_device.address == address:
                     return this_device

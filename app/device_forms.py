@@ -108,7 +108,7 @@ class SensorFormRevised(forms.Form):
         else:
             device_function = cleaned_data.get("device_function")  # TODO - Add additional checks based on device type
 
-        pin = cleaned_data.get("pin")
+        pin = int(cleaned_data.get("pin"))
         address = cleaned_data.get("address")
 
         if cleaned_data.get("installed"):
@@ -128,6 +128,7 @@ class SensorFormRevised(forms.Form):
         cleaned_data['invert'] = invert
         cleaned_data['device_function'] = int(device_function)
         cleaned_data['installed'] = installed
+        cleaned_data['pin'] = pin  # To handle the int conversion
 
         return cleaned_data
 
