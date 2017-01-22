@@ -84,8 +84,15 @@ class SensorForm(ModelForm):
 
 
 class SensorFormRevised(forms.Form):
-    device_function = forms.ChoiceField(label="Device Function", widget=forms.Select, choices=SensorDevice.DEVICE_FUNCTION_CHOICES, required=False)
-    invert = forms.ChoiceField(label="Invert Pin", widget=forms.Select, choices=SensorDevice.INVERT_CHOICES, required=False)
+    device_function = forms.ChoiceField(label="Device Function",
+                                        widget=forms.Select(attrs={'class': 'form-control select select-primary',
+                                                                   'data-toggle': 'select'}),
+                                        choices=SensorDevice.DEVICE_FUNCTION_CHOICES, required=False)
+    invert = forms.ChoiceField(label="Invert Pin",
+                               widget=forms.Select(attrs={'class': 'form-control select select-primary', 'data-toggle': 'select'}),
+                               choices=SensorDevice.INVERT_CHOICES, required=False)
+    # Not sure if I want to change 'invert' to be a switch or a dropdown
+    # invert = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'data-toggle': 'switch'}))
 
     address = forms.CharField(widget=forms.HiddenInput, required=False)
     pin = forms.CharField(widget=forms.HiddenInput)
