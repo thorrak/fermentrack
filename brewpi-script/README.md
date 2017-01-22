@@ -2,3 +2,24 @@ brewpi-script
 =============
 
 This is the repository for the BrewPi Python script. The python script logs the data, monitors the temperature profile and communicates with the BrewPi slave and the web server
+
+BrewPi-Script was originally created by Elco and has been updated as part of the [BrewPi project](https://github.com/BrewPi/brewpi-script). 
+This version has been modified by Thorrak to add additional features and is maintained in a [separate repo](https://github.com/thorrak/brewpi-script).
+
+
+Differences/New Features
+-------
+
+Differences from the official repo and new features include:
+
+- Support for TCP serial connections (Including WiFi/Ethernet)
+- Support for ESP8266-based controllers
+- Support for web-based script configuration
+- Support for multiple simultaneous instances of brewpi-script
+
+
+Licensing
+-------
+BrewPi-script is licensed under the **GPL v3**, a copy of which is included in LICENSE.md. 
+
+This license may differ from that used for other associated projects, including the BrewPi firmware, BrewPi-www, BrewPi-django, etc. 
