@@ -144,14 +144,14 @@ def device_config_legacy(request, device_id, control_constants):
 
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
-            if not new_control_constants.save_all_to_controller():
+            if not new_control_constants.save_all_to_controller(active_device):
                 return render_with_devices(request, template_name='device_config_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
             # new_device.save()
 
-            messages.success(request, 'Control constants updated for device {}'.format(device_id))
+            messages.success(request, 'Control constants updated for device {}'.format(active_device.device_name))
             return redirect("/")
 
         else:
@@ -287,3 +287,37 @@ def find_new_mdns_brewpi_controller(request):
                                         'available_devices': available_devices})
 
 
+
+def device_temp_control(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    # TODO - Add error handling here
+    active_device = BrewPiDevice.objects.get(id=device_id)
+
+    if request.POST:
+        form = device_forms.TempControlForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['temp_control'] == 'off':
+                active_device.set_temp_control(method=form.cleaned_data['temp_control'])
+            elif form.cleaned_data['temp_control'] == 'beer_constant' or form.cleaned_data['temp_control'] == 'fridge_constant':
+                active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                               set_temp=float(form.cleaned_data['temperature_setting']))
+            elif form.cleaned_data['temp_control'] == 'beer_profile':
+                active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                               profile=form.cleaned_data['profile_name'])
+            else:
+                # TODO - Return error message (shouldn't be possible to hit this)
+                return False
+
+            messages.success(request, 'Temperature control settings updated for {}'.format(active_device.device_name))
+            return redirect("/")
+
+        else:
+            messages.error(request, 'Unable to parse temperature control settings provided')
+            return redirect("/")
+    else:
+        messages.error(request, 'No temperature control settings provided')
+        return redirect("/")

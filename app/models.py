@@ -659,6 +659,110 @@ class BrewPiDevice(models.Model):
 
         return self.devices_are_loaded  # True
 
+    # TODO - Determine if we care about controlSettings
+    # # Retrieve the control settings from the controller
+    # def retrieve_control_settings(self):
+    #     version = self.retrieve_version()
+    #     if version:
+    #         if self.is_legacy(version):
+    #             # If we're dealing with a legacy controller, we need to work with the old control constants.
+    #             control_settings = OldControlSettings()
+    #             control_settings.load_from_controller(self)
+    #         else:
+    #             # Otherwise, we need to work with the NEW control constants
+    #             control_settings = OldControlSettings()
+    #             control_settings.load_from_controller(self)
+    #
+    #         # Returning both the control constants structure as well as which structure we ended up using
+    #         control_settings.controller = self
+    #         return control_settings, self.is_legacy(version=version)
+    #     return None, None
+
+    def sync_temp_format(self):
+        # This queries the controller to see if we have the correct tempFormat set (If it matches what is specified
+        # in the device definition above). If it doesn't, we overwrite what is on the device to match what is in the
+        # device definition.
+        control_constants, legacy_mode = self.retrieve_control_constants()
+
+        if control_constants.tempFormat != self.temp_format:  # The device has the wrong tempFormat - We need to update
+            control_constants.tempFormat = self.temp_format
+
+            if legacy_mode:
+                if self.temp_format == 'C':
+                    control_constants.tempSetMax = 30.0
+                    control_constants.tempSetMin = 1.0
+                elif self.temp_format == 'F':
+                    control_constants.tempSetMax = 86.0
+                    control_constants.tempSetMin = 33.0
+                else:
+                    return False  # If we can't define a good max/min, don't do anything
+            else:
+                # TODO - Fix/expand this when we add "modern" controller support
+                return False
+
+            control_constants.save_to_controller(self, "tempFormat")
+
+            if legacy_mode:
+                control_constants.save_to_controller(self, "tempSetMax")
+                control_constants.save_to_controller(self, "tempSetMin")
+
+            return True
+        return False
+
+    def get_temp_control_status(self):
+        device_mode = self.send_and_receive_from_socket("getMode")
+
+        if device_mode is not None:  # If we could connect to the device, force-sync the temp format
+            self.sync_temp_format()
+
+        control_status = {}
+        if device_mode is None:  # We were unable to read from the device
+            control_status['device_mode'] = "unable_to_connect"  # Not sure if I want to pass the message back this way
+
+        elif device_mode == 'o':  # Device mode is off
+            control_status['device_mode'] = "off"
+            pass
+
+        elif device_mode == 'b':  # Device mode is beer constant
+            control_status['device_mode'] = "beer_constant"
+            control_status['set_temp'] = self.send_and_receive_from_socket("getBeer")
+
+        elif device_mode == 'f':  # Device mode is fridge constant
+            control_status['device_mode'] = "fridge_constant"
+            control_status['set_temp'] = self.send_and_receive_from_socket("getFridge")
+
+        elif device_mode == 'p':  # Device mode is beer profile
+            control_status['device_mode'] = "beer_profile"
+            pass
+
+        else:
+            # No idea what the device mode is
+            # TODO - Log this
+            pass
+
+        return control_status
+
+
+    def set_temp_control(self, method, set_temp=None, profile=None):
+        if method == "off":
+            self.send_message("setOff")
+        elif method == "beer_constant":
+            if set_temp is not None:
+                self.send_message("setBeer", str(set_temp))
+            else:
+                return False
+        elif method == "fridge_constant":
+            if set_temp is not None:
+                self.send_message("setFridge", str(set_temp))
+            else:
+                return False
+        elif method == "beer_profile":
+            # TODO - Implement
+            return False
+
+        return True  # If we made it here, return True (we did our job)
+
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
@@ -867,6 +971,7 @@ class FermentationProfilePoint(models.Model):
 
 
 # The old (0.2.x/Arduino) Control Constants Model
+# TODO - Update all usages of the ControlConstants objects to add 'controller' when the object is created
 class OldControlConstants(models.Model):
     # class Meta:
     #     managed = False
@@ -897,28 +1002,33 @@ class OldControlConstants(models.Model):
     lah = models.FloatField()
     hs = models.FloatField()
 
+    tempFormat = models.CharField(max_length=1)
+
     # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
     # To make it easy to iterate over those fields, going to list them out here
     firmware_field_list = ['tempSetMin', 'tempSetMax', 'Kp', 'Ki', 'Kd', 'pidMax', 'iMaxErr', 'idleRangeH',
                            'idleRangeL', 'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL',
                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
-                           'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs',]
+                           'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs', 'tempFormat']
 
 
-    controller = models.ForeignKey(BrewPiDevice)
+    controller = models.ForeignKey(BrewPiDevice)  # TODO - Determine if this is used anywhere (other than below) and if we want to keep it.
 
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
 
-    def load_from_controller(self, controller):
+    def load_from_controller(self, controller=None):
         """
         :param controller: models.BrewPiDevice
         :type controller: BrewPiDevice
         :return: boolean
         """
+        if controller is not None:
+            self.controller = controller
+
         try:
-            cc = json.loads(controller.send_and_receive_from_socket("getControlConstants"))
+            cc = json.loads(self.controller.send_and_receive_from_socket("getControlConstants"))
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -934,7 +1044,7 @@ class OldControlConstants(models.Model):
         :return:
         """
 
-        value_to_send = {attribute, getattr(self, attribute)}
+        value_to_send = {attribute: getattr(self, attribute)}
         return controller.send_message("setParameters", json.dumps(value_to_send))
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
@@ -943,17 +1053,14 @@ class OldControlConstants(models.Model):
         :type controller: BrewPiDevice
         :return: boolean
         """
-        try:
-            for this_field in self.firmware_field_list:
-                self.save_to_controller(controller, this_field)
-            return True
-        except:
-            return False
+        for this_field in self.firmware_field_list:
+            self.save_to_controller(controller, this_field)
+        return True
 
 
 
 
-# The old (0.2.x/Arduino) Control Constants Model
+# The new (0.4.x/Spark) Control Constants Model
 class NewControlConstants(models.Model):
     # class Meta:
     #     managed = False
@@ -1050,3 +1157,58 @@ class NewControlConstants(models.Model):
         except:
             return False
 
+# TODO - Determine if we care about controlSettings
+# # There may only be a single control settings object between both revisions of the firmware, but I'll break it out
+# # for now just in case.
+# class OldControlSettings(models.Model):
+#     class Meta:
+#         managed = False
+#
+#     firmware_field_list = ['tempSetMin', 'tempSetMax', 'Kp', 'Ki', 'Kd', 'pidMax', 'iMaxErr', 'idleRangeH',
+#                            'idleRangeL', 'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL',
+#                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
+#                            'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs',]
+#
+#     controller = models.ForeignKey(BrewPiDevice)
+#
+#     def load_from_controller(self, controller=None):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return: boolean
+#         """
+#         if controller is not None:
+#             self.controller = controller
+#         try:
+#             cc = json.loads(self.controller.send_and_receive_from_socket("getControlSettings"))
+#
+#             for this_field in self.firmware_field_list:
+#                 setattr(self, this_field, cc[this_field])
+#             return True
+#
+#         except:
+#             return False
+#
+#     def save_to_controller(self, controller, attribute):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return:
+#         """
+#
+#         value_to_send = {attribute, getattr(self, attribute)}
+#         return controller.send_message("setParameters", json.dumps(value_to_send))
+#
+#     def save_all_to_controller(self, controller, prior_control_constants=None):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return: boolean
+#         """
+#         try:
+#             for this_field in self.firmware_field_list:
+#                 self.save_to_controller(controller, this_field)
+#             return True
+#         except:
+#             return False
+#

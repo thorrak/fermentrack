@@ -140,4 +140,22 @@ class SensorFormRevised(forms.Form):
         return cleaned_data
 
 
+class TempControlForm(forms.Form):
+    # TODO - Add validation for temperature_setting to make sure its in range of the device (somehow)
+    TEMP_CONTROL_FUNCTIONS = (
+        ('off','Off'),
+        ('beer_profile', 'Beer Profile'),
+        ('fridge_constant', 'Fridge Constant'),
+        ('beer_constant', 'Beer Constant'),
+    )
 
+    # This is actually going to almost always be hidden, but I'm setting it up as a select class here just in case
+    # we ever decide to actually render this form
+    temp_control = forms.ChoiceField(label="Temperature Control Function",
+                                     widget=forms.Select(attrs={'class': 'form-control select select-primary',
+                                                                'data-toggle': 'select'}),
+                                     choices=TEMP_CONTROL_FUNCTIONS, required=True)
+
+    temperature_setting = forms.DecimalField(label="Temperature Setting", max_digits=4, decimal_places=1,
+                                             required=False)
+    profile_name = forms.ChoiceField(required=False)

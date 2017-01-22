@@ -16,3 +16,14 @@ def show_lcd(this_device):
 @register.inclusion_tag('sitewide/form_generic.html')
 def form_generic(this_form_field):
     return {'form_field': this_form_field}
+
+
+@register.inclusion_tag('brewpi/temp_control_modal.html')
+def temp_control_modal(this_device):
+    return {'temp_control_status': this_device.get_temp_control_status(), 'this_device': this_device}
+
+
+# This is just to make future changes a slight bit easier
+@register.inclusion_tag('brewpi/temp_control_label.html')
+def temp_control_label(this_device, control_status):
+    return {'temp_control_status': control_status, 'this_device': this_device}

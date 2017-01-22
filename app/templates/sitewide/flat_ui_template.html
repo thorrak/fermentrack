@@ -6,8 +6,6 @@
         <meta name="description" content=""/>
 
         <meta name="viewport" content="width=1000, initial-scale=1.0, maximum-scale=1.0">
-{# TODO - Remove normalize.css if we don't need it #}
-{#        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">#}
         <link href="{% static "css/bootstrap.css" %}" rel="stylesheet"> {# TODO - Replace with bootstrap.min.css (before release) #}
         <link href="{% static "css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" >
@@ -47,16 +45,6 @@
                     <li><a href="#" class="navbar-icon" style="padding-right: 25px;padding-left: 10px;"><i class="fa fa-cog fa-lg"></i></a></li>
                 </ul>
 
-{#               <form class="navbar-form navbar-right" action="#" role="search">#}
-{#                <div class="form-group">#}
-{#                  <div class="input-group">#}
-{#                    <input class="form-control" id="navbarInput-01" type="search" placeholder="Search">#}
-{#                    <span class="input-group-btn">#}
-{#                      <button type="submit" class="btn"><span class="fui-search"></span></button>#}
-{#                    </span>#}
-{#                  </div>#}
-{#                </div>#}
-{#              </form>#}
             </div><!-- /.navbar-collapse -->
           </nav><!-- /navbar -->
         </div>
@@ -80,10 +68,8 @@
 
 
     {# TODO - Clean this up #}
-    <!-- TODO: bundle vuejs -->
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <script src="{% static "js/vendor/jquery.min.js" %}"></script>
-    <script src="{% static "js/flat-ui.min.js" %}"></script>  {# Overwrites parts of bootstrap.js #}
+    <script type="text/javascript" src="{% static "js/vendor/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/flat-ui.min.js" %}"></script>  {# Overwrites parts of bootstrap.js #}
 {#    <script src="{% static "js/application.js" %}"></script>#}
 
     {% block scripts %}{% endblock %}
