@@ -428,12 +428,12 @@ else:
         logMessage("Warning: minimum BrewPi version compatible with this script for legacy support is " +
                    legacyHwVersion + " but version number received is " + hwVersion.toString())
     elif LooseVersion( hwVersion.toString() ) < LooseVersion(developHwVersion):
-        logMessage("BrewPi version received was {} which this script supports in 'legacy' " +
-                   "branch mode.".format(hwVersion.toString()))
+        logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
+                   "'legacy' branch mode.")
         hwMode = "legacy"
     else:
-        logMessage("BrewPi version received was {} which this script supports in 'develop' " +
-                   "branch mode.".format(hwVersion.toString()))
+        logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
+                   "'develop' branch mode.")
         hwMode = "0.4.x"
 
 
