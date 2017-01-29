@@ -45,7 +45,28 @@
 
                     {# Beer Profile Form #}
                     <div role="pillpanel" class="col-md-8 tab-pane{% if temp_control_status.device_mode == "beer_profile" %} active{% endif %}" id="beerProfile{{ this_device.id }}">
-                        Beer Profile Form
+                        <form action="{% url "device_temp_control" this_device.id %}" method="post" >{% csrf_token %}
+                            {% temp_control_label this_device temp_control_status %}
+
+                            {% if available_profiles %}
+                            Select Profile:
+                            <select class="form-control" data-toggle="select" name="profile">
+                                <option value="-1">Choose profile</option>
+                                {% for this_profile in available_profiles %}
+                                    {% if this_profile.is_assignable %}
+                                <option value="{{ this_profile.id }}">{{ this_profile.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                                No available beer profiles have been created and are active
+                            {% endif %}
+
+                            {# TODO - Add option for setting an initial TTL #}
+
+                            <input type="hidden" name="temp_control" value="beer_profile">
+                            <button type="submit" class="btn btn-large btn-primary">Set Beer Profile</button>
+                        </form>
                     </div>{# End Beer Profile #}
 
                     {# Off Form #}

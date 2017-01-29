@@ -1,5 +1,5 @@
 from django import forms
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice, FermentationProfile
 from django.core import validators
 import brewpi_django.settings as settings
 
@@ -149,6 +149,16 @@ class TempControlForm(forms.Form):
         ('beer_constant', 'Beer Constant'),
     )
 
+    @staticmethod
+    def get_profile_choices():
+        choices = []
+        available_profiles = FermentationProfile.objects.filter(status=FermentationProfile.STATUS_ACTIVE)
+        for this_profile in available_profiles:
+            if this_profile.is_assignable():
+                profile_tuple = (this_profile.id, this_profile.name)
+                choices.append(profile_tuple)
+        return choices
+
     # This is actually going to almost always be hidden, but I'm setting it up as a select class here just in case
     # we ever decide to actually render this form
     temp_control = forms.ChoiceField(label="Temperature Control Function",
@@ -158,4 +168,13 @@ class TempControlForm(forms.Form):
 
     temperature_setting = forms.DecimalField(label="Temperature Setting", max_digits=4, decimal_places=1,
                                              required=False)
-    profile_name = forms.ChoiceField(required=False)
+    profile = forms.ChoiceField(required=False)  # Choices set in __init__ below
+
+    def __init__(self, *args, **kwargs):
+        super(TempControlForm, self).__init__(*args, **kwargs)
+        # for this_field in self.fields:
+        #     self.fields[this_field].widget.attrs['class'] = "form-control"
+        self.fields['profile'] = forms.ChoiceField(required=False,
+                                                   choices=self.get_profile_choices(),
+                                                   widget=forms.Select(attrs={'class': 'form-control'}))
+

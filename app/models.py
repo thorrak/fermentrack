@@ -5,8 +5,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
 import socket
-import json, time, datetime
+import json, time, datetime, pytz
 from constance import config
+from brewpi_django import settings
 
 
 # BrewPiDevice
@@ -469,15 +470,13 @@ class BrewPiDevice(models.Model):
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
 
     def get_profile_temp(self):
-        default_temp = 34  # TODO - Fix this
-
-        # If the object is inconsistent, return something that won't blow up the chamber
+        # If the object is inconsistent, don't return anything
         if self.active_profile is None:
-            return default_temp
+            return None
         if self.time_profile_started is None:
-            return default_temp
+            return None
 
-        return self.active_profile
+        return self.active_profile.profile_temp(self.time_profile_started)
 
     # Other things that aren't persisted in the database
     # available_devices = []
@@ -753,26 +752,48 @@ class BrewPiDevice(models.Model):
 
         return control_status
 
+    def reset_profile(self):
+        if self.active_profile is not None:
+            self.active_profile = None
+        if self.time_profile_started is not None:
+            self.time_profile_started = None
+        self.save()
 
     def set_temp_control(self, method, set_temp=None, profile=None):
         if method == "off":
+            self.reset_profile()
             self.send_message("setOff")
         elif method == "beer_constant":
             if set_temp is not None:
+                self.reset_profile()
                 self.send_message("setBeer", str(set_temp))
             else:
                 return False
         elif method == "fridge_constant":
             if set_temp is not None:
+                self.reset_profile()
                 self.send_message("setFridge", str(set_temp))
             else:
                 return False
         elif method == "beer_profile":
-            # TODO - Implement
-            return False
+            try:
+                ferm_profile = FermentationProfile.objects.get(id=profile)
+            except:
+                return False
+
+            if not ferm_profile.is_assignable():
+                return False
+
+            self.active_profile = ferm_profile
+
+            timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
+            self.time_profile_started = datetime.datetime.now(tz=timezone_obj)
+
+            self.save()
+
+            self.send_message("setActiveProfile", str(self.active_profile.id))
 
         return True  # If we made it here, return True (we did our job)
-
 
 
 class Beer(models.Model):
@@ -879,6 +900,16 @@ class FermentationProfile(models.Model):
     def is_editable(self):
         return not self.currently_in_use()
 
+    # An assignable profile needs to be active and have setpoints
+    def is_assignable(self):
+        if self.status != self.STATUS_ACTIVE:
+            return False
+        else:
+            if self.fermentationprofilepoint_set is None:
+                return False
+
+        return True
+
     # If we attempt to delete a profile that is in use, we instead change the status. This runs through profiles in
     # this status and deletes those that are no longer in use.
     @classmethod
@@ -959,7 +990,8 @@ class FermentationProfile(models.Model):
         previous_setpoint = 0.0
         previous_ttl = 0.0
         previous_format = 'F'
-        current_time = datetime.datetime.now()
+        timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
+        current_time = datetime.datetime.now(tz=timezone_obj)
 
         for this_point in profile_points:
             # TODO - Refactor this at some point
