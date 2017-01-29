@@ -46,7 +46,7 @@ def updateFromGitHub(userInput, beta, useDfu, restoreSettings = True, restoreDev
     config = util.readCfgWithDefaults(configFile)
 
     printStdErr("Stopping any running instances of BrewPi to check/update controller...")
-    quitBrewPi(config['wwwPath'])
+    quitBrewPi(config['wwwPath'])  # TODO - Fix this, as wwwPath is not set for dbConfig-configured controllers
 
     hwVersion = None
     shield = None

@@ -396,13 +396,7 @@ class BrewPiDevice(models.Model):
     data_point_log_interval = models.IntegerField(default=10, choices=DATA_POINT_TIME_CHOICES,
                                                   help_text="Time between logged data points")
 
-    has_old_brewpi_www = models.BooleanField(default=True, help_text="Does this device also have the old-style " +
-                                                                     "(PHP-based) brewpi-www installed somewhere?")
-
     ######## The following are used if we are loading the configuration directly from the database.
-    # TODO - I really should try to eliminate wwwPath wherever possible (we're no longer going to allow linking back to it)
-    wwwPath = models.CharField(max_length=255, help_text="Path to the BrewPi-www installation (deprecated??)",
-                               default="/var/www")
     useInetSocket = models.BooleanField(default=False, help_text="Whether or not to use an internet socket (rather than local)")
     socketPort = models.IntegerField(default=2222, validators=[MinValueValidator(10,"Port must be 10 or higher"),
                                                                MaxValueValidator(65535, "Port must be 65535 or lower")],
@@ -1064,7 +1058,7 @@ class OldControlConstants(models.Model):
     lah = models.FloatField()
     hs = models.FloatField()
 
-    tempFormat = models.CharField(max_length=1)
+    tempFormat = models.CharField(max_length=1, default='F')
 
     # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
     # To make it easy to iterate over those fields, going to list them out here

@@ -18,14 +18,6 @@
     </div>
 
 
-    <div id="brewpiWwwSection">
-        <h4 class="form-header">Old-style Interface Support</h4>
-        {% form_generic form.has_old_brewpi_www %}
-        <div id="brewpiWwwHidden" style="display: none">
-            {% form_generic form.wwwPath %}
-        </div>
-    </div>
-
     <div id="inetSocketSection">
         <h4 class="form-header">Connect Interface to Script</h4>
         {% form_generic form.useInetSocket %}
@@ -62,13 +54,6 @@
 
 {% block scripts %}
 <script>
-function brewpiWWWHide() {
-    if(document.getElementById('id_has_old_brewpi_www').checked) {
-         document.getElementById('brewpiWwwHidden').style.display = '';
-    } else {
-         document.getElementById('brewpiWwwHidden').style.display = 'none';
-    }
-}
 
 function InetSocketHide() {
     if(document.getElementById('id_useInetSocket').checked) {
@@ -93,7 +78,6 @@ function ConnectionTypeHide() {
 
 window.onload = function() {
     document.getElementById('id_connection_type').onchange = ConnectionTypeHide;
-    document.getElementById('id_has_old_brewpi_www').onchange = brewpiWWWHide;
     document.getElementById('id_useInetSocket').onchange = InetSocketHide;
 
     {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}

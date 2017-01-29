@@ -22,8 +22,8 @@ class DeviceForm(forms.Form):
     connection_type = forms.ChoiceField(initial='serial', choices=BrewPiDevice.CONNECTION_TYPE_CHOICES,
                                         help_text="Type of connection between the Raspberry Pi and the hardware",
                                         widget=forms.Select(attrs={'class': 'form-control'}))
-    has_old_brewpi_www = forms.BooleanField(required=False, help_text="Does this device also have the old-style (PHP-based) brewpi-www installed somewhere?")
-    wwwPath = forms.CharField(max_length=255, help_text="Path to the BrewPi-www installation (deprecated??)", initial="/var/www", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '/var/www'}))
+
+
     useInetSocket = forms.BooleanField(required=False, help_text="Whether or not to use an internet socket (rather than local)", initial=True)
     socketPort = forms.IntegerField(initial=2222, min_value=10, max_value=65536, help_text="The internet socket to use (only used if useInetSocket above is \"True\")", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))
 

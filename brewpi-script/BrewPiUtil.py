@@ -85,7 +85,6 @@ def read_config_from_database_without_defaults(db_config_object):
 
     # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
     config['scriptPath'] = db_config_object.script_path
-    config['wwwPath'] = db_config_object.wwwPath
     config['port'] = db_config_object.serial_port
     if db_config_object.serial_alt_port <> 'None':
         config['altport'] = db_config_object.serial_alt_port
@@ -93,7 +92,6 @@ def read_config_from_database_without_defaults(db_config_object):
     config['beerName'] = db_config_object.get_active_beer_name()
     config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file
     config['dataLogging'] = db_config_object.logging_status
-    config['use_brewpi_www'] = db_config_object.has_old_brewpi_www
     config['socket_name'] = db_config_object.socket_name
     config['profileName'] = None  # TODO - Implement this
     config['connection_type'] = db_config_object.connection_type
