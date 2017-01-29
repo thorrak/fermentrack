@@ -8,17 +8,17 @@
         <meta name="viewport" content="width=1000, initial-scale=1.0, maximum-scale=1.0">
         <link href="{% static "vendor/bootstrap/css/bootstrap.css" %}" rel="stylesheet"> {# TODO - Replace with bootstrap.min.css (before release) #}
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
-        <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet" >
+        <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
         <link rel="shortcut icon" href="img/favicon.ico">
            {% block header_scripts %}{% endblock %}
-          <script type="text/javascript" src="{% static "js/dygraph-combined.js" %}"></script>{# TODO - Move dygraph to vendor #}
+        <script type="text/javascript" src="{% static "vendor/dygraph/js/dygraph.min.js" %}"></script>
+        <link src="{% static "vendor/dygraph/css/dygraph.css" %}" rel="stylesheet">
 
-        <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements. -->
         <!--[if lt IE 9]>
-          <script src="{% static "js/vendor/html5shiv.js" %}"></script>{# TODO - Move to vendor #}
-          <script src="{% static "js/vendor/respond.min.js" %}"></script>{# TODO - Move to vendor #}
-
+          <script src="{% static "vendor/other/js/html5shiv.js" %}"></script>
+          <script src="{% static "vendor/other/js/respond.min.js" %}"></script>
         <![endif]-->
     </head>
   <body>
