@@ -639,7 +639,7 @@ while run:
             logMessage("stopScript message received on socket. " +
                        "Stopping script and writing dontrunfile to prevent automatic restart")
             run = 0
-            dontrunfile = open(dontRunFilePath, "w")
+            dontrunfile = open(dontRunFilePath, "w")  # TODO - Add code to update django object model here
             dontrunfile.write("1")
             dontrunfile.close()
             continue
@@ -927,7 +927,10 @@ while run:
 
         # Check for update from temperature profile
         if cs['mode'] == 'p':  # TODO - Update beer profile mode to work
-            newTemp = temperatureProfile.getNewTemp(util.scriptPath())
+            if dbConfig is not None:
+                newTemp = dbConfig.get_profile_temp()  # Use the Django model
+            else:
+                newTemp = temperatureProfile.getNewTemp(util.scriptPath())  # Use the legacy code
             if newTemp != cs['beerSet']:
                 cs['beerSet'] = newTemp
                 # if temperature has to be updated send settings to controller

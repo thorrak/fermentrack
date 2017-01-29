@@ -468,6 +468,17 @@ class BrewPiDevice(models.Model):
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
 
+    def get_profile_temp(self):
+        default_temp = 34  # TODO - Fix this
+
+        # If the object is inconsistent, return something that won't blow up the chamber
+        if self.active_profile is None:
+            return default_temp
+        if self.time_profile_started is None:
+            return default_temp
+
+        return self.active_profile
+
     # Other things that aren't persisted in the database
     # available_devices = []
     # installed_devices = []
@@ -884,6 +895,7 @@ class FermentationProfile(models.Model):
     # I would prefer to implement this as part of a template (given that it's honestly display logic) but the Django
     # template language doesn't provide quite what I would need to pull it off.
     def to_english(self):
+        # TODO - Make this temperature format sensitive
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         description = []
@@ -932,11 +944,51 @@ class FermentationProfile(models.Model):
                 previous_format = this_point.temp_format
 
         if past_first_point:
-            desc_text = "Finally, permanently hold the beer at {} degrees {}.".format(previous_setpoint, previous_format)
+            desc_text = "Finally, permanently hold the temperature at {} degrees {}.".format(previous_setpoint, previous_format)
             description.append(desc_text)
 
         return description
 
+    # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
+    # get_profile_temp from BrewPiDevice
+    def profile_temp(self, time_started):
+        # TODO - Make this temperature format sensitive
+        profile_points = self.fermentationprofilepoint_set.order_by('ttl')
+
+        past_first_point=False  # There's guaranteed to be a better way to do this
+        previous_setpoint = 0.0
+        previous_ttl = 0.0
+        previous_format = 'F'
+        current_time = datetime.datetime.now()
+
+        for this_point in profile_points:
+            # TODO - Refactor this at some point
+            if not past_first_point:
+                # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
+                # temperature. Return the temperature setting
+                if current_time < (time_started + this_point.ttl):
+                    return this_point.temperature_setting
+                past_first_point = True
+            else:
+                # Test if we are in this period
+                if current_time < (time_started + this_point.ttl):
+                    # We are - Check if we need to interpolate, or if we can just use the static temperature
+                    if this_point.temperature_setting == previous_setpoint:  # We can just use the static temperature
+                        return this_point.temperature_setting
+                    else:  # We have to interpolate
+                        duration = this_point.ttl - previous_ttl
+                        delta = (this_point.temperature_setting - previous_setpoint)
+                        slope = delta / duration
+
+                        return (current_time - previous_ttl) * slope
+
+            previous_setpoint = this_point.temperature_setting
+            previous_ttl = this_point.ttl
+            previous_format = this_point.temp_format
+
+        # If we hit this point, we looped through all the setpoints & aren't between two (or on the first one)
+        # That is to say - we're at the end. Just return the last setpoint.
+        return previous_setpoint
 
 
 
