@@ -26,30 +26,6 @@ from brewpi_django import settings
 #
 
 
-# Attempting to use django-constance instead of a singleton object here.
-# TODO - Delete once we're confirmed to no longer be using InstallSettings
-# class InstallSettings(models.Model):
-#     """
-#     This is going to be a singleton object to hold the installation settings. There may be a better way to do this...
-#     """
-#     class Meta:
-#         verbose_name = "Install Settings"
-#         verbose_name_plural = "Install Settings"
-#
-#
-#     DATE_TIME_FORMAT_DISPLAY_CHOICES = (
-#         ("mm/dd/yy", "mm/dd/yy"),
-#         ("dd/mm/yy", "dd/mm/yy"),
-#     )
-#
-#     brewery_name = models.CharField(max_length=25, default="BrewPi-Django", help_text="Name to be displayed in the upper left of each page")
-#     # TODO - Determine if date_time_format is used anywhere
-#     date_time_format = models.CharField(max_length=20, default="yy-mm-dd", null=False, blank=False)
-#     date_time_format_display = models.CharField(max_length=20, default="mm/dd/yy", choices=DATE_TIME_FORMAT_DISPLAY_CHOICES,
-#                                                 null=False, blank=False)
-#     require_login_for_dashboard = models.BooleanField(default=False, help_text="Should a logged out user be able to see device status?")
-
-
 class PinDevice(models.Model):
     class Meta:
         managed = False
@@ -1008,11 +984,13 @@ class FermentationProfile(models.Model):
                     if this_point.temperature_setting == previous_setpoint:  # We can just use the static temperature
                         return this_point.temperature_setting
                     else:  # We have to interpolate
-                        duration = this_point.ttl - previous_ttl
+                        duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
                         delta = (this_point.temperature_setting - previous_setpoint)
-                        slope = delta / duration
+                        slope = float(delta) / duration
 
-                        return (current_time - previous_ttl) * slope
+                        seconds_into_point = (current_time - (time_started + previous_ttl)).total_seconds()
+
+                        return round(seconds_into_point * slope + float(previous_setpoint), 1)
 
             previous_setpoint = this_point.temperature_setting
             previous_ttl = this_point.ttl
