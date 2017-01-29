@@ -61,4 +61,6 @@ urlpatterns = [
     url(r'^api/lcd/(?P<device_name>\w+)$', app.api.lcd.getLCD, name="getLCD"),
     url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),
 
+    url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
+
 ]

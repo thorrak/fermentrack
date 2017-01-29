@@ -1,0 +1,37 @@
+<div class="row">
+
+    <div class="col-xs-12" style="border: solid; border-color: #000000; border-radius: 5px;">
+        <div class="row palette-wisteria" style="border-color: #111; border-bottom: 2px; border-bottom-style: solid">
+            <div class="col-xs-12 palette-wisteria" style="text-align: center; text-transform: uppercase; color: #ffffff">
+                {{ device_status.device_name }}
+
+            </div>
+        </div>
+
+        <div class="row  palette-amethyst" style="text-align: center; background-color: #9B59B6; color: #ffffff">
+            <div class="col-sm-6" style="text-align: center">
+
+                <div style="font-size: 36pt">{{ device_status.fridge_temp }}&deg;{{ device_status.fridge_temp_units }}</div>
+                Current Fridge Temp
+
+
+            </div>
+            <div class="col-sm-6" style="text-align: center">
+                <div style="font-size: 36pt">{{ device_status.target_temp }}&deg;{{ device_status.target_temp_units }}</div>
+
+                Target Fridge Temp
+            </div>
+        </div>
+        <div class="row" style="border-color: #111; border-top: 2px; border-top-style: solid">
+            <div class="col-sm-4 col-xs-12 btn-info" style="text-align: center">{# TODO - Tweak 'backlight' button given that it only applies to ESP8266 #}
+                <a v-bind:href="lcd.backlight_url" type="button" class="btn btn-xs btn-info">Backlight</a>
+            </div>
+            <div class="col-sm-4 col-xs-12 btn-danger" style="text-align: center">
+                <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" v-bind:data-target="lcd.modal_name">Set Temp</button>
+            </div>
+            <div class="col-sm-4 col-xs-12 btn-success" style="text-align: center">
+                <a v-bind:href="lcd.device_url" type="button" class="btn btn-xs btn-success">Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>

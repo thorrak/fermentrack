@@ -321,3 +321,10 @@ def device_temp_control(request, device_id):
     else:
         messages.error(request, 'No temperature control settings provided')
         return redirect("/")
+
+
+def temp_panel_test(request):
+
+    return render_with_devices(request, template_name="temp_panel_test.html",
+                               context={})
+
