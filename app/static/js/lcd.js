@@ -16,7 +16,7 @@ var vm = new Vue({
         xhr.open('GET', '/api/lcd/')
         xhr.onload = function () {
           self.lcds = JSON.parse(xhr.responseText)
-          console.log(self.lcds)
+          // console.log(self.lcds)
         }
         xhr.send()
       }

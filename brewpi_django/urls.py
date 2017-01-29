@@ -36,6 +36,10 @@ urlpatterns = [
 
     url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
+    # TODO - Implement backlight toggle AJAX API call
+    url(r'^devices/(?P<device_id>\d{1,20})/backlight/toggle/$', app.views.device_dashboard, name='device_toggle_backlight'),
+    # TODO - Implement temperature control AJAX API calls
+    url(r'^devices/(?P<device_id>\d{1,20})/temp_control/$', app.views.device_temp_control, name='device_temp_control'),
 
     # Device Utility & Internal Views
     url(r'^devices/(?P<device_id>\d{1,20})/beer/csv/active_beer.csv$', app.views.beer_active_csv, name='csv_active_beer'),
@@ -56,5 +60,7 @@ urlpatterns = [
     # Api Views
     url(r'^api/lcd/(?P<device_name>\w+)$', app.api.lcd.getLCD, name="getLCD"),
     url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),
+
+    url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 
 ]

@@ -1,0 +1,96 @@
+{% load custom_tags %}
+<!-- Modal -->
+<div class="modal fade" id="tempControl{{ this_device.id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel" style="color: #000;">Set Temp Control for {{ this_device.device_name }}</h4>
+      </div>
+
+
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+            {% if temp_control_status.device_mode != "unable_to_connect" %}
+                <div class="col-md-4">
+                    <ul class="nav nav-pills" role="pilllist">{# TODO - Fix class active to use flat-ui colors #}
+                        <li role="presentation" {% if temp_control_status.device_mode == "fridge_constant" %}class="active"{% endif %}><a href="#fridgeConstant{{ this_device.id }}" aria-controls="fridgeConstant{{ this_device.id }}" role="pill" data-toggle="pill">Fridge Constant</a></li>
+                        <li role="presentation" {% if temp_control_status.device_mode == "beer_constant" %}class="active"{% endif %}><a href="#beerConstant{{ this_device.id }}" aria-controls="beerConstant{{ this_device.id }}" role="pill" data-toggle="pill">Beer Constant</a></li>
+                        <li role="presentation" {% if temp_control_status.device_mode == "beer_profile" %}class="active"{% endif %}><a href="#beerProfile{{ this_device.id }}" aria-controls="beerProfile{{ this_device.id }}" role="pill" data-toggle="pill">Beer Profile</a></li>
+                        <li role="presentation" {% if temp_control_status.device_mode == "off" %}class="active"{% endif %}><a href="#off{{ this_device.id }}" aria-controls="off{{ this_device.id }}" role="pill" data-toggle="pill">Off</a></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    {# Fridge Constant Form #}
+                    <div role="pillpanel" class="col-md-8 tab-pane{% if temp_control_status.device_mode == "fridge_constant" %} active{% endif %}" id="fridgeConstant{{ this_device.id }}">
+                        <form action="{% url "device_temp_control" this_device.id %}" method="post" >{% csrf_token %}
+                            {% temp_control_label this_device temp_control_status %}
+                            Set To <input type="text" placeholder="62.5" class="form-control" autocomplete="off" name="temperature_setting" style="display: inline-block; width: 100px; margin: 5px"> &deg;{{ this_device.temp_format }}<br>
+                            <input type="hidden" name="temp_control" value="fridge_constant">
+                            <button type="submit" class="btn btn-large btn-primary">Set Fridge Constant</button>
+                        </form>
+                    </div>{# End Fridge Constant #}
+
+                    {# Beer Constant Form #}
+                    <div role="pillpanel" class="col-md-8 tab-pane{% if temp_control_status.device_mode == "beer_constant" %} active{% endif %}" id="beerConstant{{ this_device.id }}">
+                        <form action="{% url "device_temp_control" this_device.id %}" method="post" >{% csrf_token %}
+                            {% temp_control_label this_device temp_control_status %}
+                            Set To <input type="text" placeholder="62.5" class="form-control" autocomplete="off" name="temperature_setting" style="display: inline-block; width: 100px; margin: 5px"> &deg;{{ this_device.temp_format }}<br>
+                            <input type="hidden" name="temp_control" value="beer_constant">
+                            <button type="submit" class="btn btn-large btn-primary">Set Beer Constant</button>
+                        </form>
+                    </div>{# End Beer Constant #}
+
+                    {# Beer Profile Form #}
+                    <div role="pillpanel" class="col-md-8 tab-pane{% if temp_control_status.device_mode == "beer_profile" %} active{% endif %}" id="beerProfile{{ this_device.id }}">
+                        <form action="{% url "device_temp_control" this_device.id %}" method="post" >{% csrf_token %}
+                            {% temp_control_label this_device temp_control_status %}
+
+                            {% if available_profiles %}
+                            Select Profile:
+                            <select class="form-control" data-toggle="select" name="profile">
+                                <option value="-1">Choose profile</option>
+                                {% for this_profile in available_profiles %}
+                                    {% if this_profile.is_assignable %}
+                                <option value="{{ this_profile.id }}">{{ this_profile.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                                No available beer profiles have been created and are active
+                            {% endif %}
+
+                            {# TODO - Add option for setting an initial TTL #}
+
+                            <input type="hidden" name="temp_control" value="beer_profile">
+                            <button type="submit" class="btn btn-large btn-primary">Set Beer Profile</button>
+                        </form>
+                    </div>{# End Beer Profile #}
+
+                    {# Off Form #}
+                    <div role="pillpanel" class="col-md-8 tab-pane{% if temp_control_status.device_mode == "off" %} active{% endif %}" id="off{{ this_device.id }}">
+                        <form action="{% url "device_temp_control" this_device.id %}" method="post" >{% csrf_token %}
+                            {% temp_control_label this_device temp_control_status %}
+                            <input type="hidden" name="temp_control" value="off">
+                            <button type="submit" class="btn btn-large btn-primary">Turn Off Temperature Control</button>
+                        </form>
+                    </div>{# End Off #}
+                </div>
+{% else %}
+{# We were unable to connect #}
+                <h5>Unable to connect to device</h5>
+                <p>You cannot update temperature settings for a device that cannot be contacted. </p>
+            {% endif %}
+            </div>
+          </div>
+        </div>
+
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

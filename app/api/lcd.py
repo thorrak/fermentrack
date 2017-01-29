@@ -11,7 +11,9 @@ def getLCDs(req):
     all_devices = BrewPiDevice.objects.all()
     for dev in all_devices:
         ret.append({"device_name": dev.device_name, "lcd_data": dev.read_lcd(),
-                    'device_url': reverse('device_dashboard', kwargs={'device_id': dev.id,})})
+                    'device_url': reverse('device_dashboard', kwargs={'device_id': dev.id,}),
+                    'backlight_url': reverse('device_toggle_backlight', kwargs={'device_id': dev.id,}),
+                    'modal_name': '#tempControl{}'.format(dev.id)})
     return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
 def getLCD(req, device_name):

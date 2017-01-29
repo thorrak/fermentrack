@@ -428,12 +428,12 @@ else:
         logMessage("Warning: minimum BrewPi version compatible with this script for legacy support is " +
                    legacyHwVersion + " but version number received is " + hwVersion.toString())
     elif LooseVersion( hwVersion.toString() ) < LooseVersion(developHwVersion):
-        logMessage("BrewPi version received was {} which this script supports in 'legacy' " +
-                   "branch mode.".format(hwVersion.toString()))
+        logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
+                   "'legacy' branch mode.")
         hwMode = "legacy"
     else:
-        logMessage("BrewPi version received was {} which this script supports in 'develop' " +
-                   "branch mode.".format(hwVersion.toString()))
+        logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
+                   "'develop' branch mode.")
         hwMode = "0.4.x"
 
 
@@ -639,7 +639,7 @@ while run:
             logMessage("stopScript message received on socket. " +
                        "Stopping script and writing dontrunfile to prevent automatic restart")
             run = 0
-            dontrunfile = open(dontRunFilePath, "w")
+            dontrunfile = open(dontRunFilePath, "w")  # TODO - Add code to update django object model here
             dontrunfile.write("1")
             dontrunfile.close()
             continue
@@ -684,37 +684,49 @@ while run:
             changeWwwSetting('dateTimeFormatDisplay', value)
             logMessage("Changing date format config setting: " + value)
         elif messageType == "setActiveProfile":
-            # TODO - Rewrite beer profile code to use database
-            # copy the profile CSV file to the working directory
-            logMessage("Setting profile '%s' as active profile" % value)
-            config = util.configSet(configFile, dbConfig, 'profileName', value)
-            changeWwwSetting('profileName', value)
-            profileSrcFile = util.addSlash(config['wwwPath']) + "data/profiles/" + value + ".csv"
-            profileDestFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
-            profileDestFileOld = profileDestFile + '.old'
-            try:
-                if os.path.isfile(profileDestFile):
-                    if os.path.isfile(profileDestFileOld):
-                        os.remove(profileDestFileOld)
-                    os.rename(profileDestFile, profileDestFileOld)
-                shutil.copy(profileSrcFile, profileDestFile)
-                # for now, store profile name in header row (in an additional column)
-                with file(profileDestFile, 'r') as original:
-                    line1 = original.readline().rstrip("\n")
-                    rest = original.read()
-                with file(profileDestFile, 'w') as modified:
-                    modified.write(line1 + "," + value + "\n" + rest)
-            except IOError as e:  # catch all exceptions and report back an error
-                error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
-                conn.send(error)
-                printStdErr(error)
+            if not dbConfig:
+                # We're not using a dbConfig object (and therefore are relying on CSV files to manage profiles)
+                # copy the profile CSV file to the working directory
+                logMessage("Setting profile '%s' as active profile" % value)
+                config = util.configSet(configFile, dbConfig, 'profileName', value)
+                changeWwwSetting('profileName', value)
+                profileSrcFile = util.addSlash(config['wwwPath']) + "data/profiles/" + value + ".csv"
+                profileDestFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
+                profileDestFileOld = profileDestFile + '.old'
+                try:
+                    if os.path.isfile(profileDestFile):
+                        if os.path.isfile(profileDestFileOld):
+                            os.remove(profileDestFileOld)
+                        os.rename(profileDestFile, profileDestFileOld)
+                    shutil.copy(profileSrcFile, profileDestFile)
+                    # for now, store profile name in header row (in an additional column)
+                    with file(profileDestFile, 'r') as original:
+                        line1 = original.readline().rstrip("\n")
+                        rest = original.read()
+                    with file(profileDestFile, 'w') as modified:
+                        modified.write(line1 + "," + value + "\n" + rest)
+                except IOError as e:  # catch all exceptions and report back an error
+                    error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
+                    conn.send(error)
+                    printStdErr(error)
+                else:
+                    conn.send("Profile successfully updated")
+                    if cs['mode'] is not 'p':
+                        cs['mode'] = 'p'
+                        bg_ser.writeln("j{mode:p}")
+                        logMessage("Notification: Profile mode enabled")
+                        raise socket.timeout  # go to serial communication to update controller
+
             else:
+                # We're using a dbConfig object to manage everything. We aren't being passed anything by brewpi-django
+                logMessage("Setting controller to beer profile mode using database-configured profile")
                 conn.send("Profile successfully updated")
                 if cs['mode'] is not 'p':
                     cs['mode'] = 'p'
                     bg_ser.writeln("j{mode:p}")
                     logMessage("Notification: Profile mode enabled")
                     raise socket.timeout  # go to serial communication to update controller
+
         elif messageType == "programController" or messageType == "programArduino":
             if bg_ser is not None:
                 bg_ser.stop()
@@ -926,9 +938,18 @@ while run:
                 bg_ser.message_was_processed()  # Clean out the queue
 
         # Check for update from temperature profile
-        if cs['mode'] == 'p':  # TODO - Update beer profile mode to work
-            newTemp = temperatureProfile.getNewTemp(util.scriptPath())
-            if newTemp != cs['beerSet']:
+        if cs['mode'] == 'p':
+            if dbConfig is not None:
+                newTemp = dbConfig.get_profile_temp()  # Use the Django model
+            else:
+                newTemp = temperatureProfile.getNewTemp(util.scriptPath())  # Use the legacy code
+
+            if newTemp is None:  # If we had an error loading a temperature (from dbConfig) disable temp control
+                cs['mode'] = 'o'
+                bg_ser.writeln("j{mode:o}")
+                logMessage("Notification: Error in profile mode - turning off temp control")
+                # raise socket.timeout  # go to serial communication to update controller
+            elif newTemp != cs['beerSet']:
                 cs['beerSet'] = newTemp
                 # if temperature has to be updated send settings to controller
                 bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")

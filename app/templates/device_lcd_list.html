@@ -36,26 +36,31 @@
                     {% endverbatim %}
                 </div>
                 <div class="row">
-                    <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">
-                        <a href="#" type="button" class="btn btn-xs btn-info">Backlight</a>
+                    <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">{# TODO - Tweak 'backlight' button given that it only applies to ESP8266 #}
+                        <a v-bind:href="lcd.backlight_url" type="button" class="btn btn-xs btn-info">Backlight</a>
                     </div>
                     <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">
-                        <a href="#" type="button" class="btn btn-xs btn-danger" >Set Temp</a>
+                        <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" v-bind:data-target="lcd.modal_name">Set Temp</button>
                     </div>
                     <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">
-                        <a href="#" type="button" class="btn btn-xs btn-success">Dashboard</a>
+                        <a v-bind:href="lcd.device_url" type="button" class="btn btn-xs btn-success">Dashboard</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+{# Add all the modals for controlling temperatures #}
+{% for this_device in all_devices %}
+{% temp_control_modal this_device %}
+{% endfor %}
+
+
 {% endblock %}
 
 
 {% block scripts %}
 {% load static %}
-    {# Moving this here as this page is the one that loads the LCDs #}
-    {# TODO - Possibly move the vue.js load directive here as well if this is the only place we need it?? #}
+    <script type="text/javascript" src="{% static "js/vendor/vue/vue.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/lcd.js" %}"></script>
 {% endblock %}

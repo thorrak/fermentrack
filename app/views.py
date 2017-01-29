@@ -11,7 +11,7 @@ import mdnsLocator
 import json, time
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
@@ -121,7 +121,9 @@ def configure_settings(request):
 
 
 def lcd_test(request):
-    return render_with_devices(request, template_name="device_lcd_list.html")
+    # This handles generating the list of LCD screens for each device. Included are fermentation profiles so that we can
+    # use them for setting temperature assignments
+    return render_with_devices(request, template_name="device_lcd_list.html", )
 
 
 def device_list(request):
@@ -144,14 +146,14 @@ def device_config_legacy(request, device_id, control_constants):
 
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
-            if not new_control_constants.save_all_to_controller():
+            if not new_control_constants.save_all_to_controller(active_device):
                 return render_with_devices(request, template_name='device_config_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
             # new_device.save()
 
-            messages.success(request, 'Control constants updated for device {}'.format(device_id))
+            messages.success(request, 'Control constants updated for device {}'.format(active_device.device_name))
             return redirect("/")
 
         else:
@@ -286,4 +288,52 @@ def find_new_mdns_brewpi_controller(request):
                                context={'installed_devices': installed_devices,
                                         'available_devices': available_devices})
 
+
+
+def device_temp_control(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error('Unable to load device #{} for configuration'.format(device_id))
+        return redirect("/")
+
+    if request.POST:
+        form = device_forms.TempControlForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['temp_control'] == 'off':
+                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'])
+            elif form.cleaned_data['temp_control'] == 'beer_constant' or form.cleaned_data['temp_control'] == 'fridge_constant':
+                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                                         set_temp=float(form.cleaned_data['temperature_setting']))
+            elif form.cleaned_data['temp_control'] == 'beer_profile':
+                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                                         profile=form.cleaned_data['profile'])
+            else:
+                messages.error(request, "Invalid temperature control function specified.")
+                return redirect("/")
+
+            if success:
+                messages.success(request, 'Temperature control settings updated for {}'.format(active_device.device_name))
+            else:
+                messages.error(request, 'Unable to update temperature control settings for {}'.format(active_device.device_name))
+
+            return redirect("/")
+
+        else:
+            messages.error(request, 'Unable to parse temperature control settings provided')
+            return redirect("/")
+    else:
+        messages.error(request, 'No temperature control settings provided')
+        return redirect("/")
+
+
+def temp_panel_test(request):
+
+    return render_with_devices(request, template_name="temp_panel_test.html",
+                               context={})
 

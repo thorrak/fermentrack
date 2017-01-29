@@ -8,14 +8,14 @@
 
     {# TODO - Add profile graph here. #}
 
-    <h2>Profile Setpoints</h2>
+    <h3>Profile Setpoints</h3>
 
     {% if this_profile_points %}
         <table class="table">
             <thead>
                 <tr>
                     <th>TTL</th>
-                    <th>Temperature (Deg. {{ config.TEMPERATURE_FORMAT }})</th>
+                    <th>Temperature (&deg;{{ config.TEMPERATURE_FORMAT }})</th>
                     <th></th>
                 </tr>
             </thead>
@@ -29,11 +29,11 @@
             {% endfor %}
         </table>
     {% else %}
-        <h2>There are no setpoints configured for this profile</h2>
+        <h5>There are no setpoints configured for this profile</h5>
     {% endif %}
 
 
-    <h2>Add Setpoint</h2>
+    <h3>Add Setpoint</h3>
 
     {# TODO - Rewrite this to use divs instead of tables #}
     <table class="table">
@@ -42,7 +42,7 @@
             <thead>
                 <tr>
                     <th>TTL <label for="{{ form.ttl.id_for_label }}" data-toggle="tooltip" title="{{ form.ttl.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
-                    <th>Temperature (Deg. {{ config.TEMPERATURE_FORMAT }}) <label for="{{ form.temperature_setting.id_for_label }}" data-toggle="tooltip" title="{{ form.temperature_setting.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
+                    <th>Temperature (&deg;{{ config.TEMPERATURE_FORMAT }}) <label for="{{ form.temperature_setting.id_for_label }}" data-toggle="tooltip" title="{{ form.temperature_setting.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
                     <th></th>
                 </tr>
             </thead>
@@ -50,7 +50,7 @@
             {# TODO - Add form errors view #}
             <tr>
                 <td>{{ form.ttl }}{# TODO - Prepopulate example text in form #}</td>
-                <td>{{ form.temperature_setting }} {# TODO - Replace Deg. with the degree symbol #}Deg. {{ config.TEMPERATURE_FORMAT }}</td>
+                <td>{{ form.temperature_setting }} &deg;{{ config.TEMPERATURE_FORMAT }}</td>
                 <td><input type="submit" value="Add Setpoint" class="btn btn-block btn-sm btn-primary" /></td>
             </tr>
         </form>

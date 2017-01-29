@@ -5,8 +5,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
 import socket
-import json, time, datetime
+import json, time, datetime, pytz
 from constance import config
+from brewpi_django import settings
 
 
 # BrewPiDevice
@@ -468,6 +469,15 @@ class BrewPiDevice(models.Model):
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
 
+    def get_profile_temp(self):
+        # If the object is inconsistent, don't return anything
+        if self.active_profile is None:
+            return None
+        if self.time_profile_started is None:
+            return None
+
+        return self.active_profile.profile_temp(self.time_profile_started)
+
     # Other things that aren't persisted in the database
     # available_devices = []
     # installed_devices = []
@@ -659,6 +669,132 @@ class BrewPiDevice(models.Model):
 
         return self.devices_are_loaded  # True
 
+    # TODO - Determine if we care about controlSettings
+    # # Retrieve the control settings from the controller
+    # def retrieve_control_settings(self):
+    #     version = self.retrieve_version()
+    #     if version:
+    #         if self.is_legacy(version):
+    #             # If we're dealing with a legacy controller, we need to work with the old control constants.
+    #             control_settings = OldControlSettings()
+    #             control_settings.load_from_controller(self)
+    #         else:
+    #             # Otherwise, we need to work with the NEW control constants
+    #             control_settings = OldControlSettings()
+    #             control_settings.load_from_controller(self)
+    #
+    #         # Returning both the control constants structure as well as which structure we ended up using
+    #         control_settings.controller = self
+    #         return control_settings, self.is_legacy(version=version)
+    #     return None, None
+
+    def sync_temp_format(self):
+        # This queries the controller to see if we have the correct tempFormat set (If it matches what is specified
+        # in the device definition above). If it doesn't, we overwrite what is on the device to match what is in the
+        # device definition.
+        control_constants, legacy_mode = self.retrieve_control_constants()
+
+        if control_constants.tempFormat != self.temp_format:  # The device has the wrong tempFormat - We need to update
+            control_constants.tempFormat = self.temp_format
+
+            if legacy_mode:
+                if self.temp_format == 'C':
+                    control_constants.tempSetMax = 30.0
+                    control_constants.tempSetMin = 1.0
+                elif self.temp_format == 'F':
+                    control_constants.tempSetMax = 86.0
+                    control_constants.tempSetMin = 33.0
+                else:
+                    return False  # If we can't define a good max/min, don't do anything
+            else:
+                # TODO - Fix/expand this when we add "modern" controller support
+                return False
+
+            control_constants.save_to_controller(self, "tempFormat")
+
+            if legacy_mode:
+                control_constants.save_to_controller(self, "tempSetMax")
+                control_constants.save_to_controller(self, "tempSetMin")
+
+            return True
+        return False
+
+    def get_temp_control_status(self):
+        device_mode = self.send_and_receive_from_socket("getMode")
+
+        if device_mode is not None:  # If we could connect to the device, force-sync the temp format
+            self.sync_temp_format()
+
+        control_status = {}
+        if device_mode is None:  # We were unable to read from the device
+            control_status['device_mode'] = "unable_to_connect"  # Not sure if I want to pass the message back this way
+
+        elif device_mode == 'o':  # Device mode is off
+            control_status['device_mode'] = "off"
+            pass
+
+        elif device_mode == 'b':  # Device mode is beer constant
+            control_status['device_mode'] = "beer_constant"
+            control_status['set_temp'] = self.send_and_receive_from_socket("getBeer")
+
+        elif device_mode == 'f':  # Device mode is fridge constant
+            control_status['device_mode'] = "fridge_constant"
+            control_status['set_temp'] = self.send_and_receive_from_socket("getFridge")
+
+        elif device_mode == 'p':  # Device mode is beer profile
+            control_status['device_mode'] = "beer_profile"
+            pass
+
+        else:
+            # No idea what the device mode is
+            # TODO - Log this
+            pass
+
+        return control_status
+
+    def reset_profile(self):
+        if self.active_profile is not None:
+            self.active_profile = None
+        if self.time_profile_started is not None:
+            self.time_profile_started = None
+        self.save()
+
+    def set_temp_control(self, method, set_temp=None, profile=None):
+        if method == "off":
+            self.reset_profile()
+            self.send_message("setOff")
+        elif method == "beer_constant":
+            if set_temp is not None:
+                self.reset_profile()
+                self.send_message("setBeer", str(set_temp))
+            else:
+                return False
+        elif method == "fridge_constant":
+            if set_temp is not None:
+                self.reset_profile()
+                self.send_message("setFridge", str(set_temp))
+            else:
+                return False
+        elif method == "beer_profile":
+            try:
+                ferm_profile = FermentationProfile.objects.get(id=profile)
+            except:
+                return False
+
+            if not ferm_profile.is_assignable():
+                return False
+
+            self.active_profile = ferm_profile
+
+            timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
+            self.time_profile_started = datetime.datetime.now(tz=timezone_obj)
+
+            self.save()
+
+            self.send_message("setActiveProfile", str(self.active_profile.id))
+
+        return True  # If we made it here, return True (we did our job)
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
@@ -764,6 +900,16 @@ class FermentationProfile(models.Model):
     def is_editable(self):
         return not self.currently_in_use()
 
+    # An assignable profile needs to be active and have setpoints
+    def is_assignable(self):
+        if self.status != self.STATUS_ACTIVE:
+            return False
+        else:
+            if self.fermentationprofilepoint_set is None:
+                return False
+
+        return True
+
     # If we attempt to delete a profile that is in use, we instead change the status. This runs through profiles in
     # this status and deletes those that are no longer in use.
     @classmethod
@@ -780,6 +926,7 @@ class FermentationProfile(models.Model):
     # I would prefer to implement this as part of a template (given that it's honestly display logic) but the Django
     # template language doesn't provide quite what I would need to pull it off.
     def to_english(self):
+        # TODO - Make this temperature format sensitive
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         description = []
@@ -828,11 +975,52 @@ class FermentationProfile(models.Model):
                 previous_format = this_point.temp_format
 
         if past_first_point:
-            desc_text = "Finally, permanently hold the beer at {} degrees {}.".format(previous_setpoint, previous_format)
+            desc_text = "Finally, permanently hold the temperature at {} degrees {}.".format(previous_setpoint, previous_format)
             description.append(desc_text)
 
         return description
 
+    # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
+    # get_profile_temp from BrewPiDevice
+    def profile_temp(self, time_started):
+        # TODO - Make this temperature format sensitive
+        profile_points = self.fermentationprofilepoint_set.order_by('ttl')
+
+        past_first_point=False  # There's guaranteed to be a better way to do this
+        previous_setpoint = 0.0
+        previous_ttl = 0.0
+        previous_format = 'F'
+        timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
+        current_time = datetime.datetime.now(tz=timezone_obj)
+
+        for this_point in profile_points:
+            # TODO - Refactor this at some point
+            if not past_first_point:
+                # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
+                # temperature. Return the temperature setting
+                if current_time < (time_started + this_point.ttl):
+                    return this_point.temperature_setting
+                past_first_point = True
+            else:
+                # Test if we are in this period
+                if current_time < (time_started + this_point.ttl):
+                    # We are - Check if we need to interpolate, or if we can just use the static temperature
+                    if this_point.temperature_setting == previous_setpoint:  # We can just use the static temperature
+                        return this_point.temperature_setting
+                    else:  # We have to interpolate
+                        duration = this_point.ttl - previous_ttl
+                        delta = (this_point.temperature_setting - previous_setpoint)
+                        slope = delta / duration
+
+                        return (current_time - previous_ttl) * slope
+
+            previous_setpoint = this_point.temperature_setting
+            previous_ttl = this_point.ttl
+            previous_format = this_point.temp_format
+
+        # If we hit this point, we looped through all the setpoints & aren't between two (or on the first one)
+        # That is to say - we're at the end. Just return the last setpoint.
+        return previous_setpoint
 
 
 
@@ -867,6 +1055,7 @@ class FermentationProfilePoint(models.Model):
 
 
 # The old (0.2.x/Arduino) Control Constants Model
+# TODO - Update all usages of the ControlConstants objects to add 'controller' when the object is created
 class OldControlConstants(models.Model):
     # class Meta:
     #     managed = False
@@ -897,28 +1086,33 @@ class OldControlConstants(models.Model):
     lah = models.FloatField()
     hs = models.FloatField()
 
+    tempFormat = models.CharField(max_length=1)
+
     # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
     # To make it easy to iterate over those fields, going to list them out here
     firmware_field_list = ['tempSetMin', 'tempSetMax', 'Kp', 'Ki', 'Kd', 'pidMax', 'iMaxErr', 'idleRangeH',
                            'idleRangeL', 'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL',
                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
-                           'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs',]
+                           'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs', 'tempFormat']
 
 
-    controller = models.ForeignKey(BrewPiDevice)
+    controller = models.ForeignKey(BrewPiDevice)  # TODO - Determine if this is used anywhere (other than below) and if we want to keep it.
 
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
 
-    def load_from_controller(self, controller):
+    def load_from_controller(self, controller=None):
         """
         :param controller: models.BrewPiDevice
         :type controller: BrewPiDevice
         :return: boolean
         """
+        if controller is not None:
+            self.controller = controller
+
         try:
-            cc = json.loads(controller.send_and_receive_from_socket("getControlConstants"))
+            cc = json.loads(self.controller.send_and_receive_from_socket("getControlConstants"))
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -934,7 +1128,7 @@ class OldControlConstants(models.Model):
         :return:
         """
 
-        value_to_send = {attribute, getattr(self, attribute)}
+        value_to_send = {attribute: getattr(self, attribute)}
         return controller.send_message("setParameters", json.dumps(value_to_send))
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
@@ -943,17 +1137,14 @@ class OldControlConstants(models.Model):
         :type controller: BrewPiDevice
         :return: boolean
         """
-        try:
-            for this_field in self.firmware_field_list:
-                self.save_to_controller(controller, this_field)
-            return True
-        except:
-            return False
+        for this_field in self.firmware_field_list:
+            self.save_to_controller(controller, this_field)
+        return True
 
 
 
 
-# The old (0.2.x/Arduino) Control Constants Model
+# The new (0.4.x/Spark) Control Constants Model
 class NewControlConstants(models.Model):
     # class Meta:
     #     managed = False
@@ -1050,3 +1241,58 @@ class NewControlConstants(models.Model):
         except:
             return False
 
+# TODO - Determine if we care about controlSettings
+# # There may only be a single control settings object between both revisions of the firmware, but I'll break it out
+# # for now just in case.
+# class OldControlSettings(models.Model):
+#     class Meta:
+#         managed = False
+#
+#     firmware_field_list = ['tempSetMin', 'tempSetMax', 'Kp', 'Ki', 'Kd', 'pidMax', 'iMaxErr', 'idleRangeH',
+#                            'idleRangeL', 'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL',
+#                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
+#                            'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs',]
+#
+#     controller = models.ForeignKey(BrewPiDevice)
+#
+#     def load_from_controller(self, controller=None):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return: boolean
+#         """
+#         if controller is not None:
+#             self.controller = controller
+#         try:
+#             cc = json.loads(self.controller.send_and_receive_from_socket("getControlSettings"))
+#
+#             for this_field in self.firmware_field_list:
+#                 setattr(self, this_field, cc[this_field])
+#             return True
+#
+#         except:
+#             return False
+#
+#     def save_to_controller(self, controller, attribute):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return:
+#         """
+#
+#         value_to_send = {attribute, getattr(self, attribute)}
+#         return controller.send_message("setParameters", json.dumps(value_to_send))
+#
+#     def save_all_to_controller(self, controller, prior_control_constants=None):
+#         """
+#         :param controller: models.BrewPiDevice
+#         :type controller: BrewPiDevice
+#         :return: boolean
+#         """
+#         try:
+#             for this_field in self.firmware_field_list:
+#                 self.save_to_controller(controller, this_field)
+#             return True
+#         except:
+#             return False
+#

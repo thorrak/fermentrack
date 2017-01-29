@@ -24,7 +24,7 @@ class FermentationProfileForm(ModelForm):
 
 
 class FermentationProfilePointForm(forms.Form):
-    ttl = forms.CharField(help_text="Time at which the temperature will be reached.\r\n(Example: 7d 3h 15m 4s)",
+    ttl = forms.CharField(help_text="Time from the start of fermentation at which the temperature will be reached.\r\n(Example: 7d 3h 15m 4s)",
                           validators=[validators.RegexValidator(regex="([0-9]+[ ]*[ywdhms]{1}[ ]*)+",
                                                                 message="Invalid TTL format")])
     temperature_setting = forms.DecimalField(min_value=-20, max_value=212, max_digits=5, decimal_places=2,
