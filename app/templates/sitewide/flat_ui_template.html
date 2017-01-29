@@ -6,18 +6,18 @@
         <meta name="description" content=""/>
 
         <meta name="viewport" content="width=1000, initial-scale=1.0, maximum-scale=1.0">
-        <link href="{% static "css/bootstrap.css" %}" rel="stylesheet"> {# TODO - Replace with bootstrap.min.css (before release) #}
-        <link href="{% static "css/flat-ui.min.css" %}" rel="stylesheet">
-        <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" >
+        <link href="{% static "vendor/bootstrap/css/bootstrap.css" %}" rel="stylesheet"> {# TODO - Replace with bootstrap.min.css (before release) #}
+        <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
+        <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet" >
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
         <link rel="shortcut icon" href="img/favicon.ico">
            {% block header_scripts %}{% endblock %}
-          <script type="text/javascript" src="{% static "js/dygraph-combined.js" %}"></script>
+          <script type="text/javascript" src="{% static "js/dygraph-combined.js" %}"></script>{# TODO - Move dygraph to vendor #}
 
         <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
         <!--[if lt IE 9]>
-          <script src="{% static "js/vendor/html5shiv.js" %}"></script>
-          <script src="{% static "js/vendor/respond.min.js" %}"></script>
+          <script src="{% static "js/vendor/html5shiv.js" %}"></script>{# TODO - Move to vendor #}
+          <script src="{% static "js/vendor/respond.min.js" %}"></script>{# TODO - Move to vendor #}
 
         <![endif]-->
     </head>
@@ -68,8 +68,8 @@
 
 
     {# TODO - Clean this up #}
-    <script type="text/javascript" src="{% static "js/vendor/jquery.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/flat-ui.min.js" %}"></script>  {# Overwrites parts of bootstrap.js #}
+    <script type="text/javascript" src="{% static "vendor/jquery/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "vendor/flat-ui/js/flat-ui.min.js" %}"></script>  {# Overwrites parts of bootstrap.js #}
 {#    <script src="{% static "js/application.js" %}"></script>#}
 
     {% block scripts %}{% endblock %}
