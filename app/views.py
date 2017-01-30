@@ -94,7 +94,6 @@ def configure_settings(request):
                 useInetSocket=form.cleaned_data['useInetSocket'],
                 socketPort=form.cleaned_data['socketPort'],
                 socketHost=form.cleaned_data['socketHost'],
-                script_path=form.cleaned_data['script_path'],
                 serial_port=form.cleaned_data['serial_port'],
                 serial_alt_port=form.cleaned_data['serial_alt_port'],
                 board_type=form.cleaned_data['board_type'],
@@ -245,7 +244,10 @@ def beer_active_csv(request, device_id):
     active_device = BrewPiDevice.objects.get(id=device_id)
 
     column_headers = BeerLogPoint.column_headers()
-    log_data = active_device.active_beer.beerlogpoint_set.all()
+    if active_device.active_beer is not None:
+        log_data = active_device.active_beer.beerlogpoint_set.all()
+    else:
+        log_data = []  # Initialize with a blank dict if we have no log data
 
     return render(request, template_name='csv.html', context={'csv_headers': column_headers, 'csv_data': log_data })
 

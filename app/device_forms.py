@@ -32,9 +32,6 @@ class DeviceForm(forms.Form):
                                                                                 "useInetSocket above is \"True\")",
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: localhost'}))
 
-    # # TODO - Determine if script_path can be eliminated given we are using a custom brewpi-script
-    # script_path = forms.CharField(max_length=255, help_text="Path to the BrewPi script (deprecated??)", initial="/home/brewpi/",
-    #                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '/home/brewpi/'}))
     serial_port = forms.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected (Only used if connection_type is serial)", initial="auto", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'auto'}))
     serial_alt_port = forms.CharField(max_length=255, help_text="Alternate serial port path (Only used if connection_type is serial)", initial="None", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'None'}))
 

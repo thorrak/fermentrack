@@ -84,7 +84,7 @@ def read_config_from_database_without_defaults(db_config_object):
     config = {}
 
     # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
-    config['scriptPath'] = db_config_object.script_path
+    # config['scriptPath'] = db_config_object.script_path
     config['port'] = db_config_object.serial_port
     if db_config_object.serial_alt_port <> 'None':
         config['altport'] = db_config_object.serial_alt_port
@@ -118,9 +118,7 @@ def configSet(configFile, db_config_object, settingName, value):
         return read_config_file_with_defaults(configFile)  # return updated ConfigObj
     else:
         # Assuming we have a valid db_config_object here
-        if settingName == "scriptPath":
-            db_config_object.script_path = value
-        elif settingName == "port":
+        if settingName == "port":
             db_config_object.serial_port = value
         elif settingName == "altport":
             db_config_object.serial_alt_port = value

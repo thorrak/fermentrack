@@ -406,9 +406,6 @@ class BrewPiDevice(models.Model):
                                                                                  "internet socket (only used if "
                                                                                  "useInetSocket above is \"True\")")
     logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped', help_text="Data logging status")
-    # TODO - Determine if script_path can be eliminated given we are using a custom brewpi-script
-    script_path = models.CharField(max_length=255, help_text="Path to the BrewPi script (deprecated??)",
-                                   default="/home/brewpi/")
 
     serial_port = models.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected",
                                    default="auto")
@@ -418,6 +415,7 @@ class BrewPiDevice(models.Model):
 
     # TODO - Add some kind of helper function to test if process_id is valid, and reset to 0 if it is not.
     process_id = models.IntegerField(default=0)
+    do_not_run = models.BooleanField(default=False)  # The equivalent of the 'do not run' file used by brewpi-script
     socket_name = models.CharField(max_length=25, default="BEERSOCKET",
                                    help_text="Name of the file-based socket (Only used if useInetSocket is False)")
 
