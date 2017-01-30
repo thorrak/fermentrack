@@ -93,7 +93,6 @@ def read_config_from_database_without_defaults(db_config_object):
     config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file
     config['dataLogging'] = db_config_object.logging_status
     config['socket_name'] = db_config_object.socket_name
-    config['profileName'] = None  # TODO - Implement this
     config['connection_type'] = db_config_object.connection_type
     config['wifiHost'] = db_config_object.wifi_host
     config['wifiPort'] = db_config_object.wifi_port
@@ -130,9 +129,6 @@ def configSet(configFile, db_config_object, settingName, value):
         elif settingName == "beerName":
             # As of right now, setting the beerName doesn't do anything, as setting the beer is done in brewpi.startBeer
             # TODO - Make sure this actually works as intended
-            pass
-        elif settingName == "profileName":
-            # TODO - Implement this
             pass
         elif settingName == "socket_name":
             db_config_object.socket_name = value
