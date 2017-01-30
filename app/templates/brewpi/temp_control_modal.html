@@ -14,7 +14,7 @@
             <div class="row">
             {% if temp_control_status.device_mode != "unable_to_connect" %}
                 <div class="col-md-4">
-                    <ul class="nav nav-pills" role="pilllist">{# TODO - Fix class active to use flat-ui colors #}
+                    <ul class="nav nav-pills nav-stacked" role="pilllist">{# TODO - Fix class active to use flat-ui colors #}
                         <li role="presentation" {% if temp_control_status.device_mode == "fridge_constant" %}class="active"{% endif %}><a href="#fridgeConstant{{ this_device.id }}" aria-controls="fridgeConstant{{ this_device.id }}" role="pill" data-toggle="pill">Fridge Constant</a></li>
                         <li role="presentation" {% if temp_control_status.device_mode == "beer_constant" %}class="active"{% endif %}><a href="#beerConstant{{ this_device.id }}" aria-controls="beerConstant{{ this_device.id }}" role="pill" data-toggle="pill">Beer Constant</a></li>
                         <li role="presentation" {% if temp_control_status.device_mode == "beer_profile" %}class="active"{% endif %}><a href="#beerProfile{{ this_device.id }}" aria-controls="beerProfile{{ this_device.id }}" role="pill" data-toggle="pill">Beer Profile</a></li>

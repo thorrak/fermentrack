@@ -1,0 +1,84 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Guided Device Setup{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Flash</h1>
+    <h3>Setting up a new {{ device_family }}</h3>
+
+          <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <ul class="nav nav-pills nav-stacked" role="pilllist">{# TODO - Fix class active to use flat-ui colors #}
+                        <li role="presentation" class="active nav-item"><a href="#selectPill" aria-controls="selectPill" role="pill" data-toggle="pill">Select One:</a></li>
+                        <li role="presentation" class="nav-item"><a href="#yesPill" aria-controls="yesPill" role="pill" data-toggle="pill">Yes - Already Flashed</a></li>
+                        <li role="presentation" class="nav-item"><a href="#noPill" aria-controls="noPill" role="pill" data-toggle="pill">No - Need to Flash</a></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    {# Select (Default) Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane active" id="selectPill">
+                        <h4>Has the device already been flashed?</h4>
+                        If the controller has already been flashed and you only need to set it up in this interface,
+                        please click "yes" on the left. If it hasn't been flashed yet, click "no".
+                    </div>{# Select (Default) Pane #}
+
+                    {# Yes - Already Flashed Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane" id="yesPill">
+                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
+                            Perfect.
+
+                            {% if device_family == "ESP8266" %} {# For now, only ESP8266 devices are supported #}
+                                <p>Before you go to the next step, you need to get the controller to a state where we can
+                                connect to it. If you are using <b>WiFi</b> finish the controller setup and connect it
+                                to your network. If you are using <b>Serial</b> connect the controller to this device.</p>
+                                <input type="hidden" name="should_flash_device" value="False">
+                                <input type="hidden" name="device_family" value="{{ device_family }}">
+                                <button type="submit" class="btn btn-large btn-primary">Continue</button>
+                            {% else %}
+                                Unfortunately, this version of brewpi-django isn't quite smart enough to support that
+                                device family yet. Pay attention to the discussions on HomeBrewTalk - Support for
+                                {{ device_family }} is coming soon. (either v2 or v3)
+                            {% endif %}
+                        </form>
+                    </div>{# Yes - Already Flashed Pane #}
+
+                    {# No - Need to Flash Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane" id="noPill">
+                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
+                            <p>Unfortunately, brewpi-django doesn't yet support flashing any devices from directly
+                            within this interface. This feature is coming in the v2 release for certain device families,
+                            however, so keep an eye on the discussions at HomeBrewTalk for updates.</p>
+
+                            <p>In the mean time, flash your device using the instructions appropriate for
+                                {{ device_family }}.
+
+                            {% if device_family == "ESP8266" %}
+                                For ESP8266-based devices, those instructions can be found
+                                <a href="https://github.com/thorrak/brewpi-esp8266/blob/master/docs/Installing%20the%20Firmware.md">here.</a>
+                            {% else %}
+
+                            {% endif %}
+                            </p>
+                        </form>
+                    </div>{# No - Need to Flash Pane #}
+
+                </div>
+            </div>
+          </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Guided Device Setup{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Guided Device Setup</h1>
+
+<h4>First, choose the family of the device you would like to set up:</h4>
+
+<form action="{% url "device_guided_select_device" %}" class="form-horizontal" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" class="btn btn-primary" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
