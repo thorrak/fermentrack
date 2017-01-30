@@ -18,3 +18,13 @@ class beerLogPointAdmin(admin.ModelAdmin):
 class fermentationProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'status')
 
+@admin.register(FermentationProfilePoint)
+class fermentationProfilePointAdmin(admin.ModelAdmin):
+    list_display = ('profileName', 'temperature', 'ttl')
+
+    def temperature(self, obj):
+        return obj.temperature_setting, obj.temp_format
+
+    def profileName(self, obj):
+        return obj.profile.name
+
