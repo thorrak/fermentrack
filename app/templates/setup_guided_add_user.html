@@ -1,0 +1,30 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Guided Device Setup{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Installation Wizard</h1>
+
+First we need to create a user, this user will be the superuser and have full access to all the different
+parts of the system (you will be automaticlly logged in after user is created).
+
+<form method="post" action="">
+    {% csrf_token %}
+    <ul>
+    {{ form.as_ul }}
+    </ul>
+    <input type="submit" value="Create new user account" />
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+{% endblock %}

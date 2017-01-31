@@ -1,0 +1,29 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Guided Device Setup{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Configuration</h1>
+
+Here you can change some settings, default values are filled in for you.
+
+<form method="post" action="">
+    {% csrf_token %}
+    <ul>
+    {{ form.as_ul }}
+    </ul>
+    <input type="submit" value="Save Configuration" />
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+{% endblock %}

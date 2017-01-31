@@ -118,7 +118,10 @@ def configure_settings(request):
 def lcd_test(request):
     # This handles generating the list of LCD screens for each device. Included are fermentation profiles so that we can
     # use them for setting temperature assignments
-    return render_with_devices(request, template_name="device_lcd_list.html", )
+    from django.contrib.auth.models import User
+    # Send the number of users we got in the system as a way to know if this is the first run or not.
+    context={'num_users': User.objects.all().count()}
+    return render_with_devices(request, template_name="device_lcd_list.html", context=context)
 
 
 def device_list(request):
