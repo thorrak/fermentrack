@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^devices/guided/$', app.device_views.device_guided_select_device, name='device_guided_select_device'),
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/flash_prompt/$', app.device_views.device_guided_flash_prompt, name='device_guided_flash_prompt'),
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/flash/$', app.device_views.device_guided_flash_prompt, name='device_guided_flash_prompt'),
+    url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/connection/$', app.device_views.device_guided_serial_wifi, name='device_guided_serial_wifi'),
 
     url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),

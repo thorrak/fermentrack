@@ -65,7 +65,11 @@ def device_guided_flash_prompt(request, device_family):
     if request.POST:
         form = device_forms.GuidedDeviceFlashForm(request.POST)
         if form.is_valid():
-            return redirect('device_guided_flash_prompt', device_family=form.cleaned_data['device_family'])
+            if not form.cleaned_data['should_flash_device']:
+                return redirect('device_guided_serial_wifi', device_family=form.cleaned_data['device_family'])
+            else:
+                # TODO - Actually flash the device
+                return redirect('device_guided_flash_prompt', device_family=form.cleaned_data['device_family'])
         else:
             return render_with_devices(request, template_name='device_guided_flash_prompt.html',
                                        context={'form': form, 'device_family': device_family,
@@ -75,4 +79,14 @@ def device_guided_flash_prompt(request, device_family):
         return render_with_devices(request, template_name='device_guided_flash_prompt.html',
                                    context={'form': form, 'device_family': device_family,
                                             'can_flash_family': can_flash_family})
+
+
+def device_guided_serial_wifi(request, device_family):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    return render_with_devices(request, template_name='device_guided_serial_wifi.html',
+                               context={'device_family': device_family})
 

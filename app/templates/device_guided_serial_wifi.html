@@ -1,0 +1,89 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Guided Device Setup{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Flash</h1>
+    <h3>Setting up a new {{ device_family }}</h3>
+
+          <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <ul class="nav nav-pills nav-stacked" role="pilllist">{# TODO - Fix class active to use flat-ui colors #}
+                        <li role="presentation" class="active nav-item"><a href="#selectPill" aria-controls="selectPill" role="pill" data-toggle="pill">Select One:</a></li>
+                        <li role="presentation" class="nav-item"><a href="#wifiPill" aria-controls="wifiPill" role="pill" data-toggle="pill">WiFi</a></li>
+                        <li role="presentation" class="nav-item"><a href="#serialPill" aria-controls="serialPill" role="pill" data-toggle="pill">Serial</a></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    {# Select (Default) Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane active" id="selectPill">
+                        <h4>How are you connecting</h4>
+                        <p>Now that the device is flashed, we need to get it set up to connect to it. If you are using
+                        <b>WiFi</b> finish the controller setup and connect it to your network. If you are using
+                        <b>Serial</b> connect the controller to the Raspberry Pi device.</p>
+                        <p>Once everything is connected, select the connection method on the left.</p>
+                    </div>{# Select (Default) Pane #}
+
+                    {# WiFi Connection Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane" id="wifiPill">
+                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
+                            {% if device_family == "ESP8266" %} {# Only ESP8266 devices are supported for WiFi #}
+                                <p>Awesome. ESP8266 + WiFi = Fantastic.</p>
+
+                                <p>Clicking the button below will scan your network
+                                for ESP8266-based BrewPi devices, giving you an option to connect any that aren't
+                                    already set up.</p>
+                                <input type="hidden" name="device_family" value="{{ device_family }}">
+                                <button type="submit" class="btn btn-large btn-primary">Scan WiFi via mDNS</button>
+                            {% else %}
+                                Unfortunately, WiFi isn't supported on the {{ device_family }} family of devices. Please
+                                attempt to connect via "Serial" on the left.
+                            {% endif %}
+                        </form>
+                    </div>{# WiFi Connection Pane #}
+
+                    {# Serial Pane #}
+                    <div role="pillpanel" class="col-md-8 tab-pane" id="serialPill">
+                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
+                            {% if device_family == "ESP8266" or device_family == "Arduino" %}
+                                <p>We've got good news and bad news.</p>
+
+                                <p>
+                                    While brewpi-django supports connecting to {{ device_family }}-based controllers
+                                    via serial, the autodetection functionality isn't quite ready yet. You'll have to
+                                    use the longer, advanced setup process.
+                                </p>
+
+                                <p>Don't worry - it's easy, and you'll be fine.</p>
+
+{#                                <input type="hidden" name="device_family" value="{{ device_family }}">#}
+{#                                <button type="submit" class="btn btn-large btn-primary">Scan Serial</button>#}
+                                <a href="{% url 'device_add' %}" class="btn btn-large btn-primary">Add Device via Advanced Setup</a>
+                            {% else %}
+                                <p>Unfortunately, brewpi-django doesn't support {{ device_family }}-based devices via
+                                serial just yet. We're working on it, and hope to add support in v2 or v3. Sit tight,
+                                and keep an eye on the discussion on HomeBrewTalk.</p>
+                            {% endif %}
+                        </form>
+                    </div>{# Serial Pane #}
+
+                </div>
+            </div>
+          </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
