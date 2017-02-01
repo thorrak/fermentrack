@@ -1,4 +1,9 @@
     <div class="form-group">
-        <label for="{{ form_field.id }}" data-toggle="tooltip" title="{{ form_field.help_text }}" class="col-sm-2 control-label">{{ form_field.label_tag }}</label>
+         {% if form_field.errors %}
+            <div class="alert alert-danger"><strong>{{ form_field.label }}</strong> {% for error in form_field.errors %}{{ error }}{% endfor %}</div>
+         {% endif %}
+        <label for="{{ form_field.id }}" data-toggle="tooltip" title="{{ form_field.help_text }}" class="col-sm-2 control-label">
+            {{ form_field.label_tag }}
+        </label>
         <div class="col-sm-10">{{ form_field }}</div>
     </div>
