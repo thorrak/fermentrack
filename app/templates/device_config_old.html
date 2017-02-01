@@ -9,6 +9,9 @@
 {% block content %}
 
 <h1 class="page-header">Configure Control Constants</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error{{ form.errors }} below.</div>
+{% endif %}
 
 <form action="{% url "device_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
 
