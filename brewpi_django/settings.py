@@ -137,13 +137,15 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     }],
     'date_time_display_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
-        'choices': ((None, "-----"), ("mm/dd/yy", "mm/dd/yy"), ("dd/mm/yy", "dd/mm/yy"))
+        'choices': ((None, "-----"), ("mm/dd/yy", "mm/dd/yy"), ("dd/mm/yy", "dd/mm/yy"), ("yy-mm-dd", "yy-mm-dd"))
     }],
     'temperature_format_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("F", "Fahrenheit"), ("C", "Celsius"))
     }],
 }
+
+CONSTANCE_SUPERUSER_ONLY = False
 
 CONSTANCE_CONFIG = {
     'BREWERY_NAME': ('BrewPi-Django', 'Name to be displayed in the upper left of each page', str),
