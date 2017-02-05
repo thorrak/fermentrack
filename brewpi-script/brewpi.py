@@ -254,6 +254,7 @@ if configFile:  # If we had a file-based config (or are defaulting) then load th
         sys.exit('ERROR: When saving datapoints to the database, --dbcfg must be used!')
 elif dbConfig:  # Load from the database
     # TODO - Make sure the process ID check below works
+    # TODO - Check 'status' to determine if we should launch
     config = util.read_config_from_database_without_defaults(dbConfig)
 else:  # This should never be hit - Just adding it to the code to make it clear that if neither of these work, we exit
     exit(1)
@@ -270,6 +271,7 @@ if allProcesses.findConflicts(myProcess):
     exit(0)
 elif dbConfig:
     # If there is no conflict, save the process ID
+    # TODO - Delete process_id & use circus to manage (??)
     config = util.configSet(configFile, dbConfig, 'process_id', os.getpid())
 
 if checkStartupOnly:

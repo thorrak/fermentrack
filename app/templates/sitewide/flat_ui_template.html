@@ -42,7 +42,7 @@
                         <a href="#" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;"><i class="fa fa-ban fa-lg"></i></a>
                     </li>
                     <li><a href="#" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;"><i class="fa fa-question fa-lg"></i></a></li>
-                    <li><a href="#" class="navbar-icon" style="padding-right: 25px;padding-left: 10px;"><i class="fa fa-cog fa-lg"></i></a></li>
+                    <li><a href="{% url 'setup_config' %}" class="navbar-icon" style="padding-right: 25px;padding-left: 10px;"><i class="fa fa-cog fa-lg"></i></a></li>
                 </ul>
 
             </div><!-- /.navbar-collapse -->
@@ -51,13 +51,16 @@
       </div> <!-- /row -->
 
       <div class="row">
-        <div class="col-xs-12">{% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}{% block content %}{% endblock %}
+        <div class="col-xs-12">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% block content %}{% endblock %}
             </div>
       </div>
 

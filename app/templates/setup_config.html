@@ -1,0 +1,49 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{# I'm converting this form so that it can be used in both the initial guided setup as well as when the user clicks #}
+{# the "gear" icon in the upper right of the form #}
+
+{% block title %}{% if not completed_config %}Guided Device Setup{% else %}App Settings{% endif %}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">App Configuration</h1>
+
+{% if not completed_config %}
+    {# User is in the guided setup workflow #}
+    <p>Here you can change some settings, default values are filled in for you.</p>
+{% else %}
+    {# User is not in the guided setup workflow #}
+{% endif %}
+
+<form action="{% url "setup_config" %}" class="form-horizontal" method="post">{% csrf_token %}
+    <div id="constanceSection">
+        <h3 class="form-header">App Configuration</h3>
+
+        {# Converting to use form_generic to make things a little better looking #}
+        {% form_generic form.brewery_name %}
+        {% form_generic form.date_time_format %}
+        {% form_generic form.date_time_format_display %}
+        {% form_generic form.require_login_for_dashboard %}
+        {% form_generic form.temperature_format %}
+
+        <input type="submit" value="Save Configuration" class="btn btn-default"/>
+    </div>
+</form>
+
+{% if completed_config %}
+    {# TODO - Add a user list here & link back to the "add user" workflow #}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+{% endblock %}

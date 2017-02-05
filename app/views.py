@@ -4,34 +4,51 @@ from django.shortcuts import render_to_response, redirect
 
 from constance import config  # For the explicitly user-configurable stuff
 
-import device_forms
-import profile_forms
+import device_forms, profile_forms
+import setup_views
+
 import mdnsLocator
 
-import json, time
+import json, datetime, pytz
+
+import git_integration
+import subprocess
+
+import brewpi_django.settings as settings
+
 
 
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
-    # TODO - Delete once we're confirmed to no longer be using InstallSettings
-    # site_config = InstallSettings.objects.all()
+
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
         context['all_devices'] = all_devices
     else:
         context={'all_devices': all_devices}
-    # if len(site_config)>1:  # TODO - Make this grab the first siteconfig
-    #     context['site_config'] = site_config
 
     return render(request, template_name, context, content_type, status, using)
 
 
-# Create your views here.
+# Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
-    return lcd_test(request=request)
+    # Check the git status at least every 18 hours
+    now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+    if config.LAST_GIT_CHECK < now_time + datetime.timedelta(hours=18):
+        if git_integration.app_is_current():
+            config.LAST_GIT_CHECK = now_time
+        else:
+            messages.info(request, "This app is not at the latest version! " +
+                          '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
 
 
+    if not config.USER_HAS_COMPLETED_CONFIGURATION:
+        # If things aren't configured, redirect to the guided setup workflow
+        return setup_views.setup_splash(request)
+    else:
+        # The default screen is the "lcd list" screen
+        return lcd_test(request=request)
 
 
 def add_device(request):
@@ -338,3 +355,15 @@ def temp_panel_test(request):
     return render_with_devices(request, template_name="temp_panel_test.html",
                                context={})
 
+
+def github_trigger_upgrade(request):
+    commit_info = git_integration.get_local_remote_commit_info()
+
+    if git_integration.app_is_current():
+        messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+    else:
+        messages.success(request, "Triggered an upgrade from GitHub")
+        subprocess.call("nohup utils/upgrade.sh &", shell=True)  # I think this will do it...
+
+    return render_with_devices(request, template_name="github_trigger_upgrade.html",
+                               context={'commit_info': commit_info})

@@ -31,14 +31,17 @@ urlpatterns = [
     url(r'^lcd_test/$', app.views.lcd_test, name='lcd_test'),
     url(r'^$', app.views.siteroot, name='siteroot'),
 
+    url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
+
     ### Device Views
     url(r'^devices/$', app.views.device_list, name='device_list'),
     url(r'^devices/add/$', app.views.add_device, name='device_add'),
     url(r'^devices/mdns/$', app.views.find_new_mdns_brewpi_controller, name='device_mdns'),
 
     ## New install Guided Setup Views
-    url(r'setup/guided/$', app.setup_views.setup_guided_add_user, name="setup_guided_add_user"),
-    url(r'setup/guided/settings/$', app.setup_views.setup_guided_config, name="setup_guided_config"),
+    url(r'setup/$', app.setup_views.setup_splash, name="setup_splash"),
+    url(r'setup/add_user/$', app.setup_views.setup_add_user, name="setup_add_user"),
+    url(r'setup/settings/$', app.setup_views.setup_config, name="setup_config"),
 
     ## Device Guided Setup Views
     url(r'^devices/guided/$', app.device_views.device_guided_select_device, name='device_guided_select_device'),
