@@ -14,8 +14,8 @@ circusctl stop
 cd ~/brewpi-django  # Assuming the directory based on a normal install with brewpi-django-tools
 git pull
 git reset --hard
-# TODO - Update the next line back to origin/master
-git checkout origin/git_integration
+# TODO - Allow for the specification of a branch when calling upgrade.sh (given we have the data in brewpi-django)
+git checkout origin/master
 
 # Install everything from requirements.txt
 pip install -r requirements.txt --upgrade
