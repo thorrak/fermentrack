@@ -12,8 +12,9 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 from django.contrib.messages import constants as message_constants  # For the messages override
+import datetime, pytz
 
-from secretsettings import *  # See secretsettings.py.example
+from secretsettings import *  # See brewpi_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -151,7 +152,6 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 }
 
 # CONSTANCE_SUPERUSER_ONLY = False
-
 CONSTANCE_CONFIG = { # TODO - Add help text to DATE_TIME_FORMAT & DATE_TIME_FORMAT_DISPLAY
     'BREWERY_NAME': ('BrewPi-Django', 'Name to be displayed in the upper left of each page', str),
     'DATE_TIME_FORMAT': ('yy-mm-dd', '', 'date_time_format_select'),  # TODO - Determine if date_time_format is used anywhere
@@ -159,8 +159,12 @@ CONSTANCE_CONFIG = { # TODO - Add help text to DATE_TIME_FORMAT & DATE_TIME_FORM
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select'),
-    'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool)
+    'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
+    'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
+                       'When was the last time we checked GitHub for upgrades?', datetime.datetime)
 }
+
+
 
 # Messages Configuration
 

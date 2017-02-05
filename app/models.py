@@ -385,6 +385,18 @@ class BrewPiDevice(models.Model):
         ('wifi', 'WiFi (ESP8266)'),
     )
 
+    STATUS_ACTIVE = 'active'
+    STATUS_UNMANAGED = 'unmanaged'
+    STATUS_DISABLED = 'disabled'
+    STATUS_UPDATING = 'updating'
+
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, 'Active, Managed by Circus'),
+        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),
+        (STATUS_DISABLED, 'Explicitly disabled, cannot be launched'),
+        (STATUS_UPDATING, 'Disabled, pending an update'),
+    )
+
 #    active_beer = models.ForeignKey()
 
     device_name = models.CharField(max_length=48, help_text="Unique name for this device", unique=True)
@@ -415,7 +427,10 @@ class BrewPiDevice(models.Model):
 
     # TODO - Add some kind of helper function to test if process_id is valid, and reset to 0 if it is not.
     process_id = models.IntegerField(default=0)
-    do_not_run = models.BooleanField(default=False)  # The equivalent of the 'do not run' file used by brewpi-script
+
+    # Replaces the 'do not run' file used by brewpi-script
+    status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES)
+
     socket_name = models.CharField(max_length=25, default="BEERSOCKET",
                                    help_text="Name of the file-based socket (Only used if useInetSocket is False)")
 

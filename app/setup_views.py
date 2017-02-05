@@ -32,7 +32,7 @@ def setup_add_user(request):
             #new_user_creaed = User.objects.create_user(**form.cleaned_data)
             # We login the user right away
             login(request, new_user)
-            messages.success('User {} created and logged in successfully'.format(new_user.username))
+            messages.success(request, 'User {} created and logged in successfully'.format(new_user.username))
             return redirect('setup_config')
         else:
             return render(request, template_name='setup_add_user.html', context={'form': form})
@@ -53,6 +53,7 @@ def setup_config(request):
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
+            messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
             return render_with_devices(request, template_name='setup_config.html',

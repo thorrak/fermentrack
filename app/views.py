@@ -9,10 +9,12 @@ import setup_views
 
 import mdnsLocator
 
-import json, time
+import json, datetime, pytz
 
 import git_integration
 import subprocess
+
+import brewpi_django.settings as settings
 
 
 
@@ -31,6 +33,16 @@ def render_with_devices(request, template_name, context=None, content_type=None,
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
+    # Check the git status at least every 18 hours
+    now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+    if config.LAST_GIT_CHECK < now_time + datetime.timedelta(hours=18):
+        if git_integration.app_is_current():
+            config.LAST_GIT_CHECK = now_time
+        else:
+            messages.info(request, "This app is not at the latest version! " +
+                          '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+
+
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         # If things aren't configured, redirect to the guided setup workflow
         return setup_views.setup_splash(request)
