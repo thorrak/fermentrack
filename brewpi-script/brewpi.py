@@ -52,7 +52,6 @@ import shutil
 import traceback
 import urllib
 from distutils.version import LooseVersion
-from serial import SerialException
 
 # load non standard packages, exit when they are not installed
 try:
@@ -64,6 +63,7 @@ try:
                              "If you do not have pip installed, install it with:\n" +
                              "  sudo apt-get install build-essential python-dev python-pip\n")
         sys.exit(1)
+    from serial import SerialException
 except ImportError:
     printStdErr("BrewPi requires PySerial to run, please install it via pip, by running:\n" +
                              "  sudo pip install pyserial --upgrade\n" +
@@ -155,7 +155,7 @@ for o, a in opts:
         configFile = os.path.abspath(a)
         if not os.path.exists(configFile):
             sys.exit('ERROR: Config file "%s" was not found!' % configFile)
-        if dbConfig:
+        if dbConfig is not None:
             sys.exit('ERROR: Cannot use both --config and --dbcfg! Pick one and try again!')
 
     # list all devices in the database
@@ -183,7 +183,7 @@ for o, a in opts:
             dbConfig = models.BrewPiDevice.objects.get(device_name=a)
         except:
             sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
-        if configFile:
+        if configFile is not None:
             sys.exit('ERROR: Cannot use both --config and --dbcfg! Pick one and try again!')
 
     # send quit instruction to all running instances of BrewPi
@@ -237,10 +237,10 @@ for o, a in opts:
 # actual file-based config.
 
 # If neither configFile or dbConfig were set, assume we need to load defaults
-if not configFile and not dbConfig:
+if configFile is None and dbConfig is None:
     configFile = util.addSlash(sys.path[0]) + 'settings/config.cfg'
 
-if configFile:  # If we had a file-based config (or are defaulting) then load the config file
+if configFile is not None:  # If we had a file-based config (or are defaulting) then load the config file
     config = util.read_config_file_with_defaults(configFile)
 
     # check dont run file when it exists and exit it it does
@@ -252,7 +252,7 @@ if configFile:  # If we had a file-based config (or are defaulting) then load th
             exit(0)
     if tempLogType <> "flatfile":
         sys.exit('ERROR: When saving datapoints to the database, --dbcfg must be used!')
-elif dbConfig:  # Load from the database
+elif dbConfig is not None:  # Load from the database
     # TODO - Make sure the process ID check below works
     # TODO - Check 'status' to determine if we should launch
     config = util.read_config_from_database_without_defaults(dbConfig)
@@ -269,7 +269,7 @@ if allProcesses.findConflicts(myProcess):
         logMessage("Another instance of BrewPi is already running, which will conflict with this instance. " +
                    "This instance will exit")
     exit(0)
-elif dbConfig:
+elif dbConfig is not None:
     # If there is no conflict, save the process ID
     # TODO - Delete process_id & use circus to manage (??)
     config = util.configSet(configFile, dbConfig, 'process_id', os.getpid())
@@ -294,7 +294,7 @@ if logToFiles:
 # userSettings.json is a copy of some of the settings that are needed by the web server.
 # This allows the web server to load properly, even when the script is not running.
 def changeWwwSetting(settingName, value):
-    if config.get('use_brewpi_www', True):  # If we don't have a PHP-based brewpi-www installed, we don't use this code
+    if configFile is not None:  # If we're configured using configFile, assume we are running vs. brewpi-www
         wwwSettingsFileName = util.addSlash(config['wwwPath']) + 'userSettings.json'
         if os.path.exists(wwwSettingsFileName):
             wwwSettingsFile = open(wwwSettingsFileName, 'r+b')
@@ -648,7 +648,7 @@ while run:
                 bg_ser.writeln("j" + json.dumps(decoded))
                 if 'tempFormat' in decoded:
                     changeWwwSetting('tempFormat', decoded['tempFormat'])  # change in web interface settings too.
-                    if decoded['tempFormat'] <> config.get('temp_format', 'C') and dbConfig:
+                    if decoded['tempFormat'] <> config.get('temp_format', 'C') and dbConfig is not None:
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
             except json.JSONDecodeError:
@@ -705,7 +705,7 @@ while run:
             changeWwwSetting('dateTimeFormatDisplay', value)
             logMessage("Changing date format config setting: " + value)
         elif messageType == "setActiveProfile":
-            if not dbConfig:
+            if dbConfig is not None:
                 # We're not using a dbConfig object (and therefore are relying on CSV files to manage profiles)
                 # copy the profile CSV file to the working directory
                 logMessage("Setting profile '%s' as active profile" % value)
