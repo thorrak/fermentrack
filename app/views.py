@@ -10,6 +10,10 @@ import mdnsLocator
 
 import json, time
 
+import git_integration
+import subprocess
+
+
 
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile
 
@@ -338,3 +342,15 @@ def temp_panel_test(request):
     return render_with_devices(request, template_name="temp_panel_test.html",
                                context={})
 
+
+def github_trigger_upgrade(request):
+    commit_info = git_integration.get_local_remote_commit_info()
+
+    if git_integration.app_is_current():
+        messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+    else:
+        messages.success(request, "Triggered an upgrade from GitHub")
+        subprocess.call("nohup utils/upgrade.sh &", shell=True)  # I think this will do it...
+
+    return render_with_devices(request, template_name="github_trigger_upgrade.html",
+                               context={'commit_info': commit_info})

@@ -3,6 +3,10 @@
 # First, launch the virtualenv
 source ~/venv/bin/activate  # Assuming the directory based on a normal install with brewpi-django-tools
 
+# Given that this script can be called by the webapp proper, give it 3 seconds to finish sending a reply to the
+# user if he/she initiated an upgrade through the webapp.
+sleep 3s
+
 # Next, kill the running brewpi-django instance using circus
 circusctl stop
 
