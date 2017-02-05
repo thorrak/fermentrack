@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from django.contrib.messages import constants as message_constants  # For the messages override
 
 from secretsettings import *  # See secretsettings.py.example
 
@@ -25,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # This is bad practice, but is the best that we're going to get given our deployment strategy
 
 
 # Application definition
@@ -158,4 +159,11 @@ CONSTANCE_CONFIG = {
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select')
+}
+
+# Messages Configuration
+
+# Overriding messages.ERROR due to it being named something different in Bootstrap 3
+MESSAGE_TAGS = {
+    message_constants.ERROR: 'danger'
 }
