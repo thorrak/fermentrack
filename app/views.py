@@ -4,8 +4,9 @@ from django.shortcuts import render_to_response, redirect
 
 from constance import config  # For the explicitly user-configurable stuff
 
-import device_forms
-import profile_forms
+import device_forms, profile_forms
+import setup_views
+
 import mdnsLocator
 
 import json, time
@@ -19,23 +20,23 @@ from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, P
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
-    # TODO - Delete once we're confirmed to no longer be using InstallSettings
-    # site_config = InstallSettings.objects.all()
+
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
         context['all_devices'] = all_devices
     else:
         context={'all_devices': all_devices}
-    # if len(site_config)>1:  # TODO - Make this grab the first siteconfig
-    #     context['site_config'] = site_config
 
     return render(request, template_name, context, content_type, status, using)
 
 
-# Create your views here.
+# Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
-    return lcd_test(request=request)
-
-
+    if not config.USER_HAS_COMPLETED_CONFIGURATION:
+        # If things aren't configured, redirect to the guided setup workflow
+        return setup_views.setup_splash(request)
+    else:
+        # The default screen is the "lcd list" screen
+        return lcd_test(request=request)
 
 
 def add_device(request):

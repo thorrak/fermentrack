@@ -1,0 +1,30 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h2>Brewpi-django Installation</h2>
+
+{% if not num_users %}
+    {# Guided setup is a 2 step process - First step is user creation #}
+    <p>Looks like this is your first time running brewpi-django. We need to setup some things to get started.</p>
+    <a href="{% url 'setup_add_user' %}" class="btn btn-large btn-primary">Continue to guided configuration</a>
+{% elif not completed_config %}
+    {# Second step is site configuration - The user should be guided here from setup_guided_add_user #}
+    <p>Looks like this is your first time running brewpi-django. We need to setup some things to get started.</p>
+    <a href="{% url 'setup_config' %}" class="btn btn-large btn-primary">Continue to guided configuration</a>
+{% else %}
+    {# Otherwise, we're just displaying this page for the hell of it. Present both options #}
+    <p>Looks like this is your first time running brewpi-django. We need to setup some things to get started.</p>
+    <a href="{% url 'setup_add_user' %}" class="btn btn-large btn-primary">Add User Workflow</a>
+    <a href="{% url 'setup_config' %}" class="btn btn-large btn-primary">Configure Site Workflow</a>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

@@ -152,13 +152,14 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 
 # CONSTANCE_SUPERUSER_ONLY = False
 
-CONSTANCE_CONFIG = {
+CONSTANCE_CONFIG = { # TODO - Add help text to DATE_TIME_FORMAT & DATE_TIME_FORMAT_DISPLAY
     'BREWERY_NAME': ('BrewPi-Django', 'Name to be displayed in the upper left of each page', str),
     'DATE_TIME_FORMAT': ('yy-mm-dd', '', 'date_time_format_select'),  # TODO - Determine if date_time_format is used anywhere
     'DATE_TIME_FORMAT_DISPLAY': ('mm/dd/yy', '', 'date_time_display_select'),
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
-                           'temperature_format_select')
+                           'temperature_format_select'),
+    'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool)
 }
 
 # Messages Configuration
