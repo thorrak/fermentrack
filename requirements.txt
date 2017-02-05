@@ -10,3 +10,4 @@ raven           # OPTIONAL - used for debugging
 -e git://github.com/darklow/django-suit.git@v2#egg=django-suit  # Makes the admin site pretty
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
+zeroconf        # For locating ESP8266 devices
