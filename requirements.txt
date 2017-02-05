@@ -11,3 +11,5 @@ raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # For locating ESP8266 devices
+circus          # for managing brewpi.py processes
+circus-web      # for managing brewpi.py processes
