@@ -19,6 +19,9 @@ pip install -r requirements.txt --upgrade
 # Migrate to create/adjust anything necessary in the database
 ./manage.py migrate
 
+# Migrate to create/adjust anything necessary in the database
+./manage.py collectstatic
+
 
 # Finally, relaunch the brewpi-django instance using circus
 # TODO - Relaunch the brewpi-django instance using circus

@@ -1,0 +1,1 @@
+You shouldn't have to touch this folder, as its contents should be generated automatically by upgrade.sh

@@ -123,6 +123,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'collected_static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = 'media'
 
 
 # Constance configuration
@@ -145,7 +149,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     }],
 }
 
-CONSTANCE_SUPERUSER_ONLY = False
+# CONSTANCE_SUPERUSER_ONLY = False
 
 CONSTANCE_CONFIG = {
     'BREWERY_NAME': ('BrewPi-Django', 'Name to be displayed in the upper left of each page', str),
