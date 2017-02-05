@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django import forms
 from constance import config
-from constance.admin import ConstanceForm
+#from constance.admin import ConstanceForm
 from django.conf import settings
 
 class GuidedSetupUserForm(forms.ModelForm):
@@ -18,22 +18,37 @@ class GuidedSetupConfigForm(forms.Form):
         ('true', 'true'),
         ('false', 'false')
     ]
+
     # Fields for our form, the initial value taken from configuration.
-    brewery_name = forms.CharField(initial=config.BREWERY_NAME)
+
+    # There appears to be a bug with constance where if you use config in a form setup it will die if the constance
+    # database table hasn't been created yet (ie - at initial setup)
+    brewery_name = forms.CharField()#initial=config.BREWERY_NAME)
     date_time_format = forms.ChoiceField(
         choices=date_time_format_select_choices,
-        initial=config.DATE_TIME_FORMAT
+#        initial=config.DATE_TIME_FORMAT
         )
     date_time_format_display = forms.ChoiceField(
         choices=date_time_display_select_choices,
-        initial=config.DATE_TIME_FORMAT_DISPLAY
+#        initial=config.DATE_TIME_FORMAT_DISPLAY
         )
     require_login_for_dashboard = forms.ChoiceField(
         choices=true_false,
         widget=forms.RadioSelect(),
-        initial=config.REQUIRE_LOGIN_FOR_DASHBOARD
+#        initial=config.REQUIRE_LOGIN_FOR_DASHBOARD
         )
     temperature_format = forms.ChoiceField(
         choices=temperature_format_select_choices,
-        initial=config.TEMPERATURE_FORMAT
+#        initial=config.TEMPERATURE_FORMAT
         )
+
+    def __init__(self, *args, **kwargs):
+        super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
+        # for this_field in self.fields:
+        #     self.fields[this_field].widget.attrs['class'] = "form-control"
+
+        self.fields['brewery_name'].initial = config.BREWERY_NAME
+        self.fields['date_time_format'].initial = config.DATE_TIME_FORMAT
+        self.fields['date_time_format_display'].initial = config.DATE_TIME_FORMAT_DISPLAY
+        self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
+        self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
