@@ -17,7 +17,7 @@ git checkout origin/git_integration
 pip install -r requirements.txt --upgrade
 
 # Migrate to create/adjust anything necessary in the database
-../manage.py migrate
+./manage.py migrate
 
 
 # Finally, relaunch the brewpi-django instance using circus
