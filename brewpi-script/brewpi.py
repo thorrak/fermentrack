@@ -118,11 +118,11 @@ lcdText = ['Script starting up', ' ', ' ', ' ']
 
 # Read in command line arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwt",
-                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'templog='])
+    opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwLt",
+                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'templog='])
 except getopt.GetoptError:
     printStdErr("Unknown parameter, available Options: --help, --config <path to config file>, " +
-        "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, " +
+        "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist " +
         "--templog <flatfile|db|both>")
     sys.exit()
 
@@ -147,6 +147,7 @@ for o, a in opts:
         printStdErr("--dontrunfile: check dontrunfile in www directory and quit if it exists")
         printStdErr("--checkstartuponly: exit after startup checks, return 1 if startup is allowed")
         printStdErr("--dbcfg <Device name in database>: loads configuration from database")
+        printStdErr("--dblist: lists devices in the database")
         printStdErr("--templog <flatfile|db|both>: log temperature data to flatfile (default), database, or both")
         exit()
     # supply a config file
@@ -156,6 +157,24 @@ for o, a in opts:
             sys.exit('ERROR: Config file "%s" was not found!' % configFile)
         if dbConfig:
             sys.exit('ERROR: Cannot use both --config and --dbcfg! Pick one and try again!')
+
+    # list all devices in the database
+    if o in ('-L', '--dblist'):
+        try:
+            dbDevices = models.BrewPiDevice.objects.all()
+            print("=============== BrewPi Devices in Database ===============")
+            if len(dbDevices) == 0:
+                print("No configured devices found.")
+            else:
+                x = 0
+                for d in dbDevices:
+                    x += 1
+                    print("Devices:")
+                    print("  %d: %s" % (x, d.device_name))
+            print("===========================================================")
+            exit()
+        except Exception, e:
+            sys.exit(e)
 
     # load the configuration from the database
     if o in ('-w', '--dbcfg'):
