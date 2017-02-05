@@ -4,7 +4,7 @@
 source ~/venv/bin/activate  # Assuming the directory based on a normal install with brewpi-django-tools
 
 # Next, kill the running brewpi-django instance using circus
-# TODO - Kill the running brewpi-django instance using circus
+circusctl stop
 
 # Pull the latest version of the script from GitHub
 cd ~/brewpi-django  # Assuming the directory based on a normal install with brewpi-django-tools
@@ -24,4 +24,4 @@ pip install -r requirements.txt --upgrade
 
 
 # Finally, relaunch the brewpi-django instance using circus
-# TODO - Relaunch the brewpi-django instance using circus
+circusctl start

@@ -15,7 +15,7 @@ application = get_wsgi_application()
 import app.models as models
 
 # Constants
-SLEEP_INTERVAL = 10
+SLEEP_INTERVAL = 15
 
 
 def spawnBrewpi(name):
