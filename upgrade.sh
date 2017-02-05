@@ -10,7 +10,8 @@ source ~/venv/bin/activate  # Assuming the directory based on a normal install w
 cd ~/brewpi-django  # Assuming the directory based on a normal install with brewpi-django-tools
 git pull
 git reset --hard
-git checkout origin/master
+# TODO - Update the next line back to origin/master
+git checkout origin/git_integration
 
 # Install everything from requirements.txt
 pip install -r requirements.txt --upgrade
