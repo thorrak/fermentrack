@@ -23,7 +23,7 @@ def spawnBrewpi(name):
     keep brewpi devices seperated from other devices
     """
     client = CircusClient(endpoint=DEFAULT_ENDPOINT_DEALER)
-    commandTmpl = 'python -u brewpi-script/brewpi.py --dbcfg %s'
+    commandTmpl = 'python -u brewpi-script/brewpi.py --dbcfg %s --templog django'
     procName = "dev-%s" % name
     try:
         call = client.call(

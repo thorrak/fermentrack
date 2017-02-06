@@ -18,13 +18,16 @@ from django.contrib import admin
 
 import app.views
 import app.profile_views
+import app.device_views
+import app.setup_views
 import app.api.lcd
 
 admin.autodiscover()
 
-import app.views
-import app.device_views
-import app.setup_views
+# In addition to urlpatterns below, three paths are mapped by the nginx config file:
+# r'^static/' - Maps to collected_static/. Contains collected static files.
+# r'^media/' - Maps to media/. Contains uploaded files. Currently unused.
+# r'^data/' - Maps to data/. Contains data points collected by brewpi.py.
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

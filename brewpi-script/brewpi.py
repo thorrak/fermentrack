@@ -228,8 +228,8 @@ for o, a in opts:
         checkStartupOnly = True
     # If we want to log to a database rather than flat files, specify as such
     if o in ('-t', '--templog'):
-        if a <> "flatfile" and a <> "db" and a <> "both":
-            sys.exit('ERROR: --templog must be \'flatfile\', \'db\', or \'both\'. \'{}\' is an invalid choice.'.format(a))
+        if a <> "flatfile" and a <> "django" and a <> "both":
+            sys.exit('ERROR: --templog must be \'flatfile\', \'django\', or \'both\'. \'{}\' is an invalid choice.'.format(a))
         tempLogType = a
 
 
@@ -251,7 +251,7 @@ if configFile is not None:  # If we had a file-based config (or are defaulting) 
             # do not print anything, this will flood the logs
             exit(0)
     if tempLogType <> "flatfile":
-        sys.exit('ERROR: When saving datapoints to the database, --dbcfg must be used!')
+        sys.exit('ERROR: When saving datapoints with a Django-managed log model, --dbcfg must be used!')
 elif dbConfig is not None:  # Load from the database
     # TODO - Make sure the process ID check below works
     # TODO - Check 'status' to determine if we should launch
@@ -370,9 +370,15 @@ def startBeer(beerName):
         changeWwwSetting('beerName', beerName)
 
     # If we're saving to the database, we need to create the beer (possibly) and link it to the chamber
-    if (tempLogType == "db" or tempLogType == "both") and beerName <> "":
+    if (tempLogType == "django" or tempLogType == "both") and beerName <> "":
         new_beer, created = models.Beer.objects.get_or_create(name=beerName, device=dbConfig)
+        if created:
+            # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
+            new_beer.format = dbConfig.temp_format
+            new_beer.save()
+
         dbConfig.active_beer = new_beer
+        dbConfig.save()
 
 
 def startNewBrew(newName):
@@ -907,7 +913,7 @@ while run:
                                 shutil.copyfile(localCsvFileName, wwwCsvFileName)
 
                         # If we're saving to the database, do that as well. Breaking out the code to simplify.
-                        if tempLogType == "db" or tempLogType == "both":
+                        if tempLogType == "django" or tempLogType == "both":
                             util.save_beer_log_point(dbConfig, newRow)
 
                     elif line[0] == 'D':

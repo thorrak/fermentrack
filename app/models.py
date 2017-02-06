@@ -4,6 +4,8 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+import os.path, csv  # BeerLogPoints
+
 import socket
 import json, time, datetime, pytz
 from constance import config
@@ -784,6 +786,7 @@ class Beer(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     device = models.ForeignKey(BrewPiDevice, db_index=True)
     created = models.DateTimeField(default=timezone.now)
+    format = models.CharField(max_length=1, default='F')
 
 
     def __str__(self):
@@ -792,12 +795,19 @@ class Beer(models.Model):
     def __unicode__(self):
         return self.__str__()
 
+    def filename(self):
+        return self.device.device_name + " - " + self.name + " - " + str(self.created)
+
+
 class BeerLogPoint(models.Model):
     """
     BeerLogPoint contains the individual temperature log points we're saving
     """
 
     class Meta:
+        managed = False  # Since we're using flatfiles rather than a database
+        verbose_name = "Beer Log Point"
+        verbose_name_plural = "Beer Log Points"
         ordering = ['log_time']
 
     STATE_CHOICES = (
@@ -833,26 +843,93 @@ class BeerLogPoint(models.Model):
     associated_beer = models.ForeignKey(Beer, db_index=True)
 
     @staticmethod
-    def column_headers():
-        return ['log_time', 'beer_temp', 'fridge_temp']
+    def column_headers(which='base_csv'):
+        if which == 'base_csv':
+            return ['log_time', 'beer_temp', 'fridge_temp']
+        elif which == 'full_csv':
+            return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
+                    'room_temp', 'state', 'temp_format', 'associated_beer_id']
+        else:
+            return None
 
-    def data_point(self):
+    def data_point(self, data_format='base_csv', set_defaults=True):
         # datetime.datetime(1970, 1, 1)).total_seconds()
         # 1333238400.0
         # self.log_time.strftime('%Y/%m/%d %H:%M:%S')
         # time_value = int(time.mktime(self.log_time.timetuple()) * 1000)
         time_value = self.log_time.strftime('%Y/%m/%d %H:%M:%S')
+
         if self.beer_temp:
             beerTemp = self.beer_temp
-        else:
+        elif set_defaults:
             beerTemp = 0
+        else:
+            beerTemp = None
 
         if self.fridge_temp:
             fridgeTemp = self.fridge_temp
-        else:
+        elif set_defaults:
             fridgeTemp = 0
+        else:
+            fridgeTemp = None
 
-        return [time_value, beerTemp, fridgeTemp]
+        if self.room_temp:
+            roomTemp = self.room_temp
+        elif set_defaults:
+            roomTemp = 0
+        else:
+            roomTemp = None
+
+        if self.beer_set:
+            beerSet = self.beer_set
+        elif set_defaults:
+            beerSet = 0
+        else:
+            beerSet = None
+
+        if self.fridge_set:
+            fridgeSet = self.fridge_set
+        elif set_defaults:
+            fridgeSet = 0
+        else:
+            fridgeSet = None
+
+
+        if data_format == 'base_csv':
+            return [time_value, beerTemp, fridgeTemp]
+        elif data_format == 'full_csv':
+            return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
+                    roomTemp, self.state, self.temp_format, self.associated_beer_id]
+
+
+    def save(self, *args, **kwargs):
+        # Don't repeat yourself
+        def check_and_write_headers(path, col_headers):
+            if not os.path.exists(path):
+                with open(path, 'w') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(col_headers)
+
+        def write_data(path, row_data):
+            with open(path, 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow(row_data)
+
+        file_name_base = os.path.join(settings.BASE_DIR, 'data', self.associated_beer.filename())
+
+        base_csv_file = file_name_base + "_graph.csv"
+        full_csv_file = file_name_base + "_full.csv"
+
+        # Write out headers (if the files don't exist)
+        check_and_write_headers(base_csv_file, self.column_headers('base_csv'))
+        check_and_write_headers(full_csv_file, self.column_headers('full_csv'))
+
+        # And then write out the data
+        write_data(base_csv_file, self.data_point('base_csv'))
+        write_data(base_csv_file, self.data_point('full_csv'))
+
+        # super(BeerLogPoint, self).save(*args, **kwargs)
+
 
 # A model representing the fermentation profile as a whole
 class FermentationProfile(models.Model):
