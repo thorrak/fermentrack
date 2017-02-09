@@ -81,6 +81,7 @@ except ImportError:
     printStdErr("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
     sys.exit(1)
 
+import pid
 
 #local imports
 import temperatureProfile
@@ -90,7 +91,6 @@ import BrewPiUtil as util
 import brewpiVersion
 import pinList
 import expandLogMessage
-import BrewPiProcess
 from backgroundserial import BackGroundSerial
 
 
@@ -119,11 +119,11 @@ lcdText = ['Script starting up', ' ', ' ', ' ']
 # Read in command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwLt",
-                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'templog='])
+                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'templog=', 'name=', 'pidfiledir='])
 except getopt.GetoptError:
     printStdErr("Unknown parameter, available Options: --help, --config <path to config file>, " +
         "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist " +
-        "--templog <flatfile|db|both>")
+        "--templog <flatfile|db|both> --name <name>, --pidfiledir <directory>")
     sys.exit()
 
 configFile = None
@@ -132,6 +132,9 @@ checkStartupOnly = False
 logToFiles = False
 tempLogType = "flatfile"  # This is the default (existing) log type. Logs to flat files (json/csv)
 dbConfig = None  # The object containing the database configuration
+# Defaults
+pidFileDir = "/tmp"
+brewpiName = "brewpi-default"
 
 for o, a in opts:
     # print help message for command line options
@@ -139,16 +142,14 @@ for o, a in opts:
         printStdErr("\n Available command line options: ")
         printStdErr("--help: print this help message")
         printStdErr("--config <path to config file>: specify a config file to use. When omitted settings/config.cf is used. Not compatible with dbcfg.")
-        printStdErr("--status: check which scripts are already running")
-        printStdErr("--quit: ask all  instances of BrewPi to quit by sending a message to their socket")
-        printStdErr("--kill: kill all instances of BrewPi by sending SIGKILL")
-        printStdErr("--force: Force quit/kill conflicting instances of BrewPi and keep this one")
         printStdErr("--log: redirect stderr and stdout to log files")
         printStdErr("--dontrunfile: check dontrunfile in www directory and quit if it exists")
         printStdErr("--checkstartuponly: exit after startup checks, return 1 if startup is allowed")
         printStdErr("--dbcfg <Device name in database>: loads configuration from database")
         printStdErr("--dblist: lists devices in the database")
         printStdErr("--templog <flatfile|db|both>: log temperature data to flatfile (default), database, or both")
+        printStdErr("--pidfiledir <filename>: pid-file path/filename")
+        printStdErr("--name <name>: name of brewpi instance")
         exit()
     # supply a config file
     if o in ('-c', '--config'):
@@ -157,6 +158,16 @@ for o, a in opts:
             sys.exit('ERROR: Config file "%s" was not found!' % configFile)
         if dbConfig:
             sys.exit('ERROR: Cannot use both --config and --dbcfg! Pick one and try again!')
+
+    if o in ('--pidfiledir'):
+        if not os.path.exits(a):
+            sys.exit('ERROR: pidfiledir "%s" does not exist' % a)
+        pidFileDir = a
+
+    if o in ('--name'):
+        if dbConfig:
+            sys.exit("ERROR: Cannot use both --name and --dbcfg! Pick one and try again!")
+        brewpiName = a
 
     # list all devices in the database
     if o in ('-L', '--dblist'):
@@ -181,43 +192,12 @@ for o, a in opts:
         # Try loading the database configuration from
         try:
             dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+            brewpiName = a
         except:
             sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
         if configFile:
             sys.exit('ERROR: Cannot use both --config and --dbcfg! Pick one and try again!')
 
-    # send quit instruction to all running instances of BrewPi
-    if o in ('-s', '--status'):
-        allProcesses = BrewPiProcess.BrewPiProcesses()
-        allProcesses.update()
-        running = allProcesses.as_dict()
-        if running:
-            pprint(running)
-        else:
-            printStdErr("No BrewPi scripts running")
-        exit()
-    # quit/kill running instances, then keep this one
-    if o in ('-q', '--quit'):
-        logMessage("Asking all BrewPi Processes to quit on their socket")
-        allProcesses = BrewPiProcess.BrewPiProcesses()
-        allProcesses.quitAll()
-        time.sleep(2)
-        exit()
-    # send SIGKILL to all running instances of BrewPi
-    if o in ('-k', '--kill'):
-        logMessage("Killing all BrewPi Processes")
-        allProcesses = BrewPiProcess.BrewPiProcesses()
-        allProcesses.killAll()
-        exit()
-    # close all existing instances of BrewPi by quit/kill and keep this one
-    if o in ('-f', '--force'):
-        logMessage("Closing all existing processes of BrewPi and keeping this one")
-        allProcesses = BrewPiProcess.BrewPiProcesses()
-        if len(allProcesses.update()) > 1:  # if I am not the only one running
-            allProcesses.quitAll()
-            time.sleep(2)
-            if len(allProcesses.update()) > 1:
-                printStdErr("Asking the other processes to quit nicely did not work. Killing them with force!")
     # redirect output of stderr and stdout to files in log directory
     if o in ('-l', '--log'):
         logToFiles = True
@@ -259,17 +239,17 @@ elif dbConfig:  # Load from the database
 else:  # This should never be hit - Just adding it to the code to make it clear that if neither of these work, we exit
     exit(1)
 
-
 # check for other running instances of BrewPi that will cause conflicts with this instance
-allProcesses = BrewPiProcess.BrewPiProcesses()
-allProcesses.update()
-myProcess = allProcesses.me()
-if allProcesses.findConflicts(myProcess):
+pidFile = pid.PidFile(piddir=pidFileDir, pidname=brewpiName)
+try:
+    pidFile.create()
+except pid.PidFileAlreadyLockedError:
     if not checkDontRunFile:  # Even for database configurations, we don't want to log this if the gatekeeper launched me
-        logMessage("Another instance of BrewPi is already running, which will conflict with this instance. " +
+        logMessage("Another instance of BrewPi is already running, which will conflict with this instance. " \
                    "This instance will exit")
-    exit(0)
-elif dbConfig:
+        exit(0)
+
+if dbConfig:
     # If there is no conflict, save the process ID
     # TODO - Delete process_id & use circus to manage (??)
     config = util.configSet(configFile, dbConfig, 'process_id', os.getpid())
@@ -294,6 +274,10 @@ if logToFiles:
 # userSettings.json is a copy of some of the settings that are needed by the web server.
 # This allows the web server to load properly, even when the script is not running.
 def changeWwwSetting(settingName, value):
+    # TODO: Decide if this is a ugly hack ;) // stone
+    if dbConfig:
+        return
+
     if config.get('use_brewpi_www', True):  # If we don't have a PHP-based brewpi-www installed, we don't use this code
         wwwSettingsFileName = util.addSlash(config['wwwPath']) + 'userSettings.json'
         if os.path.exists(wwwSettingsFileName):
