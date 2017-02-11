@@ -221,7 +221,7 @@ if configFile is not None:  # If we had a file-based config (or are defaulting) 
     config = util.read_config_file_with_defaults(configFile)
 
     # check dont run file when it exists and exit it it does
-    # Doing this here, because we explicitly save the process ID for database configurations
+    # For dbConfig-based installs we use dbConfig.status instead of the dontRunFile
     if checkDontRunFile:
         dontRunFilePath = os.path.join(config['wwwPath'], 'do_not_run_brewpi')
         if os.path.exists(dontRunFilePath):
@@ -631,13 +631,18 @@ while run:
             raise socket.timeout
         elif messageType == "stopScript":  # exit instruction received. Stop script.
             # voluntary shutdown.
-            # write a file to prevent the cron job from restarting the script
-            logMessage("stopScript message received on socket. " +
-                       "Stopping script and writing dontrunfile to prevent automatic restart")
+            log_message = "stopScript message received on socket. "
             run = 0
-            dontrunfile = open(dontRunFilePath, "w")  # TODO - Add code to update django object model here
-            dontrunfile.write("1")
-            dontrunfile.close()
+            if configFile is not None:  # If we're using configFile (brewpi-www) then write to dontRunFile
+                # write a file to prevent the cron job from restarting the script
+                dontrunfile = open(dontRunFilePath, "w")
+                dontrunfile.write("1")
+                dontrunfile.close()
+                log_message += "Stopping script and writing dontrunfile to prevent automatic restart"
+            else:
+                log_message += "dbConfig in use - assuming device status was already properly updated "
+                log_message += "to prevent automatic restart"
+            logMessage(log_message)
             continue
         elif messageType == "quit":  # quit instruction received. Probably sent by another brewpi script instance
             logMessage("quit message received on socket. Stopping script.")
