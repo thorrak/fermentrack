@@ -14,3 +14,4 @@ zeroconf        # For locating ESP8266 devices
 circus          # for managing brewpi.py processes
 circus-web      # for managing brewpi.py processes
 chaussette      # for managing brewpi-django wsgi
+pid             # for pid-file handling
