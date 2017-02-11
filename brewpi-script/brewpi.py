@@ -126,12 +126,15 @@ except getopt.GetoptError:
         "--templog <flatfile|db|both> --name <name>, --pidfiledir <directory>")
     sys.exit()
 
+# Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation. If
+# dbConfig is set, we have a brewpi-django- based installation.
 configFile = None
+dbConfig = None  # A BrewPiDevice object (which contains all our configuration info)
+
 checkDontRunFile = False
 checkStartupOnly = False
 logToFiles = False
-tempLogType = "flatfile"  # This is the default (existing) log type. Logs to flat files (json/csv)
-dbConfig = None  # The object containing the database configuration
+
 # Defaults
 pidFileDir = "/tmp"
 brewpiName = "brewpi-default"
@@ -141,13 +144,12 @@ for o, a in opts:
     if o in ('-h', '--help'):
         printStdErr("\n Available command line options: ")
         printStdErr("--help: print this help message")
-        printStdErr("--config <path to config file>: specify a config file to use. When omitted settings/config.cf is used. Not compatible with dbcfg.")
+        printStdErr("--config <path to config file>: specify a config file to use. When omitted settings/config.cfg is used. Not compatible with dbcfg.")
         printStdErr("--log: redirect stderr and stdout to log files")
         printStdErr("--dontrunfile: check dontrunfile in www directory and quit if it exists")
         printStdErr("--checkstartuponly: exit after startup checks, return 1 if startup is allowed")
         printStdErr("--dbcfg <Device name in database>: loads configuration from database")
         printStdErr("--dblist: lists devices in the database")
-        printStdErr("--templog <flatfile|db|both>: log temperature data to flatfile (default), database, or both")
         printStdErr("--pidfiledir <filename>: pid-file path/filename")
         printStdErr("--name <name>: name of brewpi instance")
         exit()
@@ -206,11 +208,6 @@ for o, a in opts:
         checkDontRunFile = True
     if o in ('--checkstartuponly'):
         checkStartupOnly = True
-    # If we want to log to a database rather than flat files, specify as such
-    if o in ('-t', '--templog'):
-        if a <> "flatfile" and a <> "django" and a <> "both":
-            sys.exit('ERROR: --templog must be \'flatfile\', \'django\', or \'both\'. \'{}\' is an invalid choice.'.format(a))
-        tempLogType = a
 
 
 # Alright. We're modifying how we load the configuration file to allow for loading both from a database, and from the
@@ -230,8 +227,6 @@ if configFile is not None:  # If we had a file-based config (or are defaulting) 
         if os.path.exists(dontRunFilePath):
             # do not print anything, this will flood the logs
             exit(0)
-    if tempLogType <> "flatfile":
-        sys.exit('ERROR: When saving datapoints with a Django-managed log model, --dbcfg must be used!')
 elif dbConfig is not None:  # Load from the database
     # TODO - Make sure the process ID check below works
     # TODO - Check 'status' to determine if we should launch
@@ -274,11 +269,8 @@ if logToFiles:
 # userSettings.json is a copy of some of the settings that are needed by the web server.
 # This allows the web server to load properly, even when the script is not running.
 def changeWwwSetting(settingName, value):
-    # TODO: Decide if this is a ugly hack ;) // stone
-    if dbConfig is not None:
-        return
-
-    if config.get('use_brewpi_www', True):  # If we don't have a PHP-based brewpi-www installed, we don't use this code
+    # We only update changeWwwSetting if we're using a configFile based installation (That is - brewpi-www)
+    if configFile is not None:
         wwwSettingsFileName = util.addSlash(config['wwwPath']) + 'userSettings.json'
         if os.path.exists(wwwSettingsFileName):
             wwwSettingsFile = open(wwwSettingsFileName, 'r+b')
@@ -307,7 +299,7 @@ def setFiles():
     global lastDay
     global day
 
-    if tempLogType == "flatfile" or tempLogType == "both":
+    if configFile is not None:  # We only track the files in brewpi.py for configFile (brewpi-www) installations
 
         # create directory for the data if it does not exist
         beerFileName = config['beerName']
@@ -347,22 +339,13 @@ def setFiles():
         # create new empty json file
         brewpiJson.newEmptyFile(localJsonFileName)
 
+
 def startBeer(beerName):
-    if tempLogType == "flatfile" or tempLogType == "both":
+    # For dbConfig-based installations, beer creation & linking has been moved to BrewPiUtil.py
+    if configFile is not None:  # If we're using a configFile-based (brewpi-www) installation, set everything up
         if config['dataLogging'] == 'active':
             setFiles()
         changeWwwSetting('beerName', beerName)
-
-    # If we're saving to the database, we need to create the beer (possibly) and link it to the chamber
-    if (tempLogType == "django" or tempLogType == "both") and beerName <> "":
-        new_beer, created = models.Beer.objects.get_or_create(name=beerName, device=dbConfig)
-        if created:
-            # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
-            new_beer.format = dbConfig.temp_format
-            new_beer.save()
-
-        dbConfig.active_beer = new_beer
-        dbConfig.save()
 
 
 def startNewBrew(newName):
@@ -383,7 +366,7 @@ def stopLogging():
     global config
     logMessage("Stopped data logging, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data.")
-    config = util.configSet(configFile, dbConfig, 'beerName', None)  # TODO - Edit this line to work with the database
+    config = util.configSet(configFile, dbConfig, 'beerName', None)
     config = util.configSet(configFile, dbConfig, 'dataLogging', 'stopped')
     changeWwwSetting('beerName', None)
     return {'status': 0, 'statusMessage': "Successfully stopped logging"}
@@ -535,15 +518,15 @@ def renameTempKey(key):
     return rename.get(key, key)
 
 while run:
-    if config['dataLogging'] == 'active':
+
+    # We only need to do the day roll if we're saving to flatfiles
+    if configFile is not None and config['dataLogging'] == 'active':
         # Check whether it is a new day
-        if tempLogType == "flatfile" or tempLogType == "both":
-            # We only need to do the day role if we're saving to flatfiles
-            lastDay = day
-            day = time.strftime("%Y-%m-%d")
-            if lastDay != day:
-                logMessage("Notification: New day, creating new JSON file.")
-                setFiles()
+        lastDay = day
+        day = time.strftime("%Y-%m-%d")
+        if lastDay != day:
+            logMessage("Notification: New day, creating new JSON file.")
+            setFiles()
 
     # Wait for incoming socket connections.
     # When nothing is received, socket.timeout will be raised after
@@ -869,8 +852,8 @@ while run:
 
                         newRow = prevTempJson
 
-                        # If we're saving to the flat files (json/csv), then do so
-                        if tempLogType == "flatfile" or tempLogType == "both":
+                        # For configFile-based installations (brewpi-www) create the old-style CSV/JSON dump
+                        if configFile is not None:
                             # add to JSON file
                             brewpiJson.addRow(localJsonFileName, newRow)
                             #write csv file too
@@ -890,15 +873,17 @@ while run:
                                 logMessage("KeyError in line from controller: %s" % str(e))
 
                             csvFile.close()
-                            if config.get('use_brewpi_www', True):  # If we don't have a PHP-based brewpi-www installed, we don't use this code
-                                # copy to www dir.
-                                # Do not write directly to www dir to prevent blocking www file.
-                                shutil.copyfile(localJsonFileName, wwwJsonFileName)
-                                shutil.copyfile(localCsvFileName, wwwCsvFileName)
 
-                        # If we're saving to the database, do that as well. Breaking out the code to simplify.
-                        if tempLogType == "django" or tempLogType == "both":
+                            # copy to www dir.
+                            # Do not write directly to www dir to prevent blocking www file.
+                            shutil.copyfile(localJsonFileName, wwwJsonFileName)
+                            shutil.copyfile(localCsvFileName, wwwCsvFileName)
+
+                        elif dbConfig is not None:  # If this is a django-based install, use the model to save
                             util.save_beer_log_point(dbConfig, newRow)
+                        else:
+                            # Shouldn't ever get here - dbConfig AND configFile aren't set
+                            raise NotImplementedError
 
                     elif line[0] == 'D':
                         # debug message received, should already been filtered out, but print anyway here.

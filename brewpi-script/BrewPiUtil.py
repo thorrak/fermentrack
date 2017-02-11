@@ -125,9 +125,19 @@ def configSet(configFile, db_config_object, settingName, value):
         elif settingName == "boardType":
             db_config_object.board_type = value
         elif settingName == "beerName":
-            # As of right now, setting the beerName doesn't do anything, as setting the beer is done in brewpi.startBeer
-            # TODO - Make sure this actually works as intended
-            pass
+            # If we have a blank or NoneType name, we're unsetting the beer.
+            if value is None or len(value) < 1:
+                db_config_object.active_beer = None
+            else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
+                new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
+                if created:
+                    # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
+                    new_beer.format = db_config_object.temp_format
+                    new_beer.save()
+
+                db_config_object.active_beer = new_beer
+                db_config_object.save()
+
         elif settingName == "socket_name":
             db_config_object.socket_name = value
         elif settingName == "interval":
@@ -135,8 +145,6 @@ def configSet(configFile, db_config_object, settingName, value):
             db_config_object.data_point_log_interval = value
         elif settingName == "dataLogging":
             db_config_object.logging_status = value
-        elif settingName == "use_brewpi_www":
-            db_config_object.has_old_brewpi_www = value
         else:
             # In all other cases, just try to set the field directly
             setattr(db_config_object, settingName, value)
@@ -145,7 +153,7 @@ def configSet(configFile, db_config_object, settingName, value):
 
 def save_beer_log_point(db_config_object, beer_row):
     """
-    Saves a row of data to the database
+    Saves a row of data to the database (mapping the data row we are passed to Django's BeerLogPoint model)
     :param db_config_object:
     :param beer_row:
     :return:

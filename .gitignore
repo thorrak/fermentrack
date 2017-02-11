@@ -159,3 +159,8 @@ BEERSOCKET
 # To force PyCharm to show it as untracked (even though the above rule -should- catch it)
 db.sqlite3
 
+.DS_Store
+.idea/
+
+.DS_Store
+
