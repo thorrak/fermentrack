@@ -1,6 +1,7 @@
 # ======= settings above this line have been added automatically =======
 # uncomment settings here, these override the settings in defaults.cfg
 
+# brewpiName = brewpi-default  # Overridden by --name option, used to ensure uniqueness of brewpi-script instances
 # scriptPath = /home/brewpi/
 # wwwPath = /var/www/
 # port = /dev/ttyACM0

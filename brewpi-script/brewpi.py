@@ -118,12 +118,12 @@ lcdText = ['Script starting up', ' ', ' ', ' ']
 
 # Read in command line arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwLt",
-                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'templog=', 'name=', 'pidfiledir='])
+    opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwL",
+                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'name=', 'pidfiledir='])
 except getopt.GetoptError:
     printStdErr("Unknown parameter, available Options: --help, --config <path to config file>, " +
-        "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist " +
-        "--templog <flatfile|db|both> --name <name>, --pidfiledir <directory>")
+        "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist, " +
+        "--name <name>, --pidfiledir <directory>")
     sys.exit()
 
 # Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation. If
@@ -137,7 +137,7 @@ logToFiles = False
 
 # Defaults
 pidFileDir = "/tmp"
-brewpiName = "brewpi-default"
+brewpiName = None  # Defaulting in config file
 
 for o, a in opts:
     # print help message for command line options
@@ -227,10 +227,17 @@ if configFile is not None:  # If we had a file-based config (or are defaulting) 
         if os.path.exists(dontRunFilePath):
             # do not print anything, this will flood the logs
             exit(0)
+    if brewpiName is None:
+        brewpiName = config['brewpiName']  # Update brewpiName if in the config file and not explicitly set on cmd line
+        if brewpiName is None:
+            raise ValueError
 elif dbConfig is not None:  # Load from the database
-    # TODO - Make sure the process ID check below works
-    # TODO - Check 'status' to determine if we should launch
-    config = util.read_config_from_database_without_defaults(dbConfig)
+    if dbConfig.status == models.BrewPiDevice.STATUS_ACTIVE or dbConfig.status == models.BrewPiDevice.STATUS_UNMANAGED:
+        config = util.read_config_from_database_without_defaults(dbConfig)
+    else:
+        logMessage("This instance of BrewPi is currently disabled in the web interface. Reenable it and relaunch " \
+                   "this script. This instance will now exit.")
+        exit(0)
 else:  # This should never be hit - Just adding it to the code to make it clear that if neither of these work, we exit
     exit(1)
 
@@ -243,11 +250,6 @@ except pid.PidFileAlreadyLockedError:
         logMessage("Another instance of BrewPi is already running, which will conflict with this instance. " \
                    "This instance will exit")
         exit(0)
-
-if dbConfig is not None:
-    # If there is no conflict, save the process ID
-    # TODO - Delete process_id & use circus to manage (??)
-    config = util.configSet(configFile, dbConfig, 'process_id', os.getpid())
 
 if checkStartupOnly:
     exit(1)
@@ -673,10 +675,10 @@ while run:
             result = resumeLogging()
             conn.send(json.dumps(result))
         elif messageType == "dateTimeFormatDisplay":
-            # TODO - Check if this is really necessary on a non-brewpi-www install
-            config = util.configSet(configFile, dbConfig, 'dateTimeFormatDisplay', value)
-            changeWwwSetting('dateTimeFormatDisplay', value)
-            logMessage("Changing date format config setting: " + value)
+            if configFile is not None:
+                config = util.configSet(configFile, dbConfig, 'dateTimeFormatDisplay', value)
+                changeWwwSetting('dateTimeFormatDisplay', value)
+                logMessage("Changing date format config setting: " + value)
         elif messageType == "setActiveProfile":
             if dbConfig is not None:
                 # We're not using a dbConfig object (and therefore are relying on CSV files to manage profiles)
