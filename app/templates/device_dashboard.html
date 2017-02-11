@@ -5,8 +5,17 @@
 
 {% block content %}
 
+    <div class="row">
+        <div class="col-md-4 col-sm-12">
+            <h1>{{ active_device.device_name }}</h1>
+            <h5>Now Fermenting: </h5>
+        </div>
+        <div class="col-md-8 col-sm-12">
 
-    {{ active_device.device_name }}
+            {# TODO - LCD Goes Here #}
+
+        </div>
+    </div>
     <a href="{% url "device_config" active_device.id %}">Config</a>
     <a href="{% url "sensor_list" active_device.id %}">Sensor List</a>
 
