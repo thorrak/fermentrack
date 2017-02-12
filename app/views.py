@@ -181,16 +181,19 @@ def device_config_legacy(request, device_id, control_constants):
 
 
 def device_config(request, device_id):
-    # TODO - Add error message if device_id is invalid
-    this_device = BrewPiDevice.objects.get(id=device_id)
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
 
-    control_constants, is_legacy = this_device.retrieve_control_constants()
+    control_constants, is_legacy = active_device.retrieve_control_constants()
 
     if control_constants is None:
         # We weren't able to retrieve the version from the controller.
-        # TODO - Add error message & fix this code
-        all_devices = BrewPiDevice.objects.all()
-        return render(request, template_name="device_list.html", context={'all_devices': all_devices})
+        messages.error(request, "Unable to reach brewpi-script for device {}".format(active_device.device_name))
+        return redirect('device_dashboard', device_id=device_id)
+
     elif is_legacy:
         return device_config_legacy(request, device_id, control_constants)
     else:
@@ -199,8 +202,11 @@ def device_config(request, device_id):
 
 
 def sensor_list(request, device_id):
-    # TODO - Add error message if device_id is invalid
-    active_device = BrewPiDevice.objects.get(id=device_id)
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
 
     devices_loaded = active_device.load_sensors_from_device()
 
@@ -226,8 +232,11 @@ def sensor_list(request, device_id):
 
 
 def sensor_config(request, device_id):
-    # TODO - Add error message if device_id is invalid
-    active_device = BrewPiDevice.objects.get(id=device_id)
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
 
     active_device.load_sensors_from_device()
 
@@ -250,10 +259,11 @@ def sensor_config(request, device_id):
                 messages.success(request, 'Device definition saved for device {}'.format(device_id))
                 return redirect('sensor_list', device_id=device_id)
             else:
-                # TODO - Add error message if we failed to write the configuration to the controller
+                # We failed to write the configuration to the controller. Show an error.
+                messages.error(request, "Failed to write the configuration to the controller.")
                 return redirect('sensor_list', device_id=device_id)
         else:
-            # TODO - Add error message here if the form was invalid
+            messages.error(request, "There was an error processing the form. Please review and resubmit.")
             return redirect('sensor_list', device_id=device_id)
 
     return redirect('sensor_list', device_id=device_id)
@@ -274,8 +284,11 @@ def beer_active_csv(request, device_id):
 
 
 def device_dashboard(request, device_id):
-    # TODO - Add error message if device_id is invalid
-    active_device = BrewPiDevice.objects.get(id=device_id)
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
     beer_create_form = beer_forms.BeerCreateForm()
 
     return render_with_devices(request, template_name="device_dashboard.html",
@@ -319,8 +332,8 @@ def device_temp_control(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
     except:
-        messages.error('Unable to load device #{} for configuration'.format(device_id))
-        return redirect("/")
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
 
     if request.POST:
         form = device_forms.TempControlForm(request.POST)
@@ -335,21 +348,21 @@ def device_temp_control(request, device_id):
                                                          profile=form.cleaned_data['profile'])
             else:
                 messages.error(request, "Invalid temperature control function specified.")
-                return redirect("/")
+                return redirect('siteroot')
 
             if success:
                 messages.success(request, 'Temperature control settings updated for {}'.format(active_device.device_name))
             else:
                 messages.error(request, 'Unable to update temperature control settings for {}'.format(active_device.device_name))
 
-            return redirect("/")
+            return redirect('siteroot')
 
         else:
             messages.error(request, 'Unable to parse temperature control settings provided')
-            return redirect("/")
+            return redirect('siteroot')
     else:
         messages.error(request, 'No temperature control settings provided')
-        return redirect("/")
+        return redirect('siteroot')
 
 
 def temp_panel_test(request):
