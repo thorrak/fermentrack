@@ -174,30 +174,3 @@ class TempControlForm(forms.Form):
         self.fields['profile'] = forms.ChoiceField(required=False,
                                                    choices=self.get_profile_choices(),
                                                    widget=forms.Select(attrs={'class': 'form-control'}))
-
-
-
-class GuidedDeviceSelectForm(forms.Form):
-    DEVICE_FAMILY_CHOICES = (
-        ('ESP8266', 'ESP8266'),
-        ('Arduino', 'Arduino (and compatible)'),
-        ('Spark', 'Spark Core'),
-        ('Fuscus', 'Native Python (Fuscus)'),
-    )
-
-    device_family = forms.ChoiceField(label="Device Family",
-                                      widget=forms.Select(attrs={'class': 'form-control',
-                                                                 'data-toggle': 'select'}),
-                                      choices=DEVICE_FAMILY_CHOICES, required=True)
-
-
-class GuidedDeviceFlashForm(forms.Form):
-    DEVICE_FAMILY_CHOICES = GuidedDeviceSelectForm.DEVICE_FAMILY_CHOICES
-
-    device_family = forms.ChoiceField(label="Device Family",
-                                      widget=forms.Select(attrs={'class': 'form-control',
-                                                                 'data-toggle': 'select'}),
-                                      choices=DEVICE_FAMILY_CHOICES, required=True)
-    should_flash_device = forms.BooleanField(widget=forms.HiddenInput)
-
-

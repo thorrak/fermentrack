@@ -4,6 +4,12 @@ from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
 
+
+###################################################################################################################
+# Initial Setup Forms
+###################################################################################################################
+
+
 class GuidedSetupUserForm(forms.ModelForm):
     class Meta:
         model = User
@@ -57,3 +63,34 @@ class GuidedSetupConfigForm(forms.Form):
                 self.fields[this_field].help_text = help_text
             except:
                 pass
+
+
+###################################################################################################################
+# Guided Setup Forms
+###################################################################################################################
+
+
+class GuidedDeviceSelectForm(forms.Form):
+    DEVICE_FAMILY_CHOICES = (
+        ('ESP8266', 'ESP8266'),
+        ('Arduino', 'Arduino (and compatible)'),
+        ('Spark', 'Spark Core'),
+        ('Fuscus', 'Native Python (Fuscus)'),
+    )
+
+    device_family = forms.ChoiceField(label="Device Family",
+                                      widget=forms.Select(attrs={'class': 'form-control',
+                                                                 'data-toggle': 'select'}),
+                                      choices=DEVICE_FAMILY_CHOICES, required=True)
+
+
+class GuidedDeviceFlashForm(forms.Form):
+    DEVICE_FAMILY_CHOICES = GuidedDeviceSelectForm.DEVICE_FAMILY_CHOICES
+
+    device_family = forms.ChoiceField(label="Device Family",
+                                      widget=forms.Select(attrs={'class': 'form-control',
+                                                                 'data-toggle': 'select'}),
+                                      choices=DEVICE_FAMILY_CHOICES, required=True)
+    should_flash_device = forms.BooleanField(widget=forms.HiddenInput)
+
+
