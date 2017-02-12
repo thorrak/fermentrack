@@ -130,6 +130,9 @@ STATIC_ROOT = 'collected_static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'
 
+DATA_URL = '/data/'
+DATA_ROOT = 'data'
+
 
 # Constance configuration
 # https://github.com/jazzband/django-constance

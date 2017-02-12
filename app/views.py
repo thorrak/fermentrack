@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response, redirect
 
 from constance import config  # For the explicitly user-configurable stuff
 
-import device_forms, profile_forms
+import device_forms, profile_forms, beer_forms
 import setup_views
 
 import mdnsLocator
@@ -259,6 +259,7 @@ def sensor_config(request, device_id):
     return redirect('sensor_list', device_id=device_id)
 
 
+# TODO - Delete this (and the corresponding template) if we are no longer using by the time we go to production
 def beer_active_csv(request, device_id):
     # TODO - Add error message if device_id is invalid
     active_device = BrewPiDevice.objects.get(id=device_id)
@@ -275,9 +276,10 @@ def beer_active_csv(request, device_id):
 def device_dashboard(request, device_id):
     # TODO - Add error message if device_id is invalid
     active_device = BrewPiDevice.objects.get(id=device_id)
+    beer_create_form = beer_forms.BeerCreateForm()
 
     return render_with_devices(request, template_name="device_dashboard.html",
-                               context={'active_device': active_device,})
+                               context={'active_device': active_device, 'beer_create_form': beer_create_form})
 
 
 def find_new_mdns_brewpi_controller(request):

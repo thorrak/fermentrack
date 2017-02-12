@@ -31,7 +31,6 @@ def temp_control_label(this_device, control_status):
     return {'temp_control_status': control_status, 'this_device': this_device}
 
 
-
 @register.inclusion_tag('brewpi/temp_panel.html')
 def temp_panel(device_name, fridge_temp, target_temp):
     device_status = {}

@@ -30,6 +30,7 @@ def printStdErr(*objs):
 
 # Quits all running instances of BrewPi
 def quitBrewPi(webPath):
+    # TODO - Update this to work with pidFiles
     import BrewPiProcess
     allProcesses = BrewPiProcess.BrewPiProcesses()
     allProcesses.stopAll(webPath + "/do_not_run_brewpi")

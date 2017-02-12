@@ -1,3 +1,8 @@
+# NOTE - This file is no longer used and can likely be deleted. Once refactoring of updateFirmware.py is complete,
+# delete this.
+
+# TODO - Delete this file once refactoring of updateFirmware.py is complete
+
 # Copyright 2013 BrewPi
 # This file is part of BrewPi.
 
