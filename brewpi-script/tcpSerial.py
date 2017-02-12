@@ -3,6 +3,8 @@
 import BrewPiUtil
 import socket
 import mdnsLocator
+import os, sys
+
 
 
 class TCPSerial(object):
@@ -135,7 +137,11 @@ class TCPSerial(object):
         try:
             self.sock.connect((self.host, self.port))
         except socket.gaierror as e:
-            BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port))
-        # except socket.error as e:  # Catches "bad file descriptor" error
-        #     BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port))
+            BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
+                                  ". Exiting.")
+            sys.exit(1)
+        except socket.error as e:  # Catches "bad file descriptor" error
+            BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
+                                  ". Exiting.")
+            sys.exit(1)
 
