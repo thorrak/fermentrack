@@ -162,5 +162,6 @@ db.sqlite3
 .DS_Store
 .idea/
 
-.DS_Store
-
+# Don't upload any saved data files
+data/*.csv
+data/*.json

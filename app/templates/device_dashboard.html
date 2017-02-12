@@ -8,7 +8,17 @@
     <div class="row">
         <div class="col-md-4 col-sm-12">
             <h1>{{ active_device.device_name }}</h1>
-            <h5>Now Fermenting: </h5>
+            <h5>Now Fermenting: {% if active_device.active_beer %}{{ active_device.active_beer.name }}{% else %}Nothing{% endif %}</h5>
+        {% if active_device.active_beer %}
+            {% if active_device.logging_status == 'active' %}
+                <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>
+            {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}
+                <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>
+            {% endif %}
+            <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>
+        {% else %}
+            <button type="button" class="btn btn-small btn-sm btn-primary" data-toggle="modal" data-target="#beerModal">Start New Beer/Log</button>
+        {% endif %}
         </div>
         <div class="col-md-8 col-sm-12">
 
@@ -27,7 +37,8 @@
             <script type="text/javascript">
               g2 = new Dygraph(
                 document.getElementById("graphdiv2"),
-                "{% url 'csv_active_beer' active_device.id %}", // path to CSV file
+                  {#  TODO - Something here if active beer isn't set #}
+                "{{ active_device.active_beer.base_csv_url }}", // path to CSV file
                 {
                     labelsDiv: document.getElementById('legend-div')
                 }          // options
@@ -36,6 +47,46 @@
         </div>
     <div class="col-sm-2"><div id="legend-div"></div></div>
     </div>
+
+
+{% if not active_device.active_beer %}
+
+    <!-- Beer Modal -->
+    <div class="modal fade" id="beerModal" tabindex="-1" role="dialog" aria-labelledby="beerModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="beerModalLabel" style="color: #000;">Create Beer & Start Logging</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form action="{% url "beer_create" active_device.id %}" method="post" >{% csrf_token %}
+
+                            {% form_generic beer_create_form.beer_name %}
+
+                            <input type="hidden" name="device" value="{{ active_device.id }}">
+                            <button type="submit" class="btn btn-large btn-primary">Create Beer & Log</button>
+                        </form>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Beer Modal -->
+
+{% endif %}
 
 
 {% endblock %}

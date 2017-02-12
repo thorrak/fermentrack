@@ -15,14 +15,11 @@ from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, P
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
-    # TODO - Delete once we're confirmed to no longer be using InstallSettings
-    # site_config = InstallSettings.objects.all()
+
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
         context['all_devices'] = all_devices
     else:
         context={'all_devices': all_devices}
-    # if len(site_config)>1:  # TODO - Make this grab the first siteconfig
-    #     context['site_config'] = site_config
 
     return render(request, template_name, context, content_type, status, using)
 

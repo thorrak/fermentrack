@@ -129,14 +129,15 @@ def configSet(configFile, db_config_object, settingName, value):
             if value is None or len(value) < 1:
                 db_config_object.active_beer = None
             else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
+                # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
+                # brewpi-script. For brewpi-django we're
                 new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
                 if created:
                     # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
                     new_beer.format = db_config_object.temp_format
                     new_beer.save()
-
-                db_config_object.active_beer = new_beer
-                db_config_object.save()
+                if db_config_object.active_beer != new_beer:
+                    db_config_object.active_beer = new_beer
 
         elif settingName == "socket_name":
             db_config_object.socket_name = value

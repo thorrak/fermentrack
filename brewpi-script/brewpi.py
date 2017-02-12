@@ -121,7 +121,7 @@ try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwL",
                                ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'name=', 'pidfiledir='])
 except getopt.GetoptError:
-    printStdErr("Unknown parameter, available Options: --help, --config <path to config file>, " +
+    printStdErr("Unknown parameter. Available options: --help, --config <path to config file>, " +
         "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist, " +
         "--name <name>, --pidfiledir <directory>")
     sys.exit()
@@ -391,8 +391,13 @@ def resumeLogging():
     if config['dataLogging'] == 'paused':
         config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
         return {'status': 0, 'statusMessage': "Successfully continued logging."}
-    else:
-        return {'status': 1, 'statusMessage': "Logging was not paused."}
+    elif config['dataLogging'] == 'stopped':
+        if dbConfig is not None:
+            if dbConfig.active_beer is not None:
+                config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+                return {'status': 0, 'statusMessage': "Successfully continued logging."}
+    # If we didn't return a success status above, we'll return an error
+    return {'status': 1, 'statusMessage': "Logging was not resumed."}
 
 # bytes are read from nonblocking serial into this buffer and processed when the buffer contains a full line.
 ser = util.setupSerial(config, time_out=0)

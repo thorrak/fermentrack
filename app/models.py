@@ -10,6 +10,7 @@ import socket
 import json, time, datetime, pytz
 from constance import config
 from brewpi_django import settings
+import re
 
 
 # BrewPiDevice
@@ -364,7 +365,16 @@ class BrewPiDevice(models.Model):
 
 
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
-    DATA_LOGGING_CHOICES = (('active', 'Active'), ('paused', 'Paused'), ('stopped', 'Stopped'))
+
+    DATA_LOGGING_ACTIVE = 'active'
+    DATA_LOGGING_PAUSED = 'paused'
+    DATA_LOGGING_STOPPED = 'stopped'
+
+    DATA_LOGGING_CHOICES = (
+        (DATA_LOGGING_ACTIVE, 'Active'),
+        (DATA_LOGGING_PAUSED, 'Paused'),
+        (DATA_LOGGING_STOPPED, 'Stopped')
+    )
     DATA_POINT_TIME_CHOICES = (
         (10, '10 Seconds'),
         (30, '30 Seconds'),
@@ -419,6 +429,8 @@ class BrewPiDevice(models.Model):
     socketHost = models.CharField(max_length=128, default="localhost", help_text="The interface to bind for the "
                                                                                  "internet socket (only used if "
                                                                                  "useInetSocket above is \"True\")")
+    # Note - Although we can manage logging_status from within brewpi-django, it's intended to be managed via
+    # brewpi-script.
     logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped', help_text="Data logging status")
 
     serial_port = models.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected",
@@ -427,8 +439,6 @@ class BrewPiDevice(models.Model):
                                    default="None")
     board_type = models.CharField(max_length=10, default="uno", choices=BOARD_TYPE_CHOICES, help_text="Board type to which BrewPi is connected")
 
-    # TODO - Add some kind of helper function to test if process_id is valid, and reset to 0 if it is not.
-    process_id = models.IntegerField(default=0)
 
     # Replaces the 'do not run' file used by brewpi-script
     status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES)
@@ -542,7 +552,6 @@ class BrewPiDevice(models.Model):
                 return self.read_from_socket(this_socket)
         return None
 
-
     def read_lcd(self):
         try:
             lcd_text = json.loads(self.send_and_receive_from_socket("lcd"))
@@ -550,14 +559,17 @@ class BrewPiDevice(models.Model):
             lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
         return lcd_text
 
-    def send_message(self, message, message_extended=None):
+    def send_message(self, message, message_extended=None, read_response=False):
         message_to_send = message
         if message_extended is not None:
             message_to_send += "=" + message_extended
         this_socket = self.open_socket()
         if this_socket:
             if self.write_to_socket(this_socket, message_to_send):
-                return True
+                if read_response:
+                    return self.read_from_socket(this_socket)
+                else:
+                    return True
         return False
 
     def retrieve_version(self):
@@ -780,12 +792,41 @@ class BrewPiDevice(models.Model):
 
         return True  # If we made it here, return True (we did our job)
 
+    def start_new_brew(self, beer_name=None):
+        if beer_name is None:
+            if self.active_beer:
+                beer_name = self.active_beer.name
+            else:
+                return False
+        response = self.send_message("startNewBrew", message_extended=beer_name, read_response=True)
+        return response
+
+    def manage_logging(self, status):
+        if status == 'stop':
+            # This will be repeated by brewpi.py, but doing it here so we get up-to-date display in the dashboard
+            self.active_beer = None
+            self.save()
+            response = self.send_message("stopLogging", read_response=True)
+        elif status == 'resume':
+            response = self.send_message("resumeLogging", read_response=True)
+        elif status == 'pause':
+            response = self.send_message("pauseLogging", read_response=True)
+        else:
+            # TODO - Raise an error message
+            response = '{"status": 1, "statusMessage": "Invalid logging request"}'
+            pass
+        return json.loads(response)
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
     name = models.CharField(max_length=255, db_index=True)
     device = models.ForeignKey(BrewPiDevice, db_index=True)
     created = models.DateTimeField(default=timezone.now)
+
+    # format generally should be equal to device.temp_format. We're caching it here specifically so that if the user
+    # updates the device temp format somehow we will continue to log in the OLD format. We'll need to make a giant
+    # button that allows the user to convert the log files to the new format if they're different.
     format = models.CharField(max_length=1, default='F')
 
 
@@ -795,8 +836,37 @@ class Beer(models.Model):
     def __unicode__(self):
         return self.__str__()
 
-    def filename(self):
-        return self.device.device_name + " - " + self.name + " - " + str(self.created)
+    @staticmethod
+    def name_is_valid(proposed_name):
+        # Since we're using self.name in a file path, want to make sure no injection-type attacks can occur.
+        return True if re.match("^[a-zA-Z0-9 _-]*$", proposed_name) else False
+
+    def base_filename(self):  # This is the "base" filename used in all the files saved out
+        if self.name_is_valid(self.name):
+            return "Device " + str(self.device_id) + " - " + self.name + " - " + str(self.created)
+        else:
+            return "Device " + str(self.device_id) + " - ERROR - " + str(self.created)
+
+    def full_filename(self, which_file, extension_only=False):
+        if extension_only:
+            base_name = ""
+        else:
+            base_name = self.base_filename()
+
+        if which_file == 'base_csv':
+            return base_name + "_graph.csv"
+        if which_file == 'full_csv':
+            return base_name + "_full.csv"
+        else:
+            return None
+
+    def csv_url(self, which_file):
+        return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
+
+    def base_csv_url(self):
+        return self.csv_url('base_csv')
+
+    # TODO - Add function to allow conversion of log files between temp formats
 
 
 class BeerLogPoint(models.Model):
@@ -915,10 +985,10 @@ class BeerLogPoint(models.Model):
                 writer = csv.writer(f)
                 writer.writerow(row_data)
 
-        file_name_base = os.path.join(settings.BASE_DIR, 'data', self.associated_beer.filename())
+        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
 
-        base_csv_file = file_name_base + "_graph.csv"
-        full_csv_file = file_name_base + "_full.csv"
+        base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
+        full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
 
         # Write out headers (if the files don't exist)
         check_and_write_headers(base_csv_file, self.column_headers('base_csv'))
@@ -926,7 +996,7 @@ class BeerLogPoint(models.Model):
 
         # And then write out the data
         write_data(base_csv_file, self.data_point('base_csv'))
-        write_data(base_csv_file, self.data_point('full_csv'))
+        write_data(full_csv_file, self.data_point('full_csv'))
 
         # super(BeerLogPoint, self).save(*args, **kwargs)
 
