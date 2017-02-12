@@ -1189,136 +1189,141 @@ class FermentationProfilePoint(models.Model):
 # The old (0.2.x/Arduino) Control Constants Model
 # TODO - Update all usages of the ControlConstants objects to add 'controller' when the object is created
 class OldControlConstants(models.Model):
-    # TODO - Check that verbose_names and descriptions are ok
+
     tempSetMin = models.FloatField(
         verbose_name="Min Temperature",
-        help_text="The fridge and beer temperatures cannot go below this value"
+        help_text="The fridge and beer temperatures cannot go below this value. Units are specified by 'Temperature " +
+                  "format' below.",
         )
     tempSetMax = models.FloatField(
         verbose_name="Max Temperature",
-        help_text="The fridge and beer temperatures cannot go above this value"
+        help_text="The fridge and beer temperatures cannot go above this value. Units are specified by 'Temperature " +
+                  "format' below.",
         )
     Kp = models.FloatField(
         verbose_name="PID: Kp",
-        help_text="The beer temperature error is multiplied by " \
-                  "Kp to give the proportional of the PID value"
+        help_text="The beer temperature error is multiplied by Kp to give the proportional of the PID value"
         )
     Ki = models.FloatField(
         verbose_name="PID: Ki",
-        help_text="When the intergral is active, the error is added" \
-                  "to the integral every 30 sec. The result is multiplied" \
-                  "by Ki to give the integral part"
+        help_text="When the integral is active, the error is added to the integral every 30 sec. The result is " +
+                  "multiplied by Ki to give the integral part."
         )
     Kd = models.FloatField(
         verbose_name="PID: Kd",
-        help_text="The derivative of the beer temperature is multiplied by " \
-                  "Kd to give the derivative part of the PID value."
+        help_text="The derivative of the beer temperature is multiplied by " +
+                  "Kd to give the derivative part of the PID value"
         )
     pidMax = models.FloatField(
         verbose_name="PID: maximum",
-        help_text="Defines the maximum difference between the beer temp " \
-                  "setting and fridge temp setting. The fridge setting " \
-                  "will be clipped to this range."
+        help_text="Defines the maximum difference between the beer temp setting and fridge temp setting. The fridge " +
+                  "setting will be clipped to this range."
         )
     iMaxErr = models.FloatField(
         verbose_name="Integrator: Max temp error C",
-        help_text="The integral is only active when the temperature is " \
-                  "close to the target temperature. This is the maximum "\
-                  "error for which the integral is active"
+        help_text="The integral is only active when the temperature is close to the target temperature. This is the " +
+                  "maximum error for which the integral is active."
     )
     idleRangeH = models.FloatField(
         verbose_name="Temperature idle range top",
-        help_text="When the fridge temperature is within this range, it " \
-                  "will not heat or cool, regardless of other setting."
+        help_text="When the fridge temperature is within this range, it " +
+                  "will not heat or cool, regardless of other settings"
     )
     idleRangeL = models.FloatField(
         verbose_name="Temperature idle range bottom",
-        help_text="When the fridge temperature is within this range, it " \
-                  "will not heat or cool, regardless of other setting."
+        help_text="When the fridge temperature is within this range, it " +
+                  "will not heat or cool, regardless of other settings"
     )
     heatTargetH = models.FloatField(
         verbose_name="Heating target upper bound",
-        help_text="When the overshoot lands under this value, the peak " \
-                   "is within target range and the estimator is not adjusted"
+        help_text="When the overshoot lands under this value, the peak " +
+                  "is within the target range and the estimator is not adjusted"
     )
     heatTargetL = models.FloatField(
         verbose_name="Heating target lower bound",
-        help_text="When the overshoot lands above this value, the peak " \
-                   "is within target range and the estimator is not adjusted"
+        help_text="When the overshoot lands above this value, the peak " +
+                  "is within the target range and the estimator is not adjusted"
     )
     coolTargetH = models.FloatField(
         verbose_name="Cooling target upper bound",
-        help_text="When the overshoot lands under this value, the peak " \
-                   "is within target range and the estimator is not adjusted"
+        help_text="When the overshoot lands under this value, the peak " +
+                  "is within the target range and the estimator is not adjusted"
     )
     coolTargetL = models.FloatField(
         verbose_name="Cooling target lower bound",
-        help_text="When the overshoot lands above this value, the peak " \
-                   "is within target range and the estimator is not adjusted"
-
+        help_text="When the overshoot lands above this value, the peak " +
+                  "is within the target range and the estimator is not adjusted"
     )
 
-    maxHeatTimeForEst = models.FloatField(
+    maxHeatTimeForEst = models.IntegerField(
         verbose_name="Maximum time in seconds for heating overshoot estimator",
-        help_text="The time the fridge has been heating is used to estimate overshoot. "\
-                  "This is the maximum time that is tahen into account"
+        help_text="The time the fridge has been heating is used to estimate overshoot. " +
+                  "This is the maximum time that is taken into account."
     )
-    maxCoolTimeForEst = models.FloatField(
+    maxCoolTimeForEst = models.IntegerField(
         verbose_name="Maximum time in seconds for cooling overshoot estimator",
-        help_text="Maximum time the frige has been cooling is used to estimate " \
-                  "overshoot. This is the maximum time that is taken into account"
+        help_text="Maximum time the fridge has been cooling is used to estimate " +
+                  "overshoot. This is the maximum time that is taken into account."
     )
-    beerFastFilt = models.FloatField(
+    beerFastFilt = models.IntegerField(
         verbose_name="Beer fast filter delay time",
-        help_text="The beer fast filter is used for display and data logging. " \
-                  "More filtering give a smoother line but also more delay"
+        help_text="The beer fast filter is used for display and data logging. " +
+                  "More filtering gives a smoother line but also more delay."
     )
-    beerSlowFilt = models.FloatField(
+    beerSlowFilt = models.IntegerField(
         verbose_name="Beer slow filter delay time",
-        help_text="The beer slow filter is used for the control algorithm. " \
-                  "The frige temperature setting is calculated from this filter. " \
-                  "Because a small difference in beer temperature cases a large " \
-                  "adjustment in the fridge temperature, more smoothing is needed"
+        help_text="The beer slow filter is used for the control algorithm. " +
+                  "The fridge temperature setting is calculated from this filter. " +
+                  "Because a small difference in beer temperature cases a large " +
+                  "adjustment in the fridge temperature, more smoothing is needed."
     )
-    beerSlopeFilt = models.FloatField(
+    beerSlopeFilt = models.IntegerField(
         verbose_name="Beer slope filter delay time",
-        help_text="The slope is calculated every 30 sec and fed to this filter. " \
-                  "More filtering means a smoother frige setting."
+        help_text="The slope is calculated every 30 sec and fed to this filter. " +
+                  "More filtering means a smoother fridge setting."
     )
-    fridgeFastFilt = models.FloatField(
+    fridgeFastFilt = models.IntegerField(
         verbose_name="Fridge fast filter delay time",
-        help_text="The fridge fast filter is used for on-off control, display " \
+        help_text="The fridge fast filter is used for on-off control, display, " +
                   "and logging. It needs to have a small delay."
     )
-    fridgeSlowFilt = models.FloatField(
+    fridgeSlowFilt = models.IntegerField(
         verbose_name="Fridge slow filter delay time",
-        help_text="The fridge slow filter is used for peak detection to adjust " \
-                  "the overshoot estimators. More smoothing is needed to prevent " \
-                  "small fluctiations to be recognized as peaks."
+        help_text="The fridge slow filter is used for peak detection to adjust " +
+                  "the overshoot estimators. More smoothing is needed to prevent " +
+                  "small fluctuations from being recognized as peaks."
     )
-    fridgeSlopeFilt = models.FloatField(
-        verbose_name="Fidlge slope filter delay time",
-        help_text="Not used?"
+    fridgeSlopeFilt = models.IntegerField(
+        verbose_name="Fridge slope filter delay time",
+        help_text="Fridge slope filter is not used in this revision of the firmware."
     )
 
-    lah = models.FloatField(
-        verbose_name="Use light as heater?",
+    lah = models.IntegerField(
+        verbose_name="Using light as heater?",
+        help_text="If set to yes the heater is assumed to be a light",
+        choices=(
+            (1, "YES"),
+            (0, "No")
+        ),
+        default=0
+    )
+
+    hs = models.IntegerField(
+        verbose_name="Use half steps for rotary encoder?",
         help_text="If this options is set to Yes the light will be used as a heater",
         choices=(
-            ("Y", "YES"),
-            ("N", "No")
+            (1, "YES"),
+            (0, "No")
         ),
-        default="N"
+        default=0
     )
-    # TODO - verbose_name and help_text
-    hs = models.FloatField()
 
     tempFormat = models.CharField(
         verbose_name="Temperature format",
         max_length=1,
         choices=(
-            ("F", "Farenheit"),
-            ("C", "Celcius")
+            ("F", "Fahrenheit"),
+            ("C", "Celsius")
         ),
         default='F'
         )
