@@ -22,28 +22,29 @@
                     {# Select (Default) Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane active" id="selectPill">
                         <h4>How are you connecting</h4>
-                        <p>Now that the device is flashed, we need to get it set up to connect to it. If you are using
-                        <b>WiFi</b> finish the controller setup and connect it to your network. If you are using
-                        <b>Serial</b> connect the controller to the Raspberry Pi device.</p>
+                        <p>
+                            Now that the device is flashed, we need to get it set up to connect to it. If you are using
+                            <b>WiFi</b> finish the controller setup and connect it to your network. If you are using
+                            <b>Serial</b> connect the controller to the Raspberry Pi device.
+                        </p>
                         <p>Once everything is connected, select the connection method on the left.</p>
                     </div>{# Select (Default) Pane #}
 
                     {# WiFi Connection Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="wifiPill">
-                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
-                            {% if device_family == "ESP8266" %} {# Only ESP8266 devices are supported for WiFi #}
-                                <p>Awesome. ESP8266 + WiFi = Fantastic.</p>
+                        {% if device_family == "ESP8266" %} {# Only ESP8266 devices are supported for WiFi #}
+                            <p>Awesome. ESP8266 + WiFi = Fantastic.</p>
 
-                                <p>Clicking the button below will scan your network
-                                for ESP8266-based BrewPi devices, giving you an option to connect any that aren't
-                                    already set up.</p>
-                                <input type="hidden" name="device_family" value="{{ device_family }}">
-                                <button type="submit" class="btn btn-large btn-primary">Scan WiFi via mDNS</button>
-                            {% else %}
-                                Unfortunately, WiFi isn't supported on the {{ device_family }} family of devices. Please
-                                attempt to connect via "Serial" on the left.
-                            {% endif %}
-                        </form>
+                            <p>
+                                Clicking the button below will scan your network for ESP8266-based BrewPi devices,
+                                giving you an option to connect any that aren't already set up.
+                            </p>
+
+                            <a href="{% url 'device_guided_mdns' %}" class="btn btn-large btn-primary">Scan WiFi via mDNS</a>
+                        {% else %}
+                            Unfortunately, WiFi isn't supported on the {{ device_family }} family of devices. Please
+                            attempt to connect via "Serial" on the left.
+                        {% endif %}
                     </div>{# WiFi Connection Pane #}
 
                     {# Serial Pane #}

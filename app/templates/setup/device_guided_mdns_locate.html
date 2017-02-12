@@ -8,7 +8,7 @@
     <h1>Available (Uninstalled) Devices</h1>
 
     {% if available_devices %}
-        <table>
+        <table class="table table-hover">
             <thead>
                 <tr> {# TODO - Add tooltips to explain what these mean #}
                     <th>Device Address</th>
@@ -16,6 +16,7 @@
                     <th>Branch</th>
                     <th>Version</th>
                     <th>Revision</th>
+                    <th></th>
                 </tr>
             </thead>
         {% for this_device in available_devices %}
@@ -25,6 +26,7 @@
                 <td>{{ this_device.branch }}</td>
                 <td>{{ this_device.version }}</td>
                 <td>{{ this_device.revision }}</td>
+                <td><a href="{% url 'device_guided_add_mdns' this_device.mDNSname %}" class="btn btn-xs btn-success">Set Up</a></td>
             </tr>
         {% endfor %}
         </table>
@@ -32,10 +34,10 @@
         No uninstalled mDNS BrewPi devices{# TODO - Add some kind of popup or mouseover help text to this message #}
     {% endif %}
 
-    <h1>Available (Active) Installed Devices</h1> {#  TODO - Rephrase this. What I'm trying to say is that the devices are on the network and also are installed #}
+    <h1>Installed Devices</h1>
 
     {% if installed_devices %}
-        <table>
+        <table class="table">
             <thead>
                 <tr> {# TODO - Add tooltips to explain what these mean #}
                     <th>Device Name</th>
@@ -48,7 +50,7 @@
             </thead>
         {% for this_device in installed_devices %}
             <tr>
-                <td>{{ this_device.device.device_name }}</td>
+                <td><a href="{% url 'device_dashboard' this_device.device.id %}">{{ this_device.device.device_name }}</a></td>
                 <td>{{ this_device.mDNSname }}</td> {# For the Arduino implementation, pull this from this_device.device #}
                 <td>{{ this_device.board }}</td>
                 <td>{{ this_device.branch }}</td>

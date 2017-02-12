@@ -1,0 +1,75 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ pagetitle }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Add Device - {{ form.wifi_host.value }}</h1>
+
+<form action="{% url "device_guided_add_mdns" form.wifi_host.value %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="deviceConstantsSection">
+        <h4 class="form-header">Device Constants</h4>
+        {% form_generic form.device_name %}
+        {% form_generic form.temp_format %}
+        {% form_generic form.data_point_log_interval %}
+        {% form_generic form.board_type True %}
+    </div>
+
+
+    <div id="inetSocketSection">
+        <h4 class="form-header">Connect Interface to Script</h4>
+        {% form_generic form.useInetSocket %}
+
+        <div id="localSocketHidden" style="display: none">{# Although I don't recommend local sockets, some people might want them #}
+            {% form_generic form.socket_name %}
+        </div>
+
+        <div id="inetSocketHidden" style="display: none">
+            {% form_generic form.socketHost %}
+            {% form_generic form.socketPort %}
+        </div>
+    </div>
+
+
+    <div id="connectivitySection">
+        <h4 class="form-header">Connect Script to Device</h4>
+        {% form_generic form.connection_type True %}
+        {% form_generic form.wifi_host True %}
+        {% form_generic form.wifi_port True %}
+    </div>
+
+    <input type="submit" value="Submit" class="btn btn-default" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+function InetSocketHide() {
+    if(document.getElementById('id_useInetSocket').checked) {
+         document.getElementById('localSocketHidden').style.display = 'none';
+         document.getElementById('inetSocketHidden').style.display = '';
+    } else {
+         document.getElementById('localSocketHidden').style.display = '';
+         document.getElementById('inetSocketHidden').style.display = 'none';
+    }
+}
+
+
+window.onload = function() {
+    document.getElementById('id_useInetSocket').onchange = InetSocketHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    InetSocketHide();
+};
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

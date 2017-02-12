@@ -295,34 +295,6 @@ def device_dashboard(request, device_id):
                                context={'active_device': active_device, 'beer_create_form': beer_create_form})
 
 
-def find_new_mdns_brewpi_controller(request):
-    services = mdnsLocator.locate_brewpi_services()
-
-    installed_devices = []
-    available_devices = []
-    found_device = {}
-
-    for this_service in services:
-        found_device['mDNSname'] = services[this_service].server[:-1]
-        found_device['board'] = services[this_service].properties['board']
-        found_device['branch'] = services[this_service].properties['branch']
-        found_device['revision'] = services[this_service].properties['revision']
-        found_device['version'] = services[this_service].properties['version']
-
-        try:
-            # If we found the device, then we're golden - it's already installed (in theory)
-            found_device['device'] = BrewPiDevice.objects.get(wifi_host=found_device['mDNSname'])
-            installed_devices.append(found_device.copy())
-        except:
-            found_device['device'] = None
-            available_devices.append(found_device.copy())
-
-    return render_with_devices(request, template_name="device_mdns_locate.html",
-                               context={'installed_devices': installed_devices,
-                                        'available_devices': available_devices})
-
-
-
 def device_temp_control(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):

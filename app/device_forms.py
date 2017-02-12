@@ -14,41 +14,97 @@ class DeviceForm(forms.Form):
 
     device_name = forms.CharField(max_length=48, help_text="Unique name for this device",
                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Device Name'}))
+
     temp_format = forms.ChoiceField(choices=BrewPiDevice.TEMP_FORMAT_CHOICES, initial='C', help_text="Temperature units",
                                     widget=forms.Select(attrs={'class': 'form-control'}))
-    data_point_log_interval = forms.ChoiceField(initial=10, choices=BrewPiDevice.DATA_POINT_TIME_CHOICES,
+
+    data_point_log_interval = forms.ChoiceField(initial=30, choices=BrewPiDevice.DATA_POINT_TIME_CHOICES,
                                                 help_text="Time between logged data points",
                                                 widget=forms.Select(attrs={'class': 'form-control'}))
+
     connection_type = forms.ChoiceField(initial='serial', choices=BrewPiDevice.CONNECTION_TYPE_CHOICES,
                                         help_text="Type of connection between the Raspberry Pi and the hardware",
                                         widget=forms.Select(attrs={'class': 'form-control'}))
 
 
-    useInetSocket = forms.BooleanField(required=False, help_text="Whether or not to use an internet socket (rather than local)", initial=True)
-    socketPort = forms.IntegerField(initial=2222, min_value=10, max_value=65536, help_text="The internet socket to use (only used if useInetSocket above is \"True\")", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))
+    useInetSocket = forms.BooleanField(required=False, initial=True,
+                                       help_text="Whether or not to use an internet socket (rather than local)")
 
-    socketHost = forms.CharField(max_length=128, initial="localhost", help_text="The interface to bind for the "
-                                                                                "internet socket (only used if "
-                                                                                "useInetSocket above is \"True\")",
+    socketPort = forms.IntegerField(initial=2222, min_value=10, max_value=65536, required=False,
+                                    help_text="The socket port to use (only used if useInetSocket above is \"True\")",
+                                    widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))
+
+    socketHost = forms.CharField(max_length=128, initial="localhost", required=False,
+                                 help_text="The interface to bind for the internet socket (only used if " +
+                                           "useInetSocket above is \"True\"). Generally set to localhost.",
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: localhost'}))
 
-    serial_port = forms.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected (Only used if connection_type is serial)", initial="auto", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'auto'}))
-    serial_alt_port = forms.CharField(max_length=255, help_text="Alternate serial port path (Only used if connection_type is serial)", initial="None", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'None'}))
+    serial_port = forms.CharField(max_length=255, initial="auto", required=False,
+                                  help_text="Serial port to which the BrewPi device is connected (Only used if " +
+                                            "connection_type is serial)",
+                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'auto'}))
 
-    board_type = forms.ChoiceField(initial="uno", choices=BrewPiDevice.BOARD_TYPE_CHOICES, help_text="Board type to which BrewPi is connected", widget=forms.Select(attrs={'class': 'form-control'}))
+    serial_alt_port = forms.CharField(max_length=255, initial="None", required=False,
+                                      help_text="Alternate serial port path (Only used if connection_type is serial)",
+                                      widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'None'}))
 
-    socket_name = forms.CharField(max_length=25, initial="BEERSOCKET", help_text="Name of the file-based socket (Only" +
-                                                                                 " used if useInetSocket is False)",
+    board_type = forms.ChoiceField(initial="uno", choices=BrewPiDevice.BOARD_TYPE_CHOICES,
+                                   help_text="Board type to which BrewPi is connected",
+                                   widget=forms.Select(attrs={'class': 'form-control'}))
+
+    socket_name = forms.CharField(max_length=25, initial="BEERSOCKET", required=False,
+                                  help_text="Name of the file-based socket (Only used if useInetSocket is False)",
                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'BEERSOCKET'}))
 
-    wifi_host = forms.CharField(max_length=40, initial='',
+    wifi_host = forms.CharField(max_length=40, initial='', required=False,
                                 help_text="mDNS host name or IP address for WiFi connected hardware (only used if " +
                                           "connection_type is wifi)",
                                 widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: brewpi.local'}))
-    wifi_port = forms.IntegerField(initial=23, min_value=10, max_value=65536,
-                                    help_text="The internet port to use (almost always 23)",
-                                   widget=forms.TextInput(
-                                       attrs={'class': 'form-control', 'placeholder': 'Ex: 1222'}))
+
+    wifi_port = forms.IntegerField(initial=23, min_value=10, max_value=65536, required=False,
+                                   help_text="The internet port to use (almost always 23)",
+                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1222'}))
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+
+        # Check the connection type and default parameters that don't apply
+        if cleaned_data['connection_type'] == 'serial':
+            cleaned_data['wifi_host'] = "NA"
+            cleaned_data['wifi_port'] = 23
+
+            # Since we've skipped automated validation above, validate here.
+            if cleaned_data['serial_port'] is None or cleaned_data['serial_alt_port'] is None:
+                raise forms.ValidationError("Serial Port & Serial Alt Port are required for connection type 'serial'")
+            elif len(cleaned_data['serial_port']) < 2:
+                raise forms.ValidationError("Must specify a valid serial port when using connection type 'serial'")
+            elif len(cleaned_data['serial_alt_port']) < 2:
+                raise forms.ValidationError("Must specify a valid alt serial port (or None) when using connection " +
+                                            "type 'serial'")
+
+        elif cleaned_data['connection_type'] == 'wifi':
+            cleaned_data['serial_port'] = 'auto'
+            cleaned_data['serial_alt_port'] = 'None'
+
+            # Since we've skipped automated validation above, validate here.
+            if cleaned_data['wifi_host'] is None or cleaned_data['wifi_port'] is None:
+                raise forms.ValidationError("WiFi Host & Port are required for connection type 'WiFi'")
+            elif cleaned_data['wifi_port'] < 0 or cleaned_data['wifi_port'] > 65536:
+                raise forms.ValidationError("WiFi port must be between 1 and 65536 (but is generally 23)")
+            elif len(cleaned_data['wifi_host']) < 5:
+                raise forms.ValidationError("Must specify a valid hostname or IP address for WiFi Host")
+        else:
+            raise forms.ValidationError("Invalid connection type specified")
+
+        # Check if we are using inet sockets to connect to brewpi-script and default parameters that don't apply
+        if cleaned_data['useInetSocket']:
+            # TODO - Check for uniqueness of socketPort (possibly when combined with socketHost)
+            cleaned_data['socket_name'] = "BEERSOCKET"
+        else:
+            cleaned_data['socketPort'] = 2222
+            cleaned_data['socketHost'] = "localhost"
+
+        return cleaned_data
 
 
 

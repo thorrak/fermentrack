@@ -417,7 +417,7 @@ class BrewPiDevice(models.Model):
     # to cache it.
     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C', help_text="Temperature units")
 
-    data_point_log_interval = models.IntegerField(default=10, choices=DATA_POINT_TIME_CHOICES,
+    data_point_log_interval = models.IntegerField(default=30, choices=DATA_POINT_TIME_CHOICES,
                                                   help_text="Time between logged data points")
 
     ######## The following are used if we are loading the configuration directly from the database.

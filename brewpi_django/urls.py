@@ -1,18 +1,3 @@
-"""brewpi_django URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.10/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
-"""
 from django.conf.urls import url
 from django.contrib import admin
 
@@ -42,7 +27,6 @@ urlpatterns = [
     ### Device Views
     url(r'^devices/$', app.views.device_list, name='device_list'),
     url(r'^devices/add/$', app.views.add_device, name='device_add'),
-    url(r'^devices/mdns/$', app.views.find_new_mdns_brewpi_controller, name='device_mdns'),
 
     ## New install Guided Setup Views
     url(r'setup/$', app.setup_views.setup_splash, name="setup_splash"),
@@ -54,7 +38,10 @@ urlpatterns = [
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/flash_prompt/$', app.setup_views.device_guided_flash_prompt, name='device_guided_flash_prompt'),
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/flash/$', app.setup_views.device_guided_flash_prompt, name='device_guided_flash_prompt'),
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/connection/$', app.setup_views.device_guided_serial_wifi, name='device_guided_serial_wifi'),
+    url(r'^devices/guided/mdns/$', app.setup_views.device_guided_find_mdns, name='device_guided_mdns'),
+    url(r'^devices/guided/mdns/(?P<mdns_id>[A-Za-z0-9.]{1,60})/$', app.setup_views.device_guided_add_mdns, name='device_guided_add_mdns'),
 
+    ## Other main device views
     url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
     # TODO - Implement backlight toggle AJAX API call

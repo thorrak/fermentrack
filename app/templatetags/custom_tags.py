@@ -14,8 +14,8 @@ def show_lcd(this_device):
 # There may be an easier way of doing this, but I want to be able to institute a pretty uniform form look across the
 # site. Something complete with help text.
 @register.inclusion_tag('sitewide/form_generic.html')
-def form_generic(this_form_field):
-    return {'form_field': this_form_field}
+def form_generic(this_form_field, replace_with_hidden=False):
+    return {'form_field': this_form_field, 'replace_with_hidden': replace_with_hidden}
 
 
 @register.inclusion_tag('brewpi/temp_control_modal.html')

@@ -5,5 +5,5 @@
         <label for="{{ form_field.id }}" data-toggle="tooltip" title="{{ form_field.help_text }}" class="col-sm-2 control-label">
             {{ form_field.label_tag }}
         </label>
-        <div class="col-sm-10">{{ form_field }}</div>
+        <div class="col-sm-10">{% if replace_with_hidden %}{{ form_field.value }}<input type="hidden" name="{{ form_field.name }}" value="{{ form_field.value }}">{% else %}{{ form_field }}{% endif %}</div>
     </div>
