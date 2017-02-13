@@ -30,6 +30,7 @@ class BrewPiSpawner(object):
                  sleep_interval=SLEEP_INTERVAL,
                  command_tmpl='python -u brewpi-script/brewpi.py --dbcfg %s',
                  circus_endpoint=DEFAULT_ENDPOINT_DEALER,
+                 logfilepath=os.path.expanduser("~/brewpi-django/log"),
                  log=LOG
                 ):
         self.prefix = prefix
@@ -37,6 +38,7 @@ class BrewPiSpawner(object):
         self.model = model
         self.sleep_interval = sleep_interval
         self.circus_endpoint = circus_endpoint
+        self.logfilepath = logfilepath
         self.log = log
 
 
@@ -110,11 +112,11 @@ class BrewPiSpawner(object):
                             "copy_env": True,
                             "stdout_stream": {
                                 "class": "FileStream",
-                                "filename": "log/%s-stdout.log" % proc_name
+                                "filename": "%s/%s-stdout.log" % (self.logfilepath, proc_name),
                             },
                             "stderr_stream": {
                                 "class": "FileStream",
-                                "filename": "log/%s-stderr.log" % proc_name,
+                                "filename": "%s/%s-stderr.log" % (self.logfilepath, proc_name),
                             }
                         },
                         "start": True
@@ -170,6 +172,7 @@ class BrewPiSpawner(object):
 if __name__ == '__main__':
     # Chill so that circus has time to startup
     time.sleep(5)
-    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, prefix="dev-")
+    cmd_tmpl = "python -u " + os.path.expanduser("~/brewpi-django/brewpi-script/brewpi.py") + " --dbcfg %s"
+    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=cmd_tmpl, prefix="dev-")
     process_spawner.run_forvever()
 
