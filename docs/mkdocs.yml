@@ -11,7 +11,7 @@ pages:
     - 'Configuration': 'config/config.md'
   - Hardware:
     - 'Index': 'hardware/index.md'
-    - 'ESP8266': 'hardware/ESP8266-2.md'
+    - 'ESP8266': 'hardware/ESP8266.md'
     - 'Arduino': 'hardware/Arduino.md'
     - 'Native Python (Fuscus)': 'hardware/Native Python.md'
     - 'Spark Core': 'hardware/Spark.md'
