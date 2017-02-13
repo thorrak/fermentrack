@@ -1,1 +1,0 @@
-# Installation on Raspberry Pi

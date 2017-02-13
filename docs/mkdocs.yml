@@ -5,11 +5,16 @@ theme: readthedocs
 pages:
   - Home: 'index.md'
   - Install:
-    - 'Rpi Installation': 'install/rpi.md'
+    - 'Raspberry Pi Automated Installation': 'install/automated.md'
+    - 'Manual Installation': 'install/manual.md'
   - Configuration:
     - 'Configuration': 'config/config.md'
   - Hardware:
-    - 'The esp8266': 'hardware/esp8266.md'
+    - 'Index': 'hardware/index.md'
+    - 'ESP8266': 'hardware/ESP8266-2.md'
+    - 'Arduino': 'hardware/Arduino.md'
+    - 'Native Python (Fuscus)': 'hardware/Native Python.md'
+    - 'Spark Core': 'hardware/Spark.md'
   - About:
     - 'Contribute': 'about/contribute.md'
     - 'Changelog': 'about/changelog.md'
