@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
 # First, launch the virtualenv
-source ~/venv/bin/activate  # Assuming the directory based on a normal install with brewpi-django-tools
+source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
 
 # Given that this script can be called by the webapp proper, give it 3 seconds to finish sending a reply to the
 # user if he/she initiated an upgrade through the webapp.
 sleep 3s
 
-# Next, kill the running brewpi-django instance using circus
+# Next, kill the running Fermentrack instance using circus
 circusctl stop
 
 # Pull the latest version of the script from GitHub
-cd ~/brewpi-django  # Assuming the directory based on a normal install with brewpi-django-tools
+cd ~/brewpi-django  # Assuming the directory based on a normal install with Fermentrack-tools
 git pull
 git reset --hard
-# TODO - Allow for the specification of a branch when calling upgrade.sh (given we have the data in brewpi-django)
+# TODO - Allow for the specification of a branch when calling upgrade.sh (given we have the data in Fermentrack)
 git checkout origin/master
 
 # Install everything from requirements.txt
@@ -27,5 +27,5 @@ pip install -r requirements.txt --upgrade
 ./manage.py collectstatic --noinput >> /dev/null
 
 
-# Finally, relaunch the brewpi-django instance using circus
+# Finally, relaunch the Fermentrack instance using circus
 circusctl start

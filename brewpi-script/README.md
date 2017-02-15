@@ -22,4 +22,4 @@ Licensing
 -------
 BrewPi-script is licensed under the **GPL v3**, a copy of which is included in LICENSE.md. 
 
-This license may differ from that used for other associated projects, including the BrewPi firmware, BrewPi-www, BrewPi-django, etc. 
+This license may differ from that used for other associated projects, including the BrewPi firmware, BrewPi-www, Fermentrack, etc. 

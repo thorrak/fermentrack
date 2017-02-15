@@ -24,7 +24,7 @@ SLEEP_INTERVAL = 15
 
 
 class BrewPiSpawner(object):
-    """Handles spawning and stopping BrewPi devices defined in brewpi-django database"""
+    """Handles spawning and stopping BrewPi devices defined in Fermentrack database"""
     def __init__(self, model,
                  prefix="dev-",
                  sleep_interval=SLEEP_INTERVAL,

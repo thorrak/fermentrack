@@ -39,7 +39,7 @@
                                 <input type="hidden" name="device_family" value="{{ device_family }}">
                                 <button type="submit" class="btn btn-large btn-primary">Continue</button>
                             {% else %}
-                                Unfortunately, this version of brewpi-django isn't quite smart enough to support that
+                                Unfortunately, this version of Fermentrack isn't quite smart enough to support that
                                 device family yet. Pay attention to the discussions on HomeBrewTalk - Support for
                                 {{ device_family }} is coming soon. (either v2 or v3)
                             {% endif %}
@@ -49,7 +49,7 @@
                     {# No - Need to Flash Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="noPill">
                         <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
-                            <p>Unfortunately, brewpi-django doesn't yet support flashing any devices from directly
+                            <p>Unfortunately, Fermentrack doesn't yet support flashing any devices from directly
                             within this interface. This feature is coming in the v2 release for certain device families,
                             however, so keep an eye on the discussions at HomeBrewTalk for updates.</p>
 

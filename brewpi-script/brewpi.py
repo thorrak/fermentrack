@@ -127,7 +127,7 @@ except getopt.GetoptError:
     sys.exit()
 
 # Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation. If
-# dbConfig is set, we have a brewpi-django- based installation.
+# dbConfig is set, we have a Fermentrack- based installation.
 configFile = None
 dbConfig = None  # A BrewPiDevice object (which contains all our configuration info)
 
@@ -724,7 +724,7 @@ while run:
                         raise socket.timeout  # go to serial communication to update controller
 
             else:
-                # We're using a dbConfig object to manage everything. We aren't being passed anything by brewpi-django
+                # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
                 logMessage("Setting controller to beer profile mode using database-configured profile")
                 conn.send("Profile successfully updated")
                 if cs['mode'] is not 'p':

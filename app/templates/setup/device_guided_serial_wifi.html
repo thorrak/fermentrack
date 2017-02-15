@@ -54,7 +54,7 @@
                                 <p>We've got good news and bad news.</p>
 
                                 <p>
-                                    While brewpi-django supports connecting to {{ device_family }}-based controllers
+                                    While Fermentrack supports connecting to {{ device_family }}-based controllers
                                     via serial, the autodetection functionality isn't quite ready yet. You'll have to
                                     use the longer, advanced setup process.
                                 </p>
@@ -65,7 +65,7 @@
 {#                                <button type="submit" class="btn btn-large btn-primary">Scan Serial</button>#}
                                 <a href="{% url 'device_add' %}" class="btn btn-large btn-primary">Add Device via Advanced Setup</a>
                             {% else %}
-                                <p>Unfortunately, brewpi-django doesn't support {{ device_family }}-based devices via
+                                <p>Unfortunately, Fermentrack doesn't support {{ device_family }}-based devices via
                                 serial just yet. We're working on it, and hope to add support in v2 or v3. Sit tight,
                                 and keep an eye on the discussion on HomeBrewTalk.</p>
                             {% endif %}

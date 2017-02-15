@@ -1,23 +1,23 @@
-#BrewPi-Django documentation
+#Fermentrack documentation
 
-###What is BrewPi-Django?
+###What is Fermentrack?
 
-BrewPi-Django is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. 
+Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. 
 
-BrewPi-Django is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server. 
+Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server. 
 
 
-### Included with BrewPi-Django
+### Included with Fermentrack
 
-* **brewpi-django** - The Django-based replacement for brewpi-www. Licensed under MIT license.
-* **brewpi-script** - Installed alongside BrewPi-Django is brewpi-script. Licensed under GPL v3.
+* **Fermentrack** - The Django-based replacement for brewpi-www. Licensed under MIT license.
+* **brewpi-script** - Installed alongside Fermentrack is brewpi-script. Licensed under GPL v3.
 * **nginx** - A reverse proxy/webserver. Licensed under 2-Clause BSD-like license.
 * **circusd** - A python-based process manager. Licensed under the Apache license, v2.0.
 * **chaussette** - A wsgi server. 
 
 ## New Features
 
-One of the key reasons to write BrewPi-Django was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
+One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
 
 * Native multi-chamber support
 * Cleaner, more intuitive controller setup
@@ -27,7 +27,7 @@ One of the key reasons to write BrewPi-Django was to incorporate features that a
 
 ## Missing Features
 
-At the moment, BrewPi-Django doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:
+At the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:
 
 * Serial controller support (expected in v2)
 * Serial controller autodetection (v2)
@@ -43,7 +43,7 @@ At the moment, BrewPi-Django doesn't support 100% of the features of the officia
 * Fresh Raspbian install (Lite or /w Pixel supported, Oct 2016 version or later)
 * 
 
-**PLEASE NOTE** - BrewPi-Django is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict 
+**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict 
 
 
 

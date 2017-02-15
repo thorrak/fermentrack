@@ -130,7 +130,7 @@ def configSet(configFile, db_config_object, settingName, value):
                 db_config_object.active_beer = None
             else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
                 # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
-                # brewpi-script. For brewpi-django we're
+                # brewpi-script. For Fermentrack we're
                 new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
                 if created:
                     # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)

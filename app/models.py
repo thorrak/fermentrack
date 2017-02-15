@@ -429,7 +429,7 @@ class BrewPiDevice(models.Model):
     socketHost = models.CharField(max_length=128, default="localhost", help_text="The interface to bind for the "
                                                                                  "internet socket (only used if "
                                                                                  "useInetSocket above is \"True\")")
-    # Note - Although we can manage logging_status from within brewpi-django, it's intended to be managed via
+    # Note - Although we can manage logging_status from within Fermentrack, it's intended to be managed via
     # brewpi-script.
     logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped', help_text="Data logging status")
 

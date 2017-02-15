@@ -13,5 +13,5 @@ GitPython                   # for managing git integration
 zeroconf        # For locating ESP8266 devices
 circus          # for managing brewpi.py processes
 circus-web      # for managing brewpi.py processes
-chaussette      # for managing brewpi-django wsgi
+chaussette      # for managing Fermentrack wsgi
 pid             # for pid-file handling
