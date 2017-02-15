@@ -9,6 +9,10 @@ echo "Generating SECRET_KEY and writing to brewpi_django/secretsettings.py"
 
 SECRET_KEY_STRING=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)
 
-rm "$myPath/../brewpi_django/secretsettings.py"  # In case it exists
+if [ -f "$myPath/../brewpi_django/secretsettings.py" ]; then
+  echo "Removing old secretsettings.py file.."
+  rm "$myPath/../brewpi_django/secretsettings.py"  # In case it exists
+fi
+
 echo "SECRET_KEY = '${SECRET_KEY_STRING}'" >> "$myPath/../brewpi_django/secretsettings.py"
-echo "secretsettings.py created!\n"
+echo "secretsettings.py created!"
