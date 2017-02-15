@@ -1,7 +1,7 @@
 from django import forms
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice, FermentationProfile
 from django.core import validators
-import brewpi_django.settings as settings
+import fermentrack_django.settings as settings
 
 from django.forms import ModelForm
 

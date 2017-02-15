@@ -9,7 +9,7 @@ import os.path, csv  # BeerLogPoints
 import socket
 import json, time, datetime, pytz
 from constance import config
-from brewpi_django import settings
+from fermentrack_django import settings
 import re
 
 
