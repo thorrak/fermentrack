@@ -690,7 +690,7 @@ while run:
                 changeWwwSetting('dateTimeFormatDisplay', value)
                 logMessage("Changing date format config setting: " + value)
         elif messageType == "setActiveProfile":
-            if dbConfig is not None:
+            if dbConfig is None:
                 # We're not using a dbConfig object (and therefore are relying on CSV files to manage profiles)
                 # copy the profile CSV file to the working directory
                 logMessage("Setting profile '%s' as active profile" % value)
