@@ -10,7 +10,7 @@ from circus.util import DEFAULT_ENDPOINT_DEALER
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # This is so Django knows where to find stuff.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "brewpi_django.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
 sys.path.append(BASE_DIR)
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
@@ -30,7 +30,7 @@ class BrewPiSpawner(object):
                  sleep_interval=SLEEP_INTERVAL,
                  command_tmpl='python -u brewpi-script/brewpi.py --dbcfg %s',
                  circus_endpoint=DEFAULT_ENDPOINT_DEALER,
-                 logfilepath=os.path.expanduser("~/brewpi-django/log"),
+                 logfilepath=os.path.expanduser("~/fermentrack/log"),
                  log=LOG
                 ):
         self.prefix = prefix
@@ -172,7 +172,7 @@ class BrewPiSpawner(object):
 if __name__ == '__main__':
     # Chill so that circus has time to startup
     time.sleep(5)
-    cmd_tmpl = "python -u " + os.path.expanduser("~/brewpi-django/brewpi-script/brewpi.py") + " --dbcfg %s"
+    cmd_tmpl = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + " --dbcfg %s"
     process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=cmd_tmpl, prefix="dev-")
     process_spawner.run_forvever()
 

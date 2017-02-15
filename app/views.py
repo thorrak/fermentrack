@@ -14,7 +14,7 @@ import json, datetime, pytz
 import git_integration
 import subprocess
 
-import brewpi_django.settings as settings
+import fermentrack_django.settings as settings
 
 
 

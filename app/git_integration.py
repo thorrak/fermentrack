@@ -1,6 +1,6 @@
 
 from git import Repo
-import brewpi_django.settings as settings
+import fermentrack_django.settings as settings
 
 
 def local_and_remote_are_at_same_commit(repo, remote):
