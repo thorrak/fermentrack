@@ -350,7 +350,7 @@ def github_trigger_upgrade(request):
         messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
     else:
         messages.success(request, "Triggered an upgrade from GitHub")
-        subprocess.call("nohup utils/upgrade.sh &", shell=True)  # I think this will do it...
+#        subprocess.call("nohup utils/upgrade.sh &", shell=True)  # I think this will do it...
 
     return render_with_devices(request, template_name="github_trigger_upgrade.html",
                                context={'commit_info': commit_info})
