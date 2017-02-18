@@ -73,4 +73,12 @@ urlpatterns = [
 
     url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 
+    # Login/Logout Views
+    url(r'^accounts/login/$', app.views.login, name='login'),
+    url(r'^accounts/logout/$', app.views.logout, name='logout'),
+
+    # Site-specific views (Help, Settings, etc.)
+    url(r'site/settings/$', app.views.site_settings, name="site_settings"),
+    url(r'site/help/$', app.setup_views.setup_config, name="site_help"),
+
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT)  # To enable viewing data files during development

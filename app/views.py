@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
+from django.contrib import auth
 
 from constance import config  # For the explicitly user-configurable stuff
 
@@ -93,7 +94,6 @@ def add_device(request):
 
 
 def configure_settings(request):
-
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
@@ -350,7 +350,75 @@ def github_trigger_upgrade(request):
         messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
     else:
         messages.success(request, "Triggered an upgrade from GitHub")
-#        subprocess.call("nohup utils/upgrade.sh &", shell=True)  # I think this will do it...
+
+        # I think this will do it...
+        cmd = "nohup utils/upgrade.sh -b \"{}\"&".format(commit_info['local_branch'])
+        subprocess.call(cmd, shell=True)
 
     return render_with_devices(request, template_name="github_trigger_upgrade.html",
                                context={'commit_info': commit_info})
+
+
+def login(request, next=None):
+    if not next:
+        if 'next' in request.GET:
+            next=request.GET['next']
+        elif 'next' in request.POST:
+            next=request.POST['next']
+        else:
+            next="/"
+
+    if 'username' in request.POST:
+        target_user = auth.authenticate(username=request.POST['username'], password=request.POST['password'])
+
+        if target_user:  # If the user authenticated, process login & redirect
+            auth.login(request, target_user)
+
+            messages.success(request, "Logged in")
+
+            if 'next' in request.POST:
+                if len(request.POST['next']) > 1:
+                    return redirect(request.POST['next'])
+
+            return redirect('siteroot')
+
+        else:
+            messages.error(request, "Login failed")
+            return render(request, template_name="site_login.html", context={'pagetitle': 'Log In', 'next': next})
+
+    # If we hit this, we just need to display the form (no valid form input received)
+    return render(request, template_name="site_login.html", context={'pagetitle': 'Log In', 'next': next})
+
+
+def logout(request):
+    if request.user.is_authenticated():
+        auth.logout(request)
+        return redirect('siteroot')
+    else:
+        return redirect('login')
+
+
+def site_settings(request):
+    # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
+    if request.POST:
+        form = setup_forms.GuidedSetupConfigForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            config.BREWERY_NAME = f['brewery_name']
+            config.DATE_TIME_FORMAT = f['date_time_format']
+            config.DATE_TIME_FORMAT_DISPLAY = f['date_time_format_display']
+            config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
+            config.TEMPERATURE_FORMAT = f['temperature_format']
+            config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
+            messages.success(request, 'App configuration has been saved')
+            return redirect('siteroot')
+        else:
+            return render_with_devices(request, template_name='setup/setup_config.html',
+                                       context={'form': form,
+                                                'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+    else:
+        form = setup_forms.GuidedSetupConfigForm()
+        return render_with_devices(request, template_name='setup/setup_config.html',
+                                   context={'form': form,
+                                            'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+
