@@ -38,11 +38,13 @@
                </ul>
 
                 <ul class="nav navbar-nav navbar-right">
-                    <li><!-- Can you think of a better "log out" icon? I can't. -->
-                        <a href="#" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;"><i class="fa fa-ban fa-lg"></i></a>
+                    <li><!-- Can you think of a better "log out" icon? I can't. --> {# TODO - Make this redirect to the current page #}
+                        <a href="{% if user.is_authenticated %}{% url 'logout' %}{% else %}{% url 'login' %}{% endif %}" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;">
+                            {% if user.is_authenticated %}<i class="fa fa-sign-out fa-lg" title="Log Out"></i>{% else %}<i class="fa fa-sign-in fa-lg" title="Log In"></i>{% endif %}
+                        </a>
                     </li>
-                    <li><a href="#" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;"><i class="fa fa-question fa-lg"></i></a></li>
-                    <li><a href="{% url 'setup_config' %}" class="navbar-icon" style="padding-right: 25px;padding-left: 10px;"><i class="fa fa-cog fa-lg"></i></a></li>
+                    <li><a href="{% url 'site_help' %}" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;"><i class="fa fa-question fa-lg" title="Help"></i></a></li>
+                    <li><a href="{% url 'site_settings' %}" class="navbar-icon" style="padding-right: 25px;padding-left: 10px;"><i class="fa fa-cog fa-lg" title="Site Settings"></i></a></li>
                 </ul>
 
             </div><!-- /.navbar-collapse -->

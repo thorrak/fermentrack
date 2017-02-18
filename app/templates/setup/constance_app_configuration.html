@@ -1,0 +1,27 @@
+{# This contains the app configuration form that is used as part of setup_config.html #}
+{# It is broken out here so we can easily reuse it in the site configuration panel #}
+{% load custom_tags %}
+
+<h1 class="page-header">App Configuration</h1>
+
+{% if not completed_config %}
+    {# User is in the guided setup workflow #}
+    <p>Here you can change some settings, default values are filled in for you.</p>
+{% else %}
+    {# User is not in the guided setup workflow #}
+{% endif %}
+
+<form action="{% url "setup_config" %}" class="form-horizontal" method="post">{% csrf_token %}
+    <div id="constanceSection">
+        <h3 class="form-header">App Configuration</h3>
+
+        {# Converting to use form_generic to make things a little better looking #}
+        {% form_generic form.brewery_name %}
+        {% form_generic form.date_time_format %}
+        {% form_generic form.date_time_format_display %}
+        {% form_generic form.require_login_for_dashboard %}
+        {% form_generic form.temperature_format %}
+
+        <input type="submit" value="Save Configuration" class="btn btn-default"/>
+    </div>
+</form>
