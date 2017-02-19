@@ -175,3 +175,9 @@ CONSTANCE_CONFIG = { # TODO - Add help text to DATE_TIME_FORMAT & DATE_TIME_FORM
 MESSAGE_TAGS = {
     message_constants.ERROR: 'danger'
 }
+
+
+# Decorator Configuration
+LOGIN_URL = 'login'              # Used in @login_required decorator
+CONSTANCE_SETUP_URL = 'setup_config'    # Used in @site_is_configured decorator
+

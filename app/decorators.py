@@ -1,0 +1,60 @@
+from functools import wraps
+
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import resolve_url
+from django.utils import six
+from django.utils.decorators import available_attrs
+from django.utils.six.moves.urllib.parse import urlparse
+from constance import config  # For the explicitly user-configurable stuff
+
+# There is really nothing that would prevent me from hijacking user_passes_test from the Django decorators here.
+# TODO - Decide if I'd rather hijack that rather than effectively copy/pasting it here with small renames
+def constance_check(test_func, next_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
+    """
+    A wrapper for views that check specific constance settings. Only used for site_is_configured below.
+    The test should be a callable
+    that takes the user object and returns True if the user passes.
+    """
+
+    def decorator(view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _wrapped_view(request, *args, **kwargs):
+            if test_func():
+                # If the test function we were passed returns true, just return the view
+                return view_func(request, *args, **kwargs)
+            # Otherwise, build the redirect
+            path = request.build_absolute_uri()
+            resolved_setup_url = resolve_url(next_url or settings.CONSTANCE_SETUP_URL)
+            # If the setup url is the same scheme and net location then just
+            # use the path as the "next" url.
+            setup_scheme, setup_netloc = urlparse(resolved_setup_url)[:2]
+            current_scheme, current_netloc = urlparse(path)[:2]
+            if ((not setup_scheme or setup_scheme == current_scheme) and
+                    (not setup_netloc or setup_netloc == current_netloc)):
+                path = request.get_full_path()
+            # TODO - Change this to redirect, not redirect to login
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(
+                path, resolved_setup_url, redirect_field_name)
+        return _wrapped_view
+    return decorator
+
+
+def site_is_configured(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+    """
+    Decorator for views that checks that the user is logged in, redirecting
+    to the log-in page if necessary.
+    """
+    def check_constance_is_configured():
+        return config.USER_HAS_COMPLETED_CONFIGURATION
+
+    actual_decorator = constance_check(
+        check_constance_is_configured,
+        next_url=login_url,
+        redirect_field_name=redirect_field_name
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator

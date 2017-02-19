@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
+from django.contrib.auth.decorators import login_required
 
 from constance import config  # For the explicitly user-configurable stuff
+from decorators import site_is_configured  # Checks if user has completed constance configuration
 
 import beer_forms
 
@@ -20,6 +22,8 @@ def render_with_devices(request, template_name, context=None, content_type=None,
     return render(request, template_name, context, content_type, status, using)
 
 
+@login_required
+@site_is_configured
 def beer_create(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):
@@ -56,6 +60,8 @@ def beer_create(request, device_id):
 
 
 
+@login_required
+@site_is_configured
 def beer_logging_status(request, device_id, logging_status):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):
