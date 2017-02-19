@@ -11,7 +11,7 @@ sleep 3s
 circusctl stop
 
 # Pull the latest version of the script from GitHub
-cd ~/brewpi-django  # Assuming the directory based on a normal install with Fermentrack-tools
+cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
 git pull
 git reset --hard
 # TODO - Allow for the specification of a branch when calling upgrade.sh (given we have the data in Fermentrack)
@@ -21,10 +21,10 @@ git checkout origin/master
 pip install -r requirements.txt --upgrade
 
 # Migrate to create/adjust anything necessary in the database
-./manage.py migrate
+python manage.py migrate
 
 # Migrate to create/adjust anything necessary in the database
-./manage.py collectstatic --noinput >> /dev/null
+python manage.py collectstatic --noinput >> /dev/null
 
 
 # Finally, relaunch the Fermentrack instance using circus
