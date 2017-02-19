@@ -481,9 +481,6 @@ class BrewPiDevice(models.Model):
     def __str__(self):
         return self.device_name
 
-    def send_message_to_device(self, message_type, message_contents=""):
-        pass
-
     def read_lcd_from_device(self):
         pass
 
@@ -530,7 +527,8 @@ class BrewPiDevice(models.Model):
 
         return this_socket
 
-    def write_to_socket(self, this_socket, message):
+    @staticmethod
+    def write_to_socket(this_socket, message):
         try:
             this_socket.sendall(message)
             return True
@@ -538,26 +536,12 @@ class BrewPiDevice(models.Model):
             # TODO - Do something here
             return False
 
-    def read_from_socket(self, this_socket):
+    @staticmethod
+    def read_from_socket(this_socket):
         try:
             return this_socket.recv(65536)
         except:
             return None
-
-    # TODO - Rename this
-    def send_and_receive_from_socket(self, message):
-        this_socket = self.open_socket()
-        if this_socket:
-            if self.write_to_socket(this_socket, message):
-                return self.read_from_socket(this_socket)
-        return None
-
-    def read_lcd(self):
-        try:
-            lcd_text = json.loads(self.send_and_receive_from_socket("lcd"))
-        except:
-            lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
-        return lcd_text
 
     def send_message(self, message, message_extended=None, read_response=False):
         message_to_send = message
@@ -572,9 +556,17 @@ class BrewPiDevice(models.Model):
                     return True
         return False
 
+    def read_lcd(self):
+        try:
+            lcd_text = json.loads(self.send_message("lcd", read_response=True))
+        except:
+            lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
+        return lcd_text
+
+
     def retrieve_version(self):
         try:
-            version_data = json.loads(self.send_and_receive_from_socket("getVersion"))
+            version_data = json.loads(self.send_message("getVersion", read_response=True))
         except:
             return None
         return version_data
@@ -618,11 +610,11 @@ class BrewPiDevice(models.Model):
 
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
         loop_number = 0
-        device_response = self.send_and_receive_from_socket("getDeviceList")
+        device_response = self.send_message("getDeviceList", read_response=True)
         while device_response == "device-list-not-up-to-date" and loop_number < 6:
             self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
             time.sleep(4)  # This is a horrible practice, and I feel dirty just writing it.
-            device_response = self.send_and_receive_from_socket("getDeviceList")
+            device_response = self.send_message("getDeviceList", read_response=True)
             loop_number += 1
 
         if not device_response:
@@ -696,11 +688,11 @@ class BrewPiDevice(models.Model):
 
             if legacy_mode:
                 if self.temp_format == 'C':
-                    control_constants.tempSetMax = 30.0
-                    control_constants.tempSetMin = 1.0
+                    control_constants.tempSetMax = 35.0
+                    control_constants.tempSetMin = -8.0
                 elif self.temp_format == 'F':
-                    control_constants.tempSetMax = 86.0
-                    control_constants.tempSetMin = 33.0
+                    control_constants.tempSetMax = 90.0
+                    control_constants.tempSetMin = 20.0
                 else:
                     return False  # If we can't define a good max/min, don't do anything
             else:
@@ -717,7 +709,7 @@ class BrewPiDevice(models.Model):
         return False
 
     def get_temp_control_status(self):
-        device_mode = self.send_and_receive_from_socket("getMode")
+        device_mode = self.send_message("getMode", read_response=True)
 
         if device_mode is not None:  # If we could connect to the device, force-sync the temp format
             self.sync_temp_format()
@@ -732,11 +724,11 @@ class BrewPiDevice(models.Model):
 
         elif device_mode == 'b':  # Device mode is beer constant
             control_status['device_mode'] = "beer_constant"
-            control_status['set_temp'] = self.send_and_receive_from_socket("getBeer")
+            control_status['set_temp'] = self.send_message("getBeer", read_response=True)
 
         elif device_mode == 'f':  # Device mode is fridge constant
             control_status['device_mode'] = "fridge_constant"
-            control_status['set_temp'] = self.send_and_receive_from_socket("getFridge")
+            control_status['set_temp'] = self.send_message("getFridge", read_response=True)
 
         elif device_mode == 'p':  # Device mode is beer profile
             control_status['device_mode'] = "beer_profile"
@@ -1357,7 +1349,8 @@ class OldControlConstants(models.Model):
             self.controller = controller
 
         try:
-            cc = json.loads(self.controller.send_and_receive_from_socket("getControlConstants"))
+            # TODO - Move most of this into BrewPiDevice
+            cc = json.loads(self.controller.send_message("getControlConstants", read_response=True))
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1454,7 +1447,8 @@ class NewControlConstants(models.Model):
         :return: boolean
         """
         try:
-            cc = json.loads(controller.send_and_receive_from_socket("getControlConstants"))
+            # TODO - Move most of this into BrewPiDevice
+            cc = json.loads(controller.send_message("getControlConstants", read_response=True))
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1509,7 +1503,7 @@ class NewControlConstants(models.Model):
 #         if controller is not None:
 #             self.controller = controller
 #         try:
-#             cc = json.loads(self.controller.send_and_receive_from_socket("getControlSettings"))
+#             cc = json.loads(self.controller.send_message("getControlSettings", read_response=True))
 #
 #             for this_field in self.firmware_field_list:
 #                 setattr(self, this_field, cc[this_field])
