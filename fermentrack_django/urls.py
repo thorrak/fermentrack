@@ -80,6 +80,6 @@ urlpatterns = [
 
     # Site-specific views (Help, Settings, etc.)
     url(r'site/settings/$', app.views.site_settings, name="site_settings"),
-    url(r'site/help/$', app.setup_views.setup_config, name="site_help"),
+    url(r'site/help/$', app.views.site_help, name="site_help"),
 
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT)  # To enable viewing data files during development
