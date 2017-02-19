@@ -663,6 +663,7 @@ while run:
             logMessage("Fresh start! Log files erased.")
             continue
         elif messageType == "interval":  # new interval received
+            # TODO - Determine if we need to set this or if it can be ignored
             newInterval = int(value)
             if 5 < newInterval < 5000:
                 try:

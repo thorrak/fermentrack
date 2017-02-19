@@ -817,6 +817,12 @@ class BrewPiDevice(models.Model):
             pass
         return json.loads(response)
 
+    def reset_eeprom(self):
+        response = self.send_message("resetController") # Reset the controller
+        time.sleep(1)                                   # Give it 1 second to complete
+        synced = self.sync_temp_format()                # ...then resync the temp format
+        return synced
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device

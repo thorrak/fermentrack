@@ -451,3 +451,65 @@ def site_settings(request):
                                    context={'form': form,
                                             'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 
+
+
+
+@login_required
+@site_is_configured
+def device_config_legacy(request, device_id, control_constants):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    active_device = BrewPiDevice.objects.get(id=device_id)
+
+    if request.POST:
+        form = device_forms.OldCCModelForm(request.POST)
+        if form.is_valid():
+            # Generate the new_control_constants object from the form data
+            new_control_constants = form.save(commit=False)
+
+            # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
+            # TODO - Modify the below to only send constants that have changed to the controller
+            if not new_control_constants.save_all_to_controller(active_device):
+                return render_with_devices(request, template_name='device_config_old.html',
+                                           context={'form': form, 'active_device': active_device})
+
+            # TODO - Make it so if we added a preset name we save the new preset
+            # new_device.save()
+
+            messages.success(request, 'Control constants updated for device {}'.format(active_device.device_name))
+            return redirect("/")
+
+        else:
+            return render_with_devices(request, template_name='device_config_old.html',
+                                       context={'form': form, 'active_device': active_device})
+    else:
+        form = device_forms.OldCCModelForm(instance=control_constants)
+        return render_with_devices(request, template_name='device_config_old.html',
+                                   context={'form': form, 'active_device': active_device})
+
+
+@login_required
+@site_is_configured
+def device_eeprom_reset(request, device_id):
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    # This may be unncecessary for the EEPROM reset process, but using it as a proxy to check if we can connect
+    control_constants, is_legacy = active_device.retrieve_control_constants()
+
+    if control_constants is None:
+        # We weren't able to retrieve the version from the controller.
+        messages.error(request, "Unable to reach brewpi-script for device {}".format(active_device.device_name))
+        return redirect('device_dashboard', device_id=device_id)
+    else:
+        active_device.reset_eeprom()
+        messages.success(request, "Device EEPROM reset")
+        return redirect("device_config", device_id=device_id)
+
+
