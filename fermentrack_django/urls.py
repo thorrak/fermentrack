@@ -31,7 +31,7 @@ urlpatterns = [
     ## New install Guided Setup Views
     url(r'setup/$', app.setup_views.setup_splash, name="setup_splash"),
     url(r'setup/add_user/$', app.setup_views.setup_add_user, name="setup_add_user"),
-    url(r'setup/settings/$', app.setup_views.setup_config, name="setup_config"),
+    url(r'setup/settings/$', app.setup_views.setup_config, name="setup_config"),  # This is settings.CONSTANCE_SETUP_URL
 
     ## Device Guided Setup Views
     url(r'^devices/guided/$', app.setup_views.device_guided_select_device, name='device_guided_select_device'),
@@ -74,7 +74,7 @@ urlpatterns = [
     url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 
     # Login/Logout Views
-    url(r'^accounts/login/$', app.views.login, name='login'),
+    url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL
     url(r'^accounts/logout/$', app.views.logout, name='logout'),
 
     # Site-specific views (Help, Settings, etc.)

@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
+from django.contrib.auth.decorators import login_required
 
 import device_forms
 import profile_forms
 
 from constance import config
+from decorators import site_is_configured  # Checks if user has completed constance configuration
 
 
 import json, time
@@ -16,6 +18,8 @@ from app.models import BrewPiDevice, FermentationProfilePoint, FermentationProfi
 from views import render_with_devices
 
 
+@login_required
+@site_is_configured
 def profile_new(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_fermentation_profile'):
@@ -38,6 +42,8 @@ def profile_new(request):
 
 
 # TODO - Determine if profile_edit & profile_view should be combined (and possibly implement inline edits??)
+@login_required
+@site_is_configured
 def profile_edit(request, profile_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.edit_fermentation_profile'):
@@ -76,6 +82,8 @@ def profile_edit(request, profile_id):
                                             'this_profile_points': this_profile_points})
 
 
+@login_required
+@site_is_configured
 def profile_list(request):
     # There must be a better way to implement cleaning up profiles pending deletion...
     FermentationProfile.cleanup_pending_delete()
@@ -84,6 +92,8 @@ def profile_list(request):
     return render_with_devices(request, template_name='profile/profile_list.html', context={'all_profiles': all_profiles})
 
 
+@login_required
+@site_is_configured
 def profile_setpoint_delete(request, profile_id, point_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.edit_fermentation_profile'):
@@ -108,6 +118,8 @@ def profile_setpoint_delete(request, profile_id, point_id):
     return redirect('profile_edit', profile_id=profile_id)
 
 
+@login_required
+@site_is_configured
 def profile_delete(request, profile_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.edit_fermentation_profile'):
@@ -134,6 +146,8 @@ def profile_delete(request, profile_id):
     return redirect('profile_list')
 
 
+@login_required
+@site_is_configured
 def profile_undelete(request, profile_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.edit_fermentation_profile'):

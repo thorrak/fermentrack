@@ -4,11 +4,14 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
+from django.contrib.auth.decorators import login_required
 
 import setup_forms, device_forms
 import mdnsLocator
 
 from app.models import BrewPiDevice
+
+from decorators import site_is_configured  # Checks if user has completed constance configuration
 
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
@@ -28,7 +31,15 @@ def render_with_devices(request, template_name, context=None, content_type=None,
 
 
 def setup_add_user(request):
-    # TODO - When app is configured, only super users should only get here
+    num_users = User.objects.all().count()
+
+    # We might want to create CRUD for users later, but it shouldn't be part of the guided setup. If a user has
+    # already been created, redirect back to siteroot.
+    if num_users > 0:
+        messages.error(request, 'Cannot use guided setup to create multiple users - use the <a href="/admin/">admin ' +
+                                'portal</a> instead.')
+        return redirect('siteroot')
+
     if request.POST:
         form = setup_forms.GuidedSetupUserForm(request.POST)
         if form.is_valid():
@@ -48,6 +59,7 @@ def setup_add_user(request):
         return render(request, template_name='setup/setup_add_user.html', context={'form': form})
 
 
+@login_required
 def setup_config(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
     if request.POST:
@@ -108,6 +120,8 @@ def setup_splash(request):
 #     |       |
 #     Preload device details & set up
 
+@login_required
+@site_is_configured
 def device_guided_select_device(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -125,6 +139,8 @@ def device_guided_select_device(request):
         return render_with_devices(request, template_name='setup/device_guided_select_device.html', context={'form': form})
 
 
+@login_required
+@site_is_configured
 def device_guided_flash_prompt(request, device_family):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -159,6 +175,8 @@ def device_guided_flash_prompt(request, device_family):
                                             'can_flash_family': can_flash_family})
 
 
+@login_required
+@site_is_configured
 def device_guided_serial_wifi(request, device_family):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -169,6 +187,8 @@ def device_guided_serial_wifi(request, device_family):
                                context={'device_family': device_family})
 
 
+@login_required
+@site_is_configured
 def device_guided_find_mdns(request):
     installed_devices, available_devices = mdnsLocator.find_mdns_devices()
 
@@ -177,6 +197,8 @@ def device_guided_find_mdns(request):
                                         'available_devices': available_devices})
 
 
+@login_required
+@site_is_configured
 def device_guided_add_mdns(request, mdns_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):

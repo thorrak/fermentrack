@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from django.contrib import auth
+from django.contrib.auth.decorators import login_required
 
 from constance import config  # For the explicitly user-configurable stuff
+from decorators import site_is_configured  # Checks if user has completed constance configuration
 
-import device_forms, profile_forms, beer_forms
+import device_forms, profile_forms, beer_forms, setup_forms
 import setup_views
 
 import mdnsLocator
@@ -52,6 +54,8 @@ def siteroot(request):
         return lcd_test(request=request)
 
 
+@login_required
+@site_is_configured
 def add_device(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -92,8 +96,9 @@ def add_device(request):
 
 
 
-
-def configure_settings(request):
+@login_required
+@site_is_configured
+def configure_settings(request):  # TODO - Check if this is used anywhere
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
@@ -132,7 +137,8 @@ def configure_settings(request):
         return render(request, template_name='addtimer.html', context={'form': form, })
 
 
-def lcd_test(request):
+@site_is_configured
+def lcd_test(request): # TODO - Rename this
     # This handles generating the list of LCD screens for each device. Included are fermentation profiles so that we can
     # use them for setting temperature assignments
     from django.contrib.auth.models import User
@@ -141,10 +147,13 @@ def lcd_test(request):
     return render_with_devices(request, template_name="device_lcd_list.html", context=context)
 
 
+@site_is_configured
 def device_list(request):
     return render_with_devices(request, template_name="device_list.html")
 
 
+@login_required
+@site_is_configured
 def device_config_legacy(request, device_id, control_constants):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -180,6 +189,8 @@ def device_config_legacy(request, device_id, control_constants):
                                    context={'form': form, 'active_device': active_device})
 
 
+@login_required
+@site_is_configured
 def device_config(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
@@ -201,6 +212,8 @@ def device_config(request, device_id):
         return device_config_legacy(request, device_id, control_constants)
 
 
+@login_required
+@site_is_configured
 def sensor_list(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
@@ -231,6 +244,8 @@ def sensor_list(request, device_id):
                                         'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
 
+@login_required
+@site_is_configured
 def sensor_config(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
@@ -270,6 +285,7 @@ def sensor_config(request, device_id):
 
 
 # TODO - Delete this (and the corresponding template) if we are no longer using by the time we go to production
+@site_is_configured
 def beer_active_csv(request, device_id):
     # TODO - Add error message if device_id is invalid
     active_device = BrewPiDevice.objects.get(id=device_id)
@@ -283,6 +299,7 @@ def beer_active_csv(request, device_id):
     return render(request, template_name='csv.html', context={'csv_headers': column_headers, 'csv_data': log_data })
 
 
+@site_is_configured
 def device_dashboard(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
@@ -295,6 +312,8 @@ def device_dashboard(request, device_id):
                                context={'active_device': active_device, 'beer_create_form': beer_create_form})
 
 
+@login_required
+@site_is_configured
 def device_temp_control(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -337,13 +356,17 @@ def device_temp_control(request, device_id):
         return redirect('siteroot')
 
 
+@site_is_configured
 def temp_panel_test(request):
-
+    # TODO - Delete if still unused prior to release
     return render_with_devices(request, template_name="temp_panel_test.html",
                                context={})
 
 
+@login_required
+@site_is_configured
 def github_trigger_upgrade(request):
+    # TODO - Add permission check here
     commit_info = git_integration.get_local_remote_commit_info()
 
     if git_integration.app_is_current():
@@ -397,9 +420,15 @@ def logout(request):
     else:
         return redirect('login')
 
-
+@login_required
+@site_is_configured
 def site_settings(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
+
+
+    if not config.USER_HAS_COMPLETED_CONFIGURATION:
+        return redirect('siteroot')
+
     if request.POST:
         form = setup_forms.GuidedSetupConfigForm(request.POST)
         if form.is_valid():
@@ -413,12 +442,12 @@ def site_settings(request):
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
-            return render_with_devices(request, template_name='setup/setup_config.html',
+            return render_with_devices(request, template_name='site_config.html',
                                        context={'form': form,
                                                 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
     else:
         form = setup_forms.GuidedSetupConfigForm()
-        return render_with_devices(request, template_name='setup/setup_config.html',
+        return render_with_devices(request, template_name='site_config.html',
                                    context={'form': form,
                                             'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 

@@ -4,16 +4,20 @@
 {# I'm converting this form so that it can be used in both the initial guided setup as well as when the user clicks #}
 {# the "gear" icon in the upper right of the form #}
 
-{% block title %}{% if not completed_config %}Guided Device Setup{% else %}App Settings{% endif %}{% endblock %}
+{% block title %}App Settings{% endblock %}
 
 {% block content %}
+
+<h1 class="page-header">App Configuration</h1>
+
+
+        <h3 class="form-header">Configuration Tools</h3>
+        <a href="/admin/" class="btn btn-large btn-lg btn-primary">Django Admin Panel</a>
 
 {# Setting this as an include so we can reuse it on our site settings page #}
 {% include 'setup/constance_app_configuration.html' %}
 
-{% if completed_config %}
-    {# TODO - Add a user list here & link back to the "add user" workflow #}
-{% endif %}
+
 
 {% endblock %}
 

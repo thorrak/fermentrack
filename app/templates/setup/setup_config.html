@@ -1,21 +1,23 @@
+{# setup/setup_config.html is part of the site "Guided Setup" workflow the user encounters on a fresh install #}
+{# Ideally, it should only be encountered once. All variables can be edited through 'site_settings' as well as #}
+{# the Django admin #}
+
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
 
-{# I'm converting this form so that it can be used in both the initial guided setup as well as when the user clicks #}
-{# the "gear" icon in the upper right of the form #}
 
-{% block title %}{% if not completed_config %}Guided Device Setup{% else %}App Settings{% endif %}{% endblock %}
+{% block title %}Guided Device Setup{% endblock %}
+
 
 {% block content %}
+
+<h1 class="page-header">App Configuration</h1>
 
 {# Setting this as an include so we can reuse it on our site settings page #}
 {% include 'setup/constance_app_configuration.html' %}
 
-{% if completed_config %}
-    {# TODO - Add a user list here & link back to the "add user" workflow #}
-{% endif %}
-
 {% endblock %}
+
 
 {% block scripts %}
 <script>
