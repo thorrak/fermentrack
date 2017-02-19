@@ -512,4 +512,6 @@ def device_eeprom_reset(request, device_id):
         messages.success(request, "Device EEPROM reset")
         return redirect("device_config", device_id=device_id)
 
+def site_help(request):
+    return render_with_devices(request, template_name='site_help.html', context={})
 
