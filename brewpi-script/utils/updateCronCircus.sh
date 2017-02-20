@@ -16,11 +16,11 @@ CIRCUSD=~/venv/bin/circusd
 CIRCUSCTL=~/venv/bin/circusctl
 NAME="Fermentrack supervisor: circusd: "
 # Cron Regexp
-REBOOT_ENTRY="^@reboot.*_updateCronCircus.sh start$"
-CHECK_ENTRY="^\*/10 \* \* \* \*.*_updateCronCircus.sh startifstopped$"
+REBOOT_ENTRY="^@reboot.*updateCronCircus.sh start$"
+CHECK_ENTRY="^\*/10 \* \* \* \*.*updateCronCircus.sh startifstopped$"
 # Cron Entries
-REBOOT_CRON="@reboot ~/fermentrack/brewpi-script/utils/_updateCronCircus.sh start"
-CHECK_CRON="*/10 * * * * ~/fermentrack/brewpi-script/utils/_updateCronCircus.sh startifstopped"
+REBOOT_CRON="@reboot ~/fermentrack/brewpi-script/utils/updateCronCircus.sh start"
+CHECK_CRON="*/10 * * * * ~/fermentrack/brewpi-script/utils/updateCronCircus.sh startifstopped"
 
 # Source in our virtualenv
 if [ ! -f ~/venv/bin/activate ]; then
