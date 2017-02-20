@@ -84,8 +84,8 @@ case "$1" in
     startifstopped)
         startifstopped
         ;;
-    fixcron)
-        fixcron
+    add2cron)
+        add2cron
         ;;
     *)
         echo "Usage: $0 {start|stop|status|startifstopped|add2cron}"
