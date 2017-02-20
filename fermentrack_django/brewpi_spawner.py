@@ -172,7 +172,7 @@ class BrewPiSpawner(object):
 if __name__ == '__main__':
     # Chill so that circus has time to startup
     time.sleep(5)
-    cmd_tmpl = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + " --dbcfg %s"
+    cmd_tmpl = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
     process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=cmd_tmpl, prefix="dev-")
     process_spawner.run_forvever()
 

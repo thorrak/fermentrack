@@ -9,7 +9,7 @@ def local_and_remote_are_at_same_commit(repo, remote):
     remote_commit = remote_fetch[0].commit
     # We don't want to upgrade if the local commit is newer than the remote commit (IE - we're doing development
     # on the local copy)
-    return remote_commit.committed_datetime >= local_commit.committed_datetime
+    return remote_commit.committed_datetime <= local_commit.committed_datetime
     # return local_commit.hexsha == remote_commit.hexsha
 
 

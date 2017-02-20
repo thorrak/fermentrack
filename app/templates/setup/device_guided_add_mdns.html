@@ -12,7 +12,7 @@
     <div id="deviceConstantsSection">
         <h4 class="form-header">Device Constants</h4>
         {% form_generic form.device_name %}
-        {% form_generic form.temp_format %}
+        {% form_generic form.temp_format %} {# TODO - Determine if we want this here given that we would have to update control constants to set it #}
         {% form_generic form.data_point_log_interval %}
         {% form_generic form.board_type True %}
     </div>
@@ -40,7 +40,7 @@
         {% form_generic form.wifi_port True %}
     </div>
 
-    <input type="submit" value="Submit" class="btn btn-default" />
+    <input type="submit" value="Submit" class="btn btn-primary btn-large btn-lg" />
 </form>
 
 {% endblock %}

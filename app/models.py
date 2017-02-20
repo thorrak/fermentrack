@@ -683,6 +683,9 @@ class BrewPiDevice(models.Model):
         # device definition.
         control_constants, legacy_mode = self.retrieve_control_constants()
 
+        if control_constants is None:
+            return False
+
         if control_constants.tempFormat != self.temp_format:  # The device has the wrong tempFormat - We need to update
             control_constants.tempFormat = self.temp_format
 
