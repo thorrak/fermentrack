@@ -14,7 +14,6 @@ while getopts ":b:sh" opt; do
   case ${opt} in
     b)
       BRANCH=${OPTARG}
-      echo "-a was triggered, Parameter: $OPTARG" >&2
       ;;
     s)
       SILENT=1  # Currently unused
@@ -43,12 +42,12 @@ source ~/venv/bin/activate  # Assuming the directory based on a normal install w
 sleep 2s
 
 # Next, kill the running Fermentrack instance using circus
-circusctl stop
+circusctl stop &> /dev/null
 
 # Pull the latest version of the script from GitHub
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
 git pull
-git reset --hard
+git reset --hard &> /dev/null
 git checkout ${BRANCH}
 
 # Install everything from requirements.txt
@@ -62,4 +61,4 @@ python manage.py collectstatic --noinput >> /dev/null
 
 
 # Finally, relaunch the Fermentrack instance using circus
-circusctl start
+circusctl start &> /dev/null
