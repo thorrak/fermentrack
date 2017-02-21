@@ -1,25 +1,215 @@
 {% extends "sitewide/flat_ui_template.html" %}{% load static %}
 {% load custom_tags %}
+{% load static %}
 
 {% block title %}{{ active_device.device_name }} Dashboard{% endblock %}
 
+{% block header_scripts %}
+<link href="{% static "css/dashboard_revised.css" %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
+{#    <div class="row">#}
+{#        <!-- Panel 1 -->#}
+{#        <div class="col-md-3 col-sm-6">#}
+{#            <div class="panel panel-red">#}
+{#                <div class="panel-heading">#}
+{#                    <div class="row">#}
+{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
+{#                        <div class="col-xs-9 text-right">#}
+{#                            <div class="huge">66&deg; F</div>#}
+{#                            <div class="">Fridge Temp</div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <a href="#">#}
+{#                    <div class="panel-footer">#}
+{#                        <div class="pull-left">View Details</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{##}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <!-- Panel 2 -->#}
+{#        <div class="col-md-3 col-sm-6">#}
+{#            <div class="panel panel-yellow">#}
+{#                <div class="panel-heading">#}
+{#                    <div class="row">#}
+{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
+{#                        <div class="col-xs-9 text-right">#}
+{#                            <div class="huge">66&deg; F</div>#}
+{#                            <div class="">Beer Temp</div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <a href="#">#}
+{#                    <div class="panel-footer">#}
+{#                        <div class="pull-left">View Details</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{##}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <!-- Panel 3 -->#}
+{#        <div class="col-md-3 col-sm-6">#}
+{#            <div class="panel panel-green">#}
+{#                <div class="panel-heading">#}
+{#                    <div class="row">#}
+{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
+{#                        <div class="col-xs-9 text-right">#}
+{#                            <div class="less-huge">Beer Const</div>#}
+{#                            <div class="">Control Mode</div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <a href="#">#}
+{#                    <div class="panel-footer">#}
+{#                        <div class="pull-left">View Details</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{##}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <!-- Panel 1 -->#}
+{#        <div class="col-md-3 col-sm-6">#}
+{#            <div class="panel panel-green">#}
+{#                <div class="panel-heading">#}
+{#                    <div class="row">#}
+{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
+{#                        <div class="col-xs-9 text-right">#}
+{#                            <div class="huge">66&deg; F</div>#}
+{#                            <div class="">Beer Temp</div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <a href="#">#}
+{#                    <div class="panel-footer">#}
+{#                        <div class="pull-left">View Details</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{##}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{##}
+{#    </div>#}
+
     <div class="row">
-        <div class="col-md-4 col-sm-12">
-            <h1>{{ active_device.device_name }}</h1>
-            <h5>Now Fermenting: {% if active_device.active_beer %}{{ active_device.active_beer.name }}{% else %}Nothing{% endif %}</h5>
-        {% if active_device.active_beer %}
-            {% if active_device.logging_status == 'active' %}
-                <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>
-            {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}
-                <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>
-            {% endif %}
-            <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>
-        {% else %}
-            <button type="button" class="btn btn-small btn-sm btn-primary" data-toggle="modal" data-target="#beerModal">Start New Beer/Log</button>
-        {% endif %}
+        <div class="col-xs-12">
+                <div class="dashpanel dashpanel-top bg-carrot">
+                    <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
+    {#                <div class="dashpanel-title">Beer Temp</div>#}
+                    <div class="dash-data" style="text-align: left">{{ active_device.device_name }}</div>
+                    <div class="dashpanel-divider"></div>
+                    <a href="#">
+                        <div class="dash-desc">
+                            <div class="pull-left">Now Fermenting: {% if active_device.active_beer %}{{ active_device.active_beer.name }}{% else %}Nothing{% endif %}</div>
+    {#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
         </div>
+    </div>
+
+
+    <div class="row">
+
+        <div class="col-md-3 col-sm-6">
+            <div class="dashpanel dashpanel-top bg-petermann">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
+                <div class="dashpanel-title">Beer Temp</div>
+                <div class="dash-data">64&deg; F</div>
+                <div class="dashpanel-divider"></div>
+                <a href="#">
+                    <div class="dash-desc">
+                        <div class="pull-left">View Details</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="dashpanel dashpanel-top bg-amethyst">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
+                <div class="dashpanel-title">Fridge Temp</div>
+                <div class="dash-data">65&deg; F</div>
+                <div class="dashpanel-divider"></div>
+                <a href="#">
+                    <div class="dash-desc">
+                        <div class="pull-left">View Details</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="dashpanel dashpanel-top bg-concrete">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
+                <div class="dashpanel-title">Control Mode</div>
+                <div class="dash-data">Beer Profile</div>
+                <div class="dashpanel-divider"></div>
+                <a href="#">
+                    <div class="dash-desc">
+                        <div class="pull-left">Change Mode</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="dashpanel dashpanel-top bg-wet-asphalt">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-clock-o fa-fw"></i></div>
+                <div class="dashpanel-title">Log Interval</div>
+                <div class="dash-data">30s</div>
+                <div class="dashpanel-divider"></div>
+                <a href="#">
+                    <div class="dash-desc">
+                        <div class="pull-left">Configure Device</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <div class="row">
+{#        <div class="col-md-4 col-sm-12">#}
+{#            <h1>{{ active_device.device_name }}</h1>#}
+{#            <h5>Now Fermenting: {% if active_device.active_beer %}{{ active_device.active_beer.name }}{% else %}Nothing{% endif %}</h5>#}
+{#        {% if active_device.active_beer %}#}
+{#            {% if active_device.logging_status == 'active' %}#}
+{#                <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>#}
+{#            {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}#}
+{#                <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>#}
+{#            {% endif %}#}
+{#            <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>#}
+{#        {% else %}#}
+{#            <button type="button" class="btn btn-small btn-sm btn-primary" data-toggle="modal" data-target="#beerModal">Start New Beer/Log</button>#}
+{#        {% endif %}#}
+{#        </div>#}
         <div class="col-md-8 col-sm-12">
 
             {# TODO - LCD Goes Here #}
@@ -32,8 +222,8 @@
     (Device {{ active_device.id }})
     <br>
     <div class="row">
-        <div class="col-sm-10" id="graphdiv3">
-            <div id="graphdiv2" style="width:700px; height:400px;"></div>
+        <div class="col-lg-9 col-md-12" id="graphdiv3">
+            <div id="graphdiv2" style="width:100%; height:400px;"></div>
             <script type="text/javascript">
               g2 = new Dygraph(
                 document.getElementById("graphdiv2"),

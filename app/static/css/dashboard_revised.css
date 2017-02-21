@@ -1,0 +1,151 @@
+/* Attempt 1 */
+
+.panel-green {
+  border-color: #5cb85c;
+}
+.panel-green > .panel-heading {
+  border-color: #5cb85c;
+  color: white;
+  background-color: #5cb85c;
+}
+.panel-green > a {
+  color: #5cb85c;
+}
+.panel-green > a:hover {
+  color: #3d8b3d;
+}
+.panel-red {
+  border-color: #d9534f;
+}
+.panel-red > .panel-heading {
+  border-color: #d9534f;
+  color: white;
+  background-color: #d9534f;
+}
+.panel-red > a {
+  color: #d9534f;
+}
+.panel-red > a:hover {
+  color: #b52b27;
+}
+.panel-yellow {
+  border-color: #f0ad4e;
+}
+.panel-yellow > .panel-heading {
+  border-color: #f0ad4e;
+  color: white;
+  background-color: #f0ad4e;
+}
+.panel-yellow > a {
+  color: #f0ad4e;
+}
+.panel-yellow > a:hover {
+  color: #df8a13;
+}
+
+.huge {
+    font-size: 40px;
+}
+
+.less-huge {
+    font-size: 30px;
+}
+
+
+/*********************************/
+/* Attempt 2 */
+
+.dashpanel {
+    position: relative;
+    margin-bottom: 20px;
+    color: #fff;
+    border-radius: 3px;
+    overflow: hidden;
+    font-family: 'Open Sans',"Helvetica Neue",Helvetica,Arial,sans-serif;
+    padding: 15px;
+}
+
+
+/* Carrot is defined as part of flat-ui */
+.bg-carrot {
+    background: #E67E22!important;
+}
+
+/* Petermann is defined as part of flat-ui */
+.bg-petermann {
+    background: #3498db!important;
+}
+
+/* Amethyst is defined as part of flat-ui */
+.bg-amethyst {
+    background: #9B59B6!important;
+}
+
+/* Wet Asphalt is defined as part of flat-ui */
+.bg-wet-asphalt {
+    background: #34495E!important;
+}
+
+/* Wet Asphalt is defined as part of flat-ui */
+.bg-concrete {
+    background: #95a5a6!important;
+}
+
+
+.dashpanel-top .dash-icon.dash-icon-lg {
+    font-size: 52px;
+    top: 12px;
+    right: 21px;
+}
+
+.dashpanel-top .dash-icon {
+    font-size: 42px;
+    height: 56px;
+    width: 56px;
+    text-align: center;
+    line-height: 56px;
+    margin-left: 15px;
+    color: #fff;
+    position: absolute;
+    left: -8px;
+    top: 15px;
+    opacity: .2;
+    filter: alpha(opacity=20);
+}
+
+.dashpanel-top .dash-desc, .dashpanel-top .dashpanel-title {
+    color: #fff;
+    color: rgba(255,255,255,.6);
+}
+
+.dashpanel-top .dashpanel-title {
+    position: relative;
+    line-height: 1.1;
+    font-size: 16px;
+    margin: 2px 0 7px;
+    color: rgba(255,255,255,.6);
+    text-align: right;
+}
+
+.dashpanel-top .dash-data {
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+.dashpanel-top .dash-desc {
+    font-weight: 300;
+    margin-bottom: 0;
+}
+
+.dashpanel-top .dashpanel-divider {
+    background: rgba(0,0,0,.25);
+    height: 2px;
+    margin: 0 -15px 12px;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
