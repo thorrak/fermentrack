@@ -36,7 +36,7 @@ At the moment, Fermentrack doesn't support 100% of the features of the official 
 * Fuscus support (v3)
 * Support for "modern" (non-legacy branch) controllers (v3)
 
-A full table of controllers/expected hardware is available at
+A full table of controllers/expected hardware availability is available [in the documentation](hardware/index.md).
 
 ## Requirements
 
@@ -44,5 +44,5 @@ A full table of controllers/expected hardware is available at
 * Fresh Raspbian install (Lite/Pixel supported, Oct 2016 version or later)
 * 1GB of free space available
 
-**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict 
+**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs. 
 

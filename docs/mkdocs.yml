@@ -1,12 +1,13 @@
-site_name: BrewPi Django Edition
-repo_url: https://github.com/thorrak/brewpi-django
-repo_name: brewpi-django
+site_name: Fermentrack
+repo_url: https://github.com/thorrak/fermentrack
+repo_name: fermentrack
 theme: readthedocs
 pages:
   - Home: 'index.md'
+  - FAQ: 'faq.md'
   - Install:
     - 'Index': 'install/index.md'
-    - 'Raspberry Pi Automated Installation': 'install/Raspi Setup.md'
+    - 'Raspberry Pi Setup': 'install/Raspi Setup.md'
     - 'Manual Installation': 'install/manual.md'
   - Configuration:
     - 'Configuration': 'config/config.md'
