@@ -5,7 +5,8 @@ theme: readthedocs
 pages:
   - Home: 'index.md'
   - Install:
-    - 'Raspberry Pi Automated Installation': 'install/automated.md'
+    - 'Index': 'install/index.md'
+    - 'Raspberry Pi Automated Installation': 'install/Raspi Setup.md'
     - 'Manual Installation': 'install/manual.md'
   - Configuration:
     - 'Configuration': 'config/config.md'

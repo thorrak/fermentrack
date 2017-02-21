@@ -1,26 +1,9 @@
-# Installing brewpi-esp8266
+# Preparing a Raspberry Pi for Fermentrack
 
-There are two main methods for installing brewpi-esp8266:
+Prior to installing Fermentrack, you need to install Raspbian and set everything up. Click the link below
+to watch a video showing how to prepare the Raspberry Pi using a Mac, or read the linked instructions below for your operating system.
 
-* Semi-automated alongside BrewPi using custom brewpi-tools
-* Manual install after installing BrewPi
-
-The below instructions explain the automated method. If you would prefer the
-manual instructions, scroll to the bottom.
-
-
-## Installation Instructions
-1. Prepare the Raspberry Pi (install Raspbian, run raspi-config, update/upgrade)
-2. Install BrewPi using the custom brewpi-tools.
-3. Flash the firmware to the ESP8266 board.
-4. Set up the firmware
-5. Configure BrewPi to use your firmware
-
-
-### 1. Prepare the Raspberry Pi - [[Video]](https://www.youtube.com/watch?v=JRWezXHmpNc)
-Prior to installing BrewPi, you need to install Raspbian. Click the link above
-to see how to prepare the Raspberry Pi using a Mac, or read the linked
-instructions below for your operating system.
+### Prepare the Raspberry Pi - [[Video]](https://youtu.be/TdSnJOUgS3k)
 
 1. Download the latest version of Raspbian from [here](https://www.raspberrypi.org/downloads/raspbian/). I recommend the Lite version as I prefer headless installations, but the full version works as well.
 2. Burn Raspbian to your SD card using [these instructions](https://www.raspberrypi.org/documentation/installation/installing-images/).
@@ -30,23 +13,12 @@ instructions below for your operating system.
 6. Locate the IP address for your Raspberry Pi This can generally be done by executing `arp -a | grep raspberry` however you can also locate your Raspberry Pi by logging into your router and looking for the device.
 7. Update the Raspberry Pi software by running `sudo apt-get update` and `sudo apt-get upgrade`.
 8. Run `raspi-config` and configure the Pi. At a minimum, expand the filesystem (option 1).
+9. Update the default password for the `pi` user using `passwd`
 9. *Optional* - [Configure WiFi](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md) on your Raspberry Pi (if needed)
 
 
 
 
-
-
-
-
-## Manual Installation
-If you have already installed BrewPi but want to use the ESP8266 firmware,
-you will need to do the following:
-
-1. Replace the default brewpi-script with the custom brewpi-script that will work with ESP8266 devices (Located [here](https://github.com/thorrak/brewpi-script))
-2. Clone the brewpi-esp8266 firmware (this repo) into `~brewpi/`
-3. Install esptool `sudo pip install esptool --upgrade`
-4. Follow the instructions above beginning with step 3.
 
 
 ### Raspberry Pi Setup - Additional Info about Install-Time WiFi Configuration
@@ -58,8 +30,12 @@ While not discussed in the official documentation, this greatly simplifies headl
 
 To utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a `wpa_supplicant.conf` file in the `/boot` directory of the SD card with the following contents (adjusting to match your network configuration):
 
-`network={`
-`    ssid="YOUR_SSID"`
-`    psk="YOUR_PASSWORD"`
-`    key_mgmt=WPA-PSK`
-`}`
+```
+network={`
+    ssid="YOUR_SSID"
+    psk="YOUR_PASSWORD"
+    key_mgmt=WPA-PSK
+}
+```
+
+Note - In the above, `ssid` is the name of your wireless network, `psk` is the password for your wireless network (if applicable), and `key_mgmt` is the password management protocol (which, for most home networks these days is WPA-PSK)
