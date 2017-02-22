@@ -31,7 +31,7 @@ While not discussed in the official documentation, this greatly simplifies headl
 To utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a `wpa_supplicant.conf` file in the `/boot` directory of the SD card with the following contents (adjusting to match your network configuration):
 
 ```
-network={`
+network={
     ssid="YOUR_SSID"
     psk="YOUR_PASSWORD"
     key_mgmt=WPA-PSK

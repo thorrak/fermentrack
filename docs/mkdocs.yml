@@ -22,3 +22,6 @@ pages:
     - 'Changelog': 'about/changelog.md'
     - 'License': 'about/license.md'
     
+  - Develop:
+    - 'Index': 'develop/index.md'
+    - 'Models': 'develop/models.md'
