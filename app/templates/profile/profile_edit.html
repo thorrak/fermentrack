@@ -60,7 +60,7 @@
         <h2>Profile (English Description)</h2>
 
         {% for this_line in this_profile.to_english %}
-            {{ this_line }}<br>
+            {{ this_line|safe }}<br>
         {% endfor %}
     {% endif %}
 

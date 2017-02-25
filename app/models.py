@@ -108,18 +108,17 @@ class SensorDevice(models.Model):
     INVERT_INVERTED = 1
 
 
-    # TODO - Rename these to make them more user friendly
     DEVICE_FUNCTION_CHOICES = (
         (DEVICE_FUNCTION_NONE,          'NONE'),
-        (DEVICE_FUNCTION_CHAMBER_DOOR,  'CHAMBER_DOOR'),
-        (DEVICE_FUNCTION_CHAMBER_HEAT,  'CHAMBER_HEAT'),
-        (DEVICE_FUNCTION_CHAMBER_COOL,  'CHAMBER_COOL'),
-        (DEVICE_FUNCTION_CHAMBER_LIGHT, 'CHAMBER_LIGHT'),
-        (DEVICE_FUNCTION_CHAMBER_TEMP,  'CHAMBER_TEMP'),
-        (DEVICE_FUNCTION_CHAMBER_ROOM_TEMP, 'CHAMBER_ROOM_TEMP'),
-        (DEVICE_FUNCTION_CHAMBER_FAN,   'CHAMBER_FAN'),
-        (DEVICE_FUNCTION_MANUAL_ACTUATOR, 'CHAMBER_RESERVED1'),   # Unused, reserved for future use - Tagged as "Manual Actuator" in develop www
-        (DEVICE_FUNCTION_BEER_TEMP,     'BEER_TEMP'),           # Primary beer temp sensor
+        (DEVICE_FUNCTION_CHAMBER_DOOR,  'Chamber Door'),  # CHAMBER_DOOR
+        (DEVICE_FUNCTION_CHAMBER_HEAT,  'Heating Relay'),  # CHAMBER_HEAT
+        (DEVICE_FUNCTION_CHAMBER_COOL,  'Cooling Relay'),  # CHAMBER_COOL
+        (DEVICE_FUNCTION_CHAMBER_LIGHT, 'Chamber Light'),  # CHAMBER_LIGHT
+        (DEVICE_FUNCTION_CHAMBER_TEMP,  'Chamber Temp'),  # CHAMBER_TEMP
+        (DEVICE_FUNCTION_CHAMBER_ROOM_TEMP, 'Room (outside) Temp'),  # CHAMBER_ROOM_TEMP
+        (DEVICE_FUNCTION_CHAMBER_FAN,   'Chamber Fan'),  # CHAMBER_FAN
+        # (DEVICE_FUNCTION_MANUAL_ACTUATOR, 'CHAMBER_RESERVED1'),   # Unused, reserved for future use - Tagged as "Manual Actuator" in develop www
+        (DEVICE_FUNCTION_BEER_TEMP,     'Beer Temp'),           # Primary beer temp sensor
         # The rest of these are available in the code, but appear to have no implemented functionality.
         # Commenting them out for the time being.
         # (DEVICE_FUNCTION_BEER_TEMP2, 'BEER_TEMP2'),         # Secondary beer temp sensor (unimplemented)
@@ -471,7 +470,8 @@ class BrewPiDevice(models.Model):
         if self.time_profile_started is None:
             return None
 
-        return self.active_profile.profile_temp(self.time_profile_started)
+        self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistant
+        return self.active_profile.profile_temp(self.time_profile_started, self.temp_format)
 
     # Other things that aren't persisted in the database
     # available_devices = []
@@ -818,6 +818,12 @@ class BrewPiDevice(models.Model):
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
 
+    def get_control_constants(self):
+        return json.loads(self.send_message("getControlConstants", read_response=True))
+
+    def set_parameters(self, parameters):
+        return self.send_message("setParameters", json.dumps(parameters))
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
@@ -830,6 +836,11 @@ class Beer(models.Model):
     # button that allows the user to convert the log files to the new format if they're different.
     format = models.CharField(max_length=1, default='F')
 
+    # model_version is the revision number of the "Beer" and "BeerLogPoint" models, designed to be iterated when any
+    # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
+    # converter could then be written moving between each iteration of model_version that could then be sequentially
+    # applied to bring a beer log in line with what the model then expects.
+    model_version = models.IntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -1057,14 +1068,12 @@ class FermentationProfile(models.Model):
     # I would prefer to implement this as part of a template (given that it's honestly display logic) but the Django
     # template language doesn't provide quite what I would need to pull it off.
     def to_english(self):
-        # TODO - Make this temperature format sensitive
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         description = []
         past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = 0.0
         previous_ttl = 0.0
-        previous_format = 'F'  #
 
         if profile_points.__len__() < 1:
             description.append("This profile contains no setpoints and cannot be assigned.")
@@ -1072,7 +1081,7 @@ class FermentationProfile(models.Model):
         # TODO - Make the timedelta objects more human readable (I don't like the 5:20:30 format that much)
         for this_point in profile_points:
             if not past_first_point:
-                desc_text = "Start off by heating/cooling to {} degrees {}".format(this_point.temperature_setting, this_point.temp_format)
+                desc_text = "Start off by heating/cooling to {}&deg; {}".format(this_point.temp_to_preferred(), config.TEMPERATURE_FORMAT)
 
                 if this_point.ttl == 0:  # TODO - Test to make sure this works with timedelta objects the way I think it does
                     desc_text += "."
@@ -1080,47 +1089,45 @@ class FermentationProfile(models.Model):
                     desc_text += " and hold this temperature for {}".format(this_point.ttl)
 
                 description.append(desc_text)
-                previous_setpoint = this_point.temperature_setting
+                previous_setpoint = this_point.temp_to_preferred()
                 previous_ttl = this_point.ttl
                 past_first_point = True
-                previous_format = this_point.temp_format
             else:
                 if previous_setpoint == this_point.temperature_setting:
-                    desc_text = "Hold this temperature for {}".format((this_point.ttl - previous_ttl))
+                    desc_text = "Hold this temperature for {} ".format((this_point.ttl - previous_ttl))
                     desc_text += "(until {} after the profile was assigned).".format(this_point.ttl)
                 else:
-                    if previous_setpoint > this_point.temperature_setting:
+                    if previous_setpoint > this_point.temp_to_preferred():
                         desc_text = "Cool to"
                     else:  # If previous_setpoint is less than the current setpoint
                         desc_text = "Heat to"
 
                     # Breaking this up to reduce line length
-                    desc_text += " {} degrees {} ".format(this_point.temperature_setting, this_point.temp_format)
+                    desc_text += " {}&deg; {} ".format(this_point.temp_to_preferred(), config.TEMPERATURE_FORMAT)
                     desc_text += "over the next {} ".format(this_point.ttl - previous_ttl)
                     desc_text += "(reaching this temperature {}".format(this_point.ttl)
                     desc_text += " after the profile was assigned)."
 
                 description.append(desc_text)
-                previous_setpoint = this_point.temperature_setting
+                previous_setpoint = this_point.temp_to_preferred()
                 previous_ttl = this_point.ttl
-                previous_format = this_point.temp_format
 
         if past_first_point:
-            desc_text = "Finally, permanently hold the temperature at {} degrees {}.".format(previous_setpoint, previous_format)
+            desc_text = "Finally, permanently hold the temperature at {}&deg; {}.".format(previous_setpoint, config.TEMPERATURE_FORMAT)
             description.append(desc_text)
 
         return description
 
     # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
     # get_profile_temp from BrewPiDevice
-    def profile_temp(self, time_started):
-        # TODO - Make this temperature format sensitive
+    def profile_temp(self, time_started, temp_format):
+        # temp_format in this case is the temperature format active on BrewPiDevice. This will force conversion from
+        # the profile point's format to the device's format.
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = 0.0
         previous_ttl = 0.0
-        previous_format = 'F'
         timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
         current_time = datetime.datetime.now(tz=timezone_obj)
 
@@ -1130,26 +1137,25 @@ class FermentationProfile(models.Model):
                 # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
                 # temperature. Return the temperature setting
                 if current_time < (time_started + this_point.ttl):
-                    return this_point.temperature_setting
+                    return this_point.convert_temp(temp_format)
                 past_first_point = True
             else:
                 # Test if we are in this period
                 if current_time < (time_started + this_point.ttl):
                     # We are - Check if we need to interpolate, or if we can just use the static temperature
-                    if this_point.temperature_setting == previous_setpoint:  # We can just use the static temperature
-                        return this_point.temperature_setting
+                    if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
+                        return this_point.convert_temp(temp_format)
                     else:  # We have to interpolate
                         duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
-                        delta = (this_point.temperature_setting - previous_setpoint)
+                        delta = (this_point.convert_temp(temp_format) - previous_setpoint)
                         slope = float(delta) / duration
 
                         seconds_into_point = (current_time - (time_started + previous_ttl)).total_seconds()
 
                         return round(seconds_into_point * slope + float(previous_setpoint), 1)
 
-            previous_setpoint = this_point.temperature_setting
+            previous_setpoint = this_point.convert_temp(temp_format)
             previous_ttl = this_point.ttl
-            previous_format = this_point.temp_format
 
         # If we hit this point, we looped through all the setpoints & aren't between two (or on the first one)
         # That is to say - we're at the end. Just return the last setpoint.
@@ -1179,16 +1185,26 @@ class FermentationProfilePoint(models.Model):
             return (self.temperature_setting-32) * 5 / 9
 
     def temp_to_preferred(self):
-        # Check Constance
+        # Converts the point to whatever the preferred temperature format is per Constance
         if config.TEMPERATURE_FORMAT == 'F':
             return self.temp_to_f()
         elif config.TEMPERATURE_FORMAT == 'C':
             return self.temp_to_c()
         pass
 
+    def convert_temp(self, desired_temp_format):
+        if self.temp_format == desired_temp_format:
+            return self.temperature_setting
+        elif self.temp_format == 'F' and desired_temp_format == 'C':
+            return self.temp_to_c()
+        elif self.temp_format == 'C' and desired_temp_format == 'F':
+            return self.temp_to_f()
+        else:
+            # TODO - Log This - We have an invalid format somewhere
+            return self.temperature_setting
+
 
 # The old (0.2.x/Arduino) Control Constants Model
-# TODO - Update all usages of the ControlConstants objects to add 'controller' when the object is created
 class OldControlConstants(models.Model):
 
     tempSetMin = models.FloatField(
@@ -1301,7 +1317,7 @@ class OldControlConstants(models.Model):
 
     lah = models.IntegerField(
         verbose_name="Using light as heater?",
-        help_text="If set to yes the heater is assumed to be a light",
+        help_text="If set to yes the chamber light (if assigned a pin) will be used in place of the heat pin",
         choices=(
             (1, "YES"),
             (0, "No")
@@ -1311,7 +1327,7 @@ class OldControlConstants(models.Model):
 
     hs = models.IntegerField(
         verbose_name="Use half steps for rotary encoder?",
-        help_text="If this options is set to Yes the light will be used as a heater",
+        help_text="If this option is set to yes, the rotary encoder will use half steps",
         choices=(
             (1, "YES"),
             (0, "No")
@@ -1336,24 +1352,18 @@ class OldControlConstants(models.Model):
                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
                            'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs', 'tempFormat']
 
-    controller = models.ForeignKey(BrewPiDevice)  # TODO - Determine if this is used anywhere (other than below) and if we want to keep it.
-
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
-
-    def load_from_controller(self, controller=None):
+    def load_from_controller(self, controller):
         """
         :param controller: models.BrewPiDevice
         :type controller: BrewPiDevice
         :return: boolean
         """
-        if controller is not None:
-            self.controller = controller
-
         try:
-            # TODO - Move most of this into BrewPiDevice
-            cc = json.loads(self.controller.send_message("getControlConstants", read_response=True))
+            # Load the control constants dict from the controller
+            cc = controller.get_control_constants()
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1370,7 +1380,7 @@ class OldControlConstants(models.Model):
         """
 
         value_to_send = {attribute: getattr(self, attribute)}
-        return controller.send_message("setParameters", json.dumps(value_to_send))
+        return controller.set_parameters(value_to_send)
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
         """
@@ -1428,8 +1438,6 @@ class NewControlConstants(models.Model):
     coolerPwmPeriod = models.IntegerField()
     mutexDeadTime = models.IntegerField()
 
-    controller = models.ForeignKey(BrewPiDevice)
-
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
@@ -1450,8 +1458,8 @@ class NewControlConstants(models.Model):
         :return: boolean
         """
         try:
-            # TODO - Move most of this into BrewPiDevice
-            cc = json.loads(controller.send_message("getControlConstants", read_response=True))
+            # Load the control constants dict from the controller
+            cc = controller.get_control_constants()
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1467,8 +1475,8 @@ class NewControlConstants(models.Model):
         :return:
         """
 
-        value_to_send = {attribute, getattr(self, attribute)}
-        return controller.send_message("setParameters", json.dumps(value_to_send))
+        value_to_send = {attribute: getattr(self, attribute)}
+        return controller.set_parameters(value_to_send)
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
         """
