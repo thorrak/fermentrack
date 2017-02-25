@@ -829,6 +829,11 @@ class Beer(models.Model):
     # button that allows the user to convert the log files to the new format if they're different.
     format = models.CharField(max_length=1, default='F')
 
+    # model_version is the revision number of the "Beer" and "BeerLogPoint" models, designed to be iterated when any
+    # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
+    # converter could then be written moving between each iteration of model_version that could then be sequentially
+    # applied to bring a beer log in line with what the model then expects.
+    model_version = models.IntegerField(default=1)
 
     def __str__(self):
         return self.name
