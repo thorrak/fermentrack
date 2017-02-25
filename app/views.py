@@ -347,7 +347,7 @@ def device_temp_control(request, device_id):
                     # We started temperature control, but aren't logging anything. Prompt the user.
                     messages.info(request, 'Temperature control enabled, but logging is off. Start a new beer from the device dashboard.')
                 elif active_device.logging_status != active_device.DATA_LOGGING_ACTIVE:
-                    # We altered temperature control, but logging is paused. Prompt the user. 
+                    # We altered temperature control, but logging is paused. Prompt the user.
                     messages.info(request, 'Temperature control enabled, but logging is off. Start a new beer from the device dashboard.')
             else:
                 messages.error(request, 'Unable to update temperature control settings for {}'.format(active_device.device_name))

@@ -108,18 +108,17 @@ class SensorDevice(models.Model):
     INVERT_INVERTED = 1
 
 
-    # TODO - Rename these to make them more user friendly
     DEVICE_FUNCTION_CHOICES = (
         (DEVICE_FUNCTION_NONE,          'NONE'),
-        (DEVICE_FUNCTION_CHAMBER_DOOR,  'CHAMBER_DOOR'),
-        (DEVICE_FUNCTION_CHAMBER_HEAT,  'CHAMBER_HEAT'),
-        (DEVICE_FUNCTION_CHAMBER_COOL,  'CHAMBER_COOL'),
-        (DEVICE_FUNCTION_CHAMBER_LIGHT, 'CHAMBER_LIGHT'),
-        (DEVICE_FUNCTION_CHAMBER_TEMP,  'CHAMBER_TEMP'),
-        (DEVICE_FUNCTION_CHAMBER_ROOM_TEMP, 'CHAMBER_ROOM_TEMP'),
-        (DEVICE_FUNCTION_CHAMBER_FAN,   'CHAMBER_FAN'),
-        (DEVICE_FUNCTION_MANUAL_ACTUATOR, 'CHAMBER_RESERVED1'),   # Unused, reserved for future use - Tagged as "Manual Actuator" in develop www
-        (DEVICE_FUNCTION_BEER_TEMP,     'BEER_TEMP'),           # Primary beer temp sensor
+        (DEVICE_FUNCTION_CHAMBER_DOOR,  'Chamber Door'),  # CHAMBER_DOOR
+        (DEVICE_FUNCTION_CHAMBER_HEAT,  'Heating Relay'),  # CHAMBER_HEAT
+        (DEVICE_FUNCTION_CHAMBER_COOL,  'Cooling Relay'),  # CHAMBER_COOL
+        (DEVICE_FUNCTION_CHAMBER_LIGHT, 'Chamber Light'),  # CHAMBER_LIGHT
+        (DEVICE_FUNCTION_CHAMBER_TEMP,  'Chamber Temp'),  # CHAMBER_TEMP
+        (DEVICE_FUNCTION_CHAMBER_ROOM_TEMP, 'Room (outside) Temp'),  # CHAMBER_ROOM_TEMP
+        (DEVICE_FUNCTION_CHAMBER_FAN,   'Chamber Fan'),  # CHAMBER_FAN
+        # (DEVICE_FUNCTION_MANUAL_ACTUATOR, 'CHAMBER_RESERVED1'),   # Unused, reserved for future use - Tagged as "Manual Actuator" in develop www
+        (DEVICE_FUNCTION_BEER_TEMP,     'Beer Temp'),           # Primary beer temp sensor
         # The rest of these are available in the code, but appear to have no implemented functionality.
         # Commenting them out for the time being.
         # (DEVICE_FUNCTION_BEER_TEMP2, 'BEER_TEMP2'),         # Secondary beer temp sensor (unimplemented)
@@ -1301,7 +1300,7 @@ class OldControlConstants(models.Model):
 
     lah = models.IntegerField(
         verbose_name="Using light as heater?",
-        help_text="If set to yes the heater is assumed to be a light",
+        help_text="If set to yes the chamber light (if assigned a pin) will be used in place of the heat pin",
         choices=(
             (1, "YES"),
             (0, "No")
@@ -1311,7 +1310,7 @@ class OldControlConstants(models.Model):
 
     hs = models.IntegerField(
         verbose_name="Use half steps for rotary encoder?",
-        help_text="If this options is set to Yes the light will be used as a heater",
+        help_text="If this option is set to yes, the rotary encoder will use half steps",
         choices=(
             (1, "YES"),
             (0, "No")
