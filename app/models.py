@@ -470,7 +470,8 @@ class BrewPiDevice(models.Model):
         if self.time_profile_started is None:
             return None
 
-        return self.active_profile.profile_temp(self.time_profile_started)
+        self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistent
+        return self.active_profile.profile_temp(self.time_profile_started, self.temp_format)
 
     # Other things that aren't persisted in the database
     # available_devices = []
@@ -1061,14 +1062,12 @@ class FermentationProfile(models.Model):
     # I would prefer to implement this as part of a template (given that it's honestly display logic) but the Django
     # template language doesn't provide quite what I would need to pull it off.
     def to_english(self):
-        # TODO - Make this temperature format sensitive
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         description = []
         past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = 0.0
         previous_ttl = 0.0
-        previous_format = 'F'  #
 
         if profile_points.__len__() < 1:
             description.append("This profile contains no setpoints and cannot be assigned.")
@@ -1076,7 +1075,7 @@ class FermentationProfile(models.Model):
         # TODO - Make the timedelta objects more human readable (I don't like the 5:20:30 format that much)
         for this_point in profile_points:
             if not past_first_point:
-                desc_text = "Start off by heating/cooling to {} degrees {}".format(this_point.temperature_setting, this_point.temp_format)
+                desc_text = "Start off by heating/cooling to {}&deg; {}".format(this_point.temp_to_preferred(), config.TEMPERATURE_FORMAT)
 
                 if this_point.ttl == 0:  # TODO - Test to make sure this works with timedelta objects the way I think it does
                     desc_text += "."
@@ -1084,47 +1083,45 @@ class FermentationProfile(models.Model):
                     desc_text += " and hold this temperature for {}".format(this_point.ttl)
 
                 description.append(desc_text)
-                previous_setpoint = this_point.temperature_setting
+                previous_setpoint = this_point.temp_to_preferred()
                 previous_ttl = this_point.ttl
                 past_first_point = True
-                previous_format = this_point.temp_format
             else:
                 if previous_setpoint == this_point.temperature_setting:
-                    desc_text = "Hold this temperature for {}".format((this_point.ttl - previous_ttl))
+                    desc_text = "Hold this temperature for {} ".format((this_point.ttl - previous_ttl))
                     desc_text += "(until {} after the profile was assigned).".format(this_point.ttl)
                 else:
-                    if previous_setpoint > this_point.temperature_setting:
+                    if previous_setpoint > this_point.temp_to_preferred():
                         desc_text = "Cool to"
                     else:  # If previous_setpoint is less than the current setpoint
                         desc_text = "Heat to"
 
                     # Breaking this up to reduce line length
-                    desc_text += " {} degrees {} ".format(this_point.temperature_setting, this_point.temp_format)
+                    desc_text += " {}&deg; {} ".format(this_point.temp_to_preferred(), config.TEMPERATURE_FORMAT)
                     desc_text += "over the next {} ".format(this_point.ttl - previous_ttl)
                     desc_text += "(reaching this temperature {}".format(this_point.ttl)
                     desc_text += " after the profile was assigned)."
 
                 description.append(desc_text)
-                previous_setpoint = this_point.temperature_setting
+                previous_setpoint = this_point.temp_to_preferred()
                 previous_ttl = this_point.ttl
-                previous_format = this_point.temp_format
 
         if past_first_point:
-            desc_text = "Finally, permanently hold the temperature at {} degrees {}.".format(previous_setpoint, previous_format)
+            desc_text = "Finally, permanently hold the temperature at {}&deg; {}.".format(previous_setpoint, config.TEMPERATURE_FORMAT)
             description.append(desc_text)
 
         return description
 
     # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
     # get_profile_temp from BrewPiDevice
-    def profile_temp(self, time_started):
-        # TODO - Make this temperature format sensitive
+    def profile_temp(self, time_started, temp_format):
+        # temp_format in this case is the temperature format active on BrewPiDevice. This will force conversion from
+        # the profile point's format to the device's format.
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = 0.0
         previous_ttl = 0.0
-        previous_format = 'F'
         timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
         current_time = datetime.datetime.now(tz=timezone_obj)
 
@@ -1134,26 +1131,25 @@ class FermentationProfile(models.Model):
                 # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
                 # temperature. Return the temperature setting
                 if current_time < (time_started + this_point.ttl):
-                    return this_point.temperature_setting
+                    return this_point.convert_temp(temp_format)
                 past_first_point = True
             else:
                 # Test if we are in this period
                 if current_time < (time_started + this_point.ttl):
                     # We are - Check if we need to interpolate, or if we can just use the static temperature
-                    if this_point.temperature_setting == previous_setpoint:  # We can just use the static temperature
-                        return this_point.temperature_setting
+                    if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
+                        return this_point.convert_temp(temp_format)
                     else:  # We have to interpolate
                         duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
-                        delta = (this_point.temperature_setting - previous_setpoint)
+                        delta = (this_point.convert_temp(temp_format) - previous_setpoint)
                         slope = float(delta) / duration
 
                         seconds_into_point = (current_time - (time_started + previous_ttl)).total_seconds()
 
                         return round(seconds_into_point * slope + float(previous_setpoint), 1)
 
-            previous_setpoint = this_point.temperature_setting
+            previous_setpoint = this_point.convert_temp(temp_format)
             previous_ttl = this_point.ttl
-            previous_format = this_point.temp_format
 
         # If we hit this point, we looped through all the setpoints & aren't between two (or on the first one)
         # That is to say - we're at the end. Just return the last setpoint.
@@ -1183,12 +1179,23 @@ class FermentationProfilePoint(models.Model):
             return (self.temperature_setting-32) * 5 / 9
 
     def temp_to_preferred(self):
-        # Check Constance
+        # Converts the point to whatever the preferred temperature format is per Constance
         if config.TEMPERATURE_FORMAT == 'F':
             return self.temp_to_f()
         elif config.TEMPERATURE_FORMAT == 'C':
             return self.temp_to_c()
         pass
+
+    def convert_temp(self, desired_temp_format):
+        if self.temp_format == desired_temp_format:
+            return self.temperature_setting
+        elif self.temp_format == 'F' and desired_temp_format == 'C':
+            return self.temp_to_c()
+        elif self.temp_format == 'C' and desired_temp_format == 'F':
+            return self.temp_to_f()
+        else:
+            # TODO - Log This - We have an invalid format somewhere
+            return self.temperature_setting
 
 
 # The old (0.2.x/Arduino) Control Constants Model
