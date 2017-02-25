@@ -470,7 +470,7 @@ class BrewPiDevice(models.Model):
         if self.time_profile_started is None:
             return None
 
-        self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistent
+        self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistant
         return self.active_profile.profile_temp(self.time_profile_started, self.temp_format)
 
     # Other things that aren't persisted in the database
@@ -817,6 +817,12 @@ class BrewPiDevice(models.Model):
         time.sleep(1)                                   # Give it 1 second to complete
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
+
+    def get_control_constants(self):
+        return json.loads(self.send_message("getControlConstants", read_response=True))
+
+    def set_parameters(self, parameters):
+        return self.send_message("setParameters", json.dumps(parameters))
 
 
 class Beer(models.Model):
@@ -1199,7 +1205,6 @@ class FermentationProfilePoint(models.Model):
 
 
 # The old (0.2.x/Arduino) Control Constants Model
-# TODO - Update all usages of the ControlConstants objects to add 'controller' when the object is created
 class OldControlConstants(models.Model):
 
     tempSetMin = models.FloatField(
@@ -1347,24 +1352,18 @@ class OldControlConstants(models.Model):
                            'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
                            'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs', 'tempFormat']
 
-    controller = models.ForeignKey(BrewPiDevice)  # TODO - Determine if this is used anywhere (other than below) and if we want to keep it.
-
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
-
-    def load_from_controller(self, controller=None):
+    def load_from_controller(self, controller):
         """
         :param controller: models.BrewPiDevice
         :type controller: BrewPiDevice
         :return: boolean
         """
-        if controller is not None:
-            self.controller = controller
-
         try:
-            # TODO - Move most of this into BrewPiDevice
-            cc = json.loads(self.controller.send_message("getControlConstants", read_response=True))
+            # Load the control constants dict from the controller
+            cc = controller.get_control_constants()
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1381,7 +1380,7 @@ class OldControlConstants(models.Model):
         """
 
         value_to_send = {attribute: getattr(self, attribute)}
-        return controller.send_message("setParameters", json.dumps(value_to_send))
+        return controller.set_parameters(value_to_send)
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
         """
@@ -1439,8 +1438,6 @@ class NewControlConstants(models.Model):
     coolerPwmPeriod = models.IntegerField()
     mutexDeadTime = models.IntegerField()
 
-    controller = models.ForeignKey(BrewPiDevice)
-
     # preset_name is only used if we want to save the preset to the database to be reapplied later
     preset_name = models.CharField(max_length=255, null=True, blank=True, default="")
 
@@ -1461,8 +1458,8 @@ class NewControlConstants(models.Model):
         :return: boolean
         """
         try:
-            # TODO - Move most of this into BrewPiDevice
-            cc = json.loads(controller.send_message("getControlConstants", read_response=True))
+            # Load the control constants dict from the controller
+            cc = controller.get_control_constants()
 
             for this_field in self.firmware_field_list:
                 setattr(self, this_field, cc[this_field])
@@ -1478,8 +1475,8 @@ class NewControlConstants(models.Model):
         :return:
         """
 
-        value_to_send = {attribute, getattr(self, attribute)}
-        return controller.send_message("setParameters", json.dumps(value_to_send))
+        value_to_send = {attribute: getattr(self, attribute)}
+        return controller.set_parameters(value_to_send)
 
     def save_all_to_controller(self, controller, prior_control_constants=None):
         """
