@@ -152,6 +152,14 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("F", "Fahrenheit"), ("C", "Celsius"))
     }],
+    'git_update_type_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': ((None, "-----"),
+                    ("any", "Prompt to upgrade on all commits"),  # TODO - Reword these
+                    ("tagged", "Prompt to upgrade on tagged (numbered) versions"),
+                    ("none", "Do not automatically check/prompt for updates"))
+
+    }],
 }
 
 # CONSTANCE_SUPERUSER_ONLY = False
@@ -164,7 +172,8 @@ CONSTANCE_CONFIG = { # TODO - Add help text to DATE_TIME_FORMAT & DATE_TIME_FORM
                            'temperature_format_select'),
     'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
     'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
-                       'When was the last time we checked GitHub for upgrades?', datetime.datetime)
+                       'When was the last time we checked GitHub for upgrades?', datetime.datetime),
+    'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
 }
 
 

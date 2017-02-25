@@ -24,10 +24,14 @@ class FermentationProfileForm(ModelForm):
 
 
 class FermentationProfilePointForm(forms.Form):
-    ttl = forms.CharField(help_text="Time from the start of fermentation at which the temperature will be reached.\r\n(Example: 7d 3h 15m 4s)",
+    ttl = forms.CharField(help_text="Time from the start of fermentation at which the temperature will be reached. " +
+                                    "(Example: 7d 3h 15m 4s)",
+                          widget=forms.TextInput(attrs={'placeholder': 'Ex: 7d 3h 15m 4s'}),
                           validators=[validators.RegexValidator(regex="([0-9]+[ ]*[ywdhms]{1}[ ]*)+",
                                                                 message="Invalid TTL format")])
     temperature_setting = forms.DecimalField(min_value=-20, max_value=212, max_digits=5, decimal_places=2,
+                                             widget=forms.TextInput(
+                                                 attrs={'placeholder': 'Ex: 35'}),
                                              help_text="Temperature goal when TTL is reached")
 
     # Check that the ttl format is valid, and if it is, replace it with a datetime delta object

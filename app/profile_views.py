@@ -166,7 +166,7 @@ def profile_undelete(request, profile_id):
         this_profile.save()
         messages.success(request, 'Profile \'{}\' has been removed from the queue for deletion.'.format(this_profile.name))
     else:
-        messages.info(request, 'Profile \'{}\' was not queued for deletion.'.format(this_profile.name))
+        messages.info(request, 'Profile \'{}\' was not previously queued for deletion and has not been updated.'.format(this_profile.name))
 
     return redirect('profile_list')
 
