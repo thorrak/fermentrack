@@ -21,7 +21,7 @@ import fermentrack_django.settings as settings
 
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
@@ -300,7 +300,7 @@ def beer_active_csv(request, device_id):
 
 
 @site_is_configured
-def device_dashboard(request, device_id):
+def device_dashboard(request, device_id, beer_id=None):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
     except:
@@ -308,8 +308,22 @@ def device_dashboard(request, device_id):
         return redirect('siteroot')
     beer_create_form = beer_forms.BeerCreateForm()
 
+    if beer_id is None:
+        beer_obj = active_device.active_beer or None
+    else:
+        beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id) or None
+
+    if beer_obj is None:
+        beer_file_url = "/data/fake.csv"
+    else:
+        beer_file_url = beer_obj.data_file_url('base_csv')
+
     return render_with_devices(request, template_name="device_dashboard.html",
-                               context={'active_device': active_device, 'beer_create_form': beer_create_form})
+                               context={'active_device': active_device, 'beer_create_form': beer_create_form,
+                                        'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                                        'column_headers': Beer.column_headers_to_graph_string('base_csv'),
+                                        'beer_file_url': beer_file_url,
+                                        'selected_beer_id': beer_id})
 
 
 @login_required
