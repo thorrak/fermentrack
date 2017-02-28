@@ -524,6 +524,18 @@ def renameTempKey(key):
         "t": "Time"}
     return rename.get(key, key)
 
+# At startup, if we're using a db-based config, force synchronization of temperature format
+def syncTempFormat(control_constants):
+    if dbConfig is not None:
+        db_temp_format = dbConfig.temp_format
+
+        if cc['tempFormat'] != db_temp_format:
+            # j{"tempFormat": "C"}
+            settings_dict = {'tempFormat': dbConfig.temp_format}
+            bg_ser.writeln("j" + json.dumps(settings_dict))
+            # TODO - Set min/max temp if necessary
+
+
 while run:
 
     # We only need to do the day roll if we're saving to flatfiles
@@ -909,6 +921,7 @@ while run:
                     elif line[0] == 'C':
                         # Control constants received
                         cc = json.loads(line[2:])
+                        syncTempFormat(control_constants=cc)  # Check the temp format just in case
                     elif line[0] == 'S':
                         # Control settings received
                         prevSettingsUpdate = time.time()
