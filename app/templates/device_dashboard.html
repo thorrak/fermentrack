@@ -10,53 +10,6 @@
 
 {% block content %}
 
-{#    <div class="row">#}
-{#        <!-- Panel 1 -->#}
-{#        <div class="col-md-3 col-sm-6">#}
-{#            <div class="panel panel-red">#}
-{#                <div class="panel-heading">#}
-{#                    <div class="row">#}
-{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
-{#                        <div class="col-xs-9 text-right">#}
-{#                            <div class="huge">66&deg; F</div>#}
-{#                            <div class="">Fridge Temp</div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <a href="#">#}
-{#                    <div class="panel-footer">#}
-{#                        <div class="pull-left">View Details</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{##}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-{#        </div>#}
-{##}
-{#        <!-- Panel 2 -->#}
-{#        <div class="col-md-3 col-sm-6">#}
-{#            <div class="panel panel-yellow">#}
-{#                <div class="panel-heading">#}
-{#                    <div class="row">#}
-{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
-{#                        <div class="col-xs-9 text-right">#}
-{#                            <div class="huge">66&deg; F</div>#}
-{#                            <div class="">Beer Temp</div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <a href="#">#}
-{#                    <div class="panel-footer">#}
-{#                        <div class="pull-left">View Details</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{##}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-{#        </div>#}
-{##}
 {#        <!-- Panel 3 -->#}
 {#        <div class="col-md-3 col-sm-6">#}
 {#            <div class="panel panel-green">#}
@@ -79,36 +32,11 @@
 {#                </a>#}
 {#            </div>#}
 {#        </div>#}
-{##}
-{#        <!-- Panel 1 -->#}
-{#        <div class="col-md-3 col-sm-6">#}
-{#            <div class="panel panel-green">#}
-{#                <div class="panel-heading">#}
-{#                    <div class="row">#}
-{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
-{#                        <div class="col-xs-9 text-right">#}
-{#                            <div class="huge">66&deg; F</div>#}
-{#                            <div class="">Beer Temp</div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <a href="#">#}
-{#                    <div class="panel-footer">#}
-{#                        <div class="pull-left">View Details</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{##}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-{#        </div>#}
-{##}
-{##}
 {#    </div>#}
 
     <!-- Start Beer Name Header -->
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-lg-8">
                 <div class="dashpanel dashpanel-top bg-carrot">
                     <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
     {#                <div class="dashpanel-title">Beer Temp</div>#}
@@ -127,6 +55,20 @@
                     </a>
                 </div>
         </div>
+        <div class="col-lg-4 col-md-12" style="text-align: center">
+            <div class="dashpanel dashpanel-top bg-black" style="height: 125px;">
+                <div style="width: 290px">
+                    <div class="lcddisplay" id="lcdDisplayID">
+                        <span class="lcd-text">
+                            <span class="lcd-line" id="lcd-line-0"></span>
+                            <span class="lcd-line" id="lcd-line-1"></span>
+                            <span class="lcd-line" id="lcd-line-2"></span>
+                            <span class="lcd-line" id="lcd-line-3"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- End Beer Name Header -->
 
@@ -142,7 +84,7 @@
                 <div class="dashpanel-divider"></div>
                 <a href="#">
                     <div class="dash-desc">
-                        <div class="pull-left">View Details</div>
+                        <div class="pull-left">Load Prior Log</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
@@ -172,9 +114,9 @@
                 <div class="dashpanel-title">Control Mode</div>
                 <div class="dash-data" id="dashControlMode">Beer Profile</div>
                 <div class="dashpanel-divider"></div>
-                <a href="#">
+                <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
                     <div class="dash-desc">
-                        <div class="pull-left">Change Mode</div>
+                        <div class="pull-left" >Change Mode</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
@@ -201,30 +143,8 @@
     <!-- End Dashboard Panels -->
 
 
-    <div class="row">
-{#        <div class="col-md-4 col-sm-12">#}
-{#            <h1>{{ active_device.device_name }}</h1>#}
-{#            <h5>Now Fermenting: {% if active_device.active_beer %}{{ active_device.active_beer.name }}{% else %}Nothing{% endif %}</h5>#}
-{#        {% if active_device.active_beer %}#}
-{#            {% if active_device.logging_status == 'active' %}#}
-{#                <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>#}
-{#            {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}#}
-{#                <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>#}
-{#            {% endif %}#}
-{#            <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>#}
-{#        {% else %}#}
-{#            <button type="button" class="btn btn-small btn-sm btn-primary" data-toggle="modal" data-target="#beerModal">Start New Beer/Log</button>#}
-{#        {% endif %}#}
-{#        </div>#}
-    </div>
-{#    <a href="{% url "device_config" active_device.id %}">Config</a>#}
-{#    <a href="{% url "sensor_list" active_device.id %}">Sensor List</a>#}
-{##}
-{#    (Device {{ active_device.id }})#}
-{#    <br>#}
-
     <!-- Begin Graph & Legend -->
-    <div class="row">
+    <div class="row" style="margin-bottom: 20px">
         <div class="col-lg-9 col-sm-12" id="graphdiv3">
             <div id="graphdiv2" style="width:100%; height:400px;"></div>
         </div>
@@ -232,11 +152,13 @@
         <div class="col-lg-3">
             <div id="label-div" style="display: none!important;"></div>
 
-            <div class="legend-div dashpanel dashpanel-top bg-concrete dashpanel-title" style="padding-left: 15px;">
+            <div class="panel panel-red">
+                <div class="panel-heading">
                         <div class="chart-legend-time">
-                            <div id="chartLegendTime"></div>
+                            <div id="chartLegendTime">Time</div>
                         </div>
-
+                </div>
+                <div class="panel-body">
                         <div class="chart-legend-row row" id="beerTempRow">
                             <div class="legend-label pull-left" style="padding-left: 15px;" id="beerTempLabel">Beer Temp</div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="beerTempValue"></div>
@@ -256,6 +178,8 @@
                             <div class="legend-label pull-left" style="padding-left: 15px;" id="fridgeSetLabel">Fridge Temp</div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeSetValue"></div>
                         </div>
+                </div>
+                <div class="panel-footer"></div>
 
             </div>
         </div>
@@ -264,49 +188,21 @@
 
 
     <!-- Begin LCD & Controls -->
-    <div class="row">
+    <div class="row" >
         <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
         </div>
 
-        <div class="col-md-8">
-            <div id="lcdapp">
-                <div style="width: 290px">
-                    <div id="lcd.device_name" class="lcddisplay">
-                        <span class="lcd-text">
-                            <span class="lcd-line" id="lcd-line-0" v-html="lcd.lcd_data[0]"></span>
-                            <span class="lcd-line" id="lcd-line-1" v-html="lcd.lcd_data[1]"></span>
-                            <span class="lcd-line" id="lcd-line-2" v-html="lcd.lcd_data[2]"></span>
-                            <span class="lcd-line" id="lcd-line-3" v-html="lcd.lcd_data[3]"></span>
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#beerModal">Control Logging</button>
         </div>
+        <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Load Past Log</button>
+        </div>
+
 
     </div>
     <!-- End LCD & Controls -->
-
-{#            <div class="panel panel-red">#}
-{#                <div class="panel-heading">#}
-{#                    <div class="row">#}
-{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
-{#                        <div class="col-xs-9 text-right">#}
-{#                            <div class="huge">66&deg; F</div>#}
-{#                            <div class="">Fridge Temp</div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <a href="#">#}
-{#                    <div class="panel-footer">#}
-{#                        <div class="pull-left">View Details</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{##}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-
-
 
 
     <!-- Beer Modal -->
@@ -372,6 +268,9 @@
       </div>
     </div>
     <!-- End Beer Modal -->
+
+{% temp_control_modal active_device %}
+
 
 <div class="result" id="results"></div>
 {% endblock %}
