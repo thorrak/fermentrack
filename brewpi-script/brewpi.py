@@ -529,7 +529,7 @@ def syncTempFormat(control_constants):
     if dbConfig is not None:
         db_temp_format = dbConfig.temp_format
 
-        if cc.tempFormat != db_temp_format:
+        if cc['tempFormat'] != db_temp_format:
             # j{"tempFormat": "C"}
             settings_dict = {'tempFormat': dbConfig.temp_format}
             bg_ser.writeln("j" + json.dumps(settings_dict))
