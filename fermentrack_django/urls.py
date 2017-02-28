@@ -69,8 +69,9 @@ urlpatterns = [
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/point/(?P<point_id>\d{1,20})/delete$', app.profile_views.profile_setpoint_delete, name='profile_setpoint_delete'),
 
     # Api Views
-    url(r'^api/lcd/(?P<device_name>\w+)$', app.api.lcd.getLCD, name="getLCD"),
-    url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),
+    url(r'^api/lcd/(?P<device_id>\d{1,20})/$', app.api.lcd.getLCD, name="getLCD"),  # For a single device
+    url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),  # For all devices/LCDs
+    url(r'^api/panel/(?P<device_id>\d{1,20})/$', app.api.lcd.getPanel, name="getPanel"),  # For a single device
 
     url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 

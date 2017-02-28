@@ -1,5 +1,13 @@
 
 
+###### Can I change the temperature format on a beer I've started logging?
+
+No. To prevent inconsistency the log format is permanently set when logging begins to the temperature format associated with the device. If you would like to change the format and restart logging, do the following:
+
+ 1. Update the temperature format in control constants to the desired format
+ 2. Stop logging the existing beer
+ 3. Start logging a new beer
+
 
 ###### Help - I forgot my Fermentrack login/password!
 

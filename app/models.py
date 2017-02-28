@@ -810,6 +810,8 @@ class BrewPiDevice(models.Model):
             # TODO - Raise an error message
             response = '{"status": 1, "statusMessage": "Invalid logging request"}'
             pass
+        if not response:
+            response = '{"status": 1, "statusMessage": "Unable to contact brewpi-script for this controller"}'
         return json.loads(response)
 
     def reset_eeprom(self):
@@ -849,6 +851,38 @@ class Beer(models.Model):
         return self.__str__()
 
     @staticmethod
+    def column_headers(which='base_csv', human_readable=False):
+        if which == 'base_csv':
+            if human_readable:
+                return ['Log Time', 'Beer Temp', 'Beer Setting', 'Fridge Temp', 'Fridge Setting', 'Annotation']
+            else:
+                return ['log_time', 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'annotation']
+        elif which == 'full_csv':
+            if human_readable:
+                return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
+                        'room_temp', 'state', 'temp_format', 'associated_beer_id']
+            else:
+                return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
+                        'room_temp', 'state', 'temp_format', 'associated_beer_id']
+        else:
+            return None
+
+    @staticmethod
+    def column_headers_to_graph_string(which='base_csv'):
+        col_headers = Beer.column_headers(which, True)
+
+        graph_string = ""
+
+        for this_header in col_headers:
+            graph_string += "'" + this_header + "', "
+
+        if graph_string.__len__() > 2:
+            return graph_string[:-2]
+        else:
+            return ""
+
+
+    @staticmethod
     def name_is_valid(proposed_name):
         # Since we're using self.name in a file path, want to make sure no injection-type attacks can occur.
         return True if re.match("^[a-zA-Z0-9 _-]*$", proposed_name) else False
@@ -872,11 +906,11 @@ class Beer(models.Model):
         else:
             return None
 
-    def csv_url(self, which_file):
+    def data_file_url(self, which_file):
         return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
 
-    def base_csv_url(self):
-        return self.csv_url('base_csv')
+    # def base_csv_url(self):
+    #     return self.data_file_url('base_csv')
 
     # TODO - Add function to allow conversion of log files between temp formats
 
@@ -924,15 +958,6 @@ class BeerLogPoint(models.Model):
 
     associated_beer = models.ForeignKey(Beer, db_index=True)
 
-    @staticmethod
-    def column_headers(which='base_csv'):
-        if which == 'base_csv':
-            return ['log_time', 'beer_temp', 'fridge_temp']
-        elif which == 'full_csv':
-            return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
-                    'room_temp', 'state', 'temp_format', 'associated_beer_id']
-        else:
-            return None
 
     def data_point(self, data_format='base_csv', set_defaults=True):
         # datetime.datetime(1970, 1, 1)).total_seconds()
@@ -976,9 +1001,15 @@ class BeerLogPoint(models.Model):
         else:
             fridgeSet = None
 
+        if self.beer_ann:
+            combined_annotation = self.beer_ann
+        elif self.fridge_ann:
+            combined_annotation = self.fridge_ann
+        else:
+            combined_annotation = ""  # TODO - Check that this works as intended
 
         if data_format == 'base_csv':
-            return [time_value, beerTemp, fridgeTemp]
+            return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, combined_annotation]
         elif data_format == 'full_csv':
             return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
                     roomTemp, self.state, self.temp_format, self.associated_beer_id]
@@ -1003,8 +1034,8 @@ class BeerLogPoint(models.Model):
         full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
 
         # Write out headers (if the files don't exist)
-        check_and_write_headers(base_csv_file, self.column_headers('base_csv'))
-        check_and_write_headers(full_csv_file, self.column_headers('full_csv'))
+        check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
+        check_and_write_headers(full_csv_file, self.associated_beer.column_headers('full_csv'))
 
         # And then write out the data
         write_data(base_csv_file, self.data_point('base_csv'))
