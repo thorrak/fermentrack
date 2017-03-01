@@ -1,10 +1,11 @@
 brewpi-script
 =============
 
-This is the repository for the BrewPi Python script. The python script logs the data, monitors the temperature profile and communicates with the BrewPi slave and the web server
+This is the repository for the BrewPi Python script. The python script logs the data, monitors the temperature profile and communicates with the BrewPi slave and the web server.
 
-BrewPi-Script was originally created by Elco and has been updated as part of the [BrewPi project](https://github.com/BrewPi/brewpi-script). 
-This version has been modified by Thorrak to add additional features and is maintained in a [separate repo](https://github.com/thorrak/brewpi-script).
+BrewPi-Script was originally created by Elco as part of the [BrewPi project](https://github.com/BrewPi/brewpi-script). 
+
+This version has been modified by Thorrak & stone to add additional features and is maintained in a [separate repo](https://github.com/thorrak/brewpi-script).
 
 
 Differences/New Features
