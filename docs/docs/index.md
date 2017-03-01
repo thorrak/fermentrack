@@ -11,9 +11,9 @@ Fermentrack is currently intended to be installed on a fresh installation of Ras
 
 * **Fermentrack** - The Django-based replacement for brewpi-www. Licensed under MIT license.
 * **brewpi-script** - Installed alongside Fermentrack is brewpi-script. Licensed under GPL v3.
-* **nginx** - A reverse proxy/webserver. Licensed under 2-Clause BSD-like license.
-* **circusd** - A python-based process manager. Licensed under the Apache license, v2.0.
-* **chaussette** - A wsgi server. 
+* **BrewPi Firmware (Various)** - As Fermentrack develops, it may install various versions of the BrewPi firmware. It is expected that most of these will be licensed under GPL v3, though other licenses may apply.
+
+Other components used in or bundled with Fermentrack may have their own licensing requirements. These components can be referenced [here](about/components.md).
 
 ## New Features
 
@@ -40,7 +40,7 @@ A full table of controllers/expected hardware availability is available [in the 
 
 ## Requirements
 
-* Raspberry Pi Zero, 2 B, or 3 /w Internet Connection
+* Raspberry Pi Zero, Zero W, 2 B, or 3 /w Internet Connection
 * Fresh Raspbian install (Lite/Pixel supported, Oct 2016 version or later)
 * 1GB of free space available
 

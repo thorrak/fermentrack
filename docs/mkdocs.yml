@@ -21,6 +21,7 @@ pages:
     - 'Contribute': 'about/contribute.md'
     - 'Changelog': 'about/changelog.md'
     - 'License': 'about/license.md'
+    - 'Included Components': 'about/components.md'
     
   - Develop:
     - 'Index': 'develop/index.md'
