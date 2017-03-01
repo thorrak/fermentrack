@@ -826,6 +826,10 @@ class BrewPiDevice(models.Model):
     def set_parameters(self, parameters):
         return self.send_message("setParameters", json.dumps(parameters))
 
+    def get_dashpanel_info(self):
+        return json.loads(self.send_message("getDashInfo", read_response=True))
+
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device

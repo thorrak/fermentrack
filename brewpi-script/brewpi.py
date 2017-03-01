@@ -787,6 +787,17 @@ while run:
                 conn.send(json.dumps(response))
             else:
                 conn.send("device-list-not-up-to-date")
+        elif messageType == "getDashInfo":
+            response = {"BeerTemp": prevTempJson['BeerTemp'],
+                        "FridgeTemp": prevTempJson['FridgeTemp'],
+                        "BeerAnn": prevTempJson['BeerAnn'],
+                        "FridgeAnn": prevTempJson['FridgeAnn'],
+                        "RoomTemp": prevTempJson['RoomTemp'],
+                        "State": prevTempJson['State'],
+                        "BeerSet": prevTempJson['BeerSet'],
+                        "FridgeSet": prevTempJson['FridgeSet'],
+                        "LogInterval": config['interval'],}
+            conn.send(json.dumps(response))
         elif messageType == "applyDevice":
             try:
                 configStringJson = json.loads(value)  # load as JSON to check syntax
