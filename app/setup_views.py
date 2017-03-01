@@ -51,7 +51,10 @@ def setup_add_user(request):
             # We login the user right away
             login(request, new_user)
             messages.success(request, 'User {} created and logged in successfully'.format(new_user.username))
-            return redirect('setup_config')
+            if config.USER_HAS_COMPLETED_CONFIGURATION:
+                return redirect('siteroot')
+            else:
+                return redirect('setup_config')
         else:
             return render(request, template_name='setup/setup_add_user.html', context={'form': form})
     else:

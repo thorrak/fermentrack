@@ -12,22 +12,12 @@
 {% endfor %}
 {% endcomment %}
 
-{% if not num_users or not all_devices %}
-        <h2>Fermentrack Installation</h2>
-{% endif %}
-
-{% if not num_users %}
-        Looks like this is your first time running Fermentrack. We need to setup some things to get started.
-        <ul>
-            <li>Continue to <a href="/setup/guided/">Guided configuration</a></li>
-        </ul>
-{% endif %}
 
 {% if not all_devices and num_users %}
 No fermentation devices configured yet. To get started, add a new device:
     <ul>
-        <li><a href="/devices/guided/">Add new device (guided)</a></li>
-        <li><a href="/devices/add/">Add new device (advanced)</a></li>
+        <li><a href="{% url 'device_guided_select_device' %}">Add new device (guided)</a></li>
+        <li><a href="{% url 'device_add' %}">Add new device (advanced)</a></li>
     </ul>
 {% else %}
     <div id="lcdapp">

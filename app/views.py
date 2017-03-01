@@ -22,6 +22,8 @@ import fermentrack_django.settings as settings
 
 
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
+from django.contrib.auth.models import User
+
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
@@ -36,6 +38,13 @@ def render_with_devices(request, template_name, context=None, content_type=None,
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
+
+    # In addition to requiring the site to be configured, we require that there be a user account. Due to the
+    # setup workflow, the user will generally be created before constance configuration takes place, but if
+    # the user account gets deleted (for example, in the admin) we want the user to go through that portion
+    # of account setup.
+    num_users=User.objects.all().count()
+
     # Check the git status at least every 18 hours
     now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
     if config.LAST_GIT_CHECK < now_time + datetime.timedelta(hours=18):
@@ -46,9 +55,9 @@ def siteroot(request):
                           '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
 
 
-    if not config.USER_HAS_COMPLETED_CONFIGURATION:
+    if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
         # If things aren't configured, redirect to the guided setup workflow
-        return setup_views.setup_splash(request)
+        return redirect('setup_splash')
     else:
         # The default screen is the "lcd list" screen
         return lcd_test(request=request)
