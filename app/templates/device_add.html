@@ -26,7 +26,7 @@
             {% form_generic form.socket_name %}
         </div>
 
-        <div id="inetSocketHidden" style="display: none">
+        <div id="inetSocketHidden" style="display: block">
             {% form_generic form.socketHost %}
             {% form_generic form.socketPort %}
         </div>
@@ -81,7 +81,6 @@ window.onload = function() {
     document.getElementById('id_useInetSocket').onchange = InetSocketHide;
 
     {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
-    brewpiWWWHide();
     InetSocketHide();
     ConnectionTypeHide();
 };

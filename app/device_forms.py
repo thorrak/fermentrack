@@ -8,7 +8,7 @@ from django.forms import ModelForm
 import re
 import datetime
 import pytz
-
+import random
 
 class DeviceForm(forms.Form):
 
@@ -30,13 +30,12 @@ class DeviceForm(forms.Form):
     useInetSocket = forms.BooleanField(required=False, initial=True,
                                        help_text="Whether or not to use an internet socket (rather than local)")
 
-    socketPort = forms.IntegerField(initial=2222, min_value=10, max_value=65536, required=False,
-                                    help_text="The socket port to use (only used if useInetSocket above is \"True\")",
+    socketPort = forms.IntegerField(initial=random.randint(2000,3000), min_value=1024, max_value=65536, required=False,
+                                    help_text="The socket port to use, this needs to be unique per fermentrack device",
                                     widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))
 
     socketHost = forms.CharField(max_length=128, initial="localhost", required=False,
-                                 help_text="The interface to bind for the internet socket (only used if " +
-                                           "useInetSocket above is \"True\"). Generally set to localhost.",
+                                 help_text="The ip or a hostname on the local machine for the fermentrack controller script will bind to",
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: localhost'}))
 
     serial_port = forms.CharField(max_length=255, initial="auto", required=False,
