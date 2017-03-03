@@ -11,9 +11,33 @@ from django.conf import settings
 
 
 class GuidedSetupUserForm(forms.ModelForm):
+    """
+    GuidedSetupUserForm presents a user with a simple form, with two fields for
+    password and upon save validates that the passwords match.
+    """
+    password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Password (again)", widget=forms.PasswordInput)
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'email')
+
+    def clean_password2(self):
+        """Here we actually validate so that the passwords matches"""
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("The two password fields didn't match.")
+        return password2
+
+    def save(self, commit=True):
+        """Saves the new matched validated password"""
+        user = super(GuidedSetupUserForm, self).save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
 
 class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting

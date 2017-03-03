@@ -53,7 +53,7 @@ def beer_create(request, device_id):
             form.cleaned_data['device'].start_new_brew()
 
         else:
-            messages.error(request, "Unable to create beer")
+            messages.error(request, "<p>Unable to create beer</p> %s" % form.errors['__all__'])
 
     # In all cases, redirect to device dashboard
     return redirect('device_dashboard', device_id=device_id)
