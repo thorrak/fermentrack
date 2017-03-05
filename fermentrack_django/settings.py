@@ -140,11 +140,6 @@ DATA_ROOT = 'data'
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 CONSTANCE_ADDITIONAL_FIELDS = {
-    'date_time_format_select': ['django.forms.fields.ChoiceField', {  # TODO - Delete this if it isn't used anywhere
-        'widget': 'django.forms.Select',
-        'choices': ((None, "-----"), ("yy-mm-dd", "yy-mm-dd"), ("dd/mm/yy", "dd/mm/yy"))
-    }],
-
     'date_time_display_select': ['django.forms.fields.ChoiceField', {  # Used in device_dashboard.html
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("mm/dd/yy", "mm/dd/yy"), ("dd/mm/yy", "dd/mm/yy"), ("yy-mm-dd", "yy-mm-dd"))
@@ -159,14 +154,12 @@ CONSTANCE_ADDITIONAL_FIELDS = {
                     ("any", "Prompt to upgrade on all commits"),  # TODO - Reword these
                     ("tagged", "Prompt to upgrade on tagged (numbered) versions"),
                     ("none", "Do not automatically check/prompt for updates"))
-
     }],
 }
 
 # CONSTANCE_SUPERUSER_ONLY = False
 CONSTANCE_CONFIG = {
     'BREWERY_NAME': ('Fermentrack', 'Name to be displayed in the upper left of each page', str),
-    'DATE_TIME_FORMAT': ('yy-mm-dd', '', 'date_time_format_select'),  # TODO - Determine if date_time_format is used anywhere
     'DATE_TIME_FORMAT_DISPLAY': ('mm/dd/yy', 'How dates will be displayed in the dashboard',
                                  'date_time_display_select'),
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),

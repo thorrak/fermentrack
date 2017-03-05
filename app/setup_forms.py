@@ -41,7 +41,6 @@ class GuidedSetupUserForm(forms.ModelForm):
 
 class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting
-    date_time_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_format_select'][1]['choices']
     date_time_display_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_display_select'][1]['choices']
     temperature_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['temperature_format_select'][1]['choices']
     true_false = [
@@ -54,9 +53,6 @@ class GuidedSetupConfigForm(forms.Form):
     # There appears to be a bug with constance where if you use config in a form setup it will die if the constance
     # database table hasn't been created yet (ie - at initial setup)
     brewery_name = forms.CharField()  # initial=config.BREWERY_NAME
-    date_time_format = forms.ChoiceField(  # initial=config.DATE_TIME_FORMAT
-        choices=date_time_format_select_choices,
-        )
     date_time_format_display = forms.ChoiceField(  # initial=config.DATE_TIME_FORMAT_DISPLAY
         choices=date_time_display_select_choices,
         )
@@ -75,7 +71,6 @@ class GuidedSetupConfigForm(forms.Form):
 
         self.fields['brewery_name'].initial = config.BREWERY_NAME
         self.fields['brewery_name'].help_text = config.BREWERY_NAME
-        self.fields['date_time_format'].initial = config.DATE_TIME_FORMAT
         self.fields['date_time_format_display'].initial = config.DATE_TIME_FORMAT_DISPLAY
         self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT

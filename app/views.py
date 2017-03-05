@@ -467,7 +467,6 @@ def site_settings(request):
         if form.is_valid():
             f = form.cleaned_data
             config.BREWERY_NAME = f['brewery_name']
-            config.DATE_TIME_FORMAT = f['date_time_format']
             config.DATE_TIME_FORMAT_DISPLAY = f['date_time_format_display']
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
