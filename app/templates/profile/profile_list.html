@@ -20,9 +20,15 @@
                 <tr>
                     <td><a href="{% url 'profile_edit' this_profile.id %}">{{ this_profile.name }}</a></td>
                     <td>{{ this_profile.fermentationprofilepoint_set.all|length }}</td>
-                    <td>{{ this_profile.currently_in_use }}
-                        {# TODO - Add an icon here if the profile is active instead of true/false #}
-                        {# TODO - Add something here if the profile is pending deletion #}</td>
+                    <td>
+                        {% if this_profile.currently_in_use %}
+                            <i class="fa fa-check fa-fw fa-2x text-success"></i> Yes
+                        {% else %}
+                            <i class="fa fa-times fa-fw text-danger"></i> No
+                        {% endif %}
+                    {% if this_profile.is_pending_delete %}
+                        <i class="fa fa-warning fa-fw text-warning"></i> Pending Deletion
+                    {% endif %}
                 </tr>
             {% endfor %}
         </table>
@@ -30,7 +36,7 @@
         <h2>There are no available fermentation profiles</h2>
     {% endif %}
 
-    <p>{# TODO - Fix the style for the button #}
+    <p>
         <a href="{% url "profile_new" %}" type="button" class="btn btn-sm btn-success">Create New Profile</a>
     </p>
 

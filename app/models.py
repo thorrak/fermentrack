@@ -274,7 +274,6 @@ class SensorDevice(models.Model):
 
         indices = {}
 
-        # ARGH - TODO - Remember how to combine the next two lines of code
         for i in range(0,25):  # Prepopulate indices as false
             indices[i] = False
         for this_device in self.controller.installed_devices:  # Iterate over installed_devices & update indices
@@ -807,9 +806,7 @@ class BrewPiDevice(models.Model):
         elif status == 'pause':
             response = self.send_message("pauseLogging", read_response=True)
         else:
-            # TODO - Raise an error message
             response = '{"status": 1, "statusMessage": "Invalid logging request"}'
-            pass
         if not response:
             response = '{"status": 1, "statusMessage": "Unable to contact brewpi-script for this controller"}'
         return json.loads(response)
@@ -1077,6 +1074,9 @@ class FermentationProfile(models.Model):
     def is_editable(self):
         return not self.currently_in_use()
 
+    def is_pending_delete(self):
+        return self.status == self.STATUS_PENDING_DELETE
+
     # An assignable profile needs to be active and have setpoints
     def is_assignable(self):
         if self.status != self.STATUS_ACTIVE:
@@ -1167,7 +1167,6 @@ class FermentationProfile(models.Model):
         current_time = datetime.datetime.now(tz=timezone_obj)
 
         for this_point in profile_points:
-            # TODO - Refactor this at some point
             if not past_first_point:
                 # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
                 # temperature. Return the temperature setting
