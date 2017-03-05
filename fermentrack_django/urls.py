@@ -19,13 +19,12 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^lcd_test/$', app.views.lcd_test, name='lcd_test'),
     url(r'^$', app.views.siteroot, name='siteroot'),
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
 
     ### Device Views
-    url(r'^devices/$', app.views.device_list, name='device_list'),
+    url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),
     url(r'^devices/add/$', app.views.add_device, name='device_add'),
 
     ## New install Guided Setup Views

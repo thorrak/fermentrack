@@ -1,61 +1,90 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
+{% load static %}
 
 {% block title %}All Controllers{% endblock %}
 
+{% block header_scripts %}
+<link href="{% static "css/dashboard_revised.css" %}" rel="stylesheet">
+{% endblock %}
+
+
 {% block content %}
-{% comment %}{# TODO - Delete this before release #}
-<!-- device_lcd_list.html -->
-{% for this_device in all_devices %}
-{{ this_device }}
-{% show_lcd this_device %}
-{% endfor %}
-{% endcomment %}
-
-
-{% if not all_devices and num_users %}
+<h1>Devices</h1>
+{% if not all_devices %}
 No fermentation devices configured yet. To get started, add a new device:
     <ul>
         <li><a href="{% url 'device_guided_select_device' %}">Add new device (guided)</a></li>
         <li><a href="{% url 'device_add' %}">Add new device (advanced)</a></li>
     </ul>
 {% else %}
+    <!-- Start vue LCD container -->
     <div id="lcdapp">
-        <div v-for="lcd in lcds">
-            <div style="width: 290px">
-                <div class="row">
-                    {# Vue.js uses the same template tags ({{ and }}) as does Django. Use verbatim to escape. #}
-                    {% verbatim %}
-                            <div class="col-xs-12">
-                                <a v-bind:href="lcd.device_url">Device: {{ lcd.device_name }}</a>
-                            </div>
 
-                            <div class="col-xs-12">
-                                <div id="lcd.device_name" class="lcddisplay">
-                                    <span class="lcd-text">
-                                        <span class="lcd-line" id="lcd-line-0" v-html="lcd.lcd_data[0]"></span>
-                                        <span class="lcd-line" id="lcd-line-1" v-html="lcd.lcd_data[1]"></span>
-                                        <span class="lcd-line" id="lcd-line-2" v-html="lcd.lcd_data[2]"></span>
-                                        <span class="lcd-line" id="lcd-line-3" v-html="lcd.lcd_data[3]"></span>
-                                    </span>
-                                </div>
+        <!-- Start vue LCD loop div -->
+        <div v-for="lcd in lcds">
+
+            <!-- Start row for LCD -->
+            <div class="row">
+                <!-- Start LCD Display Box -->
+                <div class="col-lg-4 col-md-12" style="text-align: center">
+                    <div class="dashpanel dashpanel-top bg-black" style="height: 125px;">
+                        <div style="width: 290px">
+                            <div id="lcd.device_name" class="lcddisplay">
+                                <span class="lcd-text">
+                                    <span class="lcd-line" id="lcd-line-0" v-html="lcd.lcd_data[0]"></span>
+                                    <span class="lcd-line" id="lcd-line-1" v-html="lcd.lcd_data[1]"></span>
+                                    <span class="lcd-line" id="lcd-line-2" v-html="lcd.lcd_data[2]"></span>
+                                    <span class="lcd-line" id="lcd-line-3" v-html="lcd.lcd_data[3]"></span>
+                                </span>
                             </div>
-                    {% endverbatim %}
-                </div>
-                <div class="row">
-                    <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">{# TODO - Tweak 'backlight' button given that it only applies to ESP8266 #}
-                        <a v-bind:href="lcd.backlight_url" type="button" class="btn btn-xs btn-info">Backlight</a>
-                    </div>
-                    <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">
-                        <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" v-bind:data-target="lcd.modal_name">Set Temp</button>
-                    </div>
-                    <div class="col-sm-4 col-xs-12" style="display: block;margin: auto">
-                        <a v-bind:href="lcd.device_url" type="button" class="btn btn-xs btn-success">Dashboard</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                <!-- End LCD Display Box -->
+
+                <!-- Start Beer Name Header -->
+                <div class="col-lg-5 col-md-6"> <!-- TODO - Figure if I can get this to snap above the previous pane on resize -->
+                    <a v-bind:href="lcd.device_url">
+                        <div class="dashpanel dashpanel-top bg-carrot">
+                            <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
+                            {# Vue.js uses the same template tags ({{ and }}) as does Django. Use verbatim to escape. #}
+                            <div class="dash-data" style="text-align: left">Device: {% verbatim %}{{ lcd.device_name }}{% endverbatim %}</div>
+                            <div class="dashpanel-divider"></div>
+                                <div class="dash-desc">
+                                    <div class="pull-left"> View Dashboard</div>
+                                    <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                                    <div class="clearfix"></div>
+                                </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- End Beer Name Header -->
+
+
+                <!-- Start Mode Control Box -->
+                <div class="col-lg-3 col-md-6">
+                    <a href="#" data-toggle="modal" v-bind:data-target="lcd.modal_name">
+                        <div class="dashpanel dashpanel-top bg-concrete" style="height: 125px">
+                            <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
+            {#                <div class="dashpanel-title">Control Mode</div>#}
+                            {# TODO - Get this to show the actual temperature control mode #}
+        {#                    <div class="dash-data" id="dashControlMode">Beer Profile</div>#}
+                            <div class="dash-data">Control Mode</div>
+                            <div class="dashpanel-divider"></div>
+                                <div class="dash-desc">
+        {#                            <div class="pull-left" >Change Mode</div>#}
+                                    <div class="pull-left" >Set Mode</div>
+                                    <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                                    <div class="clearfix"></div>
+                                </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- End Mode Control Box -->
+            </div> <!-- End row for LCD -->
+        </div> <!-- End vue LCD loop div -->
+    </div> <!-- End vue application container -->
 
 {# Add all the modals for controlling temperatures #}
 {% for this_device in all_devices %}

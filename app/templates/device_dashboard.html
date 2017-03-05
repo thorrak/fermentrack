@@ -1,4 +1,4 @@
-{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
 {% load static %}
 
@@ -80,7 +80,7 @@
             <div class="dashpanel dashpanel-top bg-petermann">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
                 <div class="dashpanel-title">Beer Temp</div>
-                <div class="dash-data" id="dashBeerTemp">64&deg; F</div>
+                <div class="dash-data" id="dashBeerTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
                 <a href="#">
                     <div class="dash-desc">
@@ -96,7 +96,7 @@
             <div class="dashpanel dashpanel-top bg-amethyst">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
                 <div class="dashpanel-title">Fridge Temp</div>
-                <div class="dash-data" id="dashFridgeTemp">65&deg; F</div>
+                <div class="dash-data" id="dashFridgeTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
                 <a href="#">
                     <div class="dash-desc">
@@ -112,7 +112,7 @@
             <div class="dashpanel dashpanel-top bg-concrete">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
                 <div class="dashpanel-title">Control Mode</div>
-                <div class="dash-data" id="dashControlMode">Beer Profile</div>
+                <div class="dash-data" id="dashControlMode">--</div>
                 <div class="dashpanel-divider"></div>
                 <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
                     <div class="dash-desc">
