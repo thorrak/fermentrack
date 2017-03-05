@@ -175,7 +175,7 @@
     background: #000000!important;
 }
 
-#lcdDisplayID {
+.lcddisplay {
     border: 0;
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;

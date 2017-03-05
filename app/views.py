@@ -60,7 +60,7 @@ def siteroot(request):
         return redirect('setup_splash')
     else:
         # The default screen is the "lcd list" screen
-        return lcd_test(request=request)
+        return device_lcd_list(request=request)
 
 
 @login_required
@@ -148,19 +148,10 @@ def configure_settings(request):  # TODO - Check if this is used anywhere
 
 @site_is_configured
 @login_if_required_for_dashboard
-def lcd_test(request): # TODO - Rename this
-    # This handles generating the list of LCD screens for each device. Included are fermentation profiles so that we can
-    # use them for setting temperature assignments
-    from django.contrib.auth.models import User
-    # Send the number of users we got in the system as a way to know if this is the first run or not.
-    context={'num_users': User.objects.all().count()}
-    return render_with_devices(request, template_name="device_lcd_list.html", context=context)
-
-
-@site_is_configured
-@login_if_required_for_dashboard  # TODO - Is this right??
-def device_list(request):
-    return render_with_devices(request, template_name="device_list.html")
+def device_lcd_list(request):
+    # This handles generating the list of LCD screens for each device.
+    # Loading the actual data for the LCD screens is handled by Vue.js which loads the data via calls to api/lcd.py
+    return render_with_devices(request, template_name="device_lcd_list.html")
 
 
 @login_required
