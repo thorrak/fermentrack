@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from constance import config  # For the explicitly user-configurable stuff
-from decorators import site_is_configured  # Checks if user has completed constance configuration
+from decorators import site_is_configured, login_if_required_for_dashboard
 
 import device_forms, profile_forms, beer_forms, setup_forms
 import setup_views
@@ -64,7 +64,7 @@ def siteroot(request):
 
 
 @login_required
-@site_is_configured
+@site_is_configured  # Checks if the user completed constance configuration
 def add_device(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -147,6 +147,7 @@ def configure_settings(request):  # TODO - Check if this is used anywhere
 
 
 @site_is_configured
+@login_if_required_for_dashboard
 def lcd_test(request): # TODO - Rename this
     # This handles generating the list of LCD screens for each device. Included are fermentation profiles so that we can
     # use them for setting temperature assignments
@@ -157,6 +158,7 @@ def lcd_test(request): # TODO - Rename this
 
 
 @site_is_configured
+@login_if_required_for_dashboard  # TODO - Is this right??
 def device_list(request):
     return render_with_devices(request, template_name="device_list.html")
 
@@ -309,6 +311,7 @@ def beer_active_csv(request, device_id):
 
 
 @site_is_configured
+@login_if_required_for_dashboard
 def device_dashboard(request, device_id, beer_id=None):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
@@ -386,6 +389,7 @@ def device_temp_control(request, device_id):
 
 
 @site_is_configured
+@login_if_required_for_dashboard
 def temp_panel_test(request):
     # TODO - Delete if still unused prior to release
     return render_with_devices(request, template_name="temp_panel_test.html",

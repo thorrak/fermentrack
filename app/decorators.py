@@ -9,6 +9,8 @@ from django.utils.decorators import available_attrs
 from django.utils.six.moves.urllib.parse import urlparse
 from constance import config  # For the explicitly user-configurable stuff
 
+from django.contrib.auth.decorators import user_passes_test
+
 # There is really nothing that would prevent me from hijacking user_passes_test from the Django decorators here.
 # TODO - Decide if I'd rather hijack that rather than effectively copy/pasting it here with small renames
 def constance_check(test_func, next_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
@@ -58,3 +60,26 @@ def site_is_configured(function=None, redirect_field_name=REDIRECT_FIELD_NAME, l
     if function:
         return actual_decorator(function)
     return actual_decorator
+
+
+def login_if_required_for_dashboard(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+    """
+    Decorator for views that checks that the user is logged in, redirecting to the log-in page if necessary -
+    but only if REQUIRE_LOGIN_FOR_DASHBOARD is set True in Constance.
+    """
+
+    def authenticated_test(u):
+        if config.REQUIRE_LOGIN_FOR_DASHBOARD:
+            return u.is_authenticated
+        else:
+            return True
+
+    actual_decorator = user_passes_test(
+        authenticated_test,
+        login_url=login_url,
+        redirect_field_name=redirect_field_name
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
+
