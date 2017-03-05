@@ -796,7 +796,8 @@ while run:
                         "State": prevTempJson['State'],
                         "BeerSet": prevTempJson['BeerSet'],
                         "FridgeSet": prevTempJson['FridgeSet'],
-                        "LogInterval": config['interval'],}
+                        "LogInterval": config['interval'],
+                        "Mode": cs['mode']}
             conn.send(json.dumps(response))
         elif messageType == "applyDevice":
             try:
