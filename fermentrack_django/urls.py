@@ -9,6 +9,8 @@ import app.profile_views
 import app.setup_views
 import app.beer_views
 import app.api.lcd
+import app.api.clog
+import app.api.devices
 
 admin.autodiscover()
 
@@ -72,6 +74,13 @@ urlpatterns = [
     url(r'^api/lcd/(?P<device_id>\d{1,20})/$', app.api.lcd.getLCD, name="getLCD"),  # For a single device
     url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),  # For all devices/LCDs
     url(r'^api/panel/(?P<device_id>\d{1,20})/$', app.api.lcd.getPanel, name="getPanel"),  # For a single device
+    # Read controller log files
+    url(r'^api/log/(?P<logfile>stdout|stderr)/(?P<device_id>\d{1,20})/$', app.api.clog.get_device_log_plain, name="get_device_log_plain"),
+    url(r'^api/log/(?P<logfile>stdout|stderr)/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_plain, name="get_device_log_plain"),
+    # Stdout JSON output (cleaned)
+    url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
+    url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
+
 
     url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 
