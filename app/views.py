@@ -313,19 +313,23 @@ def device_dashboard(request, device_id, beer_id=None):
 
     if beer_id is None:
         beer_obj = active_device.active_beer or None
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # Do I want to exclude the active beer?
     else:
         beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id) or None
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id).exclude(id=beer_id)
 
     if beer_obj is None:
+        # TODO - Determine if we want to load some fake "example" data (similar to what brewpi-www does)
         beer_file_url = "/data/fake.csv"
     else:
         beer_file_url = beer_obj.data_file_url('base_csv')
+
 
     return render_with_devices(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
                                         'column_headers': Beer.column_headers_to_graph_string('base_csv'),
-                                        'beer_file_url': beer_file_url,
+                                        'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
 
 

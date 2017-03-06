@@ -82,7 +82,7 @@
                 <div class="dashpanel-title">Beer Temp</div>
                 <div class="dash-data" id="dashBeerTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
-                <a href="#">
+                <a href="#" data-toggle="modal" data-target="#beerLogModal">
                     <div class="dash-desc">
                         <div class="pull-left">Load Prior Log</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
@@ -268,6 +268,55 @@
       </div>
     </div>
     <!-- End Beer Modal -->
+
+
+
+
+    <!-- Log Modal -->
+    <div class="modal fade" id="beerLogModal" tabindex="-1" role="dialog" aria-labelledby="beerLogModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="beerLogModalLabel" style="color: #000;">Available Beer Logs</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row col-xs-12">
+                    Select a log to load/view
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        {% for this_beer in available_beer_logs %}
+                            <a href="{% url 'device_dashboard_beer' active_device.id this_beer.id %}">{{ this_beer.name }}</a><br>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if selected_beer_id %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <a href="{% url 'device_dashboard' active_device.id %}" class="btn btn-lg btn-success">Return to Active Beer</a>
+                    </div>
+                </div>
+                {% endif %}
+
+              </div>
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Log Modal -->
+
+
 
 {% temp_control_modal active_device %}
 
