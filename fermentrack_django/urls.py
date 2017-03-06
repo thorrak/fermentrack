@@ -10,7 +10,6 @@ import app.setup_views
 import app.beer_views
 import app.api.lcd
 import app.api.clog
-import app.api.devices
 
 admin.autodiscover()
 
