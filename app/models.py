@@ -469,7 +469,7 @@ class BrewPiDevice(models.Model):
         if self.time_profile_started is None:
             return None
 
-        self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistant
+        # self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistent
         return self.active_profile.profile_temp(self.time_profile_started, self.temp_format)
 
     # Other things that aren't persisted in the database
