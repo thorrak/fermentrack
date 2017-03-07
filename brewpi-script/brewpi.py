@@ -608,7 +608,8 @@ while run:
             # round to 2 dec, python will otherwise produce 6.999999999
             cs['beerSet'] = round(newTemp, 2)
             bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
-            models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+            if dbConfig is not None:
+                models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Beer temperature set to " +
                        str(cs['beerSet']) +
                        " degrees in web interface")
@@ -624,7 +625,8 @@ while run:
             cs['mode'] = 'f'
             cs['fridgeSet'] = round(newTemp, 2)
             bg_ser.writeln("j{mode:f, fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
-            models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+            if dbConfig is not None:
+                models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Fridge temperature set to " +
                        str(cs['fridgeSet']) +
                        " degrees in web interface")
@@ -633,7 +635,8 @@ while run:
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
             bg_ser.writeln("j{mode:o}")
-            models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+            if dbConfig is not None:
+                models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Temperature control disabled")
             raise socket.timeout
         elif messageType == "setParameters":
@@ -646,6 +649,8 @@ while run:
                     if decoded['tempFormat'] <> config.get('temp_format', 'C') and dbConfig is not None:
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
+                    if dbConfig is not None:
+                        dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
             except json.JSONDecodeError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
             raise socket.timeout
@@ -743,7 +748,8 @@ while run:
                 # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
                 logMessage("Setting controller to beer profile mode using database-configured profile")
                 conn.send("Profile successfully updated")
-                dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
+                if dbConfig is not None:
+                    dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
                 if cs['mode'] is not 'p':
                     cs['mode'] = 'p'
                     bg_ser.writeln("j{mode:p}")
