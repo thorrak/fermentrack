@@ -366,7 +366,7 @@ def device_temp_control(request, device_id):
                 return redirect('siteroot')
 
             if success:
-                messages.success(request, 'Temperature control settings updated for {}'.format(active_device.device_name))
+                messages.success(request, 'Temperature control settings updated for {}. Please wait a few seconds for settings to take effect.'.format(active_device.device_name))
                 if active_device.active_beer is None:
                     # We started temperature control, but aren't logging anything. Prompt the user.
                     messages.info(request, 'Temperature control enabled, but logging is off. Start a new beer from the device dashboard.')
