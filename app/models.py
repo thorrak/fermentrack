@@ -855,9 +855,9 @@ class Beer(models.Model):
     def column_headers(which='base_csv', human_readable=False):
         if which == 'base_csv':
             if human_readable:
-                return ['Log Time', 'Beer Temp', 'Beer Setting', 'Fridge Temp', 'Fridge Setting', 'Annotation']
+                return ['Log Time', 'Beer Temp', 'Beer Setting', 'Fridge Temp', 'Fridge Setting', 'Room Temp']
             else:
-                return ['log_time', 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'annotation']
+                return ['log_time', 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'room_temp']
         elif which == 'full_csv':
             if human_readable:
                 return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
@@ -902,8 +902,10 @@ class Beer(models.Model):
 
         if which_file == 'base_csv':
             return base_name + "_graph.csv"
-        if which_file == 'full_csv':
+        elif which_file == 'full_csv':
             return base_name + "_full.csv"
+        elif which_file == 'annotation_json':
+            return base_name + "_annotations.almost_json"
         else:
             return None
 
@@ -1002,18 +1004,30 @@ class BeerLogPoint(models.Model):
         else:
             fridgeSet = None
 
-        if self.beer_ann:
+        if self.beer_ann is not None:
             combined_annotation = self.beer_ann
-        elif self.fridge_ann:
+        elif self.fridge_ann is not None:
             combined_annotation = self.fridge_ann
         else:
             combined_annotation = ""  # TODO - Check that this works as intended
 
         if data_format == 'base_csv':
-            return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, combined_annotation]
+            return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
         elif data_format == 'full_csv':
             return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
                     roomTemp, self.state, self.temp_format, self.associated_beer_id]
+        elif data_format == 'annotation_json':
+            retval = []
+            if self.beer_ann is not None:
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.beer_ann,
+                               'cssClass': 'annotation'})
+            if self.fridge_ann is not None:
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.fridge_ann,
+                               'cssClass': 'annotation'})
+            return retval
+        else:
+            pass
+
 
 
     def save(self, *args, **kwargs):
@@ -1029,10 +1043,33 @@ class BeerLogPoint(models.Model):
                 writer = csv.writer(f)
                 writer.writerow(row_data)
 
+        def check_and_write_annotation_json_head(path):
+            if not os.path.exists(path):
+                with open(path, 'w') as f:
+                    f.write("[\r\n")
+                return False
+            else:
+                return True
+
+        def write_annotation_json(path, annotation_data, write_comma=True):
+            # annotation_data is actually an array of potential annotations. We'll loop through them & write them out
+            with open(path, 'a') as f:
+                for this_annotation in annotation_data:
+                    if write_comma:  # We only want to do this once per run, regardless of the size of annotation_data
+                        f.write(',\r\n')
+                        write_comma = False
+                    f.write('  {')
+                    f.write('series: "{}", x: "{}",'.format(this_annotation['series'], this_annotation['x']))
+                    f.write(' shortText: "{}", text: "{}", cssClass: "{}"'.format(this_annotation['shortText'],
+                                                                                  this_annotation['text'],
+                                                                                  this_annotation['cssClass']))
+                    f.write('}')
+
         file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
 
         base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
         full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
+        annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
 
         # Write out headers (if the files don't exist)
         check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
@@ -1041,6 +1078,12 @@ class BeerLogPoint(models.Model):
         # And then write out the data
         write_data(base_csv_file, self.data_point('base_csv'))
         write_data(full_csv_file, self.data_point('full_csv'))
+
+        # Next, do the json file
+        annotation_data = self.data_point('annotation_json')
+        if len(annotation_data) > 0:  # Not all log points come with annotation data
+            json_existed = check_and_write_annotation_json_head(annotation_json)
+            write_annotation_json(annotation_json, annotation_data, json_existed)
 
         # super(BeerLogPoint, self).save(*args, **kwargs)
 

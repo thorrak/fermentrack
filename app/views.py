@@ -12,7 +12,10 @@ import setup_views
 
 import mdnsLocator
 
-import json, datetime, pytz
+import almost_json
+from django.http import HttpResponse
+
+import json, datetime, pytz, os
 
 import git_integration
 import subprocess
@@ -542,3 +545,17 @@ def device_eeprom_reset(request, device_id):
 def site_help(request):
     return render_with_devices(request, template_name='site_help.html', context={})
 
+
+# So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to
+# then interpret them using JavaScript, however, we MUST have fully formed, valid json. To acheive that, we're going to
+# wrap the json file and append the closing bracket after dumping its contents to the browser.
+def almost_json_view(request, device_id, beer_id):
+    json_close = "\r\n]"
+
+    beer_obj = Beer.objects.get(id=beer_id, device_id=device_id)
+
+    filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
+    wrapper = almost_json.AlmostJsonWrapper(file(filename), closing_string=json_close)
+    response = HttpResponse(wrapper, content_type="application/json")
+    response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+    return response

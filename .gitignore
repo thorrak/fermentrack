@@ -165,3 +165,4 @@ db.sqlite3
 # Don't upload any saved data files
 data/*.csv
 data/*.json
+data/*.almost_json

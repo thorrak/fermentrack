@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/$', app.views.device_dashboard, name='device_dashboard_beer'),
+    url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/annotations.json$', app.views.almost_json_view, name='almost_json_view'),
     # TODO - Implement backlight toggle AJAX API call
     url(r'^devices/(?P<device_id>\d{1,20})/backlight/toggle/$', app.views.device_dashboard, name='device_toggle_backlight'),
     # TODO - Implement temperature control AJAX API calls
