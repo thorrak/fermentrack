@@ -356,8 +356,11 @@ def device_temp_control(request, device_id):
             if form.cleaned_data['temp_control'] == 'off':
                 success = active_device.set_temp_control(method=form.cleaned_data['temp_control'])
             elif form.cleaned_data['temp_control'] == 'beer_constant' or form.cleaned_data['temp_control'] == 'fridge_constant':
-                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
-                                                         set_temp=float(form.cleaned_data['temperature_setting']))
+                try:
+                    success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                                             set_temp=float(form.cleaned_data['temperature_setting']))
+                except:
+                    success = False
             elif form.cleaned_data['temp_control'] == 'beer_profile':
                 success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
                                                          profile=form.cleaned_data['profile'])
