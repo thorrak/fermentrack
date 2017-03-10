@@ -13,7 +13,7 @@ No. To prevent inconsistency the log format is permanently set when logging begi
 
 Thankfully, this is a pretty easy issue to overcome. Django provides the `manage.py` command line script which contains the `createsuperuser` command. To leverage this, do the following (assuming the standard install locations):
  
- 1. Log into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command `sudo su brewpi` assuming you installed to the `brewpi` user)
+ 1. Log into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command `sudo -u fermentrack -i` assuming you installed to the `fermentrack` user)
  2. Change to the user's home directory (`cd ~`)
  3. Enable the virtualenv (`source venv/bin/activate`)
  4. Change to the Fermentrack directory (`cd fermentrack`)
