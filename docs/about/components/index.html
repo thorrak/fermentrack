@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Included Components - Fermentrack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Included Components";
+    var mkdocs_page_input_path = "about/components.md";
+    var mkdocs_page_url = "/about/components/";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Fermentrack</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../faq/">FAQ</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Install</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../install/">Index</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../install/Raspi Setup/">Raspberry Pi Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../install/manual/">Manual Installation</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../config/config/">Configuration</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Hardware</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/">Index</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/ESP8266/">ESP8266</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Arduino/">Arduino</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Native Python/">Native Python (Fuscus)</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Spark/">Spark Core</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>About</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../contribute/">Contribute</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../changelog/">Changelog</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../license/">License</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Included Components</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#included-components-licensing">Included Components &amp; Licensing</a></li>
+                
+                    <li><a class="toctree-l4" href="#python-packages">Python Packages</a></li>
+                
+                    <li><a class="toctree-l4" href="#javascript-packages">JavaScript Packages</a></li>
+                
+                    <li><a class="toctree-l4" href="#ui-css-fonts-etc-packages">UI (CSS, Fonts, etc.) Packages</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#seperate-applications">Seperate Applications</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Develop</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../develop/">Index</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../develop/models/">Models</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Fermentrack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>About &raquo;</li>
+        
+      
+    
+    <li>Included Components</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/thorrak/fermentrack/"> Edit on fermentrack</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="included-components-licensing">Included Components &amp; Licensing</h1>
+<p>Fermentrack was built using the Django web framework in Python. As a web application, it contains a number of JavaScript, CSS, and other components to help provide additional functionality. Some of these packages include the following.</p>
+<h2 id="python-packages">Python Packages</h2>
+<p>In addition to Django, this app utilizes a number of Python packages. These packages include:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.djangoproject.com/foundation/faq/">Django</a></td>
+<td><a href="https://github.com/django/django/blob/master/LICENSE">BSD 3 Clause</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/configobj/5.0.6">configobj</a></td>
+<td><a href="https://github.com/DiffSK/configobj/blob/master/LICENSE">BSD 3 Clause</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/simplejson/3.10.0">simplejson</a></td>
+<td><a href="https://github.com/simplejson/simplejson/blob/master/LICENSE.txt">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/pytz/2016.10">pytz</a></td>
+<td><a href="http://pythonhosted.org/pytz/#license">MIT (Expat) License</a></td>
+</tr>
+<tr>
+<td><a href="https://sentry.io/">raven</a></td>
+<td><a href="https://github.com/getsentry/raven-python/blob/master/LICENSE">BSD 3 Clause</a></td>
+</tr>
+<tr>
+<td><a href="http://djangosuit.com/pricing/">django-suit</a></td>
+<td><a href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution Non-Commercial 3.0</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/django-constance">django-constance</a></td>
+<td><a href="https://github.com/jazzband/django-constance/blob/master/LICENSE">BSD 3 Clause</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/GitPython/2.1.1">GitPython</a></td>
+<td><a href="https://github.com/gitpython-developers/GitPython/blob/master/LICENSE">BSD 3 Clause</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/zeroconf">zeroconf</a></td>
+<td><a href="https://github.com/jstasiak/python-zeroconf/blob/master/COPYING">LGPL v2</a></td>
+</tr>
+<tr>
+<td><a href="http://circus.readthedocs.io/en/latest/copyright/">circus</a></td>
+<td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache Public License v2</a></td>
+</tr>
+<tr>
+<td><a href="http://circus.readthedocs.io/en/latest/copyright/">circus-web</a></td>
+<td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache Public License v2</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/circus-tent/chaussette/blob/master/LICENSE">chaussette</a></td>
+<td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache Public License v2</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/pid/2.1.1">pid</a></td>
+<td><a href="https://github.com/trbs/pid/blob/master/LICENSE">Apache Public License v2</a></td>
+</tr>
+<tr>
+<td><a href="https://pypi.python.org/pypi/pyserial/3.2.1">pyserial</a></td>
+<td><a href="https://github.com/pyserial/pyserial/blob/master/LICENSE.txt">BSD 3 Clause</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="javascript-packages">JavaScript Packages</h2>
+<p>Fermentrack provides some of its functionality using JavaScript. Some of the third party JavaScript packages include:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://jquery.com/">jQuery</a></td>
+<td><a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="https://vuejs.org/">vue.js</a></td>
+<td><a href="https://opensource.org/licenses/MIT">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="http://dygraphs.com/legal.html">Dygraph</a></td>
+<td><a href="https://github.com/danvk/dygraphs/blob/master/LICENSE.txt">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td>Respond.js</td>
+<td><a href="https://github.com/scottjehl/Respond/blob/master/LICENSE-MIT">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td>html5shiv.js</td>
+<td>MIT (Expat)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ui-css-fonts-etc-packages">UI (CSS, Fonts, etc.) Packages</h2>
+<p>In addition to Python and JavaScript packages, Fermentrack utilizes a handful of third party images, icon packs, CSS files, and fonts in rendering the user interface. Some of these include:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://fontawesome.io/license/">FontAwesome (Font)</a></td>
+<td><a href="http://scripts.sil.org/OFL">SIL OFL 1.1</a></td>
+</tr>
+<tr>
+<td><a href="http://fontawesome.io/license/">FontAwesome (CSS)</a></td>
+<td><a href="http://opensource.org/licenses/mit-license.html">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="http://getbootstrap.com/getting-started/#license-faqs">Bootstrap</a></td>
+<td><a href="https://github.com/twbs/bootstrap/blob/master/LICENSE">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="https://designmodo.com/">FlatUI</a></td>
+<td><a href="https://github.com/designmodo/Flat-UI">MIT (Expat)</a></td>
+</tr>
+<tr>
+<td><a href="https://fontstruct.com/fontstructions/show/310233/5x8_lcd_hd44780u_a02">5x8 LCD Font</a></td>
+<td><a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons By-SA 3.0</a></td>
+</tr>
+</tbody>
+</table>
+<h1 id="seperate-applications">Seperate Applications</h1>
+<p>Fermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience. </p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BrewPi-Script</td>
+<td>GPL v3</td>
+</tr>
+<tr>
+<td>BrewPi Firmware</td>
+<td>GPL v3 (and potentially others)</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../develop/" class="btn btn-neutral float-right" title="Index">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../license/" class="btn btn-neutral" title="License"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+    
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../license/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../develop/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script src="../../js/theme.js"></script>
+
+</body>
+</html>

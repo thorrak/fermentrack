@@ -1,0 +1,299 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Fermentrack documentation\n\n\nWhat is Fermentrack?\n\n\nFermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. \n\n\nFermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server. \n\n\nIncluded with Fermentrack\n\n\n\n\nFermentrack\n - The Django-based replacement for brewpi-www. Licensed under MIT license.\n\n\nbrewpi-script\n - Installed alongside Fermentrack is brewpi-script. Licensed under GPL v3.\n\n\nBrewPi Firmware (Various)\n - As Fermentrack develops, it may install various versions of the BrewPi firmware. It is expected that most of these will be licensed under GPL v3, though other licenses may apply.\n\n\n\n\nOther components used in or bundled with Fermentrack may have their own licensing requirements. These components can be referenced \nhere\n.\n\n\nNew Features\n\n\nOne of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:\n\n\n\n\nNative multi-chamber support\n\n\nCleaner, more intuitive controller setup\n\n\nIntegrated support for ESP8266-based controllers\n\n\nOfficial support for \"legacy\" controllers\n\n\nNative support (including mDNS autodetection) for WiFi controllers\n\n\n\n\nMissing Features\n\n\nAt the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:\n\n\n\n\nSerial controller support (expected in v2)\n\n\nSerial controller autodetection (v2)\n\n\nArduino support (v2)\n\n\nSpark/Fuscus support (v3)\n\n\nFuscus support (v3)\n\n\nSupport for \"modern\" (non-legacy branch) controllers (v3)\n\n\n\n\nA full table of controllers/expected hardware availability is available \nin the documentation\n.\n\n\nRequirements\n\n\n\n\nRaspberry Pi Zero, Zero W, 2 B, or 3 /w Internet Connection\n\n\nFresh Raspbian install (Lite/Pixel supported, Oct 2016 version or later)\n\n\n1GB of free space available\n\n\n\n\nPLEASE NOTE\n - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is \nnot\n intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#fermentrack-documentation", 
+            "text": "", 
+            "title": "Fermentrack documentation"
+        }, 
+        {
+            "location": "/#what-is-fermentrack", 
+            "text": "Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming.   Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server.", 
+            "title": "What is Fermentrack?"
+        }, 
+        {
+            "location": "/#included-with-fermentrack", 
+            "text": "Fermentrack  - The Django-based replacement for brewpi-www. Licensed under MIT license.  brewpi-script  - Installed alongside Fermentrack is brewpi-script. Licensed under GPL v3.  BrewPi Firmware (Various)  - As Fermentrack develops, it may install various versions of the BrewPi firmware. It is expected that most of these will be licensed under GPL v3, though other licenses may apply.   Other components used in or bundled with Fermentrack may have their own licensing requirements. These components can be referenced  here .", 
+            "title": "Included with Fermentrack"
+        }, 
+        {
+            "location": "/#new-features", 
+            "text": "One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:   Native multi-chamber support  Cleaner, more intuitive controller setup  Integrated support for ESP8266-based controllers  Official support for \"legacy\" controllers  Native support (including mDNS autodetection) for WiFi controllers", 
+            "title": "New Features"
+        }, 
+        {
+            "location": "/#missing-features", 
+            "text": "At the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:   Serial controller support (expected in v2)  Serial controller autodetection (v2)  Arduino support (v2)  Spark/Fuscus support (v3)  Fuscus support (v3)  Support for \"modern\" (non-legacy branch) controllers (v3)   A full table of controllers/expected hardware availability is available  in the documentation .", 
+            "title": "Missing Features"
+        }, 
+        {
+            "location": "/#requirements", 
+            "text": "Raspberry Pi Zero, Zero W, 2 B, or 3 /w Internet Connection  Fresh Raspbian install (Lite/Pixel supported, Oct 2016 version or later)  1GB of free space available   PLEASE NOTE  - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is  not  intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.", 
+            "title": "Requirements"
+        }, 
+        {
+            "location": "/faq/", 
+            "text": "Can I change the temperature format on a beer I've started logging?\n\n\nNo. To prevent inconsistency the log format is permanently set when logging begins to the temperature format associated with the device. If you would like to change the format and restart logging, do the following:\n\n\n\n\nUpdate the temperature format in control constants to the desired format\n\n\nStop logging the existing beer\n\n\nStart logging a new beer\n\n\n\n\nHelp - I forgot my Fermentrack login/password!\n\n\nThankfully, this is a pretty easy issue to overcome. Django provides the \nmanage.py\n command line script which contains the \ncreatesuperuser\n command. To leverage this, do the following (assuming the standard install locations):\n\n\n\n\nLog into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command \nsudo su brewpi\n assuming you installed to the \nbrewpi\n user)\n\n\nChange to the user's home directory (\ncd ~\n)\n\n\nEnable the virtualenv (\nsource venv/bin/activate\n)\n\n\nChange to the Fermentrack directory (\ncd fermentrack\n)\n\n\nRun the createsuperuser command (\n./manage.py createsuperuser\n)\n\n\nFollow the prompts to create a new superuser account\n\n\nLog into the Fermentrack admin panel and delete/modify the old account. The Fermentrack admin panel can be accessed through the \nSettings\n page (the gear in the upper right) and clicking the \"Django Admin\" button.", 
+            "title": "FAQ"
+        }, 
+        {
+            "location": "/faq/#can-i-change-the-temperature-format-on-a-beer-ive-started-logging", 
+            "text": "No. To prevent inconsistency the log format is permanently set when logging begins to the temperature format associated with the device. If you would like to change the format and restart logging, do the following:   Update the temperature format in control constants to the desired format  Stop logging the existing beer  Start logging a new beer", 
+            "title": "Can I change the temperature format on a beer I've started logging?"
+        }, 
+        {
+            "location": "/faq/#help-i-forgot-my-fermentrack-loginpassword", 
+            "text": "Thankfully, this is a pretty easy issue to overcome. Django provides the  manage.py  command line script which contains the  createsuperuser  command. To leverage this, do the following (assuming the standard install locations):   Log into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command  sudo su brewpi  assuming you installed to the  brewpi  user)  Change to the user's home directory ( cd ~ )  Enable the virtualenv ( source venv/bin/activate )  Change to the Fermentrack directory ( cd fermentrack )  Run the createsuperuser command ( ./manage.py createsuperuser )  Follow the prompts to create a new superuser account  Log into the Fermentrack admin panel and delete/modify the old account. The Fermentrack admin panel can be accessed through the  Settings  page (the gear in the upper right) and clicking the \"Django Admin\" button.", 
+            "title": "Help - I forgot my Fermentrack login/password!"
+        }, 
+        {
+            "location": "/install/", 
+            "text": "Installing Fermentrack\n\n\nThere are three main ways to install Fermentrack - One-line fully automated, semi-automated, and manual.\n\n\nRegardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working copy of Raspbian. \n\n\nFully Automated - \nVideo\n\n\nThe easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this method, simply SSH into your Raspberry Pi and execute:\n\n\ncurl -L install.fermentrack.com | sudo bash\n\n\nFollow the prompts as needed, and once the script completes, you're done! \n\n\nSemi-Automated\n\n\nIf you prefer a slightly less automatic installation method, you can download the fermentrack-tools repo from git and use the install script contained therein. To install using this script, do the following:\n\n\n\n\nLog into your Raspberry Pi\n\n\ninstall \ngit\n (Type \nsudo apt-install git-core\n)\n\n\nClone the repo (\ngit clone https://github.com/thorrak/Fermentrack-tools.git\n)\n\n\nRun the install script (\nsudo Fermentrack-tools/install-django-stack.sh\n)\n\n\nFollow the prompts on screen. Relaunch the install script if prompted.\n\n\nOnce installation completes, open a web browser and connect to Fermentrack to complete the installation process.\n\n\n\n\nManual\n\n\nIf you are interested in installing Fermentrack by hand, please refer to the manual installation instructions located \nhere\n.", 
+            "title": "Index"
+        }, 
+        {
+            "location": "/install/#installing-fermentrack", 
+            "text": "There are three main ways to install Fermentrack - One-line fully automated, semi-automated, and manual.  Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working copy of Raspbian.", 
+            "title": "Installing Fermentrack"
+        }, 
+        {
+            "location": "/install/#fully-automated-video", 
+            "text": "The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this method, simply SSH into your Raspberry Pi and execute:  curl -L install.fermentrack.com | sudo bash  Follow the prompts as needed, and once the script completes, you're done!", 
+            "title": "Fully Automated - Video"
+        }, 
+        {
+            "location": "/install/#semi-automated", 
+            "text": "If you prefer a slightly less automatic installation method, you can download the fermentrack-tools repo from git and use the install script contained therein. To install using this script, do the following:   Log into your Raspberry Pi  install  git  (Type  sudo apt-install git-core )  Clone the repo ( git clone https://github.com/thorrak/Fermentrack-tools.git )  Run the install script ( sudo Fermentrack-tools/install-django-stack.sh )  Follow the prompts on screen. Relaunch the install script if prompted.  Once installation completes, open a web browser and connect to Fermentrack to complete the installation process.", 
+            "title": "Semi-Automated"
+        }, 
+        {
+            "location": "/install/#manual", 
+            "text": "If you are interested in installing Fermentrack by hand, please refer to the manual installation instructions located  here .", 
+            "title": "Manual"
+        }, 
+        {
+            "location": "/install/Raspi Setup/", 
+            "text": "Preparing a Raspberry Pi for Fermentrack\n\n\nPrior to installing Fermentrack, you need to install Raspbian and set everything up. Click the link below\nto watch a video showing how to prepare the Raspberry Pi using a Mac, or read the linked instructions below for your operating system.\n\n\nPrepare the Raspberry Pi - \n[Video]\n\n\n\n\nDownload the latest version of Raspbian from \nhere\n. I recommend the Lite version as I prefer headless installations, but the full version works as well.\n\n\nBurn Raspbian to your SD card using \nthese instructions\n.\n\n\nNEW\n - \nEnable SSH\n on your Raspberry Pi by writing an empty file named \"ssh\" to the root of the SD card.\n\n\nOptional, NEW\n - Configure WiFi - See the note below if you want to configure WiFi now, thus preventing having to find an ethernet cable\n\n\nPlug the SD card into your Raspberry Pi, connect the Pi to ethernet (if you did not configure WiFi), and plug in power.\n\n\nLocate the IP address for your Raspberry Pi This can generally be done by executing \narp -a | grep raspberry\n however you can also locate your Raspberry Pi by logging into your router and looking for the device.\n\n\nUpdate the Raspberry Pi software by running \nsudo apt-get update\n and \nsudo apt-get upgrade\n.\n\n\nRun \nraspi-config\n and configure the Pi. At a minimum, expand the filesystem (option 1).\n\n\nUpdate the default password for the \npi\n user using \npasswd\n\n\nOptional\n - \nConfigure WiFi\n on your Raspberry Pi (if needed)\n\n\n\n\nRaspberry Pi Setup - Additional Info about Install-Time WiFi Configuration\n\n\nIn early 2016 there was \nan update\n made to Raspbian which allows for install-time configuration of WiFi. Buried deep within a blog post, there was the following note:\n\n\n\"If a wpa_supplicant.conf file is placed into the /boot/ directory, this will be moved to the /etc/wpa_supplicant/ directory the next time the system is booted, overwriting the network settings; this allows a Wifi configuration to be preloaded onto a card from a Windows or other machine that can only see the boot partition.\"\n\n\nWhile not discussed in the official documentation, this greatly simplifies headless configuration (especially for Raspberry Pi zeros).\n\n\nTo utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a \nwpa_supplicant.conf\n file in the \n/boot\n directory of the SD card with the following contents (adjusting to match your network configuration):\n\n\nnetwork={\n    ssid=\nYOUR_SSID\n\n    psk=\nYOUR_PASSWORD\n\n    key_mgmt=WPA-PSK\n}\n\n\n\n\nNote - In the above, \nssid\n is the name of your wireless network, \npsk\n is the password for your wireless network (if applicable), and \nkey_mgmt\n is the password management protocol (which, for most home networks these days is WPA-PSK)", 
+            "title": "Raspberry Pi Setup"
+        }, 
+        {
+            "location": "/install/Raspi Setup/#preparing-a-raspberry-pi-for-fermentrack", 
+            "text": "Prior to installing Fermentrack, you need to install Raspbian and set everything up. Click the link below\nto watch a video showing how to prepare the Raspberry Pi using a Mac, or read the linked instructions below for your operating system.", 
+            "title": "Preparing a Raspberry Pi for Fermentrack"
+        }, 
+        {
+            "location": "/install/Raspi Setup/#prepare-the-raspberry-pi-video", 
+            "text": "Download the latest version of Raspbian from  here . I recommend the Lite version as I prefer headless installations, but the full version works as well.  Burn Raspbian to your SD card using  these instructions .  NEW  -  Enable SSH  on your Raspberry Pi by writing an empty file named \"ssh\" to the root of the SD card.  Optional, NEW  - Configure WiFi - See the note below if you want to configure WiFi now, thus preventing having to find an ethernet cable  Plug the SD card into your Raspberry Pi, connect the Pi to ethernet (if you did not configure WiFi), and plug in power.  Locate the IP address for your Raspberry Pi This can generally be done by executing  arp -a | grep raspberry  however you can also locate your Raspberry Pi by logging into your router and looking for the device.  Update the Raspberry Pi software by running  sudo apt-get update  and  sudo apt-get upgrade .  Run  raspi-config  and configure the Pi. At a minimum, expand the filesystem (option 1).  Update the default password for the  pi  user using  passwd  Optional  -  Configure WiFi  on your Raspberry Pi (if needed)", 
+            "title": "Prepare the Raspberry Pi - [Video]"
+        }, 
+        {
+            "location": "/install/Raspi Setup/#raspberry-pi-setup-additional-info-about-install-time-wifi-configuration", 
+            "text": "In early 2016 there was  an update  made to Raspbian which allows for install-time configuration of WiFi. Buried deep within a blog post, there was the following note:  \"If a wpa_supplicant.conf file is placed into the /boot/ directory, this will be moved to the /etc/wpa_supplicant/ directory the next time the system is booted, overwriting the network settings; this allows a Wifi configuration to be preloaded onto a card from a Windows or other machine that can only see the boot partition.\"  While not discussed in the official documentation, this greatly simplifies headless configuration (especially for Raspberry Pi zeros).  To utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a  wpa_supplicant.conf  file in the  /boot  directory of the SD card with the following contents (adjusting to match your network configuration):  network={\n    ssid= YOUR_SSID \n    psk= YOUR_PASSWORD \n    key_mgmt=WPA-PSK\n}  Note - In the above,  ssid  is the name of your wireless network,  psk  is the password for your wireless network (if applicable), and  key_mgmt  is the password management protocol (which, for most home networks these days is WPA-PSK)", 
+            "title": "Raspberry Pi Setup - Additional Info about Install-Time WiFi Configuration"
+        }, 
+        {
+            "location": "/install/manual/", 
+            "text": "Manual Installation\n\n\nUnfortunately, these instructions haven't been fully written yet. That said, below is a general overview of what needs to happen:\n\n\n\n\nLog into your Raspberry Pi via SSH or pull up a terminal window\n\n\nInstall the system-wide packages (nginx, etc.) \nsudo apt-get install -y git-core build-essential python-dev python-pip nginx libzmq-dev libevent-dev python-virtualenv\n\n\nAdd the Fermentrack user \nuseradd -m -G dialout fermentrack\n\n\nClone the fermentrack repo \nsudo -u fermentrack git clone https://github.com/thorrak/fermentrack.git \"/home/fermentrack/fermentrack\"\n\n\nSet up  virtualenv \ncd ~fermentrack\n \nsudo -u fermentrack virtualenv \"venv\"\n\n\nRun the fermentrack upgrade script \nsudo -u fermentrack ~fermentrack/fermentrack/utils/upgrade.sh\n\n\nCreate the nginx configuration file, link, and restart nginx (See \nfermentrack-tools/nginx-configs/default-fermentrack\n as an example)", 
+            "title": "Manual Installation"
+        }, 
+        {
+            "location": "/install/manual/#manual-installation", 
+            "text": "Unfortunately, these instructions haven't been fully written yet. That said, below is a general overview of what needs to happen:   Log into your Raspberry Pi via SSH or pull up a terminal window  Install the system-wide packages (nginx, etc.)  sudo apt-get install -y git-core build-essential python-dev python-pip nginx libzmq-dev libevent-dev python-virtualenv  Add the Fermentrack user  useradd -m -G dialout fermentrack  Clone the fermentrack repo  sudo -u fermentrack git clone https://github.com/thorrak/fermentrack.git \"/home/fermentrack/fermentrack\"  Set up  virtualenv  cd ~fermentrack   sudo -u fermentrack virtualenv \"venv\"  Run the fermentrack upgrade script  sudo -u fermentrack ~fermentrack/fermentrack/utils/upgrade.sh  Create the nginx configuration file, link, and restart nginx (See  fermentrack-tools/nginx-configs/default-fermentrack  as an example)", 
+            "title": "Manual Installation"
+        }, 
+        {
+            "location": "/config/config/", 
+            "text": "Configuring Fermentrack\n\n\nOnce you have finished installing Fermentrack, you are ready to configure it. You will be guided through the configuration process when you first connect to Fermentrack. An overview of this configuration procedure is below.\n\n\nUser Setup\n\n\nWhen you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs. \n\n\nSetting up the user account is extremely straightforward:\n\n\n\n\nFrom the root Fermentrack page, click \"Continue to guided installation\"\n\n\nOn the next page, entering the following:\n\n\nUsername\n - The username used to log into Fermentrack\n\n\nPassword\n - The password for the user account\n\n\nEmail Address\n - Currently unused, but may potentially be used later\n\n\nClick \"Create new user account\"\n\n\nDone!\n\n\n\n\nYou're now ready to move on to configuring the site settings.\n\n\nSite Settings\n\n\nAfter configuring a user account, the next step is to configure Fermentrack. The following are the available configuration options:\n\n\n\n\nBrewery Name\n - The name displayed in the upper left of each Fermentrack page\n\n\nDate time format\n - \nCurrently Unused\n - May be removed in a future update\n\n\nDate time format display\n - The date format used on the dashboard of each device\n\n\nRequire login for dashboard\n - \nCurrently Unused\n - Should users be required to be logged in to \nview\n the dashboard/logs. Login will still be required to change temperature settings, configuration options, etc.\n\n\nTemperature format\n - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.\n\n\n\n\nAll of these can be updated at any time by clicking on the \"gear\" icon in the upper right of any Fermentrack page.\n\n\nNotes for Advanced Users\n\n\nUser Accounts\n\n\nCurrently, Fermentrack has limited access control implemented, and is not designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.\n\n\nIn the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the \"gear\" icon). Each account will need \"superuser\" access to be able to use the full functionality of Fermentrack. Please be aware - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.", 
+            "title": "Configuration"
+        }, 
+        {
+            "location": "/config/config/#configuring-fermentrack", 
+            "text": "Once you have finished installing Fermentrack, you are ready to configure it. You will be guided through the configuration process when you first connect to Fermentrack. An overview of this configuration procedure is below.", 
+            "title": "Configuring Fermentrack"
+        }, 
+        {
+            "location": "/config/config/#user-setup", 
+            "text": "When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs.   Setting up the user account is extremely straightforward:   From the root Fermentrack page, click \"Continue to guided installation\"  On the next page, entering the following:  Username  - The username used to log into Fermentrack  Password  - The password for the user account  Email Address  - Currently unused, but may potentially be used later  Click \"Create new user account\"  Done!   You're now ready to move on to configuring the site settings.", 
+            "title": "User Setup"
+        }, 
+        {
+            "location": "/config/config/#site-settings", 
+            "text": "After configuring a user account, the next step is to configure Fermentrack. The following are the available configuration options:   Brewery Name  - The name displayed in the upper left of each Fermentrack page  Date time format  -  Currently Unused  - May be removed in a future update  Date time format display  - The date format used on the dashboard of each device  Require login for dashboard  -  Currently Unused  - Should users be required to be logged in to  view  the dashboard/logs. Login will still be required to change temperature settings, configuration options, etc.  Temperature format  - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.   All of these can be updated at any time by clicking on the \"gear\" icon in the upper right of any Fermentrack page.", 
+            "title": "Site Settings"
+        }, 
+        {
+            "location": "/config/config/#notes-for-advanced-users", 
+            "text": "", 
+            "title": "Notes for Advanced Users"
+        }, 
+        {
+            "location": "/config/config/#user-accounts", 
+            "text": "Currently, Fermentrack has limited access control implemented, and is not designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.  In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the \"gear\" icon). Each account will need \"superuser\" access to be able to use the full functionality of Fermentrack. Please be aware - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.", 
+            "title": "User Accounts"
+        }, 
+        {
+            "location": "/hardware/", 
+            "text": "Hardware Comparison\n\n\nThere are four main types of hardware that currently support BrewPi firmware installations. Each have varying levels of support by Fermentrack.\n\n\n\n\nESP8266\n\n\nArduino\n\n\nNative Python (Fuscus)\n\n\nSpark Core\n\n\n\n\nThe following table shows which release is expected to have support for various controller types:\n\n\n\n\n\n\n\n\nRelease\n\n\nESP8266 Serial\n\n\nESP8266 WiFi\n\n\nArduino\n\n\nSpark\n\n\nFuscus (Native Python)\n\n\n\n\n\n\n\n\n\n\nv1\n\n\n:no_entry_sign:\n\n\n:white_check_mark:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n\n\n\n\nv1 (flash)\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n\n\n\n\nv2\n\n\n:grey_question:\n\n\n:white_check_mark:\n\n\n:grey_question:\n\n\n:no_entry_sign:\n\n\n\n\n\n\n\n\nv2 (flash)\n\n\n:grey_question:\n\n\n:grey_question:\n\n\n:grey_question:\n\n\n:no_entry_sign:\n\n\n:no_entry_sign:\n\n\n\n\n\n\nv3\n\n\n\n\n:white_check_mark:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nLegend:\n\n\n\n\n:white_check_mark: - Support confirmed in this version\n\n\n:grey_question: - Support targeted for this version\n\n\n:no_entry_sign: - Unsupported in this version\n\n\nBlank - Unknown", 
+            "title": "Index"
+        }, 
+        {
+            "location": "/hardware/#hardware-comparison", 
+            "text": "There are four main types of hardware that currently support BrewPi firmware installations. Each have varying levels of support by Fermentrack.   ESP8266  Arduino  Native Python (Fuscus)  Spark Core   The following table shows which release is expected to have support for various controller types:     Release  ESP8266 Serial  ESP8266 WiFi  Arduino  Spark  Fuscus (Native Python)      v1  :no_entry_sign:  :white_check_mark:  :no_entry_sign:  :no_entry_sign:  :no_entry_sign:    v1 (flash)  :no_entry_sign:  :no_entry_sign:  :no_entry_sign:  :no_entry_sign:  :no_entry_sign:    v2  :grey_question:  :white_check_mark:  :grey_question:  :no_entry_sign:     v2 (flash)  :grey_question:  :grey_question:  :grey_question:  :no_entry_sign:  :no_entry_sign:    v3   :white_check_mark:", 
+            "title": "Hardware Comparison"
+        }, 
+        {
+            "location": "/hardware/#legend", 
+            "text": ":white_check_mark: - Support confirmed in this version  :grey_question: - Support targeted for this version  :no_entry_sign: - Unsupported in this version  Blank - Unknown", 
+            "title": "Legend:"
+        }, 
+        {
+            "location": "/hardware/ESP8266/", 
+            "text": "Fermentrack and ESP8266-based Controllers\n\n\nFermentrack was explicitly built to support ESP8266-based controllers. The initial verion of Fermentrack supports ESP8266-based controllers when connected via WiFi. Serial support is coming soon. (currently expected in v2)", 
+            "title": "ESP8266"
+        }, 
+        {
+            "location": "/hardware/ESP8266/#fermentrack-and-esp8266-based-controllers", 
+            "text": "Fermentrack was explicitly built to support ESP8266-based controllers. The initial verion of Fermentrack supports ESP8266-based controllers when connected via WiFi. Serial support is coming soon. (currently expected in v2)", 
+            "title": "Fermentrack and ESP8266-based Controllers"
+        }, 
+        {
+            "location": "/hardware/Arduino/", 
+            "text": "Fermentrack and Arduino-based Controllers\n\n\nCurrently, Fermentrack does not support Arduino-based controllers. Support for Arduino-based controllers is a key milestone in the development path of the software, and is expected shortly after the initial release.", 
+            "title": "Arduino"
+        }, 
+        {
+            "location": "/hardware/Arduino/#fermentrack-and-arduino-based-controllers", 
+            "text": "Currently, Fermentrack does not support Arduino-based controllers. Support for Arduino-based controllers is a key milestone in the development path of the software, and is expected shortly after the initial release.", 
+            "title": "Fermentrack and Arduino-based Controllers"
+        }, 
+        {
+            "location": "/hardware/Native Python/", 
+            "text": "Fermentrack and Fuscus (Native Python Controller)\n\n\nCurrently, Fermentrack does not support serial connections to controllers and therefore, due to the way it is implemented, does not directly support Fuscus - the native python implementation of the BrewPi controller firmware. Support for serial connections is considered a key missing feature, and is scheduled to be developed soon after the initial release.\n\n\nOnce serial connections are implemented, Fermentrack should support connections to Fuscus via the \"advanced\" setup workflow in a manner similar to the Arduino implementation.\n\n\nFurther down the development path are other features involving Fuscus such as direct installation and configuration management.", 
+            "title": "Native Python (Fuscus)"
+        }, 
+        {
+            "location": "/hardware/Native Python/#fermentrack-and-fuscus-native-python-controller", 
+            "text": "Currently, Fermentrack does not support serial connections to controllers and therefore, due to the way it is implemented, does not directly support Fuscus - the native python implementation of the BrewPi controller firmware. Support for serial connections is considered a key missing feature, and is scheduled to be developed soon after the initial release.  Once serial connections are implemented, Fermentrack should support connections to Fuscus via the \"advanced\" setup workflow in a manner similar to the Arduino implementation.  Further down the development path are other features involving Fuscus such as direct installation and configuration management.", 
+            "title": "Fermentrack and Fuscus (Native Python Controller)"
+        }, 
+        {
+            "location": "/hardware/Spark/", 
+            "text": "Fermentrack and Spark-based Controllers\n\n\nCurrently, Fermentrack does not support Spark-based controllers. Support for Spark based controllers is planned, but will be implemented later in the development path. (Currently planned for v3 or later) \n\n\nOnce implemented, Fermentrack will support controlling both legacy (Arduino/Fuscus) and modern (Spark) controllers from the same installation.", 
+            "title": "Spark Core"
+        }, 
+        {
+            "location": "/hardware/Spark/#fermentrack-and-spark-based-controllers", 
+            "text": "Currently, Fermentrack does not support Spark-based controllers. Support for Spark based controllers is planned, but will be implemented later in the development path. (Currently planned for v3 or later)   Once implemented, Fermentrack will support controlling both legacy (Arduino/Fuscus) and modern (Spark) controllers from the same installation.", 
+            "title": "Fermentrack and Spark-based Controllers"
+        }, 
+        {
+            "location": "/about/contribute/", 
+            "text": "Contributing to Fermentrack\n\n\nWant to help? Awesome! There are a number of ways you can get involved in this project. To help you get started, some areas in which you can contribute are listed below along with additional resources for getting started.\n\n\nReporting Bugs/Issues\n\n\nFound a bug or issue (or have a suggestion for how to improve)? Awesome! \n\n\nThe best way to reach out is to either \nopen an issue on GitHub\n or discuss your issue or idea in the HomeBrewTalk thread. Both of these are actively monitored, and will help to keep track of progress towards a resolution.\n\n\nDeveloping Fermentrack\n\n\nInterested in helping develop Fermentrack (or improving its look \n feel)? Fantastic - Fermentrack is an open source project, and all help is welcome. \n\n\nFermentrack is a Python-based application which uses the Django framework. It is open source and is managed on GitHub. To help you get started, \ndocumentation has been included\n discussing topics of interest to developers. Take a look at that first, and if you have questions don't hesitate to reach out. \n\n\nDocumenting Fermentrack\n\n\nA project like Fermentrack is only as good as its documentation. Documentation for Fermentrack is (currently) written in \nMarkdown\n with an eye towards \nMkDocs\n. The documentation is part of the Fermentrack repo on GitHub. \n\n\nIf you are familiar with GitHub, pull requests that include documentation fixes are always welcome. If not, reach out on GitHub or the HomeBrewTalk forums and we'll be happy to help get things updated.", 
+            "title": "Contribute"
+        }, 
+        {
+            "location": "/about/contribute/#contributing-to-fermentrack", 
+            "text": "Want to help? Awesome! There are a number of ways you can get involved in this project. To help you get started, some areas in which you can contribute are listed below along with additional resources for getting started.", 
+            "title": "Contributing to Fermentrack"
+        }, 
+        {
+            "location": "/about/contribute/#reporting-bugsissues", 
+            "text": "Found a bug or issue (or have a suggestion for how to improve)? Awesome!   The best way to reach out is to either  open an issue on GitHub  or discuss your issue or idea in the HomeBrewTalk thread. Both of these are actively monitored, and will help to keep track of progress towards a resolution.", 
+            "title": "Reporting Bugs/Issues"
+        }, 
+        {
+            "location": "/about/contribute/#developing-fermentrack", 
+            "text": "Interested in helping develop Fermentrack (or improving its look   feel)? Fantastic - Fermentrack is an open source project, and all help is welcome.   Fermentrack is a Python-based application which uses the Django framework. It is open source and is managed on GitHub. To help you get started,  documentation has been included  discussing topics of interest to developers. Take a look at that first, and if you have questions don't hesitate to reach out.", 
+            "title": "Developing Fermentrack"
+        }, 
+        {
+            "location": "/about/contribute/#documenting-fermentrack", 
+            "text": "A project like Fermentrack is only as good as its documentation. Documentation for Fermentrack is (currently) written in  Markdown  with an eye towards  MkDocs . The documentation is part of the Fermentrack repo on GitHub.   If you are familiar with GitHub, pull requests that include documentation fixes are always welcome. If not, reach out on GitHub or the HomeBrewTalk forums and we'll be happy to help get things updated.", 
+            "title": "Documenting Fermentrack"
+        }, 
+        {
+            "location": "/about/changelog/", 
+            "text": "Changelog\n\n\nAll notable changes to this project will be documented in this file.\n\n\nThe format is based on \nKeep a Changelog\n because it was the first relatively standard format to pop up when I googled \"changelog formats\".\n\n\n[0.1.0] - 2017-03-18 (est.) - \"v1 release\"\n\n\nAdded\n\n\n\n\nFirst release!", 
+            "title": "Changelog"
+        }, 
+        {
+            "location": "/about/changelog/#changelog", 
+            "text": "All notable changes to this project will be documented in this file.  The format is based on  Keep a Changelog  because it was the first relatively standard format to pop up when I googled \"changelog formats\".", 
+            "title": "Changelog"
+        }, 
+        {
+            "location": "/about/changelog/#010-2017-03-18-est-v1-release", 
+            "text": "", 
+            "title": "[0.1.0] - 2017-03-18 (est.) - \"v1 release\""
+        }, 
+        {
+            "location": "/about/changelog/#added", 
+            "text": "First release!", 
+            "title": "Added"
+        }, 
+        {
+            "location": "/about/license/", 
+            "text": "MIT License\n\n\nCopyright (c) 2016-2017 John Beeler\nCopyright (c) 2016-2017 Fredrik Steen\n\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.", 
+            "title": "License"
+        }, 
+        {
+            "location": "/about/components/", 
+            "text": "Included Components \n Licensing\n\n\nFermentrack was built using the Django web framework in Python. As a web application, it contains a number of JavaScript, CSS, and other components to help provide additional functionality. Some of these packages include the following.\n\n\nPython Packages\n\n\nIn addition to Django, this app utilizes a number of Python packages. These packages include:\n\n\n\n\n\n\n\n\nPackage\n\n\nLicense\n\n\n\n\n\n\n\n\n\n\nDjango\n\n\nBSD 3 Clause\n\n\n\n\n\n\nconfigobj\n\n\nBSD 3 Clause\n\n\n\n\n\n\nsimplejson\n\n\nMIT (Expat)\n\n\n\n\n\n\npytz\n\n\nMIT (Expat) License\n\n\n\n\n\n\nraven\n\n\nBSD 3 Clause\n\n\n\n\n\n\ndjango-suit\n\n\nCreative Commons Attribution Non-Commercial 3.0\n\n\n\n\n\n\ndjango-constance\n\n\nBSD 3 Clause\n\n\n\n\n\n\nGitPython\n\n\nBSD 3 Clause\n\n\n\n\n\n\nzeroconf\n\n\nLGPL v2\n\n\n\n\n\n\ncircus\n\n\nApache Public License v2\n\n\n\n\n\n\ncircus-web\n\n\nApache Public License v2\n\n\n\n\n\n\nchaussette\n\n\nApache Public License v2\n\n\n\n\n\n\npid\n\n\nApache Public License v2\n\n\n\n\n\n\npyserial\n\n\nBSD 3 Clause\n\n\n\n\n\n\n\n\nJavaScript Packages\n\n\nFermentrack provides some of its functionality using JavaScript. Some of the third party JavaScript packages include:\n\n\n\n\n\n\n\n\nPackage\n\n\nLicense\n\n\n\n\n\n\n\n\n\n\njQuery\n\n\nMIT (Expat)\n\n\n\n\n\n\nvue.js\n\n\nMIT (Expat)\n\n\n\n\n\n\nDygraph\n\n\nMIT (Expat)\n\n\n\n\n\n\nRespond.js\n\n\nMIT (Expat)\n\n\n\n\n\n\nhtml5shiv.js\n\n\nMIT (Expat)\n\n\n\n\n\n\n\n\nUI (CSS, Fonts, etc.) Packages\n\n\nIn addition to Python and JavaScript packages, Fermentrack utilizes a handful of third party images, icon packs, CSS files, and fonts in rendering the user interface. Some of these include:\n\n\n\n\n\n\n\n\nPackage\n\n\nLicense\n\n\n\n\n\n\n\n\n\n\nFontAwesome (Font)\n\n\nSIL OFL 1.1\n\n\n\n\n\n\nFontAwesome (CSS)\n\n\nMIT (Expat)\n\n\n\n\n\n\nBootstrap\n\n\nMIT (Expat)\n\n\n\n\n\n\nFlatUI\n\n\nMIT (Expat)\n\n\n\n\n\n\n5x8 LCD Font\n\n\nCreative Commons By-SA 3.0\n\n\n\n\n\n\n\n\nSeperate Applications\n\n\nFermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience. \n\n\n\n\n\n\n\n\nPackage\n\n\nLicense\n\n\n\n\n\n\n\n\n\n\nBrewPi-Script\n\n\nGPL v3\n\n\n\n\n\n\nBrewPi Firmware\n\n\nGPL v3 (and potentially others)", 
+            "title": "Included Components"
+        }, 
+        {
+            "location": "/about/components/#included-components-licensing", 
+            "text": "Fermentrack was built using the Django web framework in Python. As a web application, it contains a number of JavaScript, CSS, and other components to help provide additional functionality. Some of these packages include the following.", 
+            "title": "Included Components &amp; Licensing"
+        }, 
+        {
+            "location": "/about/components/#python-packages", 
+            "text": "In addition to Django, this app utilizes a number of Python packages. These packages include:     Package  License      Django  BSD 3 Clause    configobj  BSD 3 Clause    simplejson  MIT (Expat)    pytz  MIT (Expat) License    raven  BSD 3 Clause    django-suit  Creative Commons Attribution Non-Commercial 3.0    django-constance  BSD 3 Clause    GitPython  BSD 3 Clause    zeroconf  LGPL v2    circus  Apache Public License v2    circus-web  Apache Public License v2    chaussette  Apache Public License v2    pid  Apache Public License v2    pyserial  BSD 3 Clause", 
+            "title": "Python Packages"
+        }, 
+        {
+            "location": "/about/components/#javascript-packages", 
+            "text": "Fermentrack provides some of its functionality using JavaScript. Some of the third party JavaScript packages include:     Package  License      jQuery  MIT (Expat)    vue.js  MIT (Expat)    Dygraph  MIT (Expat)    Respond.js  MIT (Expat)    html5shiv.js  MIT (Expat)", 
+            "title": "JavaScript Packages"
+        }, 
+        {
+            "location": "/about/components/#ui-css-fonts-etc-packages", 
+            "text": "In addition to Python and JavaScript packages, Fermentrack utilizes a handful of third party images, icon packs, CSS files, and fonts in rendering the user interface. Some of these include:     Package  License      FontAwesome (Font)  SIL OFL 1.1    FontAwesome (CSS)  MIT (Expat)    Bootstrap  MIT (Expat)    FlatUI  MIT (Expat)    5x8 LCD Font  Creative Commons By-SA 3.0", 
+            "title": "UI (CSS, Fonts, etc.) Packages"
+        }, 
+        {
+            "location": "/about/components/#seperate-applications", 
+            "text": "Fermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience.      Package  License      BrewPi-Script  GPL v3    BrewPi Firmware  GPL v3 (and potentially others)", 
+            "title": "Seperate Applications"
+        }, 
+        {
+            "location": "/develop/", 
+            "text": "Developing (for) Fermentrack\n\n\nFermentrack is an open source, Python-based application that was written using the \nDjango\n framework. The project is managed on GitHub.\n\n\nAny assistance with developing Fermentrack is welcome. It is recommended that you check with the main developers before starting work on a major feature to prevent duplication of efforts, but all pull requests are welcome and will be reviewed. \n\n\nTo help with developing for Fermentrack, some documentation of the project is below:\n\n\n\n\nModels Documentation", 
+            "title": "Index"
+        }, 
+        {
+            "location": "/develop/#developing-for-fermentrack", 
+            "text": "Fermentrack is an open source, Python-based application that was written using the  Django  framework. The project is managed on GitHub.  Any assistance with developing Fermentrack is welcome. It is recommended that you check with the main developers before starting work on a major feature to prevent duplication of efforts, but all pull requests are welcome and will be reviewed.   To help with developing for Fermentrack, some documentation of the project is below:   Models Documentation", 
+            "title": "Developing (for) Fermentrack"
+        }, 
+        {
+            "location": "/develop/models/", 
+            "text": "Fermentrack models\n\n\nTODO - Write this", 
+            "title": "Models"
+        }, 
+        {
+            "location": "/develop/models/#fermentrack-models", 
+            "text": "", 
+            "title": "Fermentrack models"
+        }, 
+        {
+            "location": "/develop/models/#todo-write-this", 
+            "text": "", 
+            "title": "TODO - Write this"
+        }
+    ]
+}
