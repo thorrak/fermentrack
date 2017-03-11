@@ -58,7 +58,7 @@ In addition to Python and JavaScript packages, Fermentrack utilizes a handful of
 
 # Seperate Applications
 
-Fermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience. 
+Fermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience.
 
 | Package         	| License                         	|
 |-----------------	|---------------------------------	|

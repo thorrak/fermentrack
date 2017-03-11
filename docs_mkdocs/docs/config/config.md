@@ -4,17 +4,17 @@ Once you have finished installing Fermentrack, you are ready to configure it. Yo
 
 ## User Setup
 
-When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs. 
+When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs.
 
 Setting up the user account is extremely straightforward:
 
 1. From the root Fermentrack page, click "Continue to guided installation"
-2. On the next page, entering the following:
-   * **Username** - The username used to log into Fermentrack
-   * **Password** - The password for the user account
-   * **Email Address** - Currently unused, but may potentially be used later
-3. Click "Create new user account"
-4. Done!
+1. On the next page, entering the following:
+    - **Username** - The username used to log into Fermentrack
+    - **Password** - The password for the user account
+    - **Email Address** - Currently unused, but may potentially be used later
+1. Click "Create new user account"
+1. Done!
 
 You're now ready to move on to configuring the site settings.
 
