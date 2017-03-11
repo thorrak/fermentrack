@@ -890,9 +890,9 @@ class Beer(models.Model):
 
     def base_filename(self):  # This is the "base" filename used in all the files saved out
         if self.name_is_valid(self.name):
-            return "Device " + str(self.device_id) + " - " + self.name # + " - " + str(self.created)
+            return "Device " + str(self.device_id) + " - B" + self.id + " - " + self.name
         else:
-            return "Device " + str(self.device_id) + " - ERROR - " # + str(self.created)
+            return "Device " + str(self.device_id) + " - B" + self.id + " - NAME ERROR - "
 
     def full_filename(self, which_file, extension_only=False):
         if extension_only:
