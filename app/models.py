@@ -1019,11 +1019,11 @@ class BeerLogPoint(models.Model):
         elif data_format == 'annotation_json':
             retval = []
             if self.beer_ann is not None:
-                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.beer_ann,
-                               'cssClass': 'annotation'})
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': self.beer_ann[:1],
+                               'text': self.beer_ann})
             if self.fridge_ann is not None:
-                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.fridge_ann,
-                               'cssClass': 'annotation'})
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': self.fridge_ann[:1],
+                               'text': self.fridge_ann})
             return retval
         else:
             pass
@@ -1059,10 +1059,9 @@ class BeerLogPoint(models.Model):
                         f.write(',\r\n')
                         write_comma = False
                     f.write('  {')
-                    f.write('series: "{}", x: "{}",'.format(this_annotation['series'], this_annotation['x']))
-                    f.write(' shortText: "{}", text: "{}", cssClass: "{}"'.format(this_annotation['shortText'],
-                                                                                  this_annotation['text'],
-                                                                                  this_annotation['cssClass']))
+                    f.write('"series": "{}", "x": "{}",'.format(this_annotation['series'], this_annotation['x']))
+                    f.write(' "shortText": "{}", "text": "{}"'.format(this_annotation['shortText'],
+                                                                      this_annotation['text']))
                     f.write('}')
 
         file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())

@@ -6,6 +6,7 @@
 
 {% block header_scripts %}
 <link href="{% static "css/dashboard_revised.css" %}" rel="stylesheet">
+<link href="{% static "vendor/dygraph/css/dygraph.css" %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -142,7 +143,7 @@
     </div>
     <!-- End Dashboard Panels -->
 
-
+{% if beer %}
     <!-- Begin Graph & Legend -->
     <div class="row" style="margin-bottom: 20px">
         <div class="col-lg-9 col-sm-12" id="graphdiv3">
@@ -187,23 +188,30 @@
     <!-- End Graph & Legend -->
 
 
-    <!-- Begin LCD & Controls -->
+    <!-- Begin Controls -->
     <div class="row" >
         <div class="col-md-4">
             <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
         </div>
 
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#beerModal">Control Logging</button>
+            <button type="button" class="btn btn-lg btn-info center" data-toggle="modal" data-target="#beerModal">Control Logging</button>
         </div>
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Load Past Log</button>
+            <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Load Past Log</button>
         </div>
 
 
     </div>
-    <!-- End LCD & Controls -->
+    <!-- End Controls -->
+{% else %}
+    <!-- No beer loaded, display "Load Beer" button -->
+    <div class="row col-xs-12">
+            <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Load Past Log</button>
+    </div>
 
+
+{% endif %}
 
     <!-- Beer Modal -->
     <div class="modal fade" id="beerModal" tabindex="-1" role="dialog" aria-labelledby="beerModalLabel">
@@ -336,7 +344,7 @@
 
 {% load static %}
 
-
+{% if beer %}
 <script type="text/javascript">
 
 var temp_format = "{{ beer.format }}";  // Used in formatTempText
@@ -416,10 +424,33 @@ g2 = new Dygraph(
     }  // options
 );
 
+function pull_and_update_annotations() {
+     $.ajax({
+        type: 'GET',
+        async: true,
+        beforeSend: function (xhr) {
+            if (xhr && xhr.overrideMimeType) {
+                xhr.overrideMimeType('application/json;charset=utf-8');
+            }
+        },
+        dataType: 'json',
+        url: '{% if beer %}{% url 'almost_json_view' active_device.id beer.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
+        success: function(data) {
+            g2.setAnnotations(data);
+            $('#lcd-line-4').html("asdf");
+        },
+    });
+};
+
+
+g2.ready(function () {
+    pull_and_update_annotations();
+});
+
 
 
 </script>
-
+{% endif %}{# No reason to load the DyGraph javascript if we don't have a beer loaded #}
 
 
 <script type="text/javascript">
@@ -439,6 +470,8 @@ g2 = new Dygraph(
             for(i = 0; i < data[0].lcd_data.length; i++) {
                 $('#lcd-line-' + i).html(data[0].lcd_data[i]);
             }
+            for(i = data[0].lcd_data.length; i < 4; i++) // In case the data isn't 4 lines worth
+                $('#lcd-line-' + i).html("");
         },
         complete: function() {
         // Schedule the next request when the current one's complete
