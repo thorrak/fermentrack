@@ -889,10 +889,11 @@ class Beer(models.Model):
         return True if re.match("^[a-zA-Z0-9 _-]*$", proposed_name) else False
 
     def base_filename(self):  # This is the "base" filename used in all the files saved out
+        # Including the beer ID in the file name to ensure uniqueness (if the user duplicates the name, for example)
         if self.name_is_valid(self.name):
-            return "Device " + str(self.device_id) + " - B" + self.id + " - " + self.name
+            return "Device " + str(self.device_id) + " - B" + str(self.id) + " - " + self.name
         else:
-            return "Device " + str(self.device_id) + " - B" + self.id + " - NAME ERROR - "
+            return "Device " + str(self.device_id) + " - B" + str(self.id) + " - NAME ERROR - "
 
     def full_filename(self, which_file, extension_only=False):
         if extension_only:
