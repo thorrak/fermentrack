@@ -889,10 +889,11 @@ class Beer(models.Model):
         return True if re.match("^[a-zA-Z0-9 _-]*$", proposed_name) else False
 
     def base_filename(self):  # This is the "base" filename used in all the files saved out
+        # Including the beer ID in the file name to ensure uniqueness (if the user duplicates the name, for example)
         if self.name_is_valid(self.name):
-            return "Device " + str(self.device_id) + " - " + self.name # + " - " + str(self.created)
+            return "Device " + str(self.device_id) + " - B" + str(self.id) + " - " + self.name
         else:
-            return "Device " + str(self.device_id) + " - ERROR - " # + str(self.created)
+            return "Device " + str(self.device_id) + " - B" + str(self.id) + " - NAME ERROR - "
 
     def full_filename(self, which_file, extension_only=False):
         if extension_only:
@@ -1019,11 +1020,11 @@ class BeerLogPoint(models.Model):
         elif data_format == 'annotation_json':
             retval = []
             if self.beer_ann is not None:
-                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.beer_ann,
-                               'cssClass': 'annotation'})
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': self.beer_ann[:1],
+                               'text': self.beer_ann})
             if self.fridge_ann is not None:
-                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': 'A', 'text': self.fridge_ann,
-                               'cssClass': 'annotation'})
+                retval.append({'series': 'beer_temp', 'x': time_value, 'shortText': self.fridge_ann[:1],
+                               'text': self.fridge_ann})
             return retval
         else:
             pass
@@ -1059,10 +1060,9 @@ class BeerLogPoint(models.Model):
                         f.write(',\r\n')
                         write_comma = False
                     f.write('  {')
-                    f.write('series: "{}", x: "{}",'.format(this_annotation['series'], this_annotation['x']))
-                    f.write(' shortText: "{}", text: "{}", cssClass: "{}"'.format(this_annotation['shortText'],
-                                                                                  this_annotation['text'],
-                                                                                  this_annotation['cssClass']))
+                    f.write('"series": "{}", "x": "{}",'.format(this_annotation['series'], this_annotation['x']))
+                    f.write(' "shortText": "{}", "text": "{}"'.format(this_annotation['shortText'],
+                                                                      this_annotation['text']))
                     f.write('}')
 
         file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
