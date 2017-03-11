@@ -365,7 +365,7 @@ function formatTimeText(time_code) {
 
     // Break out the date part of the timestamp so we can reassemble it in the proper format
     // (Proper format is set in Constance as DATE_TIME_FORMAT_DISPLAY)
-    var month = "0" + date_obj.getMonth();
+    var month = "0" + (1+date_obj.getMonth());
     var day = "0" + date_obj.getDate();
     var year = "0" + date_obj.getYear();
 
@@ -395,13 +395,13 @@ function updateLegend(e, x, pts, row) {
 
     // Loop through the data points we have and update everything on the legend
     for(var i = 0; i < pts.length; i++) {
-        if(pts[i].name == "Beer Temp") {
+        if(pts[i].name == "beer_temp") {
             $('#beerTempValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "Fridge Temp") {
+        } else if(pts[i].name == "fridge_temp") {
             $('#fridgeTempValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "Beer Setting") {
+        } else if(pts[i].name == "beer_set") {
             $('#beerSetValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "Fridge Setting") {
+        } else if(pts[i].name == "fridge_set") {
             $('#fridgeSetValue').text(formatTempText(pts[i].yval))
         }
     }
@@ -413,7 +413,7 @@ g2 = new Dygraph(
     {#  TODO - Something here if active beer isn't set #}
     "{{ beer_file_url }}", // path to CSV file
     {
-        labels: [{{ column_headers|safe }}],
+{#        labels: [{{ column_headers|safe }}],#}
         labelsDiv: document.getElementById('label-div'), // Technically, this is unused because of legend:never
         legend: "never",
         axisLabelFontSize: 14,
@@ -437,7 +437,6 @@ function pull_and_update_annotations() {
         url: '{% if beer %}{% url 'almost_json_view' active_device.id beer.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
         success: function(data) {
             g2.setAnnotations(data);
-            $('#lcd-line-4').html("asdf");
         },
     });
 };
