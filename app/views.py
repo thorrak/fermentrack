@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 from constance import config  # For the explicitly user-configurable stuff
 from decorators import site_is_configured, login_if_required_for_dashboard
@@ -558,7 +559,13 @@ def almost_json_view(request, device_id, beer_id):
     beer_obj = Beer.objects.get(id=beer_id, device_id=device_id)
 
     filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
-    wrapper = almost_json.AlmostJsonWrapper(file(filename), closing_string=json_close)
-    response = HttpResponse(wrapper, content_type="application/json")
-    response['Content-Length'] = os.path.getsize(filename) + len(json_close)
-    return response
+
+    if os.path.isfile(filename):  # If there are no annotations, return an empty
+        wrapper = almost_json.AlmostJsonWrapper(file(filename), closing_string=json_close)
+        response = HttpResponse(wrapper, content_type="application/json")
+        response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+        return response
+    else:
+        empty_array = []
+        return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
+
