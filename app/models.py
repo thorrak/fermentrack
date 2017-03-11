@@ -608,11 +608,11 @@ class BrewPiDevice(models.Model):
             self.devices_are_loaded = False
 
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
-        loop_number = 0
+        loop_number = 1
         device_response = self.send_message("getDeviceList", read_response=True)
-        while device_response == "device-list-not-up-to-date" and loop_number < 6:
+        while device_response == "device-list-not-up-to-date" and loop_number <= 8:
             self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
-            time.sleep(4)  # This is a horrible practice, and I feel dirty just writing it.
+            time.sleep(loop_number)  # This is a horrible practice, and I feel dirty just writing it.
             device_response = self.send_message("getDeviceList", read_response=True)
             loop_number += 1
 
