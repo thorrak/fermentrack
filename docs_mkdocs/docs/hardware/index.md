@@ -18,7 +18,7 @@ The following table shows which release is expected to have support for various 
 | v3         |                 | :white_check_mark: |                 |                 |                        |
 
 
-#####Legend:
+##### Legend:
 
 * :white_check_mark: - Support confirmed in this version
 * :grey_question: - Support targeted for this version
