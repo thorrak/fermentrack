@@ -30,6 +30,7 @@ class DeviceForm(forms.Form):
     useInetSocket = forms.BooleanField(required=False, initial=True,
                                        help_text="Whether or not to use an internet socket (rather than local)")
 
+    # TODO - initial=random.randint(2000,3000) only assigns at Fermentrack load-time, not when the form is instantiated
     socketPort = forms.IntegerField(initial=random.randint(2000,3000), min_value=1024, max_value=65536, required=False,
                                     help_text="The socket port to use, this needs to be unique per fermentrack device",
                                     widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))

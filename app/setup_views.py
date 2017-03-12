@@ -12,6 +12,7 @@ import mdnsLocator
 from app.models import BrewPiDevice
 
 from decorators import site_is_configured  # Checks if user has completed constance configuration
+import random
 
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
@@ -249,8 +250,10 @@ def device_guided_add_mdns(request, mdns_id):
         else:
             return render_with_devices(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
     else:
+        random_port = random.randint(2000,3000)
         # If we were just passed to the form, provide the initial values
-        initial_values = {'board_type': 'esp8266', 'wifi_host': mdns_id, 'wifi_port': 23, 'connection_type': 'wifi'}
+        initial_values = {'board_type': 'esp8266', 'wifi_host': mdns_id, 'wifi_port': 23, 'connection_type': 'wifi',
+                          'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
 
         form = device_forms.DeviceForm(initial=initial_values)
         return render_with_devices(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})

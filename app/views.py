@@ -16,7 +16,7 @@ import mdnsLocator
 import almost_json
 from django.http import HttpResponse
 
-import json, datetime, pytz, os
+import json, datetime, pytz, os, random
 
 import git_integration
 import subprocess
@@ -103,50 +103,13 @@ def add_device(request):
         else:
             return render_with_devices(request, template_name='device_add.html', context={'form': form})
     else:
-        form = device_forms.DeviceForm()
+        # We don't want two devices to have the same port, and the port number doesn't really matter. Just
+        # randomize it.
+        random_port = random.randint(2000,3000)
+        initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+
+        form = device_forms.DeviceForm(initial=initial_values)
         return render_with_devices(request, template_name='device_add.html', context={'form': form})
-
-
-
-@login_required
-@site_is_configured
-def configure_settings(request):  # TODO - Check if this is used anywhere
-    # TODO - Add user permissioning
-    # if not request.user.has_perm('app.add_device'):
-    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
-    #     return redirect("/")
-
-
-    if request.POST:
-        form = device_forms.DeviceForm(request.POST)
-        if form.is_valid():
-            # TODO - Add support for editing to this
-            new_device = BrewPiDevice(
-                device_name=form.cleaned_data['device_name'],
-                temp_format=form.cleaned_data['temp_format'],
-                data_point_log_interval=form.cleaned_data['data_point_log_interval'],
-                useInetSocket=form.cleaned_data['useInetSocket'],
-                socketPort=form.cleaned_data['socketPort'],
-                socketHost=form.cleaned_data['socketHost'],
-                serial_port=form.cleaned_data['serial_port'],
-                serial_alt_port=form.cleaned_data['serial_alt_port'],
-                board_type=form.cleaned_data['board_type'],
-                socket_name=form.cleaned_data['socket_name'],
-                connection_type=form.cleaned_data['connection_type'],
-                wifi_host=form.cleaned_data['wifi_host'],
-                wifi_port=form.cleaned_data['wifi_port'],
-            )
-
-            new_device.save()
-
-            messages.success(request, 'Device {} Added'.format(new_device.device_name))
-            return redirect("/")
-
-        else:
-            return render(request, template_name='addtimer.html', context={'form': form, })
-    else:
-        form = device_forms.DeviceForm()
-        return render(request, template_name='addtimer.html', context={'form': form, })
 
 
 @site_is_configured
