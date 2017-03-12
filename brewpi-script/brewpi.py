@@ -788,6 +788,7 @@ while run:
             else:
                 bg_ser.writeln("d{}")  # request installed devices
                 bg_ser.writeln("h{u:-1}")  # request available, but not installed devices
+            raise socket.timeout
         elif messageType == "getDeviceList":
             if deviceList['listState'] in ["dh", "hd"]:
                 response = dict(board=hwVersion.board,
@@ -797,6 +798,7 @@ while run:
                 conn.send(json.dumps(response))
             else:
                 conn.send("device-list-not-up-to-date")
+                raise socket.timeout
         elif messageType == "getDashInfo":
             response = {"BeerTemp": prevTempJson['BeerTemp'],
                         "FridgeTemp": prevTempJson['FridgeTemp'],
