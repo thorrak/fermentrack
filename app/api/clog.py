@@ -4,34 +4,47 @@ from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
 
+
 def get_device_log_plain(req, logfile, device_id, lines=100):
     """Read the log files created by circus for spawned controllers"""
-    device = BrewPiDevice.objects.get(id=device_id)
-    logfile = string.join([
-        settings.BASE_DIR,
-        '/log/dev-',
-        device.device_name,
-        '-',
-        logfile,
-        '.log'], '')
-    logfile_fd = open(logfile)
-    ret = tail(logfile_fd, int(lines))
-    logfile_fd.close()
+    try:
+        device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        # Unable to load the device
+        return False  # TODO - return something else
+
+    logfile_path = os.path.join(settings.BASE_DIR, 'log', 'dev-{}-{}.log'.format(device.device_name, logfile))
+
+    try:
+        logfile_fd = open(logfile_path)
+        ret = tail(logfile_fd, int(lines))
+        logfile_fd.close()
+    except IOError:
+        # Generally if we hit this the log file doesn't exist
+        return False  # TODO - Return an empty string
     return HttpResponse(ret, content_type="text/plain")
+
 
 def get_stdout_as_json(req, device_id, lines=100):
     """The stdout log file has json data, we try to split it out and
     only return the raw json data.
     """
-    device = BrewPiDevice.objects.get(id=device_id)
-    stdout_log = string.join([
-        settings.BASE_DIR,
-        '/log/dev-',
-        device.device_name,
-        '-stdout.log'], '')
-    stdout_fd = open(stdout_log)
-    ret = tail(stdout_fd, int(lines))
-    stdout_fd.close()
+    try:
+        device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        # Unable to load the device
+        return False  # TODO - return something else
+
+    stdout_log = os.path.join(settings.BASE_DIR, 'log', 'dev-{}-stdout.log'.format(device.device_name))
+
+    try:
+        stdout_fd = open(stdout_log)
+        ret = tail(stdout_fd, int(lines))
+        stdout_fd.close()
+    except IOError:
+        # Generally if we hit this the log file doesn't exist
+        return False  # TODO - Adjust this to return an empty JSON dict or something
+
     new_ret = []
     # TODO: This is probably too hacky, but only matters if we end up using it :)
     for line in ret:

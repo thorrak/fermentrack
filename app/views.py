@@ -24,7 +24,6 @@ import subprocess
 import fermentrack_django.settings as settings
 
 
-
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
 from django.contrib.auth.models import User
 
