@@ -44,7 +44,7 @@ def beer_create(request, device_id):
                 new_beer.save()
                 messages.success(
                     request,
-                    "Successfully created beer '{}', graph will appear when the first log points \
+                    "Successfully created beer '{}'.<br>Graph will appear when the first log points \
                     has been collected, you need to refresh the page for it to \
                     appear.".format(form.cleaned_data['beer_name']))
             else:
