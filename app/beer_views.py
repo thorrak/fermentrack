@@ -42,7 +42,11 @@ def beer_create(request, device_id):
                 # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
                 new_beer.format = form.cleaned_data['device'].temp_format
                 new_beer.save()
-                messages.success(request, "Successfully created beer '{}'".format(form.cleaned_data['beer_name']))
+                messages.success(
+                    request,
+                    "Successfully created beer '{}'.<br>Graph will appear when the first log points \
+                    has been collected, you need to refresh the page for it to \
+                    appear.".format(form.cleaned_data['beer_name']))
             else:
                 messages.success(request, "Beer {} already exists - assigning to device".format(form.cleaned_data['beer_name']))
 

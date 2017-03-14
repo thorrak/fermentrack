@@ -97,7 +97,7 @@ def add_device(request):
 
             new_device.save()
 
-            messages.success(request, 'Device {} Added'.format(new_device.device_name))
+            messages.success(request, 'Device {} Added.<br>Please wait a few seconds for controller to start'.format(new_device.device_name))
             return redirect("/")
 
         else:
