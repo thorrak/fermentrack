@@ -44,8 +44,8 @@ def beer_create(request, device_id):
                 new_beer.save()
                 messages.success(
                     request,
-                    "Successfully created beer '{}'.<br>Graph will appear when the first log points \
-                    has been collected, you need to refresh the page for it to \
+                    "Successfully created beer '{}'.<br>Graph will not appear until the first log points \
+                    have been collected. You will need to refresh the page for it to \
                     appear.".format(form.cleaned_data['beer_name']))
             else:
                 messages.success(request, "Beer {} already exists - assigning to device".format(form.cleaned_data['beer_name']))

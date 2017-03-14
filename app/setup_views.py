@@ -244,7 +244,7 @@ def device_guided_add_mdns(request, mdns_id):
 
             new_device.save()
 
-            messages.success(request, 'Device {} Added, Please wait a few seconds for controller to start'.format(new_device.device_name))
+            messages.success(request, 'Device {} Added. Please wait a few seconds for controller to start'.format(new_device.device_name))
             return redirect("/")
 
         else:
