@@ -53,7 +53,6 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/reset/$', app.views.device_eeprom_reset, name='device_eeprom_reset'),
 
     # Device Utility & Internal Views
-    url(r'^devices/(?P<device_id>\d{1,20})/beer/csv/active_beer.csv$', app.views.beer_active_csv, name='csv_active_beer'),
     url(r'^devices/(?P<device_id>\d{1,20})/beer/create/$', app.beer_views.beer_create, name='beer_create'),
     url(r'^devices/(?P<device_id>\d{1,20})/beer/status/(?P<logging_status>[A-Za-z0-9]{1,20})/$', app.beer_views.beer_logging_status, name='beer_logging_status'),
     # url(r'^devices/(\d{1,20})/beer/csv/(\d{1,20}).csv$', app.views.device_config, name='csv_numbered'),
@@ -81,8 +80,6 @@ urlpatterns = [
     url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
     url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
 
-
-    url(r'^panel_test/$', app.views.temp_panel_test, name='temp_panel_test'),
 
     # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL

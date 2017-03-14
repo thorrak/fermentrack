@@ -23,13 +23,14 @@
             </div>
         </div>
         <div class="row" style="border-color: #111; border-top: 2px; border-top-style: solid">
-            <div class="col-sm-4 col-xs-12 btn-info" style="text-align: center">{# TODO - Tweak 'backlight' button given that it only applies to ESP8266 #}
-                <a v-bind:href="lcd.backlight_url" type="button" class="btn btn-xs btn-info">Backlight</a>
-            </div>
-            <div class="col-sm-4 col-xs-12 btn-danger" style="text-align: center">
+            {# TODO - Implement "Backlight" function #}
+{#            <div class="col-sm-4 col-xs-12 btn-info" style="text-align: center">#}
+{#                <a v-bind:href="lcd.backlight_url" type="button" class="btn btn-xs btn-info">Backlight</a>#}
+{#            </div>#}
+            <div class="col-sm-6 col-xs-6 btn-danger" style="text-align: center">
                 <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" v-bind:data-target="lcd.modal_name">Set Temp</button>
             </div>
-            <div class="col-sm-4 col-xs-12 btn-success" style="text-align: center">
+            <div class="col-sm-6 col-xs-6 btn-success" style="text-align: center">
                 <a v-bind:href="lcd.device_url" type="button" class="btn btn-xs btn-success">Dashboard</a>
             </div>
         </div>

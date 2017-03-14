@@ -1,3 +1,0 @@
-{# This is a cop out. I'm creating a fake view to generate CSV data #}{% for h in csv_headers %}{% if forloop.last %}"{{ h }}"{% else %}"{{ h }}",{% endif %}{% endfor %}
-{% for this_row in csv_data %}{% for d in this_row.data_point %}{% if forloop.last %}{{ d }}{% else %}{{ d }},{% endif %}{% endfor %}
-{% endfor %}

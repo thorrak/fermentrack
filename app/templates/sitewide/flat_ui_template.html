@@ -6,7 +6,7 @@
         <meta name="description" content=""/>
 
         <meta name="viewport" content="width=1000, initial-scale=1.0, maximum-scale=1.0">
-        <link href="{% static "vendor/bootstrap/css/bootstrap.css" %}" rel="stylesheet"> {# TODO - Replace with bootstrap.min.css (before release) #}
+        <link href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
@@ -38,7 +38,7 @@
                </ul>
 
                 <ul class="nav navbar-nav navbar-right">
-                    <li><!-- Can you think of a better "log out" icon? I can't. --> {# TODO - Make this redirect to the current page #}
+                    <li>{# TODO - Make this redirect to the current page #}
                         <a href="{% if user.is_authenticated %}{% url 'logout' %}{% else %}{% url 'login' %}{% endif %}" class="navbar-icon" style="padding-right: 10px;padding-left: 10px;">
                             {% if user.is_authenticated %}<i class="fa fa-sign-out fa-lg" title="Log Out"></i>{% else %}<i class="fa fa-sign-in fa-lg" title="Log In"></i>{% endif %}
                         </a>

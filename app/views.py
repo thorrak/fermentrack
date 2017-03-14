@@ -252,21 +252,6 @@ def sensor_config(request, device_id):
     return redirect('sensor_list', device_id=device_id)
 
 
-# TODO - Delete this (and the corresponding template) if we are no longer using by the time we go to production
-@site_is_configured
-def beer_active_csv(request, device_id):
-    # TODO - Add error message if device_id is invalid
-    active_device = BrewPiDevice.objects.get(id=device_id)
-
-    column_headers = BeerLogPoint.column_headers()
-    if active_device.active_beer is not None:
-        log_data = active_device.active_beer.beerlogpoint_set.all()
-    else:
-        log_data = []  # Initialize with a blank dict if we have no log data
-
-    return render(request, template_name='csv.html', context={'csv_headers': column_headers, 'csv_data': log_data })
-
-
 @site_is_configured
 @login_if_required_for_dashboard
 def device_dashboard(request, device_id, beer_id=None):
@@ -350,14 +335,6 @@ def device_temp_control(request, device_id):
     else:
         messages.error(request, 'No temperature control settings provided')
         return redirect('siteroot')
-
-
-@site_is_configured
-@login_if_required_for_dashboard
-def temp_panel_test(request):
-    # TODO - Delete if still unused prior to release
-    return render_with_devices(request, template_name="temp_panel_test.html",
-                               context={})
 
 
 @login_required

@@ -151,8 +151,8 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     'git_update_type_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"),
-                    ("any", "Prompt to upgrade on all commits"),  # TODO - Reword these
-                    ("tagged", "Prompt to upgrade on tagged (numbered) versions"),
+                    ("any", "Prompt to upgrade on all commits/updates"),
+                    ("tagged", "Prompt to upgrade on tagged (official, numbered) releases"),
                     ("none", "Do not automatically check/prompt for updates"))
     }],
 }

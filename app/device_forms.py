@@ -30,7 +30,8 @@ class DeviceForm(forms.Form):
     useInetSocket = forms.BooleanField(required=False, initial=True,
                                        help_text="Whether or not to use an internet socket (rather than local)")
 
-    # TODO - initial=random.randint(2000,3000) only assigns at Fermentrack load-time, not when the form is instantiated
+    # Note - initial=random.randint(2000,3000) only assigns at Fermentrack load-time, not when the form is instantiated
+    # There is code on the forms which will effectively accomplish the same thing every time the user accesses the form
     socketPort = forms.IntegerField(initial=random.randint(2000,3000), min_value=1024, max_value=65536, required=False,
                                     help_text="The socket port to use, this needs to be unique per fermentrack device",
                                     widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1234'}))
@@ -98,7 +99,6 @@ class DeviceForm(forms.Form):
 
         # Check if we are using inet sockets to connect to brewpi-script and default parameters that don't apply
         if cleaned_data['useInetSocket']:
-            # TODO - Check for uniqueness of socketPort (possibly when combined with socketHost)
             cleaned_data['socket_name'] = "BEERSOCKET"
         else:
             cleaned_data['socketPort'] = 2222

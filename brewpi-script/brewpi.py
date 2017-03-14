@@ -419,16 +419,22 @@ if hwVersion is None:
     # script will continue so you can at least program the controller
     lcdText = ['Could not receive', 'version from controller', 'Please (re)program', 'your controller']
 else:
-    logMessage("Found " + hwVersion.toExtendedString() + \
-               " on port " + ser.name + "\n")
-    if LooseVersion( hwVersion.toString() ) < LooseVersion(compatibleHwVersion):
+    logMessage("Found " + hwVersion.toExtendedString() + " on port " + ser.name + "\n")
+    if LooseVersion(hwVersion.toString()) < LooseVersion(compatibleHwVersion):
+        # Completely incompatible. Unlikely to ever be triggered, as it requires pre-legacy code.
         logMessage("Warning: minimum BrewPi version compatible with this script is " +
-                   compatibleHwVersion + " but version number received is " + hwVersion.toString())
-    elif LooseVersion( hwVersion.toString() ) < LooseVersion(legacyHwVersion):
+                   compatibleHwVersion + " but version number received is " + hwVersion.toString() + ". Exiting.")
+        exit(1)
+    elif LooseVersion(hwVersion.toString()) < LooseVersion(legacyHwVersion):
+        # Compatible, but only with pre-legacy (!) code. This should never happen as legacy support is the "oldest"
+        # codebase we provide for.
         # This will generally never happen given that we are setting compatible = legacy above
         logMessage("Warning: minimum BrewPi version compatible with this script for legacy support is " +
-                   legacyHwVersion + " but version number received is " + hwVersion.toString())
-    elif LooseVersion( hwVersion.toString() ) < LooseVersion(developHwVersion):
+                   legacyHwVersion + " but version number received is " + hwVersion.toString() + ". Exiting.")
+        exit(1)
+    elif LooseVersion(hwVersion.toString()) < LooseVersion(developHwVersion):
+        # Version is between Legacy and 'develop' (v0.4.x) which means it receives 'legacy' support.
+        # This MAY create issues with v0.3.x controllers - but I lack one to test.
         logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
                    "'legacy' branch mode.")
         hwMode = "legacy"
@@ -442,11 +448,8 @@ else:
         logMessage("Warning: version number of local copy of logMessages.h " +
                    "does not match log version number received from controller." +
                    "controller version = " + str(hwVersion.log) +
-                   ", local copy version = " + str(expandLogMessage.getVersion()))
-    if hwVersion.family == 'Arduino':  # TODO - Determine if there is really any reason for this (and remove if not)
-        exit("\n ERROR: the newest version of BrewPi is not compatible with Arduino. \n" +
-            "You can use our legacy branch with your Arduino, in which we only include the backwards compatible changes. \n" +
-            "To change to the legacy branch, run: sudo ~/brewpi-tools/updater.py --ask , and choose the legacy branch.")
+                   ", local copy version = " + str(expandLogMessage.getVersion()) +
+                   ". This is generally a non-issue, as thus far log messages have only been added - not changed.")
 
 
 bg_ser = None
@@ -676,14 +679,13 @@ while run:
             # This instruction is meant to restart the script or replace it with another instance.
             continue
         elif messageType == "eraseLogs":
-            # TODO - Update the logfile code to support multiple installs
-            # erase the log files for stderr and stdout
-            open(util.scriptPath() + '/logs/stderr.txt', 'wb').close()
-            open(util.scriptPath() + '/logs/stdout.txt', 'wb').close()
-            logMessage("Fresh start! Log files erased.")
+            if logToFiles:
+                # erase the log files for stderr and stdout
+                open(util.scriptPath() + '/logs/stderr.txt', 'wb').close()
+                open(util.scriptPath() + '/logs/stdout.txt', 'wb').close()
+                logMessage("Fresh start! Log files erased.")
             continue
         elif messageType == "interval":  # new interval received
-            # TODO - Determine if we need to set this or if it can be ignored
             newInterval = int(value)
             if 5 < newInterval < 5000:
                 try:

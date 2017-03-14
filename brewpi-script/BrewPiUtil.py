@@ -142,7 +142,6 @@ def configSet(configFile, db_config_object, settingName, value):
         elif settingName == "socket_name":
             db_config_object.socket_name = value
         elif settingName == "interval":
-            # TODO - Check if the interval gets updated in the script. If so, make sure we do proper type conversion.
             db_config_object.data_point_log_interval = value
         elif settingName == "dataLogging":
             db_config_object.logging_status = value
@@ -159,7 +158,6 @@ def save_beer_log_point(db_config_object, beer_row):
     :param beer_row:
     :return:
     """
-    # TODO - Check if I need to do anything to save 'null's here
     new_log_point = models.BeerLogPoint()
 
     new_log_point.beer_temp = beer_row['BeerTemp']
@@ -246,24 +244,29 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
     if connection_type == "wifi" or connection_type == "auto":
         if not(ser):
             tries=0
-            logMessage("No serial attached BrewPi found.  Trying TCP serial (WiFi)")
+            if connection_type == "auto":
+                logMessage("No serial attached BrewPi found.  Trying TCP serial (WiFi)")
+            else:
+                logMessage("Connection type WiFi selected.  Trying TCP serial (WiFi)")
             while tries < 10:
                 error = ""
 
-                if config['wifiHost'] == 'auto':
-                    pass
-                    # mdns=tcpSerial.MDNSBrowser()
-                    # (tcpHost, tcpPort)=mdns.discoverBrewpis()
-                    # ser = tcpSerial.TCPSerial(tcpHost,tcpPort)
+                if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
+                    ser = tcpSerial.TCPSerial(config['wifiHost'],int(config['wifiPort']))
                 else:
-                    if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
-                        ser = tcpSerial.TCPSerial(config['wifiHost'],int(config['wifiPort']))
+                    logMessage("Invalid WiFi configuration:")
+                    logMessage("  wifiHost: {}".format(config['wifiHost']))
+                    logMessage("  wifiPort: {}".format(config['wifiPort']))
+                    logMessage("Exiting.")
+                    exit(1)
+
                 if ser:
                     break
                 tries += 1
                 time.sleep(1)
         if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
-            pass  # TODO - Make this die gracefully
+            logMessage("Unable to connect via WiFi. Exiting.")
+            exit(1)
 
 
     if ser:

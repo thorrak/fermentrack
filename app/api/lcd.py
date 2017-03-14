@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from django.http import JsonResponse
 from django.urls import reverse
+from constance import config
 
 from app.models import BrewPiDevice
 
@@ -45,7 +46,7 @@ def getPanel(req, device_id):
         device_info = dev.get_dashpanel_info()
     except:
         # We were given an invalid panel number - Just send back the equivalent of null data
-        null_temp = temp_text(0, '-')  # TODO - Make this load from constance
+        null_temp = temp_text(0, config.TEMPERATURE_FORMAT)
         ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'control_mode': "--", 'log_interval': 0})
         return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
