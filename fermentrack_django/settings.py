@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'app.apps.AppConfig',
     'constance',
     'constance.backends.database',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
