@@ -18,6 +18,7 @@
 from __future__ import print_function
 import os, sys
 
+# TODO - Refactor the Django-specific stuff to only get loaded/triggered if we are using dbcfg
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,8 +29,9 @@ sys.path.append(BASE_DIR)
 # This is so my local_settings.py gets loaded.
 os.chdir(BASE_DIR)
 
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+# TODO - Delete if this tests out fine
+# from django.core.wsgi import get_wsgi_application
+# application = get_wsgi_application()
 
 import app.models as models  # This SHOULD work due to the sys.path.append above.
 
@@ -114,6 +116,8 @@ cv = "{}"
 # listState = "", "d", "h", "dh" to reflect whether the list is up to date for installed (d) and available (h)
 deviceList = dict(listState="", installed=[], available=[])
 
+keepDeviceListUpdated = False  # Originally, deviceList is only periodically updated. This keeps it updated constantly.
+
 lcdText = ['Script starting up', ' ', ' ', ' ']
 
 # Read in command line arguments
@@ -195,6 +199,7 @@ for o, a in opts:
         try:
             dbConfig = models.BrewPiDevice.objects.get(device_name=a)
             brewpiName = a
+            keepDeviceListUpdated = True  # For dbConfig based installs, pull the device list synchronously
         except:
             sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
         if configFile is not None:
@@ -464,6 +469,10 @@ if ser is not None:
     bg_ser.writeln('s')  # request control settings cs
     bg_ser.writeln('c')  # request control constants cc
     bg_ser.writeln('v')  # request control variables cv
+    if keepDeviceListUpdated:
+        bg_ser.writeln("d{r:1}")        # request installed devices
+        bg_ser.writeln("h{u:-1,v:1}")   # request available, but not installed devices
+
     # answer from controller is received asynchronously later.
 
 # create a listening socket to communicate with PHP
@@ -783,14 +792,19 @@ while run:
             python = sys.executable
             os.execl(python, python, *sys.argv)
         elif messageType == "refreshDeviceList":
-            deviceList['listState'] = ""  # invalidate local copy
+            if keepDeviceListUpdated is False:
+                # Don't invalidate the device list if we're always keeping it updated
+                # TODO - Determine if this is a smart move
+                deviceList['listState'] = ""  # invalidate local copy
             if value.find("readValues") != -1:
                 bg_ser.writeln("d{r:1}")  # request installed devices
                 bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
             else:
                 bg_ser.writeln("d{}")  # request installed devices
                 bg_ser.writeln("h{u:-1}")  # request available, but not installed devices
-            raise socket.timeout
+            if keepDeviceListUpdated:
+                time.sleep(5)  # We'll give the controller 5 seconds to respond
+                raise socket.timeout
         elif messageType == "getDeviceList":
             if deviceList['listState'] in ["dh", "hd"]:
                 response = dict(board=hwVersion.board,
@@ -799,6 +813,8 @@ while run:
                                 pinList=pinList.getPinList(hwVersion.board, hwVersion.shield))
                 conn.send(json.dumps(response))
             else:
+                if keepDeviceListUpdated:
+                    time.sleep(5)  # We'll give the controller 5 seconds to respond, even though we won't see it this cycle
                 conn.send("device-list-not-up-to-date")
                 raise socket.timeout
         elif messageType == "getDashInfo":
@@ -814,20 +830,40 @@ while run:
                         "Mode": cs['mode']}
             conn.send(json.dumps(response))
         elif messageType == "applyDevice":
+            # applyDevice is used to apply settings to an existing device (pin/OneWire assignment, etc.)
             try:
                 configStringJson = json.loads(value)  # load as JSON to check syntax
             except json.JSONDecodeError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             bg_ser.writeln("U" + json.dumps(configStringJson))
-            deviceList['listState'] = ""  # invalidate local copy
+
+            if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list
+                # TODO - Determine if it is a smart move to not invalidate listState first
+                bg_ser.writeln("d{r:1}")  # request installed devices
+                bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
+                time.sleep(5)  # We'll give the controller 5 seconds to respond
+                raise socket.timeout
+            else:
+                # If we don't have keepDeviceListUpdated set, invalidate the cache (to be updated later)
+                deviceList['listState'] = ""  # invalidate local copy
         elif messageType == "writeDevice":
+            # writeDevice is used to -create- "acutators" -- Specifically, (for now) buttons.
             try:
                 configStringJson = json.loads(value)  # load as JSON to check syntax
             except json.JSONDecodeError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             bg_ser.writeln("d" + json.dumps(configStringJson))
+
+            deviceList['listState'] = ""  # invalidate local copy
+
+            if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list
+                # TODO - Determine if it is a smart move to not invalidate listState first
+                bg_ser.writeln("d{r:1}")  # request installed devices
+                bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
+                time.sleep(5)  # We'll give the controller 5 seconds to respond
+                raise socket.timeout
         elif messageType == "getVersion":
             if hwVersion:
                 response = hwVersion.__dict__
@@ -840,6 +876,16 @@ while run:
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             bg_ser.writeln("E")
+            # request settings from controller, processed later when reply is received
+            bg_ser.writeln('s')  # request control settings cs
+            bg_ser.writeln('c')  # request control constants cc
+            bg_ser.writeln('v')  # request control variables cv
+            if keepDeviceListUpdated:
+                bg_ser.writeln("d{r:1}")  # request installed devices
+                bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
+            time.sleep(5)  # We'll give the controller 5 seconds to respond
+            raise socket.timeout
+
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 

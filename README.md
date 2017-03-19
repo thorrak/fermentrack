@@ -1,5 +1,6 @@
-#Fermentrack
-####A replacement web interface for BrewPi
+# Fermentrack
+
+#### A replacement web interface for BrewPi
 
 Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. 
 
@@ -36,6 +37,16 @@ At the moment, Fermentrack doesn't support 100% of the features of the official 
 * Support for "modern" (non-legacy branch) controllers (v3)
 
 A full table of controllers/expected hardware availability is available [in the documentation](docs/hardware/index.md).
+
+## Installation & Documentation
+
+Full documentation for Fermentrack (including complete installation instructions) is available at [https://thorrak.github.io/fermentrack/](https://thorrak.github.io/fermentrack/).
+
+### Quick Installation Instructions
+
+1. Set up your Raspberry Pi (Install Raspbian, enable SSH)
+2. Log into your Raspberry Pi via the terminal or SSH and run `curl -L install.fermentrack.com | sudo bash`
+3. Wait for the installation to complete (~45 mins) and log into Fermentrack 
 
 ## Requirements
 
