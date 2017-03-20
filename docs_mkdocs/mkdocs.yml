@@ -18,6 +18,7 @@ pages:
     - 'Native Python (Fuscus)': 'hardware/Native Python.md'
     - 'Spark Core': 'hardware/Spark.md'
   - About:
+    - 'Architecture': 'about/architecture.md'
     - 'Contribute': 'about/contribute.md'
     - 'Changelog': 'about/changelog.md'
     - 'License': 'about/license.md'
