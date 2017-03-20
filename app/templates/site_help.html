@@ -15,6 +15,32 @@
 
 </p>
 
+<h3 class="page-header">Logs for troubleshooting</h3>
+<table class="table">
+  <thead class="thead-inverse">
+    <tr>
+      <th>#</th>
+      <th>Device Name</th>
+      <th>Stdout Log</th>
+      <th>Stderr Log</th>
+      <th>Status</th>
+      <td>Board Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for this_device in all_devices %}
+            <tr>
+                <th scope="row">{{ this_device.id }}</th>
+                <td>{{ this_device.device_name }}</td>
+                <td><a href="/api/log/stderr/{{ this_device.id }}/">log/dev-brewpi{{ this_device.id }}-stdout.log</a></td>
+                <td><a href="/api/log/stdout/{{ this_device.id }}/">log/dev-brewpi{{ this_device.id }}-stderr.log</a></td>
+                <td>{{ this_device.status }}</td>
+                <td>{{ this_device.board_type }}</td>
+            </tr>
+{% endfor %}
+  </tbody>
+</table>
+
 {% endblock %}
 
 {% block scripts %}{% endblock %}

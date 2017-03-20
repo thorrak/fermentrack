@@ -3,6 +3,7 @@ import os
 from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
+from django.contrib import messages
 
 
 def get_device_log_plain(req, logfile, device_id, lines=100):
@@ -19,9 +20,9 @@ def get_device_log_plain(req, logfile, device_id, lines=100):
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))
         logfile_fd.close()
-    except IOError:
+    except IOError, e:
         # Generally if we hit this the log file doesn't exist
-        return False  # TODO - Return an empty string
+        return HttpResponse("Error opening {} logfile: {}".format(logfile, str(e)), status=500)
     return HttpResponse(ret, content_type="text/plain")
 
 
@@ -41,9 +42,9 @@ def get_stdout_as_json(req, device_id, lines=100):
         stdout_fd = open(stdout_log)
         ret = tail(stdout_fd, int(lines))
         stdout_fd.close()
-    except IOError:
+    except IOError, e:
         # Generally if we hit this the log file doesn't exist
-        return False  # TODO - Adjust this to return an empty JSON dict or something
+        return HttpResponse("Error opening logfile: {}".format(logfile, str(e)), status=500)
 
     new_ret = []
     # TODO: This is probably too hacky, but only matters if we end up using it :)
