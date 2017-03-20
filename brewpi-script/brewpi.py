@@ -29,9 +29,8 @@ sys.path.append(BASE_DIR)
 # This is so my local_settings.py gets loaded.
 os.chdir(BASE_DIR)
 
-# TODO - Delete if this tests out fine
-# from django.core.wsgi import get_wsgi_application
-# application = get_wsgi_application()
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
 import app.models as models  # This SHOULD work due to the sys.path.append above.
 
