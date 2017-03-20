@@ -166,3 +166,7 @@ db.sqlite3
 data/*.csv
 data/*.json
 data/*.almost_json
+
+# Don't upload any of the various log files
+install.log
+upgrade.log

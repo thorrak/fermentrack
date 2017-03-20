@@ -176,9 +176,12 @@ class SensorFormRevised(forms.Form):
         else:
             installed = False
 
-        if address is None:
+        if len(address) >= 0:
             if cleaned_data.get("invert"):
                 invert = cleaned_data.get("invert")
+            elif perform_uninstall is True:
+                # We don't care if we're uninstalling
+                invert = SensorDevice.INVERT_NOT_INVERTED
             else:
                 raise forms.ValidationError("Invert must be specified for non-OneWire devices")
         else:

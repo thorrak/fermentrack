@@ -282,6 +282,9 @@
             <div class="row col-sm-12">
                 Pin {{ this_sensor.pin }} ({{ this_sensor.pin_data.text }})
             </div>
+            <div class="row col-sm-12">
+                Invert Status: {% if this_sensor.invert == 0 %}Not Inverted{% elif this_sensor.invert == 1 %}Inverted{% else %}Unknown{% endif %}
+            </div>
         {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
             <div class="row col-sm-12">
                 OneWire Temp Sensor
