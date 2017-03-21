@@ -62,3 +62,9 @@ Circus documentation can be found [here](https://circus.readthedocs.io/en/latest
     - */home/fermentrack/fermentrack/log/dev-[name]-stdout.log*
 * Controller script (brewpi.py) error/info log:
    - */home/fermentrack/fermentrack/log/dev-[name]-stderr.log*
+* Controller script spawner:
+   - */home/fermentrack/fermentrack/log/fermentrack-brewpi-spawner.log*
+* Fermentrack django application:
+   - */home/fermentrack/fermentrack/log/fermentrack.log*
+
+Logs are rotated every 10MB and the last 5 is saved with a number suffix.

@@ -79,7 +79,9 @@ urlpatterns = [
     # Stdout JSON output (cleaned)
     url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
     url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
-
+    # Other logs
+    url(r'^api/log/brewpi_spawner/$', app.api.clog.brewpi_spawner_log, name="brewpi_spawner_log"),
+    url(r'^api/log/fermentrack/$', app.api.clog.fermentrack_log, name="fermentrack_log"),
 
     # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL

@@ -16,6 +16,9 @@
 </p>
 
 <h3 class="page-header">Logs for troubleshooting</h3>
+
+<h4>Controller logs</h4>
+
 <table class="table">
   <thead class="thead-inverse">
     <tr>
@@ -38,6 +41,27 @@
                 <td>{{ this_device.board_type }}</td>
             </tr>
 {% endfor %}
+  </tbody>
+</table>
+
+<h4>Other logs</h4>
+
+<table class="table">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Service</th>
+      <th>Logfile</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Fermentrack Django Appllication</th>
+      <td><a href="/api/log/fermentrack/">log/fermentrack.log</a></td>
+    </tr>
+    <tr>
+      <th scope="row">Brewpi Spawner</th>
+      <td><a href="/api/log/brewpi_spawner/">log/fermentrack-brewpi-spawner.log</a></td>
+    </tr>
   </tbody>
 </table>
 
