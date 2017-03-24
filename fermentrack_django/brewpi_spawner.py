@@ -17,7 +17,7 @@ application = get_wsgi_application()
 import app.models as models
 
 LOG = logging.getLogger("brewpi-spawner")
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
 
 # Constants
 SLEEP_INTERVAL = 15
