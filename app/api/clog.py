@@ -34,7 +34,13 @@ def get_device_log_plain(req, logfile, device_id, lines=100):
         # Unable to load the device
         return HttpResponse("No brewpi device with id {}".format(device_id), status=500)
 
-    logfile_path = os.path.join(settings.BASE_DIR, 'log', 'dev-{}-{}.log'.format(device.device_name, logfile))
+    logfile_path = os.path.join(
+        settings.BASE_DIR,
+        'log',
+        'dev-{}-{}.log'.format(
+            device.device_name.lower(),
+            logfile)
+        )
 
     try:
         logfile_fd = open(logfile_path)
@@ -56,7 +62,12 @@ def get_stdout_as_json(req, device_id, lines=100):
         # Unable to load the device
         return HttpResponse("No brewpi device with id {}".format(device_id), status=500)
 
-    stdout_log = os.path.join(settings.BASE_DIR, 'log', 'dev-{}-stdout.log'.format(device.device_name))
+    stdout_log = os.path.join(
+        settings.BASE_DIR,
+        'log',
+        'dev-{}-stdout.log'.format(
+            device.device_name.lower())
+        )
 
     try:
         stdout_fd = open(stdout_log)
