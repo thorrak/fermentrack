@@ -70,23 +70,23 @@ sleep 2s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-circusctl stop &> upgrade.log
+circusctl stop &>> upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
-git fetch &> upgrade.log
-git reset --hard &> upgrade.log
+git fetch &>> upgrade.log
+git reset --hard &>> upgrade.log
 git checkout ${BRANCH}
-git pull &> upgrade.log
+git pull &>> upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip..."
-pip install -r requirements.txt --upgrade &> upgrade.log
+pip install -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."
-python manage.py migrate &> upgrade.log
+python manage.py migrate &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py collectstatic..."
@@ -95,6 +95,6 @@ python manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
-circusctl reloadconfig &> upgrade.log
-circusctl start &> upgrade.log
+circusctl reloadconfig &>> upgrade.log
+circusctl start &>> upgrade.log
 printinfo "Complete!"

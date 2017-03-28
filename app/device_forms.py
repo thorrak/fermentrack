@@ -176,7 +176,7 @@ class SensorFormRevised(forms.Form):
         else:
             installed = False
 
-        if len(address) >= 0:
+        if len(address) <= 0:
             if cleaned_data.get("invert"):
                 invert = cleaned_data.get("invert")
             elif perform_uninstall is True:
