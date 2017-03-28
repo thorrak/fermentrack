@@ -169,6 +169,8 @@ CONSTANCE_CONFIG = {
     'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
                        'When was the last time we checked GitHub for upgrades?', datetime.datetime),
     'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
+    'ALLOW_GIT_BRANCH_SWITCHING': (False, 'Should the user be allowed to switch Git branches from within the app?',
+                                   bool),
 }
 
 
