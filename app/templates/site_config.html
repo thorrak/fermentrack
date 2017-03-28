@@ -13,6 +13,7 @@
 
         <h3 class="form-header">Configuration Tools</h3>
         <a href="/admin/" class="btn btn-large btn-lg btn-primary">Django Admin Panel</a>
+        <a href="{% url 'github_trigger_upgrade' %}" class="btn btn-large btn-lg btn-primary">Update from GitHub</a>
 
 {# Setting this as an include so we can reuse it on our site settings page #}
 {% include 'setup/constance_app_configuration.html' %}
