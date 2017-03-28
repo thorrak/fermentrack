@@ -42,7 +42,7 @@ urlpatterns = [
     url(r'^devices/guided/mdns/(?P<mdns_id>[A-Za-z0-9.]{1,60})/$', app.setup_views.device_guided_add_mdns, name='device_guided_add_mdns'),
 
     ## Other main device views
-    url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
+    url(r'^devices/(?P<device_id>\d{1,20})/control_constants/$', app.views.device_control_constants, name='device_control_constants'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/$', app.views.device_dashboard, name='device_dashboard_beer'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/annotations.json$', app.views.almost_json_view, name='almost_json_view'),

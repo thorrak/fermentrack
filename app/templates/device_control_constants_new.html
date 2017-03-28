@@ -12,7 +12,7 @@
 
 <h1 class="page-header">Configure Control Constants</h1>
 
-<form action="{% url "device_config" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+<form action="{% url "device_control_constants" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
 
     <div id="deviceConstantsSection">
         <h3 class="form-header">Device Constants</h3>
