@@ -489,6 +489,108 @@ def site_help(request):
     return render_with_devices(request, template_name='site_help.html', context={})
 
 
+@login_required
+@site_is_configured
+def device_manage(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    # Forms posted back to device_manage are explicitly settings update forms
+    if request.POST:
+        form = device_forms.DeviceForm(request.POST)
+
+        if form.is_valid():
+            # Update the device settings based on what we were passed via the form
+            active_device.device_name=form.cleaned_data['device_name']
+            active_device.temp_format=form.cleaned_data['temp_format']
+            active_device.data_point_log_interval=form.cleaned_data['data_point_log_interval']
+            active_device.useInetSocket=form.cleaned_data['useInetSocket']
+            active_device.socketPort=form.cleaned_data['socketPort']
+            active_device.socketHost=form.cleaned_data['socketHost']
+            active_device.serial_port=form.cleaned_data['serial_port']
+            active_device.serial_alt_port=form.cleaned_data['serial_alt_port']
+            # Not going to allow editing the board type. Can revisit if there seems to be a need later
+            # active_device.board_type=form.cleaned_data['board_type']
+            active_device.socket_name=form.cleaned_data['socket_name']
+            active_device.connection_type=form.cleaned_data['connection_type']
+            active_device.wifi_host=form.cleaned_data['wifi_host']
+            active_device.wifi_port=form.cleaned_data['wifi_port']
+
+            active_device.save()
+
+            messages.success(request, 'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device.device_name))
+
+            # TODO - Trigger Circus to reload properly, rather than using an external script
+            cmd = "nohup utils/reset_circus.sh"
+            subprocess.call(cmd, shell=True)
+
+            return render_with_devices(request, template_name='device_manage.html',
+                                       context={'form': form, 'active_device': active_device})
+
+        else:
+            return render_with_devices(request, template_name='device_manage.html',
+                                       context={'form': form, 'active_device': active_device})
+    else:
+        # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
+        # refactoring it. Project for later if need be.
+        initial_values = {
+            'device_name': active_device.device_name,
+            'temp_format': active_device.temp_format,
+            'data_point_log_interval': active_device.data_point_log_interval,
+            'connection_type': active_device.connection_type,
+            'useInetSocket': active_device.useInetSocket,
+            'socketPort': active_device.socketPort,
+            'socketHost': active_device.socketHost,
+            'serial_port': active_device.serial_port,
+            'serial_alt_port': active_device.serial_alt_port,
+            'board_type': active_device.board_type,
+            'socket_name': active_device.socket_name,
+            'wifi_host': active_device.wifi_host,
+            'wifi_port': active_device.wifi_port,
+        }
+
+        form = device_forms.DeviceForm(initial=initial_values)
+        return render_with_devices(request, template_name='device_manage.html',
+                                   context={'form': form, 'active_device': active_device})
+
+def device_uninstall(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.delete_device'):
+    #     messages.error(request, 'Your account is not permissioned to uninstall devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    if request.POST:
+        if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
+            if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
+                messages.success(request, "The device '{}' was successfully uninstalled.".format(active_device.device_name))
+                active_device.delete()
+                # TODO - Trigger Circus to reload properly, rather than using an external script
+                cmd = "nohup utils/reset_circus.sh"
+                subprocess.call(cmd, shell=True)
+                return redirect("siteroot")
+
+        # If we get here, one of the switches wasn't toggled
+        messages.error(request, "All three switches must be set to 'yes' to uninstall a device.")
+        return redirect("device_manage", device_id=device_id)
+    else:
+        messages.error(request, "To uninstall a device, use the form on the 'Manage Device' page.")
+        return redirect("device_manage", device_id=device_id)
+
+
 # So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to
 # then interpret them using JavaScript, however, we MUST have fully formed, valid json. To acheive that, we're going to
 # wrap the json file and append the closing bracket after dumping its contents to the browser.

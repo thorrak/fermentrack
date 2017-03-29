@@ -7,7 +7,7 @@
                     <li><a href="{% url 'device_control_constants' active_device.id %}">Configure Control Constants</a></li>
                     <li><a href="{% url 'sensor_list' active_device.id %}">Configure Sensors/Pins/Devices</a></li>
                     <li class="divider"></li>
-                    <li><a href="#">Separated link</a></li>
+                    <li><a href="{% url 'device_manage' active_device.id %}">Manage Device/View Logs</a></li>
                   </ul>
                 </li>
 {% endif %}
