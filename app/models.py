@@ -44,6 +44,9 @@ class PinDevice(models.Model):
     # This factory method is used to allow us to quickly create an instance from a dict loaded in the firmware
     @classmethod
     def create_from_dict(cls, device_dict):
+        # If the pin definition has " text" rather than "text" we assume the pin should be excluded
+        if " text" in device_dict and "text" not in device_dict:
+            return None
         new_device = cls(text=device_dict['text'], type=device_dict['type'], pin=device_dict['val'])
         return new_device
 
@@ -54,7 +57,8 @@ class PinDevice(models.Model):
 
         for this_pin in pinlist:
             next_pin = cls.create_from_dict(this_pin)
-            all_pins.append(next_pin)
+            if next_pin is not None:
+                all_pins.append(next_pin)
 
         return all_pins
 
