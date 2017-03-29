@@ -42,7 +42,7 @@ urlpatterns = [
     url(r'^devices/guided/mdns/(?P<mdns_id>[A-Za-z0-9.]{1,60})/$', app.setup_views.device_guided_add_mdns, name='device_guided_add_mdns'),
 
     ## Other main device views
-    url(r'^devices/(?P<device_id>\d{1,20})/config/$', app.views.device_config, name='device_config'),
+    url(r'^devices/(?P<device_id>\d{1,20})/control_constants/$', app.views.device_control_constants, name='device_control_constants'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/$', app.views.device_dashboard, name='device_dashboard'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/$', app.views.device_dashboard, name='device_dashboard_beer'),
     url(r'^devices/(?P<device_id>\d{1,20})/dashboard/beer/(?P<beer_id>\d{1,20})/annotations.json$', app.views.almost_json_view, name='almost_json_view'),
@@ -51,8 +51,10 @@ urlpatterns = [
     # TODO - Implement temperature control AJAX API calls
     url(r'^devices/(?P<device_id>\d{1,20})/temp_control/$', app.views.device_temp_control, name='device_temp_control'),
     url(r'^devices/(?P<device_id>\d{1,20})/reset/$', app.views.device_eeprom_reset, name='device_eeprom_reset'),
+    url(r'^devices/(?P<device_id>\d{1,20})/manage/$', app.views.device_manage, name='device_manage'),
+    url(r'^devices/(?P<device_id>\d{1,20})/uninstall/$', app.views.device_uninstall, name='device_uninstall'),
 
-    # Device Utility & Internal Views
+                  # Device Utility & Internal Views
     url(r'^devices/(?P<device_id>\d{1,20})/beer/create/$', app.beer_views.beer_create, name='beer_create'),
     url(r'^devices/(?P<device_id>\d{1,20})/beer/status/(?P<logging_status>[A-Za-z0-9]{1,20})/$', app.beer_views.beer_logging_status, name='beer_logging_status'),
     # url(r'^devices/(\d{1,20})/beer/csv/(\d{1,20}).csv$', app.views.device_config, name='csv_numbered'),
