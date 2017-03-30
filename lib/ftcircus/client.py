@@ -1,0 +1,128 @@
+from circus.client import CircusClient
+from circus.exc import CallError
+from circus.util import DEFAULT_ENDPOINT_DEALER
+
+
+class CircusException(Exception):
+    """Raised from FTCircusHandler"""
+    pass
+
+
+class CircusMgr(object):
+    """Fermentrack Circus Handler"""
+
+    def __init__(self, connection_timeout=2, circus_endpoint=DEFAULT_ENDPOINT_DEALER):
+        self._client = CircusClient(
+            timeout=connection_timeout, endpoint=circus_endpoint)
+
+    def _call(self, command, **props):
+        message = {"command": command, "properties": props or {}}
+        try:
+            return self._client.call(message)
+        except CallError, callerr:
+            raise CircusException("Could send message to circus: {}".format(callerr))
+
+    def signal(self, name, signal=9):
+        """Send signal to process, signal defaults to 9 (SIGTERM)"""
+        #self.__call(self._make_message("signal", name=name, signal=signal))
+        self._call("signal", name=name, signal=signal)
+
+    def reload(self, name, waiting=False, graceful=True, sequential=False):
+        """Reload the arbiter/watcher
+
+        If ``waiting`` is False (default), the call will return immediately
+        after calling ``reload`` process.
+        """
+        response = self._call(
+            "reload", name=name, graceful=graceful,
+            sequential=sequential, waiting=waiting
+        )
+        return True if response['status'] == u'ok' else False
+
+    def start(self, name, waiting=False):
+        """Start circus process
+
+        If ``waiting`` is False (default), the call will return immediately
+        after calling ``start`` process.
+        """
+        response = self._call("start", name=name, waiting=waiting)
+        return True if response['status'] == u'ok' else False
+
+    def stop(self, name, waiting=False):
+        """Stop a circus process
+
+        If ``waiting`` is False (default), the call will return immediately
+        after calling ``stop`` process.
+        """
+        response = self._call("stop", name=name, waiting=waiting)
+        return True if response['status'] == u'ok' else False
+
+    def add_controller(self, cmd, name, logpath):
+        """Add a new brewpi controller script"""
+        response = self._call(
+            "add",
+            cmd=cmd,
+            name=name,
+            start=True,
+            options={
+                "copy_env": True,
+                "stdout_stream": {
+                    "class": "FileStream",
+                    "filename": "%s/%s-stdout.log" % (logpath, name),
+                },
+                "stderr_stream": {
+                    "class": "FileStream",
+                    "filename": "%s/%s-stderr.log" % (logpath, name),
+                }
+
+            }
+        )
+        return response
+
+    def remove(self, name):
+        response = self._call("rm", name=name)
+        return response
+
+    def get_applications(self, verbose=False):
+        """Get currently running processes
+
+        If ``verbose`` is False a simple list will be returned
+        if True circus information will be included.
+        """
+        response = self._call("list")
+        if verbose:
+            return response
+        return response.get("watchers")
+
+    def application_status(self, name, verbose=False):
+        """Get process status
+
+        If ``verbose`` is False it will return status, or "not running"
+        if True circus information will be included.
+        """
+        response = self._call("status", name=name)
+        if verbose:
+            return response
+        return str(response['status']) if response['status'] != u'error' else 'not running'
+
+    def quit_circus(self):
+        """quit_circus will quit the circus daemon, and need to be started again
+        by some other means
+        """
+        response = self._call("quit")
+        return response
+
+
+if __name__ == '__main__':
+    import time
+    fc = CircusMgr()
+    #print fc.get_applications()
+    print fc.stop("fermentrack")
+    print fc.application_status("fermentrack")
+    time.sleep(2)
+    print fc.get_applications()
+    print fc.application_status("fermentrack")
+    print fc.start("fermentrack")
+    print fc.application_status("fermentrack")
+    print fc.application_status("fermentrack1111")
+    # print fc.quit_circus()
