@@ -143,7 +143,8 @@ class BrewPiSpawner(object):
 
 if __name__ == '__main__':
     # Chill so that circus has time to startup
-    time.sleep(5)
+    LOG.debug("Starting up, wait 2s for everything to get ready")
+    time.sleep(2)
     process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=DEFAULT_CMD_TEMPLATE, prefix="dev-")
     process_spawner.run_forvever()
 
