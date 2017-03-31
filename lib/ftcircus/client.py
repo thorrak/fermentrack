@@ -24,7 +24,6 @@ class CircusMgr(object):
 
     def signal(self, name, signal=9):
         """Send signal to process, signal defaults to 9 (SIGTERM)"""
-        #self.__call(self._make_message("signal", name=name, signal=signal))
         self._call("signal", name=name, signal=signal)
 
     def reload(self, name, waiting=False, graceful=True, sequential=False):
@@ -46,6 +45,17 @@ class CircusMgr(object):
         after calling ``start`` process.
         """
         response = self._call("start", name=name, waiting=waiting)
+        return True if response['status'] == u'ok' else False
+
+    def restart(self, name=None):
+        """Restart a or all circus process(es)
+
+        If ``name`` is None all processes under circus will be restarted
+        """
+        if name:
+            response = self._call("restart", name=name)
+        else:
+            response = self._call("restart")
         return True if response['status'] == u'ok' else False
 
     def stop(self, name, waiting=False):
