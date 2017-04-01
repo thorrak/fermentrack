@@ -31,3 +31,25 @@ def get_local_remote_commit_info():
 
     commit_dict = {'local': local_commit, 'remote': remote_commit, 'local_branch': local_branch, 'remote_branch': ''}
     return commit_dict
+
+
+def get_remote_branch_info():
+    local_repo = Repo(path=settings.BASE_DIR)
+
+    # Fetch remote branches to ensure we are up to date
+    for remote in local_repo.remotes:
+        remote.fetch()
+
+    remote_repo = local_repo.remote()
+
+    local_branch = local_repo.active_branch.name
+    remote_branches = []
+
+    for this_branch in remote_repo.refs:
+        remote_branches.append(this_branch.remote_head)
+
+    return {'local_branch': local_branch, 'remote_branches': remote_branches}
+
+# if __name__ == "__main__":
+#     branch_info = get_remote_branch_info()
+#     pass

@@ -7,6 +7,10 @@
 
 <h1>Upgrade from GitHub</h1>
 
+{% if allow_git_branch_switching %}
+<h3>Update Current Branch</h3>
+{% endif %}
+
 <h4>Local Commit Info:</h4>
 <table>
     <tr><td>Active Branch:</td> <td>{{ commit_info.local_branch }}</td></tr>
@@ -15,13 +19,47 @@
     <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.local.hexsha }}</td></tr>
 </table>
 
-    <h4>Remote Commit Info:</h4>
+<h4>Remote Commit Info:</h4>
 <table>
     <tr><td>Commit Date:</td> <td>{{ commit_info.remote.committed_datetime }}</td></tr> {# TODO - Make this pretty #}
     <tr><td>Commit Message:</td> <td>{{ commit_info.remote.message }}</td></tr>
     <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.remote.hexsha }}</td></tr>
 </table>
 
+{% if not app_is_current %}
+<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
+    <input type="submit" value="Click Here to Upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />
+</form>
+{% endif %}
+
+{% if allow_git_branch_switching %}
+
+<h3>Switch Branch</h3>
+<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
+<div class="row">
+    <div class="col-xs-2">Current Branch:</div>
+    <div class="col-xs-10">{{ branch_info.local_branch }}</div>
+</div>
+
+<div class="row">
+    <div class="col-xs-2">New Branch:</div>
+    <div class="col-xs-10">
+        <select name="new_branch">
+            {% for this_branch in branch_info.remote_branches %}
+                <option value="{{ this_branch }}">{{ this_branch }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-2"><input type="submit" value="Switch Branch" class="btn btn-block btn-lg btn-danger" /></div>
+</div>
+
+</form>
+
+{% endif %}
 
 {% endblock %}
 
