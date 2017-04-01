@@ -48,15 +48,16 @@ def siteroot(request):
     # of account setup.
     num_users=User.objects.all().count()
 
-    # TODO - Reset this to 18 hours
-    # Check the git status at least every 6 hours
-    now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
-    if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-        if git_integration.app_is_current():
-            config.LAST_GIT_CHECK = now_time
-        else:
-            messages.info(request, "This app is not at the latest version! " +
-                          '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+    if config.GIT_UPDATE_TYPE != "none":
+        # TODO - Reset this to 18 hours
+        # Check the git status at least every 6 hours
+        now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+            if git_integration.app_is_current():
+                config.LAST_GIT_CHECK = now_time
+            else:
+                messages.info(request, "This app is not at the latest version! " +
+                              '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
