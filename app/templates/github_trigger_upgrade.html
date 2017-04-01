@@ -7,6 +7,37 @@
 
 <h1>Upgrade from GitHub</h1>
 
+
+{% if allow_git_branch_switching %}
+
+<h3>Update to Latest Tagged Branch</h3>
+<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
+<div class="row">
+    <div class="col-xs-2">Current Commit Date:</div>
+    <div class="col-xs-10">{{ commit_info.local.committed_datetime }}</div>
+</div>
+
+<div class="row">
+    <div class="col-xs-2">Latest Tagged Commit:</div>
+    <div class="col-xs-10">
+        {{ tags.latest_tag.name }} - Released {{ tags.latest_tag.committed_datetime }}
+        <input type="hidden" name="tag" value="{{ tags.latest_tag.name }}">
+    </div>
+</div>
+
+
+<div class="row">
+{% if commit_info.local.committed_datetime < tags.latest_tag.committed_datetime %}
+    <div class="col-xs-2"><input type="submit" value="Update to Latest Release" class="btn btn-block btn-lg btn-success" /></div>
+{% else %}
+    <div class="col-xs-2"><input type="submit" value="Revert to Latest Release" class="btn btn-block btn-lg btn-danger" /></div>
+{% endif %}
+</div>
+
+</form>
+
+{% endif %}
+
 {% if allow_git_branch_switching %}
 <h3>Update Current Branch</h3>
 {% endif %}
