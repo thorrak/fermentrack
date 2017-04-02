@@ -81,5 +81,5 @@ def get_tag_info():
 
 
 # if __name__ == "__main__":
-#     tags = get_tag_info()
+#     branches = get_remote_branch_info()
 #     up_to_date_tagged = app_is_current(True)

@@ -92,7 +92,7 @@ git fetch &>> upgrade.log
 git reset --hard &>> upgrade.log
 
 # If we have a tag set, use it
-if [ ${TAG} = "" ]
+if [ "${TAG}" = "" ]
 then
     git checkout ${BRANCH} &>> upgrade.log
 else

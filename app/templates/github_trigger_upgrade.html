@@ -8,9 +8,9 @@
 <h1>Upgrade from GitHub</h1>
 
 
-{% if allow_git_branch_switching %}
+{% if git_update_type == "tagged" %}
 
-<h3>Update to Latest Tagged Branch</h3>
+<h3>Update to Latest Tagged Commit</h3>
 <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
 <div class="row">
     <div class="col-xs-2">Current Commit Date:</div>
@@ -40,6 +40,8 @@
 
 {% if allow_git_branch_switching %}
 <h3>Update Current Branch</h3>
+{% elif git_update_type == "tagged" %}
+    <h3>Update to Latest <u>Untagged</u> Commit</h3>
 {% endif %}
 
 <h4>Local Commit Info:</h4>

@@ -371,16 +371,16 @@ def github_trigger_upgrade(request):
                 cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
             else:
                 cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
-            #subprocess.call(cmd, shell=True)
+            subprocess.call(cmd, shell=True)
 
     else:
         # We'll display this error message if the page is being accessed and no form has been posted
-        if git_integration.app_is_current:
+        if app_is_current:
             messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render_with_devices(request, template_name="github_trigger_upgrade.html",
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
-                                        'branch_info': branch_info, 'tags': tags,
+                                        'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching})
 
 
