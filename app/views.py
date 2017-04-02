@@ -48,14 +48,16 @@ def siteroot(request):
     # of account setup.
     num_users=User.objects.all().count()
 
-    # Check the git status at least every 18 hours
-    now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
-    if config.LAST_GIT_CHECK < now_time + datetime.timedelta(hours=18):
-        if git_integration.app_is_current():
-            config.LAST_GIT_CHECK = now_time
-        else:
-            messages.info(request, "This app is not at the latest version! " +
-                          '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+    if config.GIT_UPDATE_TYPE != "none":
+        # TODO - Reset this to 18 hours
+        # Check the git status at least every 6 hours
+        now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+            if git_integration.app_is_current():
+                config.LAST_GIT_CHECK = now_time
+            else:
+                messages.info(request, "This app is not at the latest version! " +
+                              '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
@@ -343,17 +345,43 @@ def github_trigger_upgrade(request):
     # TODO - Add permission check here
     commit_info = git_integration.get_local_remote_commit_info()
 
-    if git_integration.app_is_current():
-        messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
-    else:
-        messages.success(request, "Triggered an upgrade from GitHub")
+    allow_git_branch_switching = config.ALLOW_GIT_BRANCH_SWITCHING
+    app_is_current = git_integration.app_is_current()
+    git_update_type = config.GIT_UPDATE_TYPE
 
-        # I think this will do it...
-        cmd = "nohup utils/upgrade.sh -b \"{}\"&".format(commit_info['local_branch'])
-        subprocess.call(cmd, shell=True)
+    tags = git_integration.get_tag_info()
+
+    if allow_git_branch_switching:
+        branch_info = git_integration.get_remote_branch_info()
+    else:
+        branch_info = {}
+
+    if request.POST:
+        if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
+            messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        else:
+            messages.success(request, "Triggered an upgrade from GitHub")
+
+            if 'tag' in request.POST:
+                # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
+                cmd = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST['tag'])
+            elif not allow_git_branch_switching or 'new_branch' not in request.POST:
+                # We'll use the branch name from the current commit if we either aren't allowed to directly switch branches
+                # or haven't been passed a branch name
+                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+            else:
+                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
+            subprocess.call(cmd, shell=True)
+
+    else:
+        # We'll display this error message if the page is being accessed and no form has been posted
+        if app_is_current:
+            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render_with_devices(request, template_name="github_trigger_upgrade.html",
-                               context={'commit_info': commit_info})
+                               context={'commit_info': commit_info, 'app_is_current': app_is_current,
+                                        'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
+                                        'allow_git_branch_switching': allow_git_branch_switching})
 
 
 def login(request, next=None):
