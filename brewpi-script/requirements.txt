@@ -3,6 +3,7 @@ configobj       # required by brewpi.py
 simplejson      # required by brewpi.py
 
 psutil>=2.0     # required by BrewPiProcess.py
+pid             # required by brewpi.py
 
 zeroconf        # required by tcpSerial.py
 
