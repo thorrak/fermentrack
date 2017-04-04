@@ -22,7 +22,7 @@ LOG.setLevel(logging.DEBUG)
 
 # Constants
 SLEEP_INTERVAL = 15
-DEFAULT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
+DEFAULT_circusmgrD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
 
 
 class BrewPiSpawner(object):
@@ -42,7 +42,7 @@ class BrewPiSpawner(object):
         self.circus_endpoint = circus_endpoint
         self.logfilepath = logfilepath
         self.log = log
-        self._cm = CircusMgr(circus_endpoint=circus_endpoint)
+        self._circusmgr = CircusMgr(circus_endpoint=circus_endpoint)
 
 
     def _querydb(self):
@@ -59,7 +59,7 @@ class BrewPiSpawner(object):
     def _running(self):
         """Return Brewpi instances running using suffix as filter"""
         try:
-            watchers = self._cm.get_applications()
+            watchers = self._circusmgr.get_applications()
         except CircusException:
             self.log.error("Could not get running processes", exc_info=True)
             return []
@@ -104,7 +104,7 @@ class BrewPiSpawner(object):
         proc_name = proc_name.lower()
         cmd = self.command_tmpl % name
         try:
-            call = self._cm.add_controller(
+            call = self._circusmgr.add_controller(
                 cmd,
                 proc_name,
                 self.logfilepath
@@ -118,7 +118,7 @@ class BrewPiSpawner(object):
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
         try:
-            self._cm.stop(name)
+            self._circusmgr.stop(name)
             self.log.debug("_stop_process circus client call")
         except CircusException:
             self.log.debug("Could not stop process: %s", name, exc_info=True)
@@ -128,7 +128,7 @@ class BrewPiSpawner(object):
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
         try:
-            self._cm.remove(name)
+            self._circusmgr.remove(name)
             self.log.debug("_rm_device circus client call")
         except CircusException:
             self.log.debug("Could not rm process: %s", name, exc_info=True)
@@ -145,6 +145,6 @@ if __name__ == '__main__':
     # Chill so that circus has time to startup
     LOG.debug("Starting up, wait 2s for everything to get ready")
     time.sleep(2)
-    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=DEFAULT_CMD_TEMPLATE, prefix="dev-")
+    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=DEFAULT_circusmgrD_TEMPLATE, prefix="dev-")
     process_spawner.run_forvever()
 

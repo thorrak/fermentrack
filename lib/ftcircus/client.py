@@ -1,7 +1,10 @@
+import logging
 from circus.client import CircusClient
 from circus.exc import CallError
 from circus.util import DEFAULT_ENDPOINT_DEALER
 
+LOG = logging.getLogger("brewpi-spawner")
+LOG.setLevel(logging.DEBUG)
 
 class CircusException(Exception):
     """Raised from FTCircusHandler"""
@@ -9,7 +12,8 @@ class CircusException(Exception):
 
 
 class CircusMgr(object):
-    """Fermentrack Circus Handler"""
+    """Fermentrack Circus Handler, It is a simple wrapper around
+    circus client, any errors raised as CircusException"""
 
     def __init__(self, connection_timeout=2, circus_endpoint=DEFAULT_ENDPOINT_DEALER):
         self._client = CircusClient(
@@ -20,6 +24,7 @@ class CircusMgr(object):
         try:
             return self._client.call(message)
         except CallError, callerr:
+            log.error("Error from circus", exc_info=True)
             raise CircusException("Could send message to circus: {}".format(callerr))
 
     def signal(self, name, signal=9):
