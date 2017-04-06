@@ -80,6 +80,7 @@ def get_tag_info():
     return {'latest_tag': latest_tag, 'all_tags': tags}
 
 
+# The following was used for testing during development
 # if __name__ == "__main__":
 #     branches = get_remote_branch_info()
 #     up_to_date_tagged = app_is_current(True)

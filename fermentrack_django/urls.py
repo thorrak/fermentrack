@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^devices/guided/(?P<device_family>[A-Za-z0-9]{1,20})/connection/$', app.setup_views.device_guided_serial_wifi, name='device_guided_serial_wifi'),
     url(r'^devices/guided/mdns/$', app.setup_views.device_guided_find_mdns, name='device_guided_mdns'),
     url(r'^devices/guided/mdns/(?P<mdns_id>[A-Za-z0-9.]{1,60})/$', app.setup_views.device_guided_add_mdns, name='device_guided_add_mdns'),
+    url(r'^devices/guided/serial/autodetect/(?P<device_family>[A-Za-z0-9]{1,20})/$', app.setup_views.device_guided_serial_autodetect, name='device_guided_serial_autodetect'),
 
     ## Other main device views
     url(r'^devices/(?P<device_id>\d{1,20})/control_constants/$', app.views.device_control_constants, name='device_control_constants'),

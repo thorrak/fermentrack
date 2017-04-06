@@ -1,0 +1,47 @@
+{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% load custom_tags %}
+
+{% block title %}Auto-detect Serial Controllers{% endblock %}
+
+{% block content %}
+
+<h1>Serial Controller Auto-detection</h1>
+<h3>Step 1 - Detect preexisting devices</h3>
+<div class="row">
+<div class="col-xs-12">
+    <p>Looking to connect a controller via Serial? Fantastic! Here's how this works:</p>
+    <p>
+        All serial controllers have a system-generated device ID which is used to allow your system to connect to the
+        device. Rather than have you search for this ID manually, we'll attempt to automatically detect the ID by
+        scanning what devices are connected, having you connect the controller, and then rescanning to see what new
+        devices popped up. Once we have the list we'll ask you to confirm the correct controller and then we'll
+        get everything configured. It's like magic!
+    </p>
+
+    <p>
+        Once you're ready to begin, make sure the controller you want to set up is <b>not</b> connected & click
+        "Scan Devices" below.
+    </p>
+
+</div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4">
+        <form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
+            <input type="hidden" name="step" value="2">
+            <input type="submit" value="Scan Devices" class="btn btn-block btn-lg btn-primary" />
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}
+
+
+
+
+
