@@ -22,10 +22,13 @@ class CircusMgr(object):
     def _call(self, command, **props):
         message = {"command": command, "properties": props or {}}
         try:
-            return self._client.call(message)
+            res = self._client.call(message)
         except CallError, callerr:
-            log.error("Error from circus", exc_info=True)
+            LOG.error("Error from circus", exc_info=True)
             raise CircusException("Could send message to circus: {}".format(callerr))
+        if res['status'] == u'error':
+            raise CircusException("Error: {}".format(res['reason']))
+        return res
 
     def signal(self, name, signal=9):
         """Send signal to process, signal defaults to 9 (SIGTERM)"""
@@ -95,6 +98,7 @@ class CircusMgr(object):
         return response
 
     def remove(self, name):
+        """Remove the stopped ``name`` from circus fully"""
         response = self._call("rm", name=name)
         return response
 
