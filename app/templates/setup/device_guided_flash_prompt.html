@@ -29,15 +29,27 @@
                     {# Yes - Already Flashed Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="yesPill">
                         <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
-                            Perfect.
+                            <p>Perfect.</p>
 
-                            {% if device_family == "ESP8266" %} {# For now, only ESP8266 devices are supported #}
+                            {% if device_family == "ESP8266" %}
                                 <p>Before you go to the next step, you need to get the controller to a state where we can
                                 connect to it. If you are using <b>WiFi</b> finish the controller setup and connect it
-                                to your network. If you are using <b>Serial</b> connect the controller to this device.</p>
+                                to your network. If you are using <b>Serial</b> don't do anything. We will prompt you
+                                to connect the controller to this device later.</p>
                                 <input type="hidden" name="should_flash_device" value="False">
                                 <input type="hidden" name="device_family" value="{{ device_family }}">
                                 <button type="submit" class="btn btn-large btn-primary">Continue</button>
+                            {% elif device_family == "Arduino" %}
+                                <p>
+                                    Since all Arduino-based controllers connect via Serial, we'll skip ahead and take you
+                                    straight to the Serial autodetection process.
+                                <p>
+                                    Before you begin, please disconnect your controller from this computer if it's
+                                    currently connected.
+                                </p>
+
+                                <a href="{% url 'device_guided_serial_autodetect' device_family %}" class="btn btn-large btn-primary">Begin Serial Autodetection</a>
+
                             {% else %}
                                 Unfortunately, this version of Fermentrack isn't quite smart enough to support that
                                 device family yet. Pay attention to the discussions on HomeBrewTalk - Support for
