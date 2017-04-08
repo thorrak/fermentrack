@@ -607,6 +607,7 @@ def device_uninstall(request, device_id):
                 messages.success(request, "The device '{}' was successfully uninstalled.".format(active_device.device_name))
                 active_device.delete()
                 # TODO - Trigger Circus to reload properly, rather than using an external script
+                # TODO - Trigger the reset via celery (so that we can return a proper redirect) rather than via subprocess (unless native integration means we don't end up reloading chaussette)
                 cmd = "nohup utils/reset_circus.sh"
                 subprocess.call(cmd, shell=True)
                 return redirect("siteroot")
