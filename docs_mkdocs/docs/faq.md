@@ -1,3 +1,5 @@
+#Frequently Asked Questions
+
 
 
 ###### Can I change the temperature format on a beer I've started logging?
