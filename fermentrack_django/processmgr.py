@@ -84,7 +84,7 @@ class BrewPiSpawner(object):
         running_devices = self._running()
 
         self.log.debug(
-            "db devices: %s, running devices: %s",
+            "DB devices (active): %s, Running device processes: %s",
             ", ".join([dev.device_name for dev in db_devices]),
             ", ".join([dev for dev in running_devices])
             )
@@ -96,7 +96,7 @@ class BrewPiSpawner(object):
             dev_name = dev_name.lower()
             names.append(dev_name)
             if dev_name not in running_devices:
-                self.log.info("New BrewPi device found: %s", dev_name.lower())
+                self.log.info("New BrewPi device found: %s", dev_name)
                 self._add_process(dbd.device_name)
 
         # Find devices running but should not
@@ -152,7 +152,11 @@ class BrewPiSpawner(object):
             time.sleep(self.sleep_interval)
 
 def run():
-    parser = argparse.ArgumentParser(prog="processmgr", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    """run - parses arguments and runs the mainloop"""
+    parser = argparse.ArgumentParser(
+        prog="processmgr",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        )
     parser.add_argument(
         "-p", "--prefix",
         help="Brewpi devices prefix for identification by this script",
