@@ -96,8 +96,7 @@ class BrewPiSpawner(object):
         # Find devices running but should not
         for rdev in running_devices:
             if rdev not in names:
-                self.log.info("Device: %s should be stopped, stopping", rdev)
-                self._stop_process(rdev)
+                self.log.info("Device: %s should be stopped and removed, stopped", rdev)
                 self._rm_process(rdev)
 
 
