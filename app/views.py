@@ -48,14 +48,16 @@ def siteroot(request):
     # of account setup.
     num_users=User.objects.all().count()
 
-    # Check the git status at least every 18 hours
-    now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
-    if config.LAST_GIT_CHECK < now_time + datetime.timedelta(hours=18):
-        if git_integration.app_is_current():
-            config.LAST_GIT_CHECK = now_time
-        else:
-            messages.info(request, "This app is not at the latest version! " +
-                          '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+    if config.GIT_UPDATE_TYPE != "none":
+        # TODO - Reset this to 18 hours
+        # Check the git status at least every 6 hours
+        now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+            if git_integration.app_is_current():
+                config.LAST_GIT_CHECK = now_time
+            else:
+                messages.info(request, "This app is not at the latest version! " +
+                              '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
@@ -122,7 +124,7 @@ def device_lcd_list(request):
 
 @login_required
 @site_is_configured
-def device_config_legacy(request, device_id, control_constants):
+def device_control_constants_legacy(request, device_id, control_constants):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
@@ -139,7 +141,7 @@ def device_config_legacy(request, device_id, control_constants):
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
             if not new_control_constants.save_all_to_controller(active_device):
-                return render_with_devices(request, template_name='device_config_old.html',
+                return render_with_devices(request, template_name='device_control_constants_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
@@ -149,17 +151,17 @@ def device_config_legacy(request, device_id, control_constants):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='device_config_old.html',
+            return render_with_devices(request, template_name='device_control_constants_old.html',
                                        context={'form': form, 'active_device': active_device})
     else:
         form = device_forms.OldCCModelForm(instance=control_constants)
-        return render_with_devices(request, template_name='device_config_old.html',
+        return render_with_devices(request, template_name='device_control_constants_old.html',
                                    context={'form': form, 'active_device': active_device})
 
 
 @login_required
 @site_is_configured
-def device_config(request, device_id):
+def device_control_constants(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
     except:
@@ -174,10 +176,10 @@ def device_config(request, device_id):
         return redirect('device_dashboard', device_id=device_id)
 
     elif is_legacy:
-        return device_config_legacy(request, device_id, control_constants)
+        return device_control_constants_legacy(request, device_id, control_constants)
     else:
-        # TODO - Replace this with device_config_modern or whatever it ends up getting called
-        return device_config_legacy(request, device_id, control_constants)
+        # TODO - Replace this with device_control_constants_modern or whatever it ends up getting called
+        return device_control_constants_legacy(request, device_id, control_constants)
 
 
 @login_required
@@ -343,17 +345,43 @@ def github_trigger_upgrade(request):
     # TODO - Add permission check here
     commit_info = git_integration.get_local_remote_commit_info()
 
-    if git_integration.app_is_current():
-        messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
-    else:
-        messages.success(request, "Triggered an upgrade from GitHub")
+    allow_git_branch_switching = config.ALLOW_GIT_BRANCH_SWITCHING
+    app_is_current = git_integration.app_is_current()
+    git_update_type = config.GIT_UPDATE_TYPE
 
-        # I think this will do it...
-        cmd = "nohup utils/upgrade.sh -b \"{}\"&".format(commit_info['local_branch'])
-        subprocess.call(cmd, shell=True)
+    tags = git_integration.get_tag_info()
+
+    if allow_git_branch_switching:
+        branch_info = git_integration.get_remote_branch_info()
+    else:
+        branch_info = {}
+
+    if request.POST:
+        if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
+            messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        else:
+            messages.success(request, "Triggered an upgrade from GitHub")
+
+            if 'tag' in request.POST:
+                # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
+                cmd = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST['tag'])
+            elif not allow_git_branch_switching or 'new_branch' not in request.POST:
+                # We'll use the branch name from the current commit if we either aren't allowed to directly switch branches
+                # or haven't been passed a branch name
+                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+            else:
+                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
+            subprocess.call(cmd, shell=True)
+
+    else:
+        # We'll display this error message if the page is being accessed and no form has been posted
+        if app_is_current:
+            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render_with_devices(request, template_name="github_trigger_upgrade.html",
-                               context={'commit_info': commit_info})
+                               context={'commit_info': commit_info, 'app_is_current': app_is_current,
+                                        'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
+                                        'allow_git_branch_switching': allow_git_branch_switching})
 
 
 def login(request, next=None):
@@ -429,7 +457,7 @@ def site_settings(request):
 
 @login_required
 @site_is_configured
-def device_config_legacy(request, device_id, control_constants):
+def device_control_constants_legacy(request, device_id, control_constants):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
@@ -446,7 +474,7 @@ def device_config_legacy(request, device_id, control_constants):
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
             if not new_control_constants.save_all_to_controller(active_device):
-                return render_with_devices(request, template_name='device_config_old.html',
+                return render_with_devices(request, template_name='device_control_constants_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
@@ -456,11 +484,11 @@ def device_config_legacy(request, device_id, control_constants):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='device_config_old.html',
+            return render_with_devices(request, template_name='device_control_constants_old.html',
                                        context={'form': form, 'active_device': active_device})
     else:
         form = device_forms.OldCCModelForm(instance=control_constants)
-        return render_with_devices(request, template_name='device_config_old.html',
+        return render_with_devices(request, template_name='device_control_constants_old.html',
                                    context={'form': form, 'active_device': active_device})
 
 
@@ -483,10 +511,114 @@ def device_eeprom_reset(request, device_id):
     else:
         active_device.reset_eeprom()
         messages.success(request, "Device EEPROM reset")
-        return redirect("device_config", device_id=device_id)
+        return redirect("device_control_constants", device_id=device_id)
 
 def site_help(request):
     return render_with_devices(request, template_name='site_help.html', context={})
+
+
+@login_required
+@site_is_configured
+def device_manage(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    # Forms posted back to device_manage are explicitly settings update forms
+    if request.POST:
+        form = device_forms.DeviceForm(request.POST)
+
+        if form.is_valid():
+            # Update the device settings based on what we were passed via the form
+            active_device.device_name=form.cleaned_data['device_name']
+            active_device.temp_format=form.cleaned_data['temp_format']
+            active_device.data_point_log_interval=form.cleaned_data['data_point_log_interval']
+            active_device.useInetSocket=form.cleaned_data['useInetSocket']
+            active_device.socketPort=form.cleaned_data['socketPort']
+            active_device.socketHost=form.cleaned_data['socketHost']
+            active_device.serial_port=form.cleaned_data['serial_port']
+            active_device.serial_alt_port=form.cleaned_data['serial_alt_port']
+            # Not going to allow editing the board type. Can revisit if there seems to be a need later
+            # active_device.board_type=form.cleaned_data['board_type']
+            active_device.socket_name=form.cleaned_data['socket_name']
+            active_device.connection_type=form.cleaned_data['connection_type']
+            active_device.wifi_host=form.cleaned_data['wifi_host']
+            active_device.wifi_port=form.cleaned_data['wifi_port']
+
+            active_device.save()
+
+            messages.success(request, 'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device.device_name))
+
+            # TODO - Trigger Circus to reload properly, rather than using an external script
+            cmd = "nohup utils/reset_circus.sh"
+            subprocess.call(cmd, shell=True)
+
+            return render_with_devices(request, template_name='device_manage.html',
+                                       context={'form': form, 'active_device': active_device})
+
+        else:
+            return render_with_devices(request, template_name='device_manage.html',
+                                       context={'form': form, 'active_device': active_device})
+    else:
+        # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
+        # refactoring it. Project for later if need be.
+        initial_values = {
+            'device_name': active_device.device_name,
+            'temp_format': active_device.temp_format,
+            'data_point_log_interval': active_device.data_point_log_interval,
+            'connection_type': active_device.connection_type,
+            'useInetSocket': active_device.useInetSocket,
+            'socketPort': active_device.socketPort,
+            'socketHost': active_device.socketHost,
+            'serial_port': active_device.serial_port,
+            'serial_alt_port': active_device.serial_alt_port,
+            'board_type': active_device.board_type,
+            'socket_name': active_device.socket_name,
+            'wifi_host': active_device.wifi_host,
+            'wifi_port': active_device.wifi_port,
+        }
+
+        form = device_forms.DeviceForm(initial=initial_values)
+        return render_with_devices(request, template_name='device_manage.html',
+                                   context={'form': form, 'active_device': active_device})
+
+def device_uninstall(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.delete_device'):
+    #     messages.error(request, 'Your account is not permissioned to uninstall devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    if request.POST:
+        if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
+            if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
+                messages.success(request, "The device '{}' was successfully uninstalled.".format(active_device.device_name))
+                active_device.delete()
+                # TODO - Trigger Circus to reload properly, rather than using an external script
+                # As stone noted - this isn't needed as Circus will autodetect if a controller was removed and kill
+                # the instance of brewpi-script associated with it. This isn't necessary as a result.
+                # cmd = "nohup utils/reset_circus.sh &"
+                # subprocess.call(cmd, shell=True)
+                return redirect("siteroot")
+
+        # If we get here, one of the switches wasn't toggled
+        messages.error(request, "All three switches must be set to 'yes' to uninstall a device.")
+        return redirect("device_manage", device_id=device_id)
+    else:
+        messages.error(request, "To uninstall a device, use the form on the 'Manage Device' page.")
+        return redirect("device_manage", device_id=device_id)
 
 
 # So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to

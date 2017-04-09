@@ -3,6 +3,7 @@
 # Defaults
 BRANCH="master"
 SILENT=0
+TAG=""
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -13,29 +14,41 @@ reset=$(tput sgr0)
 
 # Help text
 function usage() {
-    echo "Usage: $0 [-h] [-b <branch name>]" 1>&2
+    echo "Usage: $0 [-h] [-s] [-b <branch name>] [-t <tag name>]" 1>&2
     exit 1
 }
 
 printinfo() {
-  printf "::: ${green}%s${reset}\n" "$@"
+    if [ ${SILENT} -eq 0 ]
+    then
+        printf "::: ${green}%s${reset}\n" "$@"
+    fi
 }
 
 
 printwarn() {
- printf "${tan}*** WARNING: %s${reset}\n" "$@"
+    if [ ${SILENT} -eq 0 ]
+    then
+        printf "${tan}*** WARNING: %s${reset}\n" "$@"
+    fi
 }
 
 
 printerror() {
- printf "${red}*** ERROR: %s${reset}\n" "$@"
+    if [ ${SILENT} -eq 0 ]
+    then
+        printf "${red}*** ERROR: %s${reset}\n" "$@"
+    fi
 }
 
 
-while getopts ":b:sh" opt; do
+while getopts ":b:t:sh" opt; do
   case ${opt} in
     b)
       BRANCH=${OPTARG}
+      ;;
+    t)
+      TAG=${OPTARG}
       ;;
     s)
       SILENT=1  # Currently unused
@@ -77,7 +90,16 @@ printinfo "Updating from git..."
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
 git fetch &>> upgrade.log
 git reset --hard &>> upgrade.log
-git checkout ${BRANCH}
+
+# If we have a tag set, use it
+if [ "${TAG}" = "" ]
+then
+    git checkout ${BRANCH} &>> upgrade.log
+else
+    # Not entirely sure if we need -B for this, but leaving it here just in case
+    git checkout tags/${TAG} -B ${BRANCH} &>> upgrade.log
+fi
+
 git pull &>> upgrade.log
 
 # Install everything from requirements.txt

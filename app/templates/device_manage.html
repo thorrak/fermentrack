@@ -1,0 +1,195 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{# I'm converting this form so that it can be used in both the initial guided setup as well as when the user clicks #}
+{# the "gear" icon in the upper right of the form #}
+
+{% block title %}Device {{ active_device.device_name }} Settings{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-header">{{ active_device.device_name }} Configuration</h1>
+
+    <h3>Device Logs</h3>
+
+    {# I shamelessly borrowed this from site_help.html. It could/should be refactored to make more sense when only #}
+    {# displaying logs for a single device. #}
+    <table class="table">
+      <thead class="thead-inverse">
+        <tr>
+          <th>Device Name</th>
+          <th>Stdout Log</th>
+          <th>Stderr Log</th>
+          <th>Status</th>
+          <td>Board Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+            <th scope="row">{{ active_device.device_name }}</th>
+            <td><a href="/api/log/stderr/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stdout.log</a></td>
+            <td><a href="/api/log/stdout/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stderr.log</a></td>
+            <td>{{ active_device.status }}</td>
+            <td>{{ active_device.board_type }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+
+<h3 class="page-header">Update Device Settings</h3>
+
+<form action="{% url "device_manage" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="deviceConstantsSection">
+        <h4 class="form-header">Device Constants</h4>
+        {% form_generic form.device_name %}
+        {% form_generic form.temp_format %}
+        {% form_generic form.data_point_log_interval %}
+        {% form_generic form.board_type %}
+    </div>
+
+
+    <div id="inetSocketSection">
+        <h4 class="form-header">Connect Interface to Script</h4>
+        {% form_generic form.useInetSocket %}
+
+        <div id="localSocketHidden" style="display: none">{# Although I don't recommend local sockets, some people might want them #}
+            {% form_generic form.socket_name %}
+        </div>
+
+        <div id="inetSocketHidden" style="display: block">
+            {% form_generic form.socketHost %}
+            {% form_generic form.socketPort %}
+        </div>
+    </div>
+
+
+    <div id="connectivitySection">
+        <h4 class="form-header">Connect Script to Device</h4>
+        {% form_generic form.connection_type %}
+        <div id="serialSocketSection" style="display: none"> {# The javascript below will show the relevant section (serial or wifi) #}
+                {% form_generic form.serial_port %}
+                {% form_generic form.serial_alt_port %}
+        </div>
+
+        <div id="wifiSection" style="display: none">
+                {% form_generic form.wifi_host %}
+                {% form_generic form.wifi_port %}
+        </div>
+    </div>
+
+    <input type="submit" value="Submit" class="btn btn-primary" />
+</form>
+
+
+
+
+
+{# ########### UNINSTALL DEVICE SECTION ############# #}
+
+    <h2>Reset EEPROM</h2>
+    <p>
+        If you are having trouble configuring the pins/sensors or control constants on your device, it may be due to
+        inconsistencies in the controller's current configuration. To reset the configuration to the "factory" defaults,
+        click the button below. Once reset, you will need to reconfigure the device's pin's, sensors, and control
+        constants.
+    </p>
+    <a href="{% url 'device_eeprom_reset' active_device.id %}" class="btn btn-danger btn-large btn-lg">Reset EEPROM</a>
+
+    <h2>Uninstall Device</h2>
+    <p>
+        To uninstall a device from Fermentrack, approve the following statements and click the "Remove Device" button
+        below. Removing the device will take effect immediately, and this operation cannot be reversed. Once removed,
+        the device will need to be set up again from scratch to be used with Fermentrack. Beer logs associated with
+        removed devices will not be linked from within Fermentrack and may become irrecoverable.
+    </p>
+
+    <p>
+        Once a device is removed from Fermentrack it will no longer be managed by the app and may not continue to
+        control temperature as expected. If you are actively controlling a heating/cooling source it is highly
+        recommended you have your device actively controlled.
+    </p>
+
+    <form action="{% url "device_uninstall" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_1" />
+        </div>
+        <div class="col-xs-11">
+            I want to uninstall the device "{{ active_device.device_name }}" from this instance of Fermentrack
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_2" />
+        </div>
+        <div class="col-xs-11">
+            I understand that the device may or may not continue to control temperature as expected once removed
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_3" />
+        </div>
+        <div class="col-xs-11">
+            <p>I understand that all logs associated with this device will be delinked and may be irrecoverable</p>
+        </div>
+    </div>
+    <div class="row col-xs-12">
+        <input type="submit" value="Uninstall Device" class="btn btn-danger" />
+    </div>
+
+    </form>
+
+
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+
+function InetSocketHide() {
+    if(document.getElementById('id_useInetSocket').checked) {
+         document.getElementById('localSocketHidden').style.display = 'none';
+         document.getElementById('inetSocketHidden').style.display = '';
+    } else {
+         document.getElementById('localSocketHidden').style.display = '';
+         document.getElementById('inetSocketHidden').style.display = 'none';
+    }
+}
+
+function ConnectionTypeHide() {
+    if(document.getElementById('id_connection_type').options[document.getElementById('id_connection_type').selectedIndex].value == "serial") {
+         document.getElementById('wifiSection').style.display = 'none';
+         document.getElementById('serialSocketSection').style.display = '';
+    } else {
+         document.getElementById('wifiSection').style.display = '';
+         document.getElementById('serialSocketSection').style.display = 'none';
+    }
+}
+
+
+window.onload = function() {
+    document.getElementById('id_connection_type').onchange = ConnectionTypeHide;
+    document.getElementById('id_useInetSocket').onchange = InetSocketHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    InetSocketHide();
+    ConnectionTypeHide();
+};
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+// Switches
+if ($('[data-toggle="switch"]').length) {
+  $('[data-toggle="switch"]').bootstrapSwitch();
+}
+</script>
+
+{% endblock %}

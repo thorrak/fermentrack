@@ -12,7 +12,7 @@
 {% for this_device in all_devices %}
 
     {{ this_device.device_name }}
-    <a href="{% url "device_config" this_device.id %}">Config</a>
+    <a href="{% url "device_control_constants" this_device.id %}">Config</a>
     <a href="{% url "sensor_list" this_device.id %}">Sensor List</a>
 
     (Device {{ this_device.id }})

@@ -107,13 +107,6 @@ class DeviceForm(forms.Form):
         return cleaned_data
 
 
-
-# class ScriptSettingsForm(forms.Form):
-#
-#     date_time_format_display = forms.ChoiceField(initial="mm/dd/yy", choices=InstallSettings.DATE_TIME_FORMAT_DISPLAY_CHOICES)
-
-
-
 class OldCCModelForm(ModelForm):
     class Meta:
         model = OldControlConstants

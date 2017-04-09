@@ -22,8 +22,10 @@ import serial
 import autoSerial
 import tcpSerial
 
-import app.models as models  # This SHOULD work due to the sys.path.append above.
-
+try:
+    import app.models as models  # This is only applicable if we're working with Django-based models
+except:
+    pass
 
 try:
     import configobj
@@ -86,8 +88,8 @@ def read_config_from_database_without_defaults(db_config_object):
     # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
     # config['scriptPath'] = db_config_object.script_path
     config['port'] = db_config_object.serial_port
-    if db_config_object.serial_alt_port <> 'None':
-        config['altport'] = db_config_object.serial_alt_port
+    # if db_config_object.serial_alt_port <> 'None':
+    config['altport'] = db_config_object.serial_alt_port
     config['boardType'] = db_config_object.board_type
     config['beerName'] = db_config_object.get_active_beer_name()
     config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file

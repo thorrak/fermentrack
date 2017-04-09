@@ -51,23 +51,24 @@
                     <div role="pillpanel" class="col-md-8 tab-pane" id="serialPill">
                         <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
                             {% if device_family == "ESP8266" or device_family == "Arduino" %}
-                                <p>We've got good news and bad news.</p>
+                                <p>Wonderful. It's hard to misplace a controller when you're connected via a USB cable.</p>
 
                                 <p>
-                                    While Fermentrack supports connecting to {{ device_family }}-based controllers
-                                    via serial, the autodetection functionality isn't quite ready yet. You'll have to
-                                    use the longer, advanced setup process.
+                                    Clicking the button below will take you to the Serial autodetection process, where
+                                    you will be prompted to determine the device name of your controller. Before you begin,
+                                    please disconnect your controller from this computer if it's currently connected.
                                 </p>
 
-                                <p>Don't worry - it's easy, and you'll be fine.</p>
-
-{#                                <input type="hidden" name="device_family" value="{{ device_family }}">#}
-{#                                <button type="submit" class="btn btn-large btn-primary">Scan Serial</button>#}
-                                <a href="{% url 'device_add' %}" class="btn btn-large btn-primary">Add Device via Advanced Setup</a>
+                                <a href="{% url 'device_guided_serial_autodetect' device_family %}" class="btn btn-large btn-primary">Begin Serial Autodetection</a>
+{#                                <a href="{% url 'device_add' %}" class="btn btn-large btn-primary">Add Device via Advanced Setup</a>#}
                             {% else %}
-                                <p>Unfortunately, Fermentrack doesn't support {{ device_family }}-based devices via
+                                <p>Unfortunately, Fermentrack doesn't (officially) support {{ device_family }}-based devices via
                                 serial just yet. We're working on it, and hope to add support in v2 or v3. Sit tight,
                                 and keep an eye on the discussion on HomeBrewTalk.</p>
+
+                                <p>If you're feeling adventurous, you can always try installing it manually via the
+                                <a href="{% url 'device_add' %}">Advanced Setup</a> workflow. If it ends up working please
+                                let us know!</p>
                             {% endif %}
                         </form>
                     </div>{# Serial Pane #}

@@ -10,6 +10,11 @@
 
 {% if devices_loaded %}{# If the devices didn't load, we're going to replace the page with an error message #}
 
+{% if form.errors %}
+   <div class="text-danger">Please correct the error{{ form.errors }} below.</div>
+{% endif %}
+
+
 <div id="sensorStatus">
     <div class="row">{#  This section displays the heating/cooling pin, fridge sensor statuses #}
         <div class="col-sm-4 sensor-setup-grid-box">

@@ -44,6 +44,9 @@ class PinDevice(models.Model):
     # This factory method is used to allow us to quickly create an instance from a dict loaded in the firmware
     @classmethod
     def create_from_dict(cls, device_dict):
+        # If the pin definition has " text" rather than "text" we assume the pin should be excluded
+        if " text" in device_dict and "text" not in device_dict:
+            return None
         new_device = cls(text=device_dict['text'], type=device_dict['type'], pin=device_dict['val'])
         return new_device
 
@@ -54,7 +57,8 @@ class PinDevice(models.Model):
 
         for this_pin in pinlist:
             next_pin = cls.create_from_dict(this_pin)
-            all_pins.append(next_pin)
+            if next_pin is not None:
+                all_pins.append(next_pin)
 
         return all_pins
 
@@ -837,7 +841,7 @@ class BrewPiDevice(models.Model):
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
     name = models.CharField(max_length=255, db_index=True)
-    device = models.ForeignKey(BrewPiDevice, db_index=True)
+    device = models.ForeignKey(BrewPiDevice, db_index=True, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(default=timezone.now)
 
     # format generally should be equal to device.temp_format. We're caching it here specifically so that if the user
@@ -966,7 +970,7 @@ class BeerLogPoint(models.Model):
     # Adding temp_format here so we can do conversions later on if we want to
     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C')
 
-    associated_beer = models.ForeignKey(Beer, db_index=True)
+    associated_beer = models.ForeignKey(Beer, db_index=True, on_delete=models.DO_NOTHING)
 
 
     def data_point(self, data_format='base_csv', set_defaults=True):

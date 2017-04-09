@@ -1,7 +1,7 @@
 # Fermentrack and Fuscus (Native Python Controller)
 
-Currently, Fermentrack does not support serial connections to controllers and therefore, due to the way it is implemented, does not directly support Fuscus - the native python implementation of the BrewPi controller firmware. Support for serial connections is considered a key missing feature, and is scheduled to be developed soon after the initial release.
+As of now, serial connections are supported by Fermentrack, and therefore it is expected that Fuscus should be Fermentrack compatible. Fuscus support *has not been tested* and should be considered experimental.
 
-Once serial connections are implemented, Fermentrack should support connections to Fuscus via the "advanced" setup workflow in a manner similar to the Arduino implementation.
+Due to the nature of the serial ports used by Fuscus, the serial autodetection process cannot be used to set up a Fuscus-based controller. Connections to Fuscus can be set up using the "advanced" workflow and manually specifying the Fuscus serial port. 
 
-Further down the development path are other features involving Fuscus such as direct installation and configuration management.
+Further down the development path are other features involving Fuscus such as direct installation and configuration management - though these are expected in v3 and beyond.

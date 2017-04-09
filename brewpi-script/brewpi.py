@@ -18,23 +18,6 @@
 from __future__ import print_function
 import os, sys
 
-# TODO - Refactor the Django-specific stuff to only get loaded/triggered if we are using dbcfg
-# Load up the Django specific stuff
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# This is so Django knows where to find stuff.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
-sys.path.append(BASE_DIR)
-
-# This is so my local_settings.py gets loaded.
-os.chdir(BASE_DIR)
-
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
-import app.models as models  # This SHOULD work due to the sys.path.append above.
-
-
 from BrewPiUtil import printStdErr
 from BrewPiUtil import logMessage
 
@@ -82,7 +65,11 @@ except ImportError:
     printStdErr("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
     sys.exit(1)
 
-import pid
+try:
+    import pid
+except ImportError:
+    printStdErr("BrewPi requires pid to run, please install it with 'sudo pip install pid --upgrade")
+    sys.exit(1)
 
 #local imports
 import temperatureProfile
@@ -95,6 +82,27 @@ import expandLogMessage
 from backgroundserial import BackGroundSerial
 
 
+# For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded
+# as false. If it turns out the user tried to launch with dblist/dbcfg, die with an error message.
+try:
+    # Load up the Django specific stuff
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    # This is so Django knows where to find stuff.
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
+    sys.path.append(BASE_DIR)
+
+    # This is so my local_settings.py gets loaded.
+    os.chdir(BASE_DIR)
+
+    from django.core.wsgi import get_wsgi_application
+
+    application = get_wsgi_application()
+    import app.models as models  # This SHOULD work due to the sys.path.append above.
+
+    djangoLoaded = True
+except:
+    djangoLoaded = False
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
 
@@ -129,8 +137,8 @@ except getopt.GetoptError:
         "--name <name>, --pidfiledir <directory>")
     sys.exit()
 
-# Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation. If
-# dbConfig is set, we have a Fermentrack- based installation.
+# Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation.
+# If dbConfig is set, we have a Fermentrack based installation.
 configFile = None
 dbConfig = None  # A BrewPiDevice object (which contains all our configuration info)
 
@@ -176,6 +184,9 @@ for o, a in opts:
 
     # list all devices in the database
     if o in ('-L', '--dblist'):
+        if not djangoLoaded:
+            sys.exit('ERROR: dblist specified, but django headers were not successfully loaded! This option only works with Fermentrack')
+
         try:
             dbDevices = models.BrewPiDevice.objects.all()
             print("=============== BrewPi Devices in Database ===============")
@@ -194,7 +205,9 @@ for o, a in opts:
 
     # load the configuration from the database
     if o in ('-w', '--dbcfg'):
-        # Try loading the database configuration from
+        if not djangoLoaded:
+            sys.exit('ERROR: dbcfg specified, but django headers were not successfully loaded! This option only works with Fermentrack')
+        # Try loading the database configuration from Django
         try:
             dbConfig = models.BrewPiDevice.objects.get(device_name=a)
             brewpiName = a
@@ -351,6 +364,7 @@ def startBeer(beerName):
     if configFile is not None:  # If we're using a configFile-based (brewpi-www) installation, set everything up
         if config['dataLogging'] == 'active':
             setFiles()
+
         changeWwwSetting('beerName', beerName)
 
 
@@ -687,7 +701,7 @@ while run:
             # This instruction is meant to restart the script or replace it with another instance.
             continue
         elif messageType == "eraseLogs":
-            if logToFiles:
+            if logToFiles:  # TODO - Determine if logToFiles is actually used, or we should just use std configFile test
                 # erase the log files for stderr and stdout
                 open(util.scriptPath() + '/logs/stderr.txt', 'wb').close()
                 open(util.scriptPath() + '/logs/stdout.txt', 'wb').close()
@@ -721,8 +735,8 @@ while run:
                 changeWwwSetting('dateTimeFormatDisplay', value)
                 logMessage("Changing date format config setting: " + value)
         elif messageType == "setActiveProfile":
-            if dbConfig is None:
-                # We're not using a dbConfig object (and therefore are relying on CSV files to manage profiles)
+            if configFile is not None:
+                # We're using a configFile object (and therefore are relying on CSV files to manage profiles)
                 # copy the profile CSV file to the working directory
                 logMessage("Setting profile '%s' as active profile" % value)
                 config = util.configSet(configFile, dbConfig, 'profileName', value)
@@ -754,7 +768,7 @@ while run:
                         logMessage("Notification: Profile mode enabled")
                         raise socket.timeout  # go to serial communication to update controller
 
-            else:
+            elif dbConfig is not None:
                 # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
                 logMessage("Setting controller to beer profile mode using database-configured profile")
                 conn.send("Profile successfully updated")
@@ -817,6 +831,7 @@ while run:
                 conn.send("device-list-not-up-to-date")
                 raise socket.timeout
         elif messageType == "getDashInfo":
+            # This is a new messageType
             response = {"BeerTemp": prevTempJson['BeerTemp'],
                         "FridgeTemp": prevTempJson['FridgeTemp'],
                         "BeerAnn": prevTempJson['BeerAnn'],
@@ -858,7 +873,6 @@ while run:
             deviceList['listState'] = ""  # invalidate local copy
 
             if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list
-                # TODO - Determine if it is a smart move to not invalidate listState first
                 bg_ser.writeln("d{r:1}")  # request installed devices
                 bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
                 time.sleep(5)  # We'll give the controller 5 seconds to respond
@@ -919,7 +933,11 @@ while run:
 
         elif (time.time() - prevDataTime) > float(config['interval']) + 2 * float(config['interval']):
             #something is wrong: controller is not responding to data requests
-            logMessage("Error: controller is not responding to new data requests")
+            logMessage("Error: controller is not responding to new data requests. Exiting.")
+
+            # In this case, we can rely on either circus (Fermentrack) or cron (brewpi-www) relaunching this script.
+            # It's better to fail loudly (in this case with an exit) than silently.
+            sys.exit(1)
 
 
         while True:

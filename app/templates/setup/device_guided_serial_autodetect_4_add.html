@@ -1,20 +1,21 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
 
-{% block title %}Add Device{% endblock %}
+{% block title %}Add Serial Controller - {{ form.serial_port.value }}{% endblock %}
 
 {% block content %}
 
-<h1 class="page-header">Add Device</h1>
+<h1 class="page-header">Add Device - {{ form.serial_port.value }}</h1>
 
-<form action="{% url "device_add" %}" class="form-horizontal" method="post">{% csrf_token %}
+<form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
+<input type="hidden" name="step" value="4">
 
     <div id="deviceConstantsSection">
         <h4 class="form-header">Device Constants</h4>
         {% form_generic form.device_name %}
         {% form_generic form.temp_format %}
         {% form_generic form.data_point_log_interval %}
-        {% form_generic form.board_type %}
+        {% form_generic form.board_type True %}
     </div>
 
 
@@ -26,7 +27,7 @@
             {% form_generic form.socket_name %}
         </div>
 
-        <div id="inetSocketHidden" style="display: block">
+        <div id="inetSocketHidden" style="display: none">
             {% form_generic form.socketHost %}
             {% form_generic form.socketPort %}
         </div>
@@ -35,19 +36,12 @@
 
     <div id="connectivitySection">
         <h4 class="form-header">Connect Script to Device</h4>
-        {% form_generic form.connection_type %}
-        <div id="serialSocketSection" style="display: none"> {# The javascript below will show the relevant section (serial or wifi) #}
-                {% form_generic form.serial_port %}
-                {% form_generic form.serial_alt_port %}
-        </div>
-
-        <div id="wifiSection" style="display: none">
-                {% form_generic form.wifi_host %}
-                {% form_generic form.wifi_port %}
-        </div>
+        {% form_generic form.connection_type True %}
+        {% form_generic form.serial_port True %}
+        {% form_generic form.serial_alt_port True %}
     </div>
 
-    <input type="submit" value="Submit" class="btn btn-primary" />
+    <input type="submit" value="Submit" class="btn btn-primary btn-large btn-lg" />
 </form>
 
 {% endblock %}
@@ -65,24 +59,12 @@ function InetSocketHide() {
     }
 }
 
-function ConnectionTypeHide() {
-    if(document.getElementById('id_connection_type').options[document.getElementById('id_connection_type').selectedIndex].value == "serial") {
-         document.getElementById('wifiSection').style.display = 'none';
-         document.getElementById('serialSocketSection').style.display = '';
-    } else {
-         document.getElementById('wifiSection').style.display = '';
-         document.getElementById('serialSocketSection').style.display = 'none';
-    }
-}
-
 
 window.onload = function() {
-    document.getElementById('id_connection_type').onchange = ConnectionTypeHide;
     document.getElementById('id_useInetSocket').onchange = InetSocketHide;
 
     {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
     InetSocketHide();
-    ConnectionTypeHide();
 };
 
 $(function () {
