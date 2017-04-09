@@ -67,8 +67,9 @@ class BrewPiSpawner(object):
         try:
             watchers = self._circusmgr.get_applications()
         except CircusException:
-            self.log.error("Could not get running processes", exc_info=self.debug)
+            self.log.error("Could not get running processes from circus", exc_info=self.debug)
             return []
+        # Only pic devices with prefix set, other apps are other functions and should be left alone.
         running_devices = [x for x in watchers if x.startswith(self.prefix)]
         return running_devices
 
@@ -77,11 +78,16 @@ class BrewPiSpawner(object):
         """Checks for active devices in database, compares to running, starts and stops based on
         if device should be running or not
         """
+        # Get all devices from database
         db_devices = self._querydb()
-        self.log.debug("db_devices: %s", ", ".join([dev.device_name for dev in db_devices]))
         # Only get devices that are run within circus with the prefix
         running_devices = self._running()
-        self.log.debug("db_devices: %s", ", ".join([dev for dev in running_devices]))
+
+        self.log.debug(
+            "db devices: %s, running devices: %s",
+            ", ".join([dev.device_name for dev in db_devices]),
+            ", ".join([dev for dev in running_devices])
+            )
         names = []
         # Find non running devices
         for dbd in db_devices:
