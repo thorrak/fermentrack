@@ -9,13 +9,13 @@ There are four main types of hardware that currently support BrewPi firmware ins
 
 The following table shows which release is expected to have support for various controller types:
 
-| Release    | ESP8266 Serial  | ESP8266 WiFi       | Arduino         | Spark           | Fuscus (Native Python) |
-|------------|-----------------|--------------------|-----------------|-----------------|------------------------|
-| v1         | :no_entry_sign: | :white_check_mark: | :no_entry_sign: | :no_entry_sign: | :no_entry_sign:        |
-| v1 (flash) | :no_entry_sign: | :no_entry_sign:    | :no_entry_sign: | :no_entry_sign: | :no_entry_sign:        |
-| v2         | :grey_question: | :white_check_mark: | :grey_question: | :no_entry_sign: |                        |
-| v2 (flash) | :grey_question: | :grey_question:    | :grey_question: | :no_entry_sign: | :no_entry_sign:        |
-| v3         |                 | :white_check_mark: |                 |                 |                        |
+| Release    | ESP8266 Serial     | ESP8266 WiFi       | Arduino            | Spark           | Fuscus (Native Python) |
+|------------|--------------------|--------------------|--------------------|-----------------|------------------------|
+| v1         | :no_entry_sign:    | :white_check_mark: | :no_entry_sign:    | :no_entry_sign: | :no_entry_sign:        |
+| v1 (flash) | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: | :no_entry_sign:        |
+| v2         | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign: | :grey_question:        |
+| v2 (flash) | :grey_question:    | :grey_question:    | :grey_question:    | :no_entry_sign: | :no_entry_sign:        |
+| v3         |                    | :white_check_mark: |                    |                 |                        |
 
 
 ##### Legend:

@@ -607,8 +607,10 @@ def device_uninstall(request, device_id):
                 messages.success(request, "The device '{}' was successfully uninstalled.".format(active_device.device_name))
                 active_device.delete()
                 # TODO - Trigger Circus to reload properly, rather than using an external script
-                cmd = "nohup utils/reset_circus.sh"
-                subprocess.call(cmd, shell=True)
+                # As stone noted - this isn't needed as Circus will autodetect if a controller was removed and kill
+                # the instance of brewpi-script associated with it. This isn't necessary as a result.
+                # cmd = "nohup utils/reset_circus.sh &"
+                # subprocess.call(cmd, shell=True)
                 return redirect("siteroot")
 
         # If we get here, one of the switches wasn't toggled

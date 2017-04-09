@@ -168,3 +168,6 @@ data/*.almost_json
 # Don't upload any of the various log files
 install.log
 upgrade.log
+
+# Also ignore the serial device cache (used for autodetection)
+device.cache

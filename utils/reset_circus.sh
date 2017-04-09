@@ -5,6 +5,7 @@
 
 # TODO - Get Fermentrack to natively reload Circus instead of using this file
 
+sleep 1s
 circusctl stop
 circusctl reloadconfig
 circusctl start

@@ -22,8 +22,10 @@ import serial
 import autoSerial
 import tcpSerial
 
-import app.models as models  # This SHOULD work due to the sys.path.append above.
-
+try:
+    import app.models as models  # This is only applicable if we're working with Django-based models
+except:
+    pass
 
 try:
     import configobj

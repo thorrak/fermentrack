@@ -7,7 +7,7 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 
 import setup_forms, device_forms
-import mdnsLocator
+import mdnsLocator, serial_integration
 
 from app.models import BrewPiDevice
 
@@ -257,4 +257,96 @@ def device_guided_add_mdns(request, mdns_id):
 
         form = device_forms.DeviceForm(initial=initial_values)
         return render_with_devices(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
+
+
+
+
+@login_required
+@site_is_configured
+def device_guided_serial_autodetect(request, device_family):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    # device_guided_serial_autodetect contains all 4 steps in the Serial autodetection guided setup.
+
+    if not request.POST:
+        # If we haven't had something posted to us, provide the instructions page. (Step 1)
+        return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html', context={'device_family': device_family})
+
+    else:
+        # Something was posted - figure out what step we're on by looking at the "step" field
+        if 'step' not in request.POST:
+            # We received a form, but not the right form. Redirect to the start of the autodetection flow.
+            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
+                                       context={'device_family': device_family})
+        elif request.POST['step'] == "2":
+            # Step 2 - Cache the current devices & present the next set of instructions to the user
+            current_devices = serial_integration.cache_current_devices()
+            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_2.html',
+                                       context={'device_family': device_family, 'current_devices': current_devices})
+        elif request.POST['step'] == "3":
+            # Step 3 - Detect newly-connected devices & prompt the user to select the one that corresponds to the
+            # device they want to configure.
+            _, _, _, new_devices_enriched = serial_integration.compare_current_devices_against_cache(device_family)
+            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_3.html',
+                                       context={'device_family': device_family, 'new_devices': new_devices_enriched})
+        elif request.POST['step'] == "4":
+            # Step 4 - MAGIC.
+            if 'serial_port' in request.POST:
+                form = device_forms.DeviceForm(request.POST)
+                if form.is_valid():
+                    new_device = BrewPiDevice(
+                        device_name=form.cleaned_data['device_name'],
+                        temp_format=form.cleaned_data['temp_format'],
+                        data_point_log_interval=form.cleaned_data['data_point_log_interval'],
+                        useInetSocket=form.cleaned_data['useInetSocket'],
+                        socketPort=form.cleaned_data['socketPort'],
+                        socketHost=form.cleaned_data['socketHost'],
+                        serial_port=form.cleaned_data['serial_port'],
+                        serial_alt_port=form.cleaned_data['serial_alt_port'],
+                        board_type=form.cleaned_data['board_type'],
+                        socket_name=form.cleaned_data['socket_name'],
+                        connection_type=form.cleaned_data['connection_type'],
+                        wifi_host=form.cleaned_data['wifi_host'],
+                        wifi_port=form.cleaned_data['wifi_port'],
+                    )
+
+                    new_device.save()
+
+                    messages.success(request, 'Device {} Added. Please wait a few seconds for controller to start'.format(new_device.device_name))
+                    return redirect("/")
+
+                else:
+                    return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
+                                               context={'form': form, 'device_family': device_family})
+            else:
+                random_port = random.randint(2000,3000)
+                # If we were just passed to the form, provide the initial values
+                # TODO - Correctly determine 'board_type'
+                if device_family == 'ESP8266':
+                    board_type = 'esp8266'
+                elif device_family == 'Arduino':
+                    board_type = 'arduino'
+                else:
+                    # Invalid board type - shouldn't ever get here.
+                    messages.error(request, "Invalid board type for serial autodetection")
+                    return redirect("/")
+
+                initial_values = {'board_type': board_type, 'serial_port': request.POST['device'], 'connection_type': 'serial',
+                                  'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+
+                form = device_forms.DeviceForm(initial=initial_values)
+                return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
+                                           context={'form': form, 'device_family': device_family})
+
+        elif request.POST['step'] == "5":
+            pass
+        else:
+            # The step number we received was invalid. Redirect to the start of the autodetection flow.
+            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
+                                       context={'device_family': device_family})
+
+
 
