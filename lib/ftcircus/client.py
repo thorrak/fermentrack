@@ -4,7 +4,7 @@ from circus.exc import CallError
 from circus.util import DEFAULT_ENDPOINT_DEALER
 
 LOG = logging.getLogger("brewpi-spawner")
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
 
 class CircusException(Exception):
     """Raised from FTCircusHandler"""
@@ -24,7 +24,7 @@ class CircusMgr(object):
         try:
             res = self._client.call(message)
         except CallError, callerr:
-            LOG.error("Error from circus", exc_info=True)
+            LOG.debug("Error from circus", exc_info=True)
             raise CircusException("Could send message to circus: {}".format(callerr))
         if res['status'] == u'error':
             raise CircusException("Error: {}".format(res['reason']))
