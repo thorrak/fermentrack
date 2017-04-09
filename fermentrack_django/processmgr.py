@@ -1,7 +1,9 @@
+#!/usr/bin/env python
 import os
 import sys
 import time
 import logging
+import argparse
 
 from circus.client import CircusClient
 from circus.exc import CallError
@@ -18,7 +20,7 @@ import app.models as models
 from lib.ftcircus.client import CircusMgr, CircusException
 
 LOG = logging.getLogger("processmgr")
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
 
 # Constants
 SLEEP_INTERVAL = 15
@@ -33,7 +35,8 @@ class BrewPiSpawner(object):
                  command_tmpl='python -u brewpi-script/brewpi.py --dbcfg %s',
                  circus_endpoint=DEFAULT_ENDPOINT_DEALER,
                  logfilepath=os.path.expanduser("~/fermentrack/log"),
-                 log=LOG
+                 log=LOG,
+                 debug=False
                 ):
         self.prefix = prefix
         self.command_tmpl = command_tmpl
@@ -42,7 +45,10 @@ class BrewPiSpawner(object):
         self.circus_endpoint = circus_endpoint
         self.logfilepath = logfilepath
         self.log = log
+        self.debug = debug
         self._circusmgr = CircusMgr(circus_endpoint=circus_endpoint)
+        if self.debug:
+            self.log.setLevel(logging.DEBUG)
 
 
     def _querydb(self):
@@ -52,7 +58,7 @@ class BrewPiSpawner(object):
         except self.model.DoesNotExist:
             self.log.info("No active devices")
         except Exception, e:
-            self.log.info("Could not query database for active devices", exc_info=True)
+            self.log.critical("Could not query database for active devices", exc_info=self.debug)
         return []
 
 
@@ -61,7 +67,7 @@ class BrewPiSpawner(object):
         try:
             watchers = self._circusmgr.get_applications()
         except CircusException:
-            self.log.error("Could not get running processes", exc_info=True)
+            self.log.error("Could not get running processes", exc_info=self.debug)
             return []
         running_devices = [x for x in watchers if x.startswith(self.prefix)]
         return running_devices
@@ -111,7 +117,7 @@ class BrewPiSpawner(object):
             )
             self.log.debug("_add_process circus client call")
         except CircusException:
-            self.log.error("Could not spawn process: %s", proc_name, exc_info=True)
+            self.log.error("Could not spawn process: %s", proc_name, exc_info=self.debug)
 
 
     def _stop_process(self, name):
@@ -121,7 +127,7 @@ class BrewPiSpawner(object):
             self._circusmgr.stop(name)
             self.log.debug("_stop_process circus client call")
         except CircusException:
-            self.log.debug("Could not stop process: %s", name, exc_info=True)
+            self.log.debug("Could not stop process: %s", name, exc_info=self.debug)
 
 
     def _rm_process(self, name):
@@ -131,7 +137,7 @@ class BrewPiSpawner(object):
             self._circusmgr.remove(name)
             self.log.debug("_rm_device circus client call")
         except CircusException:
-            self.log.debug("Could not rm process: %s", name, exc_info=True)
+            self.log.debug("Could not rm process: %s", name, exc_info=self.debug)
 
 
     def run_forvever(self):
@@ -140,11 +146,39 @@ class BrewPiSpawner(object):
             self.startstop_once()
             time.sleep(self.sleep_interval)
 
+def run():
+    parser = argparse.ArgumentParser(prog="processmgr", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "-p", "--prefix",
+        help="Brewpi devices prefix for identification by this script",
+        action="store", dest="prefix", default="dev-"
+        )
+    parser.add_argument(
+        "-s", "--sleep",
+        help="Initial startup delay",
+        action="store", dest="sleep", type=int, default=2
+        )
+    parser.add_argument(
+        '--cmd',
+        help="Command template to use",
+        action="store", dest="cmdtmpl", default=DEFAULT_circusmgrD_TEMPLATE
+    )
+    parser.add_argument(
+        '--debug',
+        help="Add debugging messages to log",
+        action="store_true", dest="debug", default=False
+    )
+    args = parser.parse_args()
+    LOG.info("Settings: Sleep interval: {a.sleep}s, Prefix: '{a.prefix}'".format(a=args))
+    time.sleep(args.sleep)
+    process_spawner = BrewPiSpawner(
+        model=models.BrewPiDevice,
+        command_tmpl=args.cmdtmpl,
+        prefix=args.prefix,
+        debug=args.debug)
+    process_spawner.run_forvever()
 
 if __name__ == '__main__':
-    # Chill so that circus has time to startup
-    LOG.debug("Starting up, wait 2s for everything to get ready")
-    time.sleep(2)
-    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=DEFAULT_circusmgrD_TEMPLATE, prefix="dev-")
-    process_spawner.run_forvever()
+    run()
+
 
