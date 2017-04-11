@@ -10,10 +10,6 @@ class brewPiDeviceAdmin(admin.ModelAdmin):
 class beerAdmin(admin.ModelAdmin):
     list_display = ('name', 'device', 'created')
 
-@admin.register(BeerLogPoint)
-class beerLogPointAdmin(admin.ModelAdmin):
-    list_display = ('associated_beer', 'log_time', 'beer_temp', 'fridge_temp')
-
 @admin.register(FermentationProfile)
 class fermentationProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'status')
