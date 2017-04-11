@@ -4,7 +4,11 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
-import os.path, csv  # BeerLogPoints
+# BeerLogPoints
+import os.path
+import csv
+import logging
+
 
 import socket
 import json, time, datetime, pytz
@@ -12,6 +16,9 @@ from constance import config
 from fermentrack_django import settings
 import re
 
+from lib.ftcircus.client import CircusMgr, CircusException
+
+logger = logging.getLogger(__name__)
 
 # BrewPiDevice
 # |
@@ -836,6 +843,31 @@ class BrewPiDevice(models.Model):
     def get_dashpanel_info(self):
         return json.loads(self.send_message("getDashInfo", read_response=True))
 
+    def start_process(self):
+        """Start this device process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = "dev-{}".format(self.device_name)
+        fc.start(name=circus_device_name)
+
+    def remove_process(self):
+        """Remove this device process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = "dev-{}".format(self.device_name)
+        fc.remove(name=circus_device_name)
+
+    def stop_process(self):
+        """Stop this device process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = "dev-{}".format(self.device_name)
+        fc.stop(name=circus_device_name)
+
+
+    def status_process(self):
+        """Status this device process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = "dev-{}".format(self.device_name)
+        status = fc.application_status(name=circus_device_name)
+        return status
 
 
 class Beer(models.Model):
