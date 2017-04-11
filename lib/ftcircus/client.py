@@ -47,7 +47,7 @@ class CircusMgr(object):
         return True if response['status'] == u'ok' else False
 
     def start(self, name, waiting=False):
-        """Start circus process
+        """Start circus process that has been stopped
 
         If ``waiting`` is False (default), the call will return immediately
         after calling ``start`` process.
@@ -67,7 +67,8 @@ class CircusMgr(object):
         return True if response['status'] == u'ok' else False
 
     def stop(self, name, waiting=False):
-        """Stop a circus process
+        """Stop a circus process, like suspend, the processess is stopped but still
+        in circus, to resume use ``start``
 
         If ``waiting`` is False (default), the call will return immediately
         after calling ``stop`` process.
@@ -98,7 +99,7 @@ class CircusMgr(object):
         return response
 
     def remove(self, name):
-        """Remove the stopped ``name`` from circus fully"""
+        """Stop and Remove ``name`` from circus fully"""
         response = self._call("rm", name=name)
         return response
 
