@@ -849,11 +849,18 @@ class BrewPiDevice(models.Model):
         circus_device_name = "dev-{}".format(self.device_name)
         fc.start(name=circus_device_name)
 
+    def remove_process(self):
+        """Remove this device process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = "dev-{}".format(self.device_name)
+        fc.remove(name=circus_device_name)
+
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
         fc = CircusMgr()
         circus_device_name = "dev-{}".format(self.device_name)
         fc.stop(name=circus_device_name)
+
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
