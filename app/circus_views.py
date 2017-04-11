@@ -13,7 +13,7 @@ def _JsonResponseIndent(request):
 
 @login_required
 def stop_brewpi_device(request, device_id):
-    """Stop Brewpi Process
+    """Stop Brewpi Process, like suspend, it is still in cirucs but stopped.
     Returns:
         Error: {'status': 'error', message: 'description'}
         OK:    {'status': 'ok', message: 'description'}
@@ -30,12 +30,12 @@ def stop_brewpi_device(request, device_id):
         logger.error("Error during circus call", exc_info=True)
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)
-    ret = {'status': 'ok', 'message': 'process signaled to be restarted'}
+    ret = {'status': 'ok', 'message': 'process signaled to be stopped'}
     return _JsonResponseIndent(ret)
 
 @login_required
 def start_brewpi_device(request, device_id):
-    """Start Brewpi Process
+    """Start Brewpi Process, there must exist an stopped process.
     Returns:
         Error: {'status': 'error', message: 'description'}
         OK:    {'status': 'ok', message: 'description'}
@@ -76,4 +76,26 @@ def status_brewpi_device(request, device_id):
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)
     ret = {'status': 'ok', 'message': status}
+    return _JsonResponseIndent(ret)
+
+@login_required
+def remove_brewpi_device(request, device_id):
+    """Remove (and stop) Brewpi Process
+    Returns:
+        Error: {'status': 'error', message: 'description'}
+        OK:    {'status': 'ok', message: 'removed'}
+    """
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        logger.error("Error loading device with ID: {}".format(device_id), exc_info=True)
+        ret = {'status': 'error', 'message': 'Unable remove device id: {}'.format(device_id)}
+        return _JsonResponseIndent(ret)
+    try:
+        active_device.remove_process()
+    except CircusException, cerror:
+        logger.error("Error during circus call", exc_info=True)
+        ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
+        return _JsonResponseIndent(ret)
+    ret = {'status': 'ok', 'message': "removed"}
     return _JsonResponseIndent(ret)
