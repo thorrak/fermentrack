@@ -7,6 +7,7 @@
     <h1>Profile: {{ this_profile.name }}</h1>
 
     {# TODO - Add profile graph here. #}
+    <div id="graph" style="width:80%; height:300px;"></div>
 
     <h3>Profile Setpoints</h3>
 
@@ -82,5 +83,20 @@
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
+</script>
+
+<script>
+    var profile_id = window.location.pathname.split("/").slice(-3)[0];
+    g = new Dygraph(
+    document.getElementById("graph"),
+    // For possible data formats, see http://dygraphs.com/data.html
+    // The x-values could also be dates, e.g. "2012/03/15"
+    "/fermentation_profile/"+profile_id+"/csv/",
+    {
+      // options go here. See http://dygraphs.com/options.html
+      strokeWidth: 3,
+      ylabel: 'Temperature',
+      animatedZooms: true
+    });
 </script>
 {% endblock %}

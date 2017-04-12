@@ -10,7 +10,11 @@ from constance import config
 from decorators import site_is_configured  # Checks if user has completed constance configuration
 
 
-import json, time
+import json
+import time
+from datetime import datetime
+import csv
+from django.http import HttpResponse
 
 from app.models import BrewPiDevice, FermentationProfilePoint, FermentationProfile
 
@@ -170,4 +174,15 @@ def profile_undelete(request, profile_id):
 
     return redirect('profile_list')
 
-
+@login_required
+@site_is_configured
+def profile_points_to_csv(request, profile_id):
+    profile = FermentationProfile.objects.get(id=profile_id)
+    profile_points = profile.fermentationprofilepoint_set.order_by('ttl')
+    response = HttpResponse(content_type='text/plain')
+    writer = csv.writer(response)
+    writer.writerow(['date', 'temperature'])
+    for p in profile_points:
+        profilepoint_date = datetime.now() + p.ttl
+        writer.writerow([profilepoint_date, p.temp_to_preferred()])
+    return response
