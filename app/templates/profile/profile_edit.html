@@ -10,6 +10,7 @@
 
     <h3>Profile Setpoints</h3>
 
+    {% load tz %}
     {% if this_profile_points %}
         <table class="table">
             <thead>
@@ -17,6 +18,7 @@
                     <th>TTL</th>
                     <th>Temperature (&deg;{{ config.TEMPERATURE_FORMAT }})</th>
                     <th></th>
+                    <th>Date and Time</th>
                 </tr>
             </thead>
 
@@ -25,6 +27,8 @@
                     <td>{{ this_point.ttl }}</td>
                     <td>{{ this_point.temp_to_preferred }}</td>
                     <td>{% if this_profile.is_editable %}<a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a>{% endif %}</td>
+                    {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
+                    <td>{{ this_point.ttl | durfromnow | localtime | date:"r" }}</td>
                 </tr>
             {% endfor %}
         </table>
