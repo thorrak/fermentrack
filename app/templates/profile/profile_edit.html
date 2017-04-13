@@ -7,7 +7,7 @@
     <h1>Profile: {{ this_profile.name }}</h1>
 
     {# TODO - Add profile graph here. #}
-    <div id="graph" style="width:80%; height:300px;"></div>
+    <div id="profilegraph"></div>
 
     <h3>Profile Setpoints</h3>
 
@@ -18,8 +18,8 @@
                 <tr>
                     <th>TTL</th>
                     <th>Temperature (&deg;{{ config.TEMPERATURE_FORMAT }})</th>
-                    <th></th>
                     <th>Date and Time</th>
+                    {% if this_profile.is_editable %}<th>Delete Point</th>{% endif %}
                 </tr>
             </thead>
 
@@ -27,9 +27,9 @@
                 <tr>
                     <td>{{ this_point.ttl }}</td>
                     <td>{{ this_point.temp_to_preferred }}</td>
-                    <td>{% if this_profile.is_editable %}<a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a>{% endif %}</td>
                     {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
                     <td>{{ this_point.ttl | durfromnow | localtime | date:"r" }}</td>
+                    {% if this_profile.is_editable %}<td><a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>{% endif %}
                 </tr>
             {% endfor %}
         </table>
@@ -88,15 +88,14 @@
 <script>
     var profile_id = window.location.pathname.split("/").slice(-3)[0];
     g = new Dygraph(
-    document.getElementById("graph"),
-    // For possible data formats, see http://dygraphs.com/data.html
-    // The x-values could also be dates, e.g. "2012/03/15"
+    document.getElementById("profilegraph"),
     "/fermentation_profile/"+profile_id+"/csv/",
     {
-      // options go here. See http://dygraphs.com/options.html
+      titleHeight: 32,
       strokeWidth: 3,
-      ylabel: 'Temperature',
-      animatedZooms: true
+      ylabel: '&deg;{{ config.TEMPERATURE_FORMAT }}',
+      animatedZooms: true,
+      fillGraph: true
     });
 </script>
 {% endblock %}
