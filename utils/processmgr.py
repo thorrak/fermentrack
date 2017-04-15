@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# This is an old version of the BrewPi-script log manager that is no longer in use. Its spiritual successor is
+# brewpi_spawner.py.
+
+# TODO - Remove this file at some point if it is no longer being used
+
 import os
 import sys
 import time

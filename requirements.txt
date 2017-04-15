@@ -1,14 +1,16 @@
 Django>=1.10,<1.11
 configobj       # required by brewpi.py
-#psutil>=2.0     # required by BrewPiProcess.py  # TODO - Delete if we no longer need now that we have circus
 simplejson      # required by brewpi.py
 pytz            # required by manage.py migrate
 #raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
-zeroconf        # For locating ESP8266 devices
-circus          # for managing brewpi.py processes
-circus-web      # for managing brewpi.py processes
+zeroconf        # for locating ESP8266 devices
+circus          # for managing Fermentrack wsgi & brewpi.py processes
+circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
 pid             # for pid-file handling
 pyserial        # for serial interaction
+
+celery              # for managing asynchronous task completion
+django-celery-beat  # for scheduling asynchronous tasks with celery

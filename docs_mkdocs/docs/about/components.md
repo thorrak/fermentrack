@@ -23,6 +23,8 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 | [chaussette](https://github.com/circus-tent/chaussette/blob/master/LICENSE) 	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
 | [pid](https://pypi.python.org/pypi/pid/2.1.1)                               	| [Apache Public License v2](https://github.com/trbs/pid/blob/master/LICENSE)                       	|
 | [pyserial](https://pypi.python.org/pypi/pyserial/3.2.1)                     	| [BSD 3 Clause](https://github.com/pyserial/pyserial/blob/master/LICENSE.txt)                      	|
+| [celery](http://www.celeryproject.org/)                                   	| [BSD 3 Clause](https://github.com/celery/celery/blob/master/LICENSE)                              	|
+| [django-celery-beat](http://django-celery-beat.readthedocs.io/en/latest/)  	| [BSD 3 Clause](https://github.com/celery/django-celery-beat/blob/master/LICENSE)                    	|
 
 
 ## JavaScript Packages

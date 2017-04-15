@@ -1,3 +1,6 @@
+# This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
+# a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
+
 import os
 import sys
 import time
@@ -12,6 +15,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
 sys.path.append(BASE_DIR)
+os.chdir(BASE_DIR)
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 import app.models as models
