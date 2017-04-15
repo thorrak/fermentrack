@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+# This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
+# a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
+
 import os
 import sys
 import time
 import logging
-import argparse
 
 from circus.client import CircusClient
 from circus.exc import CallError
@@ -14,17 +15,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
 sys.path.append(BASE_DIR)
+os.chdir(BASE_DIR)
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 import app.models as models
-from lib.ftcircus.client import CircusMgr, CircusException
 
-LOG = logging.getLogger("processmgr")
+LOG = logging.getLogger("brewpi-spawner")
 LOG.setLevel(logging.INFO)
 
 # Constants
 SLEEP_INTERVAL = 15
-DEFAULT_circusmgrD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
 
 
 class BrewPiSpawner(object):
@@ -35,8 +36,7 @@ class BrewPiSpawner(object):
                  command_tmpl='python -u brewpi-script/brewpi.py --dbcfg %s',
                  circus_endpoint=DEFAULT_ENDPOINT_DEALER,
                  logfilepath=os.path.expanduser("~/fermentrack/log"),
-                 log=LOG,
-                 debug=False
+                 log=LOG
                 ):
         self.prefix = prefix
         self.command_tmpl = command_tmpl
@@ -45,10 +45,6 @@ class BrewPiSpawner(object):
         self.circus_endpoint = circus_endpoint
         self.logfilepath = logfilepath
         self.log = log
-        self.debug = debug
-        self._circusmgr = CircusMgr(circus_endpoint=circus_endpoint)
-        if self.debug:
-            self.log.setLevel(logging.DEBUG)
 
 
     def _querydb(self):
@@ -58,19 +54,19 @@ class BrewPiSpawner(object):
         except self.model.DoesNotExist:
             self.log.info("No active devices")
         except Exception, e:
-            self.log.critical("Could not query database for active devices", exc_info=self.debug)
+            self.log.info("Could not query database for active devices", exc_info=True)
         return []
 
 
     def _running(self):
         """Return Brewpi instances running using suffix as filter"""
+        client = CircusClient(endpoint=self.circus_endpoint)
         try:
-            watchers = self._circusmgr.get_applications()
-        except CircusException:
-            self.log.error("Could not get running processes from circus", exc_info=self.debug)
+            call = client.call({"command": "list", "properties": {}})
+        except CallError:
+            self.log.error("Could not get running processes", exc_info=True)
             return []
-        # Only pic devices with prefix set, other apps are other functions and should be left alone.
-        running_devices = [x for x in watchers if x.startswith(self.prefix)]
+        running_devices = [x for x in call['watchers'] if x.startswith(self.prefix)]
         return running_devices
 
 
@@ -78,16 +74,11 @@ class BrewPiSpawner(object):
         """Checks for active devices in database, compares to running, starts and stops based on
         if device should be running or not
         """
-        # Get all devices from database
         db_devices = self._querydb()
+        self.log.debug("db_devices: %s", str(db_devices))
         # Only get devices that are run within circus with the prefix
         running_devices = self._running()
-
-        self.log.debug(
-            "DB devices (active): %s, Running device processes: %s",
-            ", ".join([dev.device_name for dev in db_devices]),
-            ", ".join([dev for dev in running_devices])
-            )
+        self.log.debug("running_devices: %s", running_devices)
         names = []
         # Find non running devices
         for dbd in db_devices:
@@ -96,13 +87,14 @@ class BrewPiSpawner(object):
             dev_name = dev_name.lower()
             names.append(dev_name)
             if dev_name not in running_devices:
-                self.log.info("New BrewPi device found: %s", dev_name)
+                self.log.info("New BrewPi device found: %s", dev_name.lower())
                 self._add_process(dbd.device_name)
 
         # Find devices running but should not
         for rdev in running_devices:
             if rdev not in names:
-                self.log.info("Device: %s should be stopped and removed, stopped", rdev)
+                self.log.info("Device: %s should be stopped, stopping", rdev)
+                self._stop_process(rdev)
                 self._rm_process(rdev)
 
 
@@ -110,39 +102,69 @@ class BrewPiSpawner(object):
         """Spawn a new brewpi.py process via circus, 'dev-' is appended to the name to
         keep brewpi devices seperated from other devices
         """
+        client = CircusClient(endpoint=self.circus_endpoint)
         proc_name = self.prefix + name
         # https://github.com/circus-tent/circus/issues/927
         proc_name = proc_name.lower()
-        cmd = self.command_tmpl % name
         try:
-            call = self._circusmgr.add_controller(
-                cmd,
-                proc_name,
-                self.logfilepath
+            call = client.call(
+                {
+                    "command": "add",
+                    "properties": {
+                        "cmd": self.command_tmpl % name,
+                        "name": proc_name,
+                        "options": {
+                            "copy_env": True,
+                            "stdout_stream": {
+                                "class": "FileStream",
+                                "filename": "%s/%s-stdout.log" % (self.logfilepath, proc_name),
+                            },
+                            "stderr_stream": {
+                                "class": "FileStream",
+                                "filename": "%s/%s-stderr.log" % (self.logfilepath, proc_name),
+                            }
+                        },
+                        "start": True
+                    }
+                }
             )
-            self.log.debug("_add_process circus client call")
-        except CircusException:
-            self.log.error("Could not spawn process: %s", proc_name, exc_info=self.debug)
+            self.log.debug("_add_process circus client call: %s", str(call))
+        except CallError:
+            self.log.error("Could not spawn process: %s", proc_name, exc_info=True)
 
 
     def _stop_process(self, name):
+        client = CircusClient(endpoint=self.circus_endpoint)
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
+        cmd_stop = {
+            "command": "stop",
+            "properties": {
+                "waiting": False,
+                "name": name,
+                "match": "glob"
+            }
+        }
         try:
-            self._circusmgr.stop(name)
-            self.log.debug("_stop_process circus client call")
-        except CircusException:
-            self.log.debug("Could not stop process: %s", name, exc_info=self.debug)
+            call_stop = client.call(cmd_stop)
+            self.log.debug("_stop_process circus client call: %s", str(call_stop))
+        except CallError:
+            self.log.debug("Could not stop process: %s", name, exc_info=True)
 
 
     def _rm_process(self, name):
+        client = CircusClient(endpoint=self.circus_endpoint)
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
+        cmd_rm = {
+            "command": "rm",
+            "properties": {"name": name}
+        }
         try:
-            self._circusmgr.remove(name)
-            self.log.debug("_rm_device circus client call")
-        except CircusException:
-            self.log.debug("Could not rm process: %s", name, exc_info=self.debug)
+            call_rm = client.call(cmd_rm)
+            self.log.debug("_rm_device circus client call: %s", str(call_rm))
+        except CallError:
+            self.log.debug("Could not rm process: %s", name, exc_info=True)
 
 
     def run_forvever(self):
@@ -151,43 +173,11 @@ class BrewPiSpawner(object):
             self.startstop_once()
             time.sleep(self.sleep_interval)
 
-def run():
-    """run - parses arguments and runs the mainloop"""
-    parser = argparse.ArgumentParser(
-        prog="processmgr",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-        )
-    parser.add_argument(
-        "-p", "--prefix",
-        help="Brewpi devices prefix for identification by this script",
-        action="store", dest="prefix", default="dev-"
-        )
-    parser.add_argument(
-        "-s", "--sleep",
-        help="Initial startup delay",
-        action="store", dest="sleep", type=int, default=2
-        )
-    parser.add_argument(
-        '--cmd',
-        help="Command template to use",
-        action="store", dest="cmdtmpl", default=DEFAULT_circusmgrD_TEMPLATE
-    )
-    parser.add_argument(
-        '--debug',
-        help="Add debugging messages to log",
-        action="store_true", dest="debug", default=False
-    )
-    args = parser.parse_args()
-    LOG.info("Settings: Sleep interval: {a.sleep}s, Prefix: '{a.prefix}'".format(a=args))
-    time.sleep(args.sleep)
-    process_spawner = BrewPiSpawner(
-        model=models.BrewPiDevice,
-        command_tmpl=args.cmdtmpl,
-        prefix=args.prefix,
-        debug=args.debug)
-    process_spawner.run_forvever()
 
 if __name__ == '__main__':
-    run()
-
+    # Chill so that circus has time to startup
+    time.sleep(5)
+    cmd_tmpl = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
+    process_spawner = BrewPiSpawner(model=models.BrewPiDevice, command_tmpl=cmd_tmpl, prefix="dev-")
+    process_spawner.run_forvever()
 
