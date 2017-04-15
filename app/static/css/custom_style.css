@@ -85,3 +85,12 @@
 	border-top: 2px solid #e7e9ec;
 	border-bottom: 2px solid #e7e9ec;
 }
+
+#profilegraph .dygraph-title {
+	font-size: 18px;
+}
+
+#profilegraph {
+	width: 80%;
+	height: 300px;
+}

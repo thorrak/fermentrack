@@ -15,7 +15,6 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 | [simplejson](https://pypi.python.org/pypi/simplejson/3.10.0)                	| [MIT (Expat)](https://github.com/simplejson/simplejson/blob/master/LICENSE.txt)                   	|
 | [pytz](https://pypi.python.org/pypi/pytz/2016.10)                           	| [MIT (Expat) License](http://pythonhosted.org/pytz/#license)                                      	|
 | [raven](https://sentry.io/)                                                 	| [BSD 3 Clause](https://github.com/getsentry/raven-python/blob/master/LICENSE)                     	|
-| [django-suit](http://djangosuit.com/pricing/)                               	| [Creative Commons Attribution Non-Commercial 3.0](http://creativecommons.org/licenses/by-nc/3.0/) 	|
 | [django-constance](https://pypi.python.org/pypi/django-constance)           	| [BSD 3 Clause](https://github.com/jazzband/django-constance/blob/master/LICENSE)                  	|
 | [GitPython](https://pypi.python.org/pypi/GitPython/2.1.1)                   	| [BSD 3 Clause](https://github.com/gitpython-developers/GitPython/blob/master/LICENSE)             	|
 | [zeroconf](https://pypi.python.org/pypi/zeroconf)                           	| [LGPL v2](https://github.com/jstasiak/python-zeroconf/blob/master/COPYING)                        	|

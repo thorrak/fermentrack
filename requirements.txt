@@ -3,7 +3,6 @@ configobj       # required by brewpi.py
 simplejson      # required by brewpi.py
 pytz            # required by manage.py migrate
 #raven           # OPTIONAL - used for debugging
--e git://github.com/darklow/django-suit.git@v2#egg=django-suit  # OPTIONAL - Makes the admin site pretty
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices

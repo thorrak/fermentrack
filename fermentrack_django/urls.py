@@ -10,6 +10,7 @@ import app.setup_views
 import app.beer_views
 import app.api.lcd
 import app.api.clog
+import app.circus_views
 
 admin.autodiscover()
 
@@ -64,6 +65,13 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/$', app.views.sensor_list, name='sensor_list'),
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/config/$', app.views.sensor_config, name='sensor_config'),
 
+    # Circus processmanager device views, we add device_name so we don't have to do another query
+    url(r'^devices/(?P<device_id>\d{1,20})/proc/start/$', app.circus_views.start_brewpi_device, name='device_start'),
+    url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),
+    url(r'^devices/(?P<device_id>\d{1,20})/proc/remove/$', app.circus_views.remove_brewpi_device, name='device_remove'),
+    url(r'^devices/(?P<device_id>\d{1,20})/proc/status/$', app.circus_views.status_brewpi_device, name='device_status'),
+    
+
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),
     url(r'^fermentation_profile/new/$', app.profile_views.profile_new, name='profile_new'),
@@ -72,6 +80,7 @@ urlpatterns = [
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/delete/$', app.profile_views.profile_delete, name='profile_delete'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/undelete/$', app.profile_views.profile_undelete, name='profile_undelete'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/point/(?P<point_id>\d{1,20})/delete$', app.profile_views.profile_setpoint_delete, name='profile_setpoint_delete'),
+    url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/csv/$', app.profile_views.profile_points_to_csv, name='profile_points_to_csv'),
 
     # Api Views
     url(r'^api/lcd/(?P<device_id>\d{1,20})/$', app.api.lcd.getLCD, name="getLCD"),  # For a single device

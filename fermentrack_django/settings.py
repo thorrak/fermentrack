@@ -33,7 +33,6 @@ ALLOWED_HOSTS = ['*']  # This is bad practice, but is the best that we're going 
 # Application definition
 
 INSTALLED_APPS = [
-    'suit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

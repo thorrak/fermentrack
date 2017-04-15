@@ -1,4 +1,5 @@
 import datetime
+import time
 from django import template
 from app.models import BrewPiDevice, FermentationProfile, FermentationProfilePoint
 
@@ -24,3 +25,8 @@ def temp_control_modal(this_device):
 @register.inclusion_tag('brewpi/temp_control_label.html')
 def temp_control_label(this_device, control_status):
     return {'temp_control_status': control_status, 'this_device': this_device}
+
+@register.filter
+def durfromnow(td):
+    """Take a timedelta and return now + timedelta as a date"""
+    return datetime.datetime.now() + td
