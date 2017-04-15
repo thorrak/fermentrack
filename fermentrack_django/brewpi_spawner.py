@@ -12,6 +12,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
 sys.path.append(BASE_DIR)
+os.chdir(BASE_DIR)
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 import app.models as models
