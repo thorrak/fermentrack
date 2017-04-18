@@ -109,7 +109,7 @@ class AvrInfo:
                 board_mega: "Mega",
                 board_spark_core: "Core",
                 board_photon: "Photon",
-                board_esp: "ESP8266"}
+                board_esp: "8266"}
 
     def __init__(self, s=None):
         self.version = LooseVersion("0.0.0")

@@ -436,6 +436,7 @@ if hwVersion is None:
                "Please upload a new version of BrewPi to your controller.")
     # script will continue so you can at least program the controller
     lcdText = ['Could not receive', 'version from controller', 'Please (re)program', 'your controller']
+    exit(1)
 else:
     logMessage("Found " + hwVersion.toExtendedString() + " on port " + ser.name + "\n")
     if LooseVersion(hwVersion.toString()) < LooseVersion(compatibleHwVersion):
@@ -517,6 +518,7 @@ s.settimeout(serialCheckInterval)
 
 
 prevDataTime = 0.0  # keep track of time between new data requests
+prevTimeOutReq = prevDataTime  # Using this to fix the prevDataTime tracking
 prevTimeOut = time.time()
 prevLcdUpdate = time.time()
 prevSettingsUpdate = time.time()
@@ -928,10 +930,13 @@ while run:
 
         # if no new data has been received for serialRequestInteval seconds
         if (time.time() - prevDataTime) >= float(config['interval']):
-            bg_ser.writeln("t")  # request new from controller
-            prevDataTime += 5 # give the controller some time to respond to prevent requesting twice
+            if (time.time() - prevTimeOutReq) > 5:  # If it's been more than 5 seconds since we last requested temps
+                bg_ser.writeln("t")  # request new from controller
+                prevTimeOutReq = time.time()
+                if prevDataTime == 0.0:  # If prevDataTime hasn't yet been set (it's 0.0 at script startup), set it.
+                    prevDataTime = time.time()
 
-        elif (time.time() - prevDataTime) > float(config['interval']) + 2 * float(config['interval']):
+        if (time.time() - prevDataTime) >= 3 * float(config['interval']):
             #something is wrong: controller is not responding to data requests
             logMessage("Error: controller is not responding to new data requests. Exiting.")
 

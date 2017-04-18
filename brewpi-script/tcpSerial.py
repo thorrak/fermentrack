@@ -43,14 +43,19 @@ class TCPSerial(object):
         except socket.error: # other socket errors probably mean we lost our connection.  try to recover it.
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
+                BrewPiUtil.logMessage("Lost connection to controller on read. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
                 bytes=self.read(size)
             else:
                 self.sock.close()
-                return None
+                BrewPiUtil.logMessage("Lost connection to controller on read. Exiting.")
+                sys.exit(1)
+                # return None
         if bytes is not None:
-            self.retryCount=0
+            if self.retryCount > 0:
+                BrewPiUtil.logMessage("Successfully reconnected to controller on read.")
+                self.retryCount = 0
         return bytes
 
     
@@ -59,7 +64,7 @@ class TCPSerial(object):
         #Read a line which is terminated with end-of-line (eol) character (\n by default) or until timeout.
         buf=self.read(1)
         line=buf
-        while buf!='\n':
+        while buf is not None and buf!='\n':
             buf=self.read(1)
             if buf is not None and buf!='\n':
                 line+=buf
@@ -76,23 +81,31 @@ class TCPSerial(object):
         except socket.timeout: # A write timeout is probably a connection issue
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
+                BrewPiUtil.logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
                 bytes=self.write(data)
             else:
                 self.sock.close()
-                return -1
+                BrewPiUtil.logMessage("Lost connection to controller on write. Exiting.")
+                sys.exit(1)
+                # return -1
         except socket.error: # general errors are most likely to be a timeout disconnect from BrewPi, so try to recover.
             if self.retryCount < self.retries:
+                BrewPiUtil.logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.retryCount=self.retryCount+1
                 self.sock.close()
                 self.open()
                 bytes=self.write(data)
             else:
                 self.sock.close()
-                return -1
+                BrewPiUtil.logMessage("Lost connection to controller on write, with socket.error. Exiting.")
+                sys.exit(1)
+                # return -1
         if bytes>=0:
-            self.retryCount=0
+            if self.retryCount > 0:
+                BrewPiUtil.logMessage("Successfully reconnected to controller on write.")
+                self.retryCount = 0
         return bytes
     
     def inWaiting(self):
@@ -127,6 +140,7 @@ class TCPSerial(object):
         mdnsLocator.locate_brewpi_services()  # This causes all the BrewPi devices to resend their mDNS info
         try:
             self.sock.connect((self.host, self.port))
+            BrewPiUtil.logMessage("Successfully connected to controller.")
         except socket.gaierror as e:
             BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
                                   ". Exiting.")

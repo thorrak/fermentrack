@@ -20,7 +20,8 @@ class zeroconfListener(object):
 
 
 def locate_brewpi_services():
-    print("NOTE - An error message from 'zeroconf' may appear below. Ignore it - it is working as intended.")
+    # This error was fixed in a recent version of zeroconf
+    # print("NOTE - An error message from 'zeroconf' may appear below. Ignore it - it is working as intended.")
     zeroconf_obj = zeroconf.Zeroconf()
     listener = zeroconfListener()
     browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
