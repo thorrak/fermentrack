@@ -491,6 +491,10 @@ class BrewPiDevice(models.Model):
     def __str__(self):
         return self.device_name
 
+    def __unicode__(self):
+        return self.device_name
+    
+    
     def read_lcd_from_device(self):
         pass
 
