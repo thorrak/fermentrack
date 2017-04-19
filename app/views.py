@@ -554,7 +554,8 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, 'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device.device_name))
+            messages.success(request, 'Device ' + unicode(active_device.device_name) +
+                             ' Updated.<br>Please wait a few seconds for the connection to restart')
 
             # TODO - Trigger Circus to reload properly, rather than using an external script
             cmd = "nohup utils/reset_circus.sh"
