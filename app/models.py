@@ -446,6 +446,8 @@ class BrewPiDevice(models.Model):
                                    default="auto")
     serial_alt_port = models.CharField(max_length=255, help_text="Alternate serial port to which the BrewPi device is connected (??)",
                                    default="None")
+
+    udev_serial_number = models.CharField(max_length=255, help_text="USB Serial ID number for autodetection of serial port", default="")
     board_type = models.CharField(max_length=10, default="uno", choices=BOARD_TYPE_CHOICES, help_text="Board type to which BrewPi is connected")
 
 

@@ -14,3 +14,5 @@ pyserial        # for serial interaction
 
 celery              # for managing asynchronous task completion
 django-celery-beat  # for scheduling asynchronous tasks with celery
+
+pyudev          # for managing udev rules for serial devices

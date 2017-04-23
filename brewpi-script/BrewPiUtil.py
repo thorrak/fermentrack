@@ -230,6 +230,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
     tries = 0
     connection_type = config.get('connection_type', 'auto')
     if connection_type == "serial" or connection_type == "auto":
+        # TODO - Add udev serial integration here
         logMessage("Opening serial port")
         while tries < 10:
             error = ""

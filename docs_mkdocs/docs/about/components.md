@@ -18,7 +18,8 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 | [django-constance](https://pypi.python.org/pypi/django-constance)           	| [BSD 3 Clause](https://github.com/jazzband/django-constance/blob/master/LICENSE)                  	|
 | [GitPython](https://pypi.python.org/pypi/GitPython/2.1.1)                   	| [BSD 3 Clause](https://github.com/gitpython-developers/GitPython/blob/master/LICENSE)             	|
 | [zeroconf](https://pypi.python.org/pypi/zeroconf)                           	| [LGPL v2](https://github.com/jstasiak/python-zeroconf/blob/master/COPYING)                        	|
-| [circus](http://circus.readthedocs.io/en/latest/copyright/)                 	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
+| [pyudev](https://pyudev.readthedocs.io/en/latest/)                          	| [LGPL v2.1](https://pyudev.readthedocs.io/en/latest/licencing.html)                                 	|
+| [circus](http://circus.readthedocs.io/en/latest/copyright/)                 	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                             	|
 | [circus-web](http://circus.readthedocs.io/en/latest/copyright/)             	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
 | [chaussette](https://github.com/circus-tent/chaussette/blob/master/LICENSE) 	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
 | [pid](https://pypi.python.org/pypi/pid/2.1.1)                               	| [Apache Public License v2](https://github.com/trbs/pid/blob/master/LICENSE)                       	|
