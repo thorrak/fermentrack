@@ -244,7 +244,7 @@ def device_guided_add_mdns(request, mdns_id):
 
             new_device.save()
 
-            messages.success(request, 'Device {} Added. Please wait a few seconds for controller to start'.format(new_device.device_name))
+            messages.success(request, u'Device {} Added. Please wait a few seconds for controller to start'.format(new_device))
             return redirect("/")
 
         else:
@@ -315,7 +315,7 @@ def device_guided_serial_autodetect(request, device_family):
 
                     new_device.save()
 
-                    messages.success(request, 'Device {} Added. Please wait a few seconds for controller to start'.format(new_device.device_name))
+                    messages.success(request, u'Device {} Added. Please wait a few seconds for controller to start'.format(new_device))
                     return redirect("/")
 
                 else:
