@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-# This is an old version of the BrewPi-script log manager that is no longer in use. Its spiritual successor is
-# brewpi_spawner.py.
+# This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
+# a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
 
-# TODO - Remove this file at some point if it is no longer being used
+# This is the new version of the BrewPi-script log manager which isn't fully in use.
+
 
 import os
 import sys

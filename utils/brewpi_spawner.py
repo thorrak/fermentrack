@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+
 # This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
 # a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
+
+# This is the old version of the script, which isn't yet fully phased out.
 
 import os
 import sys
