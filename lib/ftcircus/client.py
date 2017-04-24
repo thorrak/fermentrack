@@ -87,11 +87,11 @@ class CircusMgr(object):
                 "copy_env": True,
                 "stdout_stream": {
                     "class": "FileStream",
-                    "filename": "%s/%s-stdout.log" % (logpath, name),
+                    "filename": u"%s/%s-stdout.log" % (logpath, name),
                 },
                 "stderr_stream": {
                     "class": "FileStream",
-                    "filename": "%s/%s-stderr.log" % (logpath, name),
+                    "filename": u"%s/%s-stderr.log" % (logpath, name),
                 }
 
             }

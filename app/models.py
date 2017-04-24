@@ -446,6 +446,11 @@ class BrewPiDevice(models.Model):
                                    default="auto")
     serial_alt_port = models.CharField(max_length=255, help_text="Alternate serial port to which the BrewPi device is connected (??)",
                                    default="None")
+
+    udev_serial_number = models.CharField(max_length=255, help_text="USB Serial ID number for autodetection of serial port", default="")
+
+    prefer_connecting_via_udev = models.BooleanField(default=True, help_text="Prefer to connect to the device with the correct serial number instead of the serial_port")
+
     board_type = models.CharField(max_length=10, default="uno", choices=BOARD_TYPE_CHOICES, help_text="Board type to which BrewPi is connected")
 
 
@@ -460,6 +465,7 @@ class BrewPiDevice(models.Model):
     wifi_host = models.CharField(max_length=40, default='None',
                                  help_text="mDNS host name or IP address for WiFi connected hardware (only used if " +
                                            "connection_type is wifi)")
+    wifi_host_ip = models.CharField(max_length=46, default='', help_text="Cached IP address in case of mDNS issues (only used if connection_type is wifi)")
     wifi_port = models.IntegerField(default=23, validators=[MinValueValidator(10,"Port must be 10 or higher"),
                                                             MaxValueValidator(65535, "Port must be 65535 or lower")],
                                     help_text="The internet socket to use (only used if connection_type is wifi)")
@@ -489,6 +495,7 @@ class BrewPiDevice(models.Model):
     # devices_are_loaded = False
 
     def __str__(self):
+        # TODO - Make this test if the name is unicode, and return a default name if that is the case
         return self.device_name
 
     def __unicode__(self):
@@ -503,20 +510,6 @@ class BrewPiDevice(models.Model):
             return self.active_beer.name
         else:
             return ""
-
-
-    # def get_active_beer_id(self, chamber_no=1):
-    #     # TODO - Finish this (or don't, if I no longer need it)
-    #     try:
-    #         active_beer = self.chamber_set.get(chamber_no=chamber_no).active_beer
-    #         return active_beer.id
-    #     except:
-    #         pass
-    #
-    # def set_active_beer_id(self, beer_id, chamber_no=1):
-    #     active_chamber, created = self.chamber_set.get_or_create(brewpi_device=self.id, chamber_no = chamber_no)
-    #     active_chamber.active_beer_id = beer_id
-    #     active_chamber.save()
 
 
     # I'm torn as to whether or not to move all of this out to another class. Leaving everything socket-related here
@@ -850,28 +843,62 @@ class BrewPiDevice(models.Model):
     def start_process(self):
         """Start this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = "dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.device_name)
         fc.start(name=circus_device_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = "dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.device_name)
         fc.remove(name=circus_device_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = "dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.device_name)
         fc.stop(name=circus_device_name)
 
+    def restart_process(self):
+        """Restart the deviece process, raises CircusException if error"""
+        fc = CircusMgr()
+        circus_device_name = u"dev-{}".format(self.device_name)
+        fc.restart(name=circus_device_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = "dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.device_name)
         status = fc.application_status(name=circus_device_name)
         return status
+
+    def get_cached_ip(self, save_to_cache=True):
+        # I really hate the name of the function, but I can't think of anything else. This basically does three things:
+        # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
+        # 2. (Optional) Saves that IP address to self.wifi_host_ip (if we were successful in step 1)
+        # 3. Returns the found IP address (if step 1 was successful), the cached (self.wifi_host_ip) address if it
+        #    wasn't, or 'None' if we don't have a cached address and we weren't able to resolve the hostname
+        if len(self.wifi_host) > 4:
+            try:
+                ip_list = []
+                ais = socket.getaddrinfo(self.wifi_host, 0, 0, 0, 0)
+                for result in ais:
+                    ip_list.append(result[-1][0])
+                ip_list = list(set(ip_list))
+                resolved_address = ip_list[0]
+                if self.wifi_host_ip != resolved_address and save_to_cache:
+                    # If we were able to find an IP address, save it to the cache
+                    self.wifi_host_ip = resolved_address
+                    self.save()
+                return resolved_address
+            except:
+                if len(self.wifi_host_ip) > 6:
+                    # We weren't able to resolve the hostname (self.wifi_host) but we DID have a cached IP address.
+                    # Return that.
+                    return self.wifi_host_ip
+                else:
+                    return None
+        # In case of error (or we have no wifi_host)
+        return None
 
 
 class Beer(models.Model):
