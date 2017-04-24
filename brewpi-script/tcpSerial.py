@@ -8,14 +8,17 @@ import os, sys
 
 
 class TCPSerial(object):
-    def __init__(self, host=None, port=None):
+    def __init__(self, host=None, port=None, hostname=None):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # find BrewPi's via mdns lookup
         self.host=host
         self.port=port
         self.retries=10 # max reconnect attempts to try when doing a read or write operation
         self.retryCount=0 # count of reconnect attempts performed
-        BrewPiUtil.logMessage("Connecting to BrewPi " + host + " on port " + str(port))
+        if hostname:
+            BrewPiUtil.logMessage("Connecting to BrewPi " + hostname + " (via " + host + ") on port " + str(port))
+        else:
+            BrewPiUtil.logMessage("Connecting to BrewPi " + host + " on port " + str(port))
         self.open()
         self.setTimeout(0.5)
         # self.timeout=self.sock.gettimeout()

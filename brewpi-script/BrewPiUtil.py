@@ -113,6 +113,7 @@ def read_config_from_database_without_defaults(db_config_object):
     config['useInetSocket'] = db_config_object.useInetSocket
     config['socketPort'] = db_config_object.socketPort
     config['socketHost'] = db_config_object.socketHost
+    config['wifiIPAddress'] = db_config_object.get_cached_ip()
 
     return config
 
@@ -130,7 +131,7 @@ def configSet(configFile, db_config_object, settingName, value):
             logMessage("Probably your permissions are not set correctly. " +
                        "To fix this, run 'sudo sh /home/brewpi/fixPermissions.sh'")
         return read_config_file_with_defaults(configFile)  # return updated ConfigObj
-    else:
+    elif db_config_object:
         # Assuming we have a valid db_config_object here
         if settingName == "port":
             db_config_object.serial_port = value
@@ -164,6 +165,10 @@ def configSet(configFile, db_config_object, settingName, value):
             setattr(db_config_object, settingName, value)
         db_config_object.save()
         return read_config_from_database_without_defaults(db_config_object)
+    else:
+        # This is a pretty major error - we really should
+        logMessage("Neither the config file nor dbcfg were valid. This shouldn't be possible - exiting.")
+        sys.exit(1)
 
 def save_beer_log_point(db_config_object, beer_row):
     """
@@ -267,7 +272,10 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                 error = ""
 
                 if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
-                    ser = tcpSerial.TCPSerial(config['wifiHost'],int(config['wifiPort']))
+                    # We're going to use the wifiIPAddress
+                    connect_to = config.get('wifiIPAddress', config['wifiHost'])
+                    port = int(config['wifiPort'])
+                    ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=config['wifiHost'])
                 else:
                     logMessage("Invalid WiFi configuration:")
                     logMessage("  wifiHost: {}".format(config['wifiHost']))
