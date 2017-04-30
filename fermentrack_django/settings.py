@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'constance',
     'constance.backends.database',
     'django_celery_beat',
-    'raven.contrib.django.raven_compat',
+    # 'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE = [
@@ -198,10 +198,3 @@ CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 CELERY_TASK_SERIALIZER = 'json'
 
-
-RAVEN_CONFIG = {
-    'dsn': 'http://697ca68b736f4c8d9b2c73c947a2a016:295ee7bac5f3455b91b94a03e397e578@sentry.optictheory.com/3',
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    'release': "v0.5",
-}
