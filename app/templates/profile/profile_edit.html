@@ -1,17 +1,51 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
+{% load static %}
+{% load tz %}
 
 {% block title %}Edit Profile - {{ this_profile.name }}{% endblock %}
+
+{% block header_scripts %}
+<link href="{% static "css/dashboard_revised.css" %}" rel="stylesheet">
+<link href="{% static "vendor/dygraph/css/dygraph.css" %}" rel="stylesheet">
+{% endblock %}
+
+
 
 {% block content %}
     <h1>Profile: {{ this_profile.name }}</h1>
 
     {# TODO - Add profile graph here. #}
-    <div id="profilegraph"></div>
+    <div class="row">
+        <div class="col-md-9 col-sm-12" id="graphdiv3">
+            <div id="profilegraph" style="width:100%; height:250px;"></div>
+        </div>
+
+        <div class="col-md-3 col-sm-12">
+            <div id="label-div" style="display: none!important;"></div>
+
+            <div class="panel panel-red">
+                <div class="panel-heading">
+                        <div class="chart-legend-time">
+                            <div id="chartLegendTime">Time</div>
+                        </div>
+                </div>
+                <div class="panel-body">
+                        <div class="chart-legend-row row" id="beerSetRow">
+                            <div class="legend-label pull-left" style="padding-left: 15px;" id="beerSetLabel">Beer Setting</div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerSetValue"></div>
+                        </div>
+                </div>
+                <div class="panel-footer"></div>
+
+            </div>
+        </div>
+
+
+    </div>
 
     <h3>Profile Setpoints</h3>
 
-    {% load tz %}
     {% if this_profile_points %}
         <table class="table">
             <thead>
@@ -79,23 +113,103 @@
 
 
 {% block scripts %}
-<script>
+<script type="text/javascript">
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
 </script>
 
-<script>
-    var profile_id = window.location.pathname.split("/").slice(-3)[0];
-    g = new Dygraph(
+<script type="text/javascript">
+
+
+
+var temp_format = "{{ config.TEMPERATURE_FORMAT }}";  // Used in formatTempText
+var temp_display_format = "{{ config.DATE_TIME_FORMAT_DISPLAY }}";  // Used in formatTimeText
+
+function formatTempText(temp) {
+    // This takes the temperature that we are passed from DyGraph below and formats it in accordance with what we
+    // would expect
+    return temp + " " + window.temp_format;
+}
+
+function formatTimeText(time_code) {
+    var date_str = "";
+    var time_str = "";
+
+    // This takes a timestamp in milliseconds from the unix epoch and converts it to something readable.
+    var date_obj = new Date(time_code);
+
+    // Break out the date part of the timestamp so we can reassemble it in the proper format
+    // (Proper format is set in Constance as DATE_TIME_FORMAT_DISPLAY)
+    var month = "0" + (1+date_obj.getMonth());
+    var day = "0" + date_obj.getDate();
+    var year = "0" + date_obj.getYear();
+
+    if(window.temp_display_format == "mm/dd/yy") {
+        date_str = month.substr(-2) + "/" + day.substr(-2) + "/" + year.substr(-2);
+    } else if(window.temp_display_format == "dd/mm/yy") {
+        date_str = day.substr(-2) + "/" + month.substr(-2) + "/" + year.substr(-2);
+    } else if(window.temp_display_format == "yy-mm-dd") {
+        date_str = year.substr(-2) + "-" + month.substr(-2) + "-" + day.substr(-2);
+    }
+
+    // Break out the time part of the timestamp so we can reassemble it in the proper format
+    // TODO - Add a constance setting for time, so we can select 24 hour or AM/PM
+    var hours = "0" + date_obj.getHours();
+    var minutes = "0" + date_obj.getMinutes();
+    var seconds = "0" + date_obj.getSeconds();
+
+    time_str = hours.substr(-2) + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
+
+    return date_str + " " + time_str;
+}
+
+function updateLegend(e, x, pts, row) {
+
+    // Set the date/time in the header
+    $('#chartLegendTime').text(formatTimeText(pts[0].xval));
+
+    // Loop through the data points we have and update everything on the legend
+    for(var i = 0; i < pts.length; i++) {
+        if(pts[i].name == "temp") {
+            $('#beerSetValue').text(formatTempText(pts[i].yval));
+        }
+    }
+}
+
+
+
+{#var profile_id = window.location.pathname.split("/").slice(-3)[0]; // This works, but could break if the URL format changes#}
+var profile_id = "{{ this_profile.id }}";
+g2 = new Dygraph(
     document.getElementById("profilegraph"),
     "/fermentation_profile/"+profile_id+"/csv/",
     {
-      titleHeight: 32,
-      strokeWidth: 3,
-      ylabel: '&deg;{{ config.TEMPERATURE_FORMAT }}',
-      animatedZooms: true,
-      fillGraph: true
-    });
+        labelsDiv: document.getElementById('label-div'), // Technically, this is unused because of legend:never
+        legend: "never",
+        axisLabelFontSize: 14,
+{#        displayAnnotations: true,#}
+        showLabelsOnHighlight: true,
+        hideOverlayOnMouseOut: false,
+        animatedZooms: true,
+        fillGraph: true,
+        strokeWidth: 3,
+        highlightCallback: updateLegend
+    }  // options
+);
+
+
+
+{#    var profile_id = window.location.pathname.split("/").slice(-3)[0];#}
+{#    g = new Dygraph(#}
+{#    document.getElementById("profilegraph"),#}
+{#    "/fermentation_profile/"+profile_id+"/csv/",#}
+{#    {#}
+{#      titleHeight: 32,#}
+{#      strokeWidth: 3,#}
+{#      ylabel: '&deg;{{ config.TEMPERATURE_FORMAT }}',#}
+{#      animatedZooms: true,#}
+{#      fillGraph: true#}
+{#    });#}
 </script>
 {% endblock %}
