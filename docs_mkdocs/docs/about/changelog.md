@@ -14,12 +14,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Support for in-app git branch switching
 - Autodetection of serial devices
 - Celery (delayed/scheduled task) support (currently unused)
+- Controllers connected via serial can now have their serial port autodetected using the udev serial number 
+- Beer profiles are now displayed in graph form
 
 ### Changed
 - Inversion flag for installed devices is now shown on the "configure pins/sensors" page
 - Form errors are now displayed on "configure pins/sensors" page
 - Beer logs are no longer deleted along with the parent device (but they will become inaccessible from within Fermentrack)
-- GitHub updates are no longer triggered automatically by visititing the update page, and must now be manually triggered by clicking a button
+- GitHub updates are no longer triggered automatically by visiting the update page, and must now be manually triggered by clicking a button
 - The IP address of a BrewPiDevice is now cached, and can be used if mDNS stops working
 
 ### Fixed

@@ -2,6 +2,7 @@ import serial.tools.list_ports
 
 import pickle
 
+import udev_integration
 
 DEVICE_CACHE_FILENAME = 'device.cache'
 
@@ -104,7 +105,7 @@ def compare_current_devices_against_cache(family="arduino"):
             new_devices_enriched.append(enriched_device)
 
     # And now, let's return all four lists for good measure. We can discard the ones we don't want.
-    return existing_devices, current_devices, new_devices ,new_devices_enriched
+    return existing_devices, current_devices, new_devices, new_devices_enriched
 
 
 

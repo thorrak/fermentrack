@@ -39,6 +39,7 @@
         <div id="serialSocketSection" style="display: none"> {# The javascript below will show the relevant section (serial or wifi) #}
                 {% form_generic form.serial_port %}
                 {% form_generic form.serial_alt_port %}
+                {% form_generic form.prefer_connecting_via_udev %}
         </div>
 
         <div id="wifiSection" style="display: none">

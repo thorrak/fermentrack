@@ -66,6 +66,10 @@ class DeviceForm(forms.Form):
                                    help_text="The internet port to use (almost always 23)",
                                    widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1222'}))
 
+    prefer_connecting_via_udev = forms.BooleanField(initial=True, required=False,
+                                                    help_text="Whether to autodetect the appropriate serial port " +
+                                                              "using the device's USB serial number")
+
     def clean(self):
         cleaned_data = self.cleaned_data
 
@@ -86,6 +90,7 @@ class DeviceForm(forms.Form):
         elif cleaned_data['connection_type'] == 'wifi':
             cleaned_data['serial_port'] = 'auto'
             cleaned_data['serial_alt_port'] = 'None'
+            cleaned_data['prefer_connecting_via_udev'] = True
 
             # Since we've skipped automated validation above, validate here.
             if cleaned_data['wifi_host'] is None or cleaned_data['wifi_port'] is None:

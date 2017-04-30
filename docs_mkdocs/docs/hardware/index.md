@@ -11,16 +11,16 @@ The following table shows which release is expected to have support for various 
 
 | Release    | ESP8266 Serial     | ESP8266 WiFi       | Arduino            | Spark           | Fuscus (Native Python) |
 |------------|--------------------|--------------------|--------------------|-----------------|------------------------|
-| v1         | :no_entry_sign:    | :white_check_mark: | :no_entry_sign:    | :no_entry_sign: | :no_entry_sign:        |
-| v1 (flash) | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: | :no_entry_sign:        |
-| v2         | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign: | :grey_question:        |
-| v2 (flash) | :grey_question:    | :grey_question:    | :grey_question:    | :no_entry_sign: | :no_entry_sign:        |
-| v3         |                    | :white_check_mark: |                    |                 |                        |
+| v1         | No                 | Yes                | No                 | No              | No                     |
+| v1 (flash) | No                 | No                 | No                 | No              | No                     |
+| v2         | Yes                | Yes                | Yes                | No              | No                     |
+| v2 (flash) | Targeted           | Targeted           | Targeted           | No              | No                     |
+| v3         | Yes                | Yes                | Yes                | Targeted        | Targeted               |
 
 
 ##### Legend:
 
-* :white_check_mark: - Support confirmed in this version
-* :grey_question: - Support targeted for this version
-* :no_entry_sign: - Unsupported in this version
+* Yes - Support confirmed in this version
+* Targeted - Support targeted for this version
+* No - Unsupported in this version
 * Blank - Unknown

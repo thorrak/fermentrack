@@ -11,6 +11,10 @@ pages:
     - 'Manual Installation': 'install/manual.md'
   - Configuration:
     - 'Configuration': 'config/config.md'
+    - 'Flashing a Controller': 'config/Flashing a Controller.md'
+    - 'Serial Controller Guided Setup': 'config/Serial Controller Setup.md'
+    - 'WiFi Controller Guided Setup': 'config/WiFi Controller Setup.md'
+    - 'Advanced (Manual) Controller Setup': 'config/Advanced Controller Setup.md'
   - Hardware:
     - 'Index': 'hardware/index.md'
     - 'ESP8266': 'hardware/ESP8266.md'
@@ -23,7 +27,6 @@ pages:
     - 'Changelog': 'about/changelog.md'
     - 'License': 'about/license.md'
     - 'Included Components': 'about/components.md'
-    
   - Develop:
     - 'Index': 'develop/index.md'
     - 'Models': 'develop/models.md'
