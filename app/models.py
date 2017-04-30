@@ -1231,6 +1231,15 @@ class FermentationProfile(models.Model):
     name = models.CharField(max_length=128)
     status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ACTIVE)
 
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.name
+
+
+
     # Test if this fermentation profile is currently being used by a beer
     def currently_in_use(self):
         try:
@@ -1409,6 +1418,7 @@ class FermentationProfilePoint(models.Model):
         else:
             # TODO - Log This - We have an invalid format somewhere
             return self.temperature_setting
+
 
 
 # The old (0.2.x/Arduino) Control Constants Model

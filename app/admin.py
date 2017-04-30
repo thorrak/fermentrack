@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from app.models import BrewPiDevice, Beer, BeerLogPoint, FermentationProfile, FermentationProfilePoint
+from app.models import BrewPiDevice, Beer, FermentationProfile, FermentationProfilePoint
 
 @admin.register(BrewPiDevice)
 class brewPiDeviceAdmin(admin.ModelAdmin):
-    list_display = ('device_name', 'temp_format', 'connection_type', 'wifi_host', 'serial_port')
+    list_display = ('device_name', 'temp_format', 'board_type', 'connection_type', 'wifi_host', 'serial_port')
 
 @admin.register(Beer)
 class beerAdmin(admin.ModelAdmin):
