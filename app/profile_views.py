@@ -50,8 +50,6 @@ def profile_new(request):
         )
 
 
-# TODO - Determine if profile_edit & profile_view should be combined (and
-# possibly implement inline edits??)
 @login_required
 @site_is_configured
 def profile_edit(request, profile_id):
@@ -227,6 +225,10 @@ def profile_points_to_csv(request, profile_id):
     response = HttpResponse(content_type='text/plain')
     writer = csv.writer(response)
     writer.writerow(['date', 'temp'])
+    # If the profile's first point is in the future, add an additional point for today showing the temperature will be
+    # held constant until that first point's ttl is reached.
+    if profile_points[0].ttl != 0:
+        writer.writerow([datetime.now(), profile_points[0].temp_to_preferred()])
     for p in profile_points:
         profilepoint_date = datetime.now() + p.ttl
         writer.writerow([profilepoint_date, p.temp_to_preferred()])

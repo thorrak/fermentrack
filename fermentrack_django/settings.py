@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'constance',
     'constance.backends.database',
     'django_celery_beat',
+    # 'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE = [
@@ -196,3 +197,4 @@ CELERY_BROKER_URL = 'amqp://guest:guest@localhost//'
 CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 CELERY_TASK_SERIALIZER = 'json'
+
