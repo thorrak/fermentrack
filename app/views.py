@@ -95,9 +95,14 @@ def add_device(request):
                 connection_type=form.cleaned_data['connection_type'],
                 wifi_host=form.cleaned_data['wifi_host'],
                 wifi_port=form.cleaned_data['wifi_port'],
+                prefer_connecting_via_udev=form.cleaned_data['prefer_connecting_via_udev'],
             )
 
             new_device.save()
+
+            # Once the device is added, go ahead and autodetect the udev serial number (if we're connecting via serial)
+            if new_device.connection_type == BrewPiDevice.CONNECTION_SERIAL:
+                new_device.set_udev_from_port()
 
             messages.success(request, u'Device {} Added.<br>Please wait a few seconds for controller to start'.format(new_device))
             return redirect("/")

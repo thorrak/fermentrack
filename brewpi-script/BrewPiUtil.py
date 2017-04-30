@@ -86,7 +86,7 @@ def read_config_file_with_defaults(cfg):
 
 def read_config_from_database_without_defaults(db_config_object):
     """
-    Reads configuration parameters from the database without
+    Reads configuration parameters from the database without defaults
 
     Params:
     db_config_object: models.BrewPiDevice, BrewPiDevice object
@@ -113,7 +113,13 @@ def read_config_from_database_without_defaults(db_config_object):
     config['useInetSocket'] = db_config_object.useInetSocket
     config['socketPort'] = db_config_object.socketPort
     config['socketHost'] = db_config_object.socketHost
-    config['wifiIPAddress'] = db_config_object.get_cached_ip()
+    config['wifiIPAddress'] = db_config_object.get_cached_ip()  # If we have a cached IP from mDNS, we'll use it
+
+    udevPort = db_config_object.get_port_from_udev()
+    if udevPort is None:
+        logMessage("Unable to locate device using USB serial number")
+    else:
+        config['udevPort'] = udevPort  # If we prioritize udev lookup for serial, get the port
 
     return config
 
@@ -235,11 +241,26 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
     tries = 0
     connection_type = config.get('connection_type', 'auto')
     if connection_type == "serial" or connection_type == "auto":
-        # TODO - Add udev serial integration here
-        logMessage("Opening serial port")
+        if connection_type == "auto":
+            logMessage("Connection type set to 'auto' - Attempting serial first")
+        else:
+            logMessage("Connection type Serial selected. Opening serial port.")
         while tries < 10:
             error = ""
-            for portSetting in [config['port'], config['altport']]:
+            ports_to_try = []
+
+            # If we have a udevPort (from a dbconfig object, found via the udev serial number) use that as the first
+            # option - replacing config['port'].
+            if 'udevPort' in config:
+                ports_to_try.append(config['udevPort'])
+            else:
+                ports_to_try.append(config.get('port', "auto"))
+
+            # Regardless of if we have 'udevPort', add altport as well
+            if 'altport' in config:
+                ports_to_try.append(config['altport'])
+
+            for portSetting in ports_to_try:
                 if portSetting == None or portSetting == 'None' or portSetting == "none":
                     continue  # skip None setting
                 if portSetting == "auto":
@@ -252,6 +273,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                 try:
                     ser = serial.Serial(port, baudrate=baud_rate, timeout=time_out, write_timeout=0)
                     if ser:
+                        logMessage("Connected via serial to port {}".format(port))
                         break
                 except (IOError, OSError, serial.SerialException) as e:
                     # error += '0}.\n({1})'.format(portSetting, str(e))
@@ -297,7 +319,8 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
         ser.flushInput()
         ser.flushOutput()
     else:
-         logMessage("Errors while opening serial port: \n" + error)
+        logMessage("Errors while opening serial port: \n" + error)
+        sys.exit(1)  # Die if we weren't able to connect
 
     # yes this is monkey patching, but I don't see how to replace the methods on a dynamically instantiated type any other way
     if dumpSerial:

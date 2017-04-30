@@ -16,6 +16,8 @@ from constance import config
 from fermentrack_django import settings
 import re
 
+import udev_integration
+
 from lib.ftcircus.client import CircusMgr, CircusException
 
 logger = logging.getLogger(__name__)
@@ -401,9 +403,13 @@ class BrewPiDevice(models.Model):
         ('core', 'Core'),
         ('photon', 'Photon'),
     )
+
+    CONNECTION_SERIAL = 'serial'
+    CONNECTION_WIFI = 'wifi'
+
     CONNECTION_TYPE_CHOICES = (
-        ('serial', 'Serial (Arduino and others)'),
-        ('wifi', 'WiFi (ESP8266)'),
+        (CONNECTION_SERIAL, 'Serial (Arduino and others)'),
+        (CONNECTION_WIFI, 'WiFi (ESP8266)'),
     )
 
     STATUS_ACTIVE = 'active'
@@ -447,7 +453,8 @@ class BrewPiDevice(models.Model):
     serial_alt_port = models.CharField(max_length=255, help_text="Alternate serial port to which the BrewPi device is connected (??)",
                                    default="None")
 
-    udev_serial_number = models.CharField(max_length=255, help_text="USB Serial ID number for autodetection of serial port", default="")
+    udev_serial_number = models.CharField(max_length=255, blank=True,
+                                          help_text="USB Serial ID number for autodetection of serial port", default="")
 
     prefer_connecting_via_udev = models.BooleanField(default=True, help_text="Prefer to connect to the device with the correct serial number instead of the serial_port")
 
@@ -899,6 +906,56 @@ class BrewPiDevice(models.Model):
                     return None
         # In case of error (or we have no wifi_host)
         return None
+
+    def get_port_from_udev(self):
+        # get_port_from_udev() looks for a USB device connected which matches self.udev_serial_number. If one is found,
+        # it returns the associated device port. If one isn't found, it returns None (to prevent the cached port from
+        # being used, and potentially pointing to another, unrelated device)
+
+        if self.connection_type != self.CONNECTION_SERIAL:
+            return self.serial_port  # If we're connecting via WiFi, don't attempt autodetection
+
+        # If the user elected to not use udev to get the port, just return self.serial_port
+        if not self.prefer_connecting_via_udev:
+            return self.serial_port
+
+        # If the platform doesn't support udev (isn't Linux) then return self.serial_port as well.
+        if not udev_integration.valid_platform_for_udev():
+            return self.serial_port
+
+        # TODO - Detect if this is a Fuscus board and return self.serial_port (as well as setting prefer_connecting_via_udev)
+
+        # If the udev_serial_number isn't yet set, try setting it
+        if self.udev_serial_number == "":
+            if not self.set_udev_from_port():
+                # If we can't set it (device isn't connected, etc.) then return None
+                return None
+
+        udev_node = udev_integration.get_node_from_serial(self.udev_serial_number)
+
+        if udev_node is not None:
+            # The udev lookup found a device! Return the appropriate serial port.
+            if self.serial_port != udev_node:
+                # If the serial port changed, cache it.
+                self.serial_port = udev_node
+                self.save()
+            return udev_node
+        else:
+            # The udev lookup failed - return None
+            return None
+
+    def set_udev_from_port(self):
+        # set_udev_from_port() quickly scans the device connected at self.serial_port and - if found - saves the
+        # associated udev serial number to the object.
+        udev_serial_number = udev_integration.get_serial_from_node(self.serial_port)
+
+        if udev_serial_number is not None:
+            self.udev_serial_number = udev_serial_number
+            self.save()
+            return True
+
+        # We failed to look up the udev serial number.
+        return False
 
 
 class Beer(models.Model):
