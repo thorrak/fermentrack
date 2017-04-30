@@ -8,8 +8,58 @@
     <h1>Debugging Connection to {{ active_device.device_name }}</h1>
 
 
+    <h3>Connection Settings</h3>
+    <table class="table table-hover">
+        <tr>
+            <td>Connection Type</td>
+            <td>{{ active_device.connection_type }}</td>
+        </tr>
+
+        {% if active_device.connection_type == 'serial' %}
+            <tr>
+                <td>USB Serial Number</td>
+                <td>{{ active_device.udev_serial_number }}</td>
+            </tr>
+
+            <tr>
+                <td>Locate port via USB Serial?</td>
+                <td>{{ active_device.prefer_connecting_via_udev }}</td>
+            </tr>
+
+            <tr>
+                <td>{% if active_device.prefer_connecting_via_udev %}Last Located {% endif %}Serial Port</td>
+                <td>{{ active_device.serial_port }}</td>
+            </tr>
+
+            <tr>
+                <td>Serial Alt Port (optional)</td>
+                <td>{{ active_device.serial_alt_port }}</td>
+            </tr>
+
+        {% else %}
+
+            <tr>
+                <td>WiFi Hostname</td>
+                <td>{{ active_device.wifi_host }}</td>
+            </tr>
+            <tr>
+                <td>WiFi Port</td>
+                <td>{{ active_device.wifi_port }}</td>
+            </tr>
+            <tr>
+                <td>Last Cached IP Address (from Hostname)</td>
+                <td>{{ active_device.wifi_host_ip }}</td>
+            </tr>
+
+        {% endif %}
+
+
+    </table>
+
+
+
     {% if tests %}
-        <h3>Tests Performed:</h3>
+        <h3>Tests Performed</h3>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -37,11 +87,27 @@
     <h3>Test Descriptions</h3>
     {# TODO - Update this when we actually add device status management in #}
     <p><b>Device Status Test -</b> Checks that the device status is "active", which is the only status that triggers Circus to manage BrewPi-script for the device. If this test fails, reset the status to "active" and retry.</p>
+
+    {% if active_device.connection_type == 'serial' %}
+
+    <p><b>Udev Availability Test -</b> Checks that the operating system Fermentrack is running on supports pyudev which enables USB serial number support. If this fails and you want to use the USB serial number to autodetect the correct serial port for a controller, you would need to install a different OS.</p>
+    <p><b>USB Serial Number (SN) Usage Test -</b> Checks that the "Prefer connecting via udev" setting is True, thus allowing the device port to be autodetected. If this fails (and you want to use USB serial number support) edit the device to set "Prefer connecting via udev" to true.</p>
+    <p><b>USB SN (Serial Number) Test -</b> Checks that the USB serial number is set. If this fails (and you want to use USB serial number support) reinstall the device.</p>
+    <p><b>USB SN Availability Test -</b> Checks that there is a device connected with the specified USB serial number. If this fails check the controller's connection to the computer running Fermentrack.</p>
+    <p><b>Udev Matches Cached Port Test -</b> Check that the device serial port identifier found when looking up the device by serial number matches the serial port saved in the device cache. If this fails, try disconnecting & reconnecting the controller.</p>
+
+
+
+
+
+    {% elif active_device.connection_type == 'wifi' %}
+
     <p><b>DNS Lookup Test -</b> Checks that the device's DNS/mDNS hostname can be resolved. If this test fails, reset the power to the controller and check the WiFi hostname associated with the controller. The current WiFi hostname is displayed in the "parameter" field.</p>
     <p><b>Connection Test -</b> Checks that Fermentrack can connect to the device. If this test fails, the device is unreachable at the address specified in the "Parameter" column. Try restarting or reflashing the device. </p>
     <p><b>Controller Response Test -</b> Checks that the connected controller responds as expected for a BrewPi controller. If this test fails, check the connection strength to the controller and ensure the controller is flashed with the latest firmware.</p>
     <p><b>Cached IP Test -</b> Checks that there is a cached IP address associated with the device. The result of this test can safely be ignored - this value is only used if the DNS lookup test above ever fails.</p>
 
+    {% endif %}
 
 {% endblock %}
 

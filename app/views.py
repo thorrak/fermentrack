@@ -21,7 +21,7 @@ import json, datetime, pytz, os, random
 import git_integration
 import subprocess
 
-import connection_debug
+import connection_debug, udev_integration
 
 import fermentrack_django.settings as settings
 
@@ -647,8 +647,6 @@ def almost_json_view(request, device_id, beer_id):
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
 
-
-
 def debug_connection(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.delete_device'):
@@ -748,6 +746,72 @@ def debug_connection(request, device_id):
             test_result = {'name': 'Cached IP Test', 'parameter': active_device.wifi_host_ip, 'status': FAILED,
                            'result': 'Unavailable'}
             tests.append(test_result)
+
+    elif active_device.connection_type == BrewPiDevice.CONNECTION_SERIAL:
+        if udev_integration.valid_platform_for_udev():
+            # Pyudev is available on this platform - let's see if we have a USB serial number set
+            test_result = {'name': 'Udev Availability Test', 'parameter': udev_integration.get_platform(), 'status': PASSED,
+                           'result': 'pyudev is available & loaded'}
+            tests.append(test_result)
+
+            if active_device.prefer_connecting_via_udev:
+                # Let the user know they are using udev if available
+                test_result = {'name': 'USB Serial Number (SN) Usage Test', 'parameter': active_device.prefer_connecting_via_udev, 'status': PASSED,
+                               'result': 'Will look up port via USB serial number'}
+                tests.append(test_result)
+
+            else:
+                # Let the user know they AREN'T using udev (and it's available)
+                test_result = {'name': 'USB SN Usage Test', 'parameter': active_device.prefer_connecting_via_udev, 'status': FAILED,
+                               'result': 'Will NOT look up port via USB serial number'}
+                tests.append(test_result)
+
+            if len(active_device.udev_serial_number) > 1:
+                # The user has a seemingly valid USB serial number set on the device
+                test_result = {'name': 'USB SN Test', 'parameter': '', 'status': PASSED,
+                               'result': active_device.udev_serial_number}
+                tests.append(test_result)
+
+                if active_device.prefer_connecting_via_udev:
+                    # If the user has everything set up to use udev (and actually wants to use it) then check what
+                    # we find if we look up the USB serial number
+                    found_node = udev_integration.get_node_from_serial(active_device.udev_serial_number)
+
+                    if found_node is None:
+                        # We weren't able to find a matching USB device with that serial number
+                        test_result = {'name': 'USB SN Availability Test', 'parameter': '(USB SN)', 'status': FAILED,
+                                       'result': 'No device with that serial number found'}
+                        tests.append(test_result)
+                    else:
+                        # We found a device that matched that serial number
+                        test_result = {'name': 'USB SN Availability Test', 'parameter': '(USB SN)', 'status': PASSED,
+                                       'result': found_node}
+                        tests.append(test_result)
+
+                        # Last test - Check if the serial port matches what we just found via the USB lookup
+                        if found_node == active_device.serial_port:
+                            # It matched!
+                            test_result = {'name': 'Udev Matches Cached Port Test', 'parameter': found_node,
+                                           'status': PASSED, 'result': active_device.serial_port}
+                            tests.append(test_result)
+                        else:
+                            # It... didn't match.
+                            test_result = {'name': 'Udev Matches Cached Port Test', 'parameter': found_node,
+                                           'status': FAILED, 'result': active_device.serial_port}
+                            tests.append(test_result)
+
+            else:
+                # There isn't a seemingly valid USB serial number set on the device
+                test_result = {'name': 'USB Serial Number Test', 'parameter': '', 'status': FAILED,
+                               'result': active_device.udev_serial_number}
+                tests.append(test_result)
+
+        else:
+            # Pyudev isn't available on this platform
+            test_result = {'name': 'Udev Availability Test', 'parameter': udev_integration.get_platform(), 'status': FAILED,
+                           'result': 'pyudev is not available, or isn\'t loaded'}
+            tests.append(test_result)
+
 
     return render_with_devices(request, template_name='device_debug_connection.html',
                                context={'tests': tests, 'active_device': active_device})
