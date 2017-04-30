@@ -9,9 +9,9 @@ launching the front end and brewpi.py controller scripts.
 
 See [components](components.md) documentation for links and licenses.
 
-## The webserver nginx and chausette WSGI server
+## The webserver nginx and chaussette WSGI server
 
-Used to proxy http requests to chausette over WSGI to the Fermentrack django application.
+Used to proxy http requests to chaussette over WSGI to the Fermentrack django application.
 
 ## cron
 
@@ -47,7 +47,7 @@ Example *status* output:
 Fermentrack is started at boot with the help of cron (see *cron*), the process manager handles
 all the different processes needed by Fermentrack.
 
-* **Fermentrack** - The django application (web interface) runs under chausette
+* **Fermentrack** - The django application (web interface) runs under chaussette
 * **brewpi-spawner** - An internal Fermentrack process for spawning controller scripts for controlling controllers like brewpi-esp8266.
 * **circusd-stats** - An Internal circus process for stats, not used yet.
 * **dev-brewpi1** - Is a controller script spawned by brewpi-spawner, handing a controller.
@@ -67,4 +67,4 @@ Circus documentation can be found [here](https://circus.readthedocs.io/en/latest
 * Fermentrack django application:
    - */home/fermentrack/fermentrack/log/fermentrack.log*
 
-Logs are rotated every 10MB and the last 5 is saved with a number suffix.
+Logs are rotated every 2MB and the last 5 are saved with a number suffix.

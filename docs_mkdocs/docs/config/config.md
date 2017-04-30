@@ -23,10 +23,10 @@ You're now ready to move on to configuring the site settings.
 After configuring a user account, the next step is to configure Fermentrack. The following are the available configuration options:
 
 * **Brewery Name** - The name displayed in the upper left of each Fermentrack page
-* **Date time format** - *Currently Unused* - May be removed in a future update
 * **Date time format display** - The date format used on the dashboard of each device
 * **Require login for dashboard** - *Currently Unused* - Should users be required to be logged in to *view* the dashboard/logs. Login will still be required to change temperature settings, configuration options, etc.
 * **Temperature format** - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.
+* **Git Update Type** - Which releases you will be prompted to upgrade to. Can be set to "tagged versions" (which will generally be tested and stable), "all commits" which will include all new code releases, and "None".
 
 All of these can be updated at any time by clicking on the "gear" icon in the upper right of any Fermentrack page.
 
@@ -38,4 +38,11 @@ All of these can be updated at any time by clicking on the "gear" icon in the up
 Currently, Fermentrack has limited access control implemented, and is not designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.
 
 In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the "gear" icon). Each account will need "superuser" access to be able to use the full functionality of Fermentrack. Please be aware - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.
+
+#### Advanced Site Settings
+
+There are a handful of additional site settings which are intended for advanced users and developers only. These settings can only be accessed via the Django admin. These settings include:
+
+* **Allow Git Branch Switching** - Allows switching to a different git branch from within Fermentrack
+* **User Has Completed Configuration**  - Determines if the user has completed the initial configuration workflow, or should be prompted to set Fermentrack up on next login
 

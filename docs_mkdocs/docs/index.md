@@ -24,14 +24,12 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 * Integrated support for ESP8266-based controllers
 * Official support for "legacy" controllers
 * Native support (including mDNS autodetection) for WiFi controllers
+* Robust device detection for serial controllers 
 
 ## Missing Features
 
 At the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:
 
-* Serial controller support (expected in v2)
-* Serial controller autodetection (v2)
-* Arduino support (v2)
 * Spark/Fuscus support (v3)
 * Fuscus support (v3)
 * Support for "modern" (non-legacy branch) controllers (v3)
