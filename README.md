@@ -4,7 +4,7 @@
 
 Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. 
 
-Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server. 
+Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same device. 
 
 
 ### Included with Fermentrack
@@ -29,10 +29,7 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 
 At the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:
 
-* Serial controller support (expected in v2)
-* Serial controller autodetection (v2)
-* Arduino support (v2)
-* Spark/Fuscus support (v3)
+* Spark support (v3)
 * Fuscus support (v3)
 * Support for "modern" (non-legacy branch) controllers (v3)
 

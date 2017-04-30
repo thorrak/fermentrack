@@ -115,6 +115,7 @@
                 <div class="dashpanel-title">Control Mode</div>
                 <div class="dash-data" id="dashControlMode">--</div>
                 <div class="dashpanel-divider"></div>
+                {% if active_device.is_connected %}
                 <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
                     <div class="dash-desc">
                         <div class="pull-left" >Change Mode</div>
@@ -122,6 +123,17 @@
                         <div class="clearfix"></div>
                     </div>
                 </a>
+                {% else %}
+                <a href="{% url 'device_debug_connection' active_device.id %}">
+                    <div class="dash-desc">
+                        <div class="pull-left" >Debug Connection</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+
+                {% endif %}
+
             </div>
         </div>
 

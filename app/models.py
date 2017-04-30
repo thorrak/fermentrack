@@ -577,6 +577,13 @@ class BrewPiDevice(models.Model):
             lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
         return lcd_text
 
+    def is_connected(self):
+        # Tests if we're connected to the device via BrewPi-Script
+        try:
+            _ = json.loads(self.send_message("lcd", read_response=True))
+        except:
+            return False
+        return True
 
     def retrieve_version(self):
         try:

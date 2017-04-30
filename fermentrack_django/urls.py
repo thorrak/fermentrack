@@ -65,6 +65,8 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/$', app.views.sensor_list, name='sensor_list'),
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/config/$', app.views.sensor_config, name='sensor_config'),
 
+    url(r'^devices/(?P<device_id>\d{1,20})/debug_connection/$', app.views.debug_connection, name='device_debug_connection'),
+
     # Circus processmanager device views, we add device_name so we don't have to do another query
     url(r'^devices/(?P<device_id>\d{1,20})/proc/start/$', app.circus_views.start_brewpi_device, name='device_start'),
     url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),

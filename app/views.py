@@ -21,6 +21,8 @@ import json, datetime, pytz, os, random
 import git_integration
 import subprocess
 
+import connection_debug
+
 import fermentrack_django.settings as settings
 
 
@@ -643,4 +645,112 @@ def almost_json_view(request, device_id, beer_id):
     else:
         empty_array = []
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
+
+
+
+
+def debug_connection(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.delete_device'):
+    #     messages.error(request, 'Your account is not permissioned to uninstall devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    tests=[]
+    FAILED = 'Failed'
+    PASSED = 'Passed'
+
+
+    if active_device.status != BrewPiDevice.STATUS_ACTIVE:
+        test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': FAILED,
+                       'result': 'Device not active'}
+    else:
+        test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': PASSED,
+                       'result': 'Device active & managed by Circus'}
+    tests.append(test_result)
+
+
+
+    if active_device.connection_type == BrewPiDevice.CONNECTION_WIFI:
+        # For WiFi, the first thing we check is if we can resolve the mDNS hostname
+        mdns_lookup = connection_debug.dns_lookup(active_device.wifi_host)
+
+        if mdns_lookup is None:
+            test_result = {'name': 'DNS Lookup Test', 'parameter': active_device.wifi_host, 'status': FAILED,
+                           'result': 'No DNS response'}
+        else:
+            test_result = {'name': 'DNS Lookup Test', 'parameter': active_device.wifi_host, 'status': PASSED,
+                           'result': mdns_lookup}
+        tests.append(test_result)
+
+
+        # Once that's done, we'll test connecting to the mDNS hostname & cached IP address
+        # Start with the mDNS hostname (if mdns_lookup was successful)
+        if mdns_lookup is not None:
+            hostname = active_device.wifi_host
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+
+            if connection_check:
+                # We were able to telnet into the hostname
+                test_result = {'name': 'Connection Test', 'parameter': hostname, 'status': PASSED,
+                               'result': 'Connected'}
+                tests.append(test_result)
+
+                if version_check:
+                    # We were able to get a version number from the host - this is a complete success
+                    test_result = {'name': 'Controller Response Test', 'parameter': hostname, 'status': PASSED,
+                                   'result': version_string}
+                    tests.append(test_result)
+                else:
+                    # We weren't able to get a version number from the host
+                    test_result = {'name': 'Controller Response Test', 'parameter': hostname, 'status': FAILED,
+                                   'result': ''}
+                    tests.append(test_result)
+            else:
+                test_result = {'name': 'Connection Test', 'parameter': hostname, 'status': FAILED,
+                               'result': 'Unable to connect'}
+                tests.append(test_result)
+
+        if len(active_device.wifi_host_ip) > 7:
+            hostname = active_device.wifi_host_ip
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+
+            test_result = {'name': 'Cached IP Test', 'parameter': hostname, 'status': PASSED,
+                           'result': 'Available'}
+            tests.append(test_result)
+
+            if connection_check:
+                # We were able to telnet into the hostname
+                test_result = {'name': 'Connection Test', 'parameter': hostname, 'status': PASSED,
+                               'result': 'Connected'}
+                tests.append(test_result)
+
+                if version_check:
+                    # We were able to get a version number from the host - this is a complete success
+                    test_result = {'name': 'Controller Response Test', 'parameter': hostname, 'status': PASSED,
+                                   'result': version_string}
+                    tests.append(test_result)
+                else:
+                    # We weren't able to get a version number from the host
+                    test_result = {'name': 'Controller Response Test', 'parameter': hostname, 'status': FAILED,
+                                   'result': ''}
+                    tests.append(test_result)
+            else:
+                test_result = {'name': 'Connection Test', 'parameter': hostname, 'status': FAILED,
+                               'result': 'Unable to connect'}
+                tests.append(test_result)
+        else:
+            test_result = {'name': 'Cached IP Test', 'parameter': active_device.wifi_host_ip, 'status': FAILED,
+                           'result': 'Unavailable'}
+            tests.append(test_result)
+
+    return render_with_devices(request, template_name='device_debug_connection.html',
+                               context={'tests': tests, 'active_device': active_device})
+
+
 
