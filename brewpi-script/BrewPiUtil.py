@@ -43,7 +43,7 @@ try:
     import configobj
 except ImportError:
     print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
-    sys.exit(1)
+    sys.exit(0)
 
 
 def addSlash(path):
@@ -174,7 +174,7 @@ def configSet(configFile, db_config_object, settingName, value):
     else:
         # This is a pretty major error - we really should
         logMessage("Neither the config file nor dbcfg were valid. This shouldn't be possible - exiting.")
-        sys.exit(1)
+        sys.exit(0)
 
 def save_beer_log_point(db_config_object, beer_row):
     """
@@ -303,7 +303,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                     logMessage("  wifiHost: {}".format(config['wifiHost']))
                     logMessage("  wifiPort: {}".format(config['wifiPort']))
                     logMessage("Exiting.")
-                    exit(1)
+                    exit(0)
 
                 if ser:
                     break
@@ -311,7 +311,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                 time.sleep(1)
         if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
             logMessage("Unable to connect via WiFi. Exiting.")
-            exit(1)
+            exit(0)
 
 
     if ser:
@@ -320,7 +320,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
         ser.flushOutput()
     else:
         logMessage("Errors while opening serial port: \n" + error)
-        sys.exit(1)  # Die if we weren't able to connect
+        sys.exit(0)  # Die if we weren't able to connect
 
     # yes this is monkey patching, but I don't see how to replace the methods on a dynamically instantiated type any other way
     if dumpSerial:
