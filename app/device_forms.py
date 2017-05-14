@@ -223,6 +223,11 @@ class TempControlForm(forms.Form):
     temperature_setting = forms.DecimalField(label="Temperature Setting", max_digits=4, decimal_places=1,
                                              required=False)
     profile = forms.ChoiceField(required=False)  # Choices set in __init__ below
+    start_at = forms.CharField(help_text="How far into the profile you want to start (optional) " +
+                                    "(Example: 7d 3h 15m 4s)",
+                          widget=forms.TextInput(attrs={'placeholder': '0h 0s'}), required=False,
+                          validators=[validators.RegexValidator(regex="([0-9]+[ ]*[ywdhms]{1}[ ]*)+",
+                                                                message="Invalid 'Start At' format")])
 
     def __init__(self, *args, **kwargs):
         super(TempControlForm, self).__init__(*args, **kwargs)
@@ -231,3 +236,43 @@ class TempControlForm(forms.Form):
         self.fields['profile'] = forms.ChoiceField(required=False,
                                                    choices=self.get_profile_choices(),
                                                    widget=forms.Select(attrs={'class': 'form-control'}))
+
+    # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
+    def clean_start_at(self):
+        # tz = pytz.timezone(getattr(settings, 'TIME_ZONE', False))
+        if 'start_at' in self.cleaned_data:
+            ttl_text = self.cleaned_data['start_at']
+        else:
+            return None
+
+        if len(ttl_text) <= 1:
+            return None
+
+        # Split out the d/h/m/s of the timer
+        try:
+            timer_pattern = r"(?P<time_amt>[0-9]+)[ ]*(?P<ywdhms>[ywdhms]{1})"
+            timer_regex = re.compile(timer_pattern)
+            timer_matches = timer_regex.finditer(ttl_text)
+        except:
+            raise forms.ValidationError("Start At format is invalid")
+
+
+        # timer_time is equal to now + the time delta
+        time_delta = datetime.timedelta(seconds=0)
+        for this_match in timer_matches:
+            dhms = this_match.group('ywdhms')
+            delta_amt = int(this_match.group('time_amt'))
+            if dhms == 'y':  # This doesn't account for leap years, but whatever.
+                time_delta = time_delta + datetime.timedelta(days=(365*delta_amt))
+            elif dhms == 'w':
+                time_delta = time_delta + datetime.timedelta(weeks=delta_amt)
+            elif dhms == 'd':
+                time_delta = time_delta + datetime.timedelta(days=delta_amt)
+            elif dhms == 'h':
+                time_delta = time_delta + datetime.timedelta(hours=delta_amt)
+            elif dhms == 'm':
+                time_delta = time_delta + datetime.timedelta(minutes=delta_amt)
+            elif dhms == 's':
+                time_delta = time_delta + datetime.timedelta(seconds=delta_amt)
+
+        return time_delta

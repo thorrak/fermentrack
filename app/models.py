@@ -778,7 +778,8 @@ class BrewPiDevice(models.Model):
             self.time_profile_started = None
         self.save()
 
-    def set_temp_control(self, method, set_temp=None, profile=None):
+    def set_temp_control(self, method, set_temp=None, profile=None, profile_startat=None):
+        # TODO - Convert this to raise actual errors instead of just returning false
         if method == "off":
             self.reset_profile()
             self.send_message("setOff")
@@ -803,10 +804,16 @@ class BrewPiDevice(models.Model):
             if not ferm_profile.is_assignable():
                 return False
 
+            if profile_startat is not None:
+                start_at = profile_startat
+            else:
+                start_at = datetime.timedelta(seconds=0)  # Set start_at to have no effect
+
             self.active_profile = ferm_profile
 
             timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
-            self.time_profile_started = datetime.datetime.now(tz=timezone_obj)
+            # We're subtracting start_at because we want to start in the past
+            self.time_profile_started = datetime.datetime.now(tz=timezone_obj) - start_at
 
             self.save()
 
