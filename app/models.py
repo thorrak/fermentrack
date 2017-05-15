@@ -1495,6 +1495,8 @@ class FermentationProfile(models.Model):
                     found_initial_separator = True
             elif profile_name == u"":
                 profile_name = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
+                if len(profile_name) > 128:
+                    raise ValueError("Imported profile name is too long")
             elif profile_type == u"":
                 profile_type = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
 
@@ -1569,6 +1571,21 @@ class FermentationProfile(models.Model):
         else:
             raise ValueError("No profile terminator found")
 
+    def copy_to_new(self, name):
+        # This copies the current fermentation profile to a new profile
+
+        if len(name) <= 0:
+            raise ValueError("Name provided is too short")
+
+        new_profile = FermentationProfile(name=name, profile_type=self.profile_type)
+        new_profile.save()
+
+        for this_point in self.fermentationprofilepoint_set.all():
+            new_point = FermentationProfilePoint(profile=new_profile, temp_format=this_point.temp_format,
+                                                 ttl=this_point.ttl, temperature_setting=this_point.temperature_setting)
+            new_point.save()
+
+        return new_profile
 
 
 class FermentationProfilePoint(models.Model):

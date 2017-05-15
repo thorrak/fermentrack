@@ -171,8 +171,7 @@ def profile_undelete(request, profile_id):
     except:
         # The URL contained an invalid profile ID. Redirect to the profile
         # list.
-        messages.error(
-            request, 'Invalid profile selected to save from deletion')
+        messages.error(request, 'Invalid profile selected to save from deletion')
         return redirect('profile_list')
 
     if this_profile.status == FermentationProfile.STATUS_PENDING_DELETE:
@@ -239,3 +238,42 @@ def profile_import(request):
     else:
         form = profile_forms.FermentationProfileImportForm()
         return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+
+
+
+@login_required
+@site_is_configured
+def profile_copy(request, profile_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_fermentation_profile'):
+    #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
+    #     return redirect("/")
+    try:
+        this_profile = FermentationProfile.objects.get(id=profile_id)
+    except:
+        # The URL contained an invalid profile ID. Redirect to the profile
+        # list.
+        messages.error(request, 'Invalid source profile to copy')
+        return redirect('profile_list')
+
+    if request.POST:
+        form = profile_forms.FermentationProfileCopyForm(request.POST)
+        if form.is_valid():
+            try:
+                new_profile = this_profile.copy_to_new(form.cleaned_data['new_profile_name'])
+                messages.success(request, u'Fermentation profile copied to \'{}\''.format(new_profile.name))
+
+                return redirect('profile_edit', profile_id=new_profile.id)
+
+            except ValueError as err:
+                messages.error(request, u"Copy Error: " + err.message)
+                return render_with_devices(request, template_name='profile/profile_copy.html',
+                                           context={'form': form, 'this_profile': this_profile})
+
+        else:
+            return render_with_devices(request, template_name='profile/profile_copy.html',
+                                       context={'form': form, 'this_profile': this_profile})
+    else:
+        form = profile_forms.FermentationProfileCopyForm()
+        return render_with_devices(request, template_name='profile/profile_copy.html',
+                                   context={'form': form, 'this_profile': this_profile})

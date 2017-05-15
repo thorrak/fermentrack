@@ -75,3 +75,7 @@ class FermentationProfileImportForm(forms.Form):
     # TODO - Add a placeholder here
     import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off'}),
                                   help_text="The text of the exported profile")
+
+
+class FermentationProfileCopyForm(forms.Form):
+    new_profile_name = forms.CharField(help_text="The text of the exported profile", max_length=128)

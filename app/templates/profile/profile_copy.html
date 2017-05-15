@@ -1,0 +1,36 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Copy Fermentation Profile{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Copy Fermentation Profile</h1>
+
+<form action="{% url "profile_copy" this_profile.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div id="fermentationProfileOverviewSection">
+        <h3 class="form-header">Copy Fermentation Profile</h3>
+        <p>
+            You are now copying the source profile {{ this_profile.name }} to a new, identical profile. Please choose
+            a name for the new profile below:
+        </p>
+
+        {% form_generic form.new_profile_name %}
+    </div>
+
+    <input type="submit" value="Submit" class="btn btn-primary" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
