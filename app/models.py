@@ -1470,7 +1470,7 @@ class FermentationProfile(models.Model):
             # | 6d    | 64.00 F             |
             # ===============================
             for this_point in point_set:
-                point_string = pad_to_width(this_point.ttl_to_string(), max_ttl_length)
+                point_string = pad_to_width(this_point.ttl_to_string(short_code=True), max_ttl_length)
                 point_string += self.EXPORT_COL_SEPARATOR + str(this_point.temperature_setting) + " " + this_point.temp_format
                 export_string += self.EXPORT_LEFT_WALL + pad_to_width(point_string, interior_width) + self.EXPORT_RIGHT_WALL + "\r\n"
 
@@ -1483,30 +1483,30 @@ class FermentationProfile(models.Model):
 
         # Since we're going to loop through the entire profile in one go, track what parts of the profile we've captured
         found_initial_separator=False
-        profile_name = ""
-        profile_type = ""
+        profile_name = u""
+        profile_type = u""
         found_row_split = False
         profile_points = []
         found_profile_terminator = False
 
         for this_row in iter(import_string.splitlines()):
             if not found_initial_separator:
-                if this_row.strip()[:10] == "==========":
+                if this_row.strip()[:10] == u"==========":
                     found_initial_separator = True
-            elif profile_name == "":
+            elif profile_name == u"":
                 profile_name = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
-            elif profile_type == "":
+            elif profile_type == u"":
                 profile_type = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
 
                 if profile_type not in [x for x, _ in cls.PROFILE_TYPE_CHOICES]:
                     raise ValueError("Invalid profile type specified, or missing initial row separator")
             elif not found_row_split:
-                if this_row.strip()[:10] == "==========":
+                if this_row.strip()[:10] == u"==========":
                     found_row_split = True
                 else:
                     raise ValueError("Unable to locate divider between header & profile point list")
             elif not found_profile_terminator:
-                if this_row.strip()[:10] == "==========":
+                if this_row.strip()[:10] == u"==========":
                     # We've found the profile terminator - tag found_profile_terminator and break
                     found_profile_terminator = True
                     break

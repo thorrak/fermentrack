@@ -226,12 +226,12 @@ def profile_import(request):
         if form.is_valid():
             try:
                 new_profile = FermentationProfile.import_from_text(form.cleaned_data['import_text'])
-                messages.success(request, 'New fermentation profile \'{}\' imported'.format(new_profile.name))
+                messages.success(request, u'New fermentation profile \'{}\' imported'.format(new_profile.name))
 
                 return redirect('profile_edit', profile_id=new_profile.id)
 
             except ValueError as err:
-                messages.error(request, "Import Error: " + err.message)
+                messages.error(request, u"Import Error: " + err.message)
                 return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
 
         else:
