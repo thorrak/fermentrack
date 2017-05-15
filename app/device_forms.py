@@ -239,6 +239,7 @@ class TempControlForm(forms.Form):
 
     # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
     def clean_start_at(self):
+        # TODO - Convert this to instead use FermentationProfilePoint.string_to_ttl
         # tz = pytz.timezone(getattr(settings, 'TIME_ZONE', False))
         if 'start_at' in self.cleaned_data:
             ttl_text = self.cleaned_data['start_at']

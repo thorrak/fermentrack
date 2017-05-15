@@ -1234,6 +1234,7 @@ class BeerLogPoint(models.Model):
 
 # A model representing the fermentation profile as a whole
 class FermentationProfile(models.Model):
+    # Status Choices
     STATUS_ACTIVE = 1
     STATUS_PENDING_DELETE = 2
 
@@ -1242,8 +1243,28 @@ class FermentationProfile(models.Model):
         (STATUS_PENDING_DELETE, 'Pending Delete'),
     )
 
+    # Profile Type Choices
+    PROFILE_STANDARD = "Standard Profile"
+    PROFILE_SMART = "Smart Profile"
+
+    PROFILE_TYPE_CHOICES = (
+        (PROFILE_STANDARD, 'Standard Profile'),
+        (PROFILE_SMART, 'Smart Profile (Unimplemented)'),
+    )
+
+    # Export/Import Strings
+    EXPORT_LEFT_WALL = "| "
+    EXPORT_RIGHT_WALL = " |"
+    EXPORT_COL_SEPARATOR = " | "
+    EXPORT_COL_SEPARATOR_REGEX = r" \| "
+    EXPORT_ROW_SEPARATOR = "="
+
+
+    # Fields
     name = models.CharField(max_length=128)
     status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    
+    profile_type = models.CharField(max_length=32, default=PROFILE_STANDARD, help_text="Type of temperature profile")
 
 
     def __str__(self):
@@ -1392,6 +1413,163 @@ class FermentationProfile(models.Model):
         return previous_setpoint
 
 
+    def to_export(self):
+        # to_export generates a somewhat readable, machine interpretable representation of a fermentation profile
+
+        def pad_to_width(string, width):
+            if len(string) < width:
+                for i in xrange(len(string), width):
+                    string += " "
+            return string
+
+        def add_row_separator(width, no_walls=False):
+            ret_string = ""
+            if not no_walls:
+                separator_width = width + len(self.EXPORT_LEFT_WALL) + len(self.EXPORT_RIGHT_WALL)
+            else:
+                separator_width = width
+            for i in xrange(separator_width):
+                ret_string += self.EXPORT_ROW_SEPARATOR
+            return ret_string + "\r\n"
+
+        profile_type = self.profile_type  # For future compatibility
+
+        export_string = ""
+        max_ttl_string = ""  # To enable me being lazy
+        max_ttl_length = 0  # max_ttl_length is the maximum size of the left (ttl) column of the profile
+        interior_width = 0  # Interior width is the interior size that can be occupied by data (wall to wall)
+
+        point_set = self.fermentationprofilepoint_set.order_by('ttl')
+
+        max_ttl_string = max([x.ttl_to_string() for x in point_set], key=len)
+        max_ttl_length = len(max_ttl_string)
+
+        # Set interior_width to the maximum interior width that we might need. This can be one of four things:
+        # The length of the profile_type
+        # The length of the profile.name
+        # The maximum length of the two columns (max_ttl_length + self.EXPORT_COL_SEPARATOR + "-100.00 C"
+        # The minimum table width (currently 30)
+        interior_width = len(max([profile_type, self.name, (max_ttl_string + self.EXPORT_COL_SEPARATOR + "-100.00 C"),
+                                  add_row_separator(30,no_walls=True)], key=len))
+
+        # The header looks like this:
+        # ===============================
+        # | Profile Name                |
+        # | Profile Type                |
+        # ===============================
+
+        export_string += add_row_separator(interior_width)
+        export_string += self.EXPORT_LEFT_WALL + pad_to_width(self.name, interior_width) + self.EXPORT_RIGHT_WALL + "\r\n"
+        export_string += self.EXPORT_LEFT_WALL + pad_to_width(profile_type, interior_width) + self.EXPORT_RIGHT_WALL + "\r\n"
+        export_string += add_row_separator(interior_width)
+
+        if profile_type == self.PROFILE_STANDARD:
+            # For PROFILE_STANDARD profiles the body looks like this:
+            # ===============================
+            # | 3d 4h | 72.00 F             |
+            # | 6d    | 64.00 F             |
+            # ===============================
+            for this_point in point_set:
+                point_string = pad_to_width(this_point.ttl_to_string(), max_ttl_length)
+                point_string += self.EXPORT_COL_SEPARATOR + str(this_point.temperature_setting) + " " + this_point.temp_format
+                export_string += self.EXPORT_LEFT_WALL + pad_to_width(point_string, interior_width) + self.EXPORT_RIGHT_WALL + "\r\n"
+
+        export_string += add_row_separator(interior_width)
+
+        return export_string
+
+    @classmethod
+    def import_from_text(cls, import_string):
+
+        # Since we're going to loop through the entire profile in one go, track what parts of the profile we've captured
+        found_initial_separator=False
+        profile_name = ""
+        profile_type = ""
+        found_row_split = False
+        profile_points = []
+        found_profile_terminator = False
+
+        for this_row in iter(import_string.splitlines()):
+            if not found_initial_separator:
+                if this_row.strip()[:10] == "==========":
+                    found_initial_separator = True
+            elif profile_name == "":
+                profile_name = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
+            elif profile_type == "":
+                profile_type = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
+
+                if profile_type not in [x for x, _ in cls.PROFILE_TYPE_CHOICES]:
+                    raise ValueError("Invalid profile type specified, or missing initial row separator")
+            elif not found_row_split:
+                if this_row.strip()[:10] == "==========":
+                    found_row_split = True
+                else:
+                    raise ValueError("Unable to locate divider between header & profile point list")
+            elif not found_profile_terminator:
+                if this_row.strip()[:10] == "==========":
+                    # We've found the profile terminator - tag found_profile_terminator and break
+                    found_profile_terminator = True
+                    break
+                else:
+                    # Before we do anything else, strip out the actual data (remove left/right wall & whitespace)
+                    profile_data = this_row.strip()[len(cls.EXPORT_LEFT_WALL):(len(this_row)-len(cls.EXPORT_RIGHT_WALL))].strip()
+
+                    try:
+                        if profile_type == cls.PROFILE_STANDARD:
+                            # For PROFILE_STANDARD profiles the body looks like this:
+                            # ===============================
+                            # | 3d 4h | 72.00 F             |
+                            # | 6d    | 64.00 F             |
+                            # ===============================
+                            # TODO - Convert the temp formats in the pattern below to be dynamically generated rather than magic
+                            point_pattern = r"(?P<time_str>[0-9ywdhms]+)[ ]*" + cls.EXPORT_COL_SEPARATOR_REGEX + \
+                                                    r"(?P<temp_str>[0-9\.]+) (?P<temp_fmt>[CF]{1})"
+                        else:
+                            raise ValueError("Unsupported profile type specified")
+
+                        point_regex = re.compile(point_pattern)
+                        point_matches = point_regex.finditer(this_row)
+                    except:
+                        raise ValueError("{} isn't in a valid format for conversion".format(profile_data))
+
+                    for this_match in point_matches:
+                        if profile_type == cls.PROFILE_STANDARD:
+                            try:
+                                ttl = FermentationProfilePoint.string_to_ttl(this_match.group('time_str'))
+                            except ValueError:
+                                raise ValueError("Invalid time string for row {}".format(profile_data))
+                            profile_points.append({'ttl': ttl,
+                                                   'temperature_setting': float(this_match.group('temp_str')),
+                                                   'temp_format': this_match.group('temp_fmt')})
+                        else:
+                            raise ValueError("Unsupported profile type specified")
+
+        if found_profile_terminator:
+            # At this point, we've imported the full profile. If there are no profile points, raise an error. Otherwise,
+            # attempt to create the various objects
+
+            if len(profile_points) <= 0:
+                raise ValueError("No points in provided profile")
+
+            if profile_type == cls.PROFILE_STANDARD:
+                new_profile = cls(name=profile_name, profile_type=profile_type)
+                new_profile.save()
+
+                for this_point in profile_points:
+                    new_point = FermentationProfilePoint(profile=new_profile, ttl=this_point['ttl'],
+                                                         temperature_setting=this_point['temperature_setting'],
+                                                         temp_format=this_point['temp_format'])
+                    new_point.save()
+
+                # And we're done. Return the new_profile object
+                return new_profile
+
+            else:
+                raise ValueError("Unsupported profile type specified")
+        else:
+            raise ValueError("No profile terminator found")
+
+
 
 class FermentationProfilePoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
@@ -1432,6 +1610,74 @@ class FermentationProfilePoint(models.Model):
         else:
             # TODO - Log This - We have an invalid format somewhere
             return self.temperature_setting
+
+    def ttl_to_string(self, short_code=False):
+        # This function returns self.ttl in the "5d 3h 4m 15s" format we use to key it in
+        ttl_string = ""
+
+        remainder = self.ttl.total_seconds()
+        days, remainder = divmod(remainder, 60*60*24)
+        hours, remainder = divmod(remainder, 60*60)
+        minutes, seconds = divmod(remainder, 60)
+
+        if short_code:
+            day_string = "d "
+            hour_string = "h "
+            minute_string = "m "
+            second_string = "s "
+        else:
+            day_string = " days, "
+            hour_string = " hours, "
+            minute_string = " minutes, "
+            second_string = " seconds, "
+
+        if days > 0:
+            ttl_string += str(int(days)) + day_string
+        if hours > 0:
+            ttl_string += str(int(hours)) + hour_string
+        if minutes > 0:
+            ttl_string += str(int(minutes)) + minute_string
+        if seconds > 0:
+            ttl_string += str(int(seconds)) + second_string
+
+        if len(ttl_string) <=0:  # Default to 0 seconds
+            ttl_string = "0" + second_string
+
+        return ttl_string.rstrip(", ")
+
+    @staticmethod
+    def string_to_ttl(string):
+        if len(string) <= 1:
+            raise ValueError("No string provided to convert")
+
+        # Split out the d/h/m/s of the timer
+        try:
+            timer_pattern = r"(?P<time_amt>[0-9]+)[ ]*(?P<ywdhms>[ywdhms]{1})"
+            timer_regex = re.compile(timer_pattern)
+            timer_matches = timer_regex.finditer(string)
+        except:
+            raise ValueError("{} isn't in a valid format for conversion".format(string))
+
+
+        # timer_time is equal to now + the time delta
+        time_delta = datetime.timedelta(seconds=0)
+        for this_match in timer_matches:
+            dhms = this_match.group('ywdhms')
+            delta_amt = int(this_match.group('time_amt'))
+            if dhms == 'y':  # This doesn't account for leap years, but whatever.
+                time_delta = time_delta + datetime.timedelta(days=(365*delta_amt))
+            elif dhms == 'w':
+                time_delta = time_delta + datetime.timedelta(weeks=delta_amt)
+            elif dhms == 'd':
+                time_delta = time_delta + datetime.timedelta(days=delta_amt)
+            elif dhms == 'h':
+                time_delta = time_delta + datetime.timedelta(hours=delta_amt)
+            elif dhms == 'm':
+                time_delta = time_delta + datetime.timedelta(minutes=delta_amt)
+            elif dhms == 's':
+                time_delta = time_delta + datetime.timedelta(seconds=delta_amt)
+
+        return time_delta
 
 
 

@@ -24,8 +24,6 @@ urlpatterns = [
     url(r'^$', app.views.siteroot, name='siteroot'),
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
-    # url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
-    # url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
 
     ### Device Views
     url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),
@@ -77,6 +75,7 @@ urlpatterns = [
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),
     url(r'^fermentation_profile/new/$', app.profile_views.profile_new, name='profile_new'),
+    url(r'^fermentation_profile/import/$', app.profile_views.profile_import, name='profile_import'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/$', app.profile_views.profile_new, name='profile_view'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/edit/$', app.profile_views.profile_edit, name='profile_edit'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/delete/$', app.profile_views.profile_delete, name='profile_delete'),

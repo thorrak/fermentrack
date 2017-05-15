@@ -103,6 +103,10 @@
         {% endfor %}
     {% endif %}
 
+    <h2>Profile (Importable)</h2>
+    <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
+
+
     <p>
         <a href="{% url "profile_delete" this_profile.id %}" type="button" class="btn btn-sm btn-danger">Delete Profile</a>
     </p>
