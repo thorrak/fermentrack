@@ -58,14 +58,13 @@
                                     {% endif %}
                                 {% endfor %}
                             </select>
+                            <p>Start <input type="text" name="start_at" placeholder="0h 0m"> into the profile (optional).</p>
+                            <input type="hidden" name="temp_control" value="beer_profile">
+                            <button type="submit" class="btn btn-large btn-primary">Set Beer Profile</button>
                             {% else %}
                                 No available beer profiles have been created and are active
                             {% endif %}
 
-                            {# TODO - Add option for setting an initial TTL #}
-
-                            <input type="hidden" name="temp_control" value="beer_profile">
-                            <button type="submit" class="btn btn-large btn-primary">Set Beer Profile</button>
                         </form>
                     </div>{# End Beer Profile #}
 

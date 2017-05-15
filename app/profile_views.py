@@ -29,25 +29,14 @@ def profile_new(request):
         if form.is_valid():
             # Generate the new_fermentation_profile object from the form data
             new_fermentation_profile = form.save()
-            messages.success(
-                request,
-                'New fermentation profile \'{}\' created'.format(
-                    new_fermentation_profile.name
-                )
-            )
+            messages.success(request, 'New fermentation profile \'{}\' created'.format(new_fermentation_profile.name))
             return redirect('profile_edit', profile_id=new_fermentation_profile.id)
 
         else:
-            return render_with_devices(
-                request, template_name='profile/profile_new.html',
-                context={'form': form}
-            )
+            return render_with_devices(request, template_name='profile/profile_new.html', context={'form': form})
     else:
         form = profile_forms.FermentationProfileForm()
-        return render_with_devices(
-            request, template_name='profile/profile_new.html',
-            context={'form': form}
-        )
+        return render_with_devices(request, template_name='profile/profile_new.html', context={'form': form})
 
 
 @login_required
@@ -64,8 +53,7 @@ def profile_edit(request, profile_id):
     except:
         # The URL contained an invalid profile ID. Redirect to the profile
         # list.
-        messages.error(
-            request, 'Invalid profile \'{}\' selected for editing'.format(profile_id))
+        messages.error(request, 'Invalid profile \'{}\' selected for editing'.format(profile_id))
         return redirect('profile_list')
 
     if request.POST:
@@ -84,22 +72,14 @@ def profile_edit(request, profile_id):
             ).order_by('ttl')
             # Regardless of whether we were successful or not - rerender the
             # existing edit page
-        return render_with_devices(
-            request, template_name='profile/profile_edit.html',
-            context={
-                'form': form, 'this_profile': this_profile,
-                'this_profile_points': this_profile_points
-            }
-        )
+        return render_with_devices(request, template_name='profile/profile_edit.html',
+                                   context={'form': form, 'this_profile': this_profile,
+                                            'this_profile_points': this_profile_points})
     else:
         form = profile_forms.FermentationProfilePointForm()
         return render_with_devices(
             request, template_name='profile/profile_edit.html',
-            context={
-                'form': form, 'this_profile': this_profile,
-                'this_profile_points': this_profile_points
-            }
-        )
+            context={'form': form, 'this_profile': this_profile, 'this_profile_points': this_profile_points})
 
 
 @login_required
@@ -109,10 +89,8 @@ def profile_list(request):
     # deletion...
     FermentationProfile.cleanup_pending_delete()
     all_profiles = FermentationProfile.objects.all()
-    return render_with_devices(
-        request, template_name='profile/profile_list.html',
-        context={'all_profiles': all_profiles}
-    )
+    return render_with_devices(request, template_name='profile/profile_list.html',
+                               context={'all_profiles': all_profiles})
 
 
 @login_required
@@ -193,8 +171,7 @@ def profile_undelete(request, profile_id):
     except:
         # The URL contained an invalid profile ID. Redirect to the profile
         # list.
-        messages.error(
-            request, 'Invalid profile selected to save from deletion')
+        messages.error(request, 'Invalid profile selected to save from deletion')
         return redirect('profile_list')
 
     if this_profile.status == FermentationProfile.STATUS_PENDING_DELETE:
@@ -233,3 +210,70 @@ def profile_points_to_csv(request, profile_id):
         profilepoint_date = datetime.now() + p.ttl
         writer.writerow([profilepoint_date, p.temp_to_preferred()])
     return response
+
+
+
+@login_required
+@site_is_configured
+def profile_import(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_fermentation_profile'):
+    #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
+    #     return redirect("/")
+    if request.POST:
+        form = profile_forms.FermentationProfileImportForm(request.POST)
+        if form.is_valid():
+            try:
+                new_profile = FermentationProfile.import_from_text(form.cleaned_data['import_text'])
+                messages.success(request, u'New fermentation profile \'{}\' imported'.format(new_profile.name))
+
+                return redirect('profile_edit', profile_id=new_profile.id)
+
+            except ValueError as err:
+                messages.error(request, u"Import Error: " + err.message)
+                return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+
+        else:
+            return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+    else:
+        form = profile_forms.FermentationProfileImportForm()
+        return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+
+
+
+@login_required
+@site_is_configured
+def profile_copy(request, profile_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_fermentation_profile'):
+    #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
+    #     return redirect("/")
+    try:
+        this_profile = FermentationProfile.objects.get(id=profile_id)
+    except:
+        # The URL contained an invalid profile ID. Redirect to the profile
+        # list.
+        messages.error(request, 'Invalid source profile to copy')
+        return redirect('profile_list')
+
+    if request.POST:
+        form = profile_forms.FermentationProfileCopyForm(request.POST)
+        if form.is_valid():
+            try:
+                new_profile = this_profile.copy_to_new(form.cleaned_data['new_profile_name'])
+                messages.success(request, u'Fermentation profile copied to \'{}\''.format(new_profile.name))
+
+                return redirect('profile_edit', profile_id=new_profile.id)
+
+            except ValueError as err:
+                messages.error(request, u"Copy Error: " + err.message)
+                return render_with_devices(request, template_name='profile/profile_copy.html',
+                                           context={'form': form, 'this_profile': this_profile})
+
+        else:
+            return render_with_devices(request, template_name='profile/profile_copy.html',
+                                       context={'form': form, 'this_profile': this_profile})
+    else:
+        form = profile_forms.FermentationProfileCopyForm()
+        return render_with_devices(request, template_name='profile/profile_copy.html',
+                                   context={'form': form, 'this_profile': this_profile})

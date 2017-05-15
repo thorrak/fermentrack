@@ -319,8 +319,13 @@ def device_temp_control(request, device_id):
                 except:
                     success = False
             elif form.cleaned_data['temp_control'] == 'beer_profile':
+                if 'start_at' in form.cleaned_data:
+                    start_at = form.cleaned_data['start_at']
+                else:
+                    start_at = None
+
                 success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
-                                                         profile=form.cleaned_data['profile'])
+                                                         profile=form.cleaned_data['profile'], profile_startat=start_at)
             else:
                 messages.error(request, "Invalid temperature control function specified.")
                 return redirect('siteroot')

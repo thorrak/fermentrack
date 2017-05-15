@@ -36,6 +36,7 @@ class FermentationProfilePointForm(forms.Form):
 
     # Check that the ttl format is valid, and if it is, replace it with a datetime delta object
     def clean_ttl(self):
+        # TODO - Convert this to instead use FermentationProfilePoint.string_to_ttl
         # tz = pytz.timezone(getattr(settings, 'TIME_ZONE', False))
         ttl_text = self.cleaned_data['ttl']
 
@@ -68,3 +69,13 @@ class FermentationProfilePointForm(forms.Form):
 
         # return self.cleaned_data['ttl']
         return time_delta
+
+
+class FermentationProfileImportForm(forms.Form):
+    # TODO - Add a placeholder here
+    import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off'}),
+                                  help_text="The text of the exported profile")
+
+
+class FermentationProfileCopyForm(forms.Form):
+    new_profile_name = forms.CharField(help_text="The text of the exported profile", max_length=128)

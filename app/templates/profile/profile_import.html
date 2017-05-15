@@ -1,0 +1,41 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Import Fermentation Profile{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Import Fermentation Profile</h1>
+
+<form action="{% url "profile_import" %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <p>
+        Paste the full text of the profile export (including leading/trailing rows of '=====') here and click
+        "Import" below. After importing, you can edit the profile on the next page.
+    </p>
+
+    <div class="form-group">
+        {% if form.import_text.errors %}
+            <div class="alert alert-danger"><strong>{{ form.import_text.label }}</strong> {% for error in form.import_text.errors %}{{ error }}{% endfor %}</div>
+        {% endif %}
+        <label for="{{ form.import_text.id }}" data-toggle="tooltip" title="{{ form.import_text.help_text }}" class="col-sm-2 control-label">
+            {{ form.import_text.label_tag }}
+        </label>
+        <div class="col-sm-10">{{ form.import_text }}</div>
+    </div>
+
+    <input type="submit" value="Import" class="btn btn-primary" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
