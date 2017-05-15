@@ -1,0 +1,66 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{# This template is basically the same thing as the similarly numbered device_guided_serial_autodetect template #}
+{# The main change (for now) is the URL this redirects to #}
+
+{% load static %}
+{% load custom_tags %}
+{% block title %}Auto-detect Controller to Flash{% endblock %}
+
+{% block content %}
+
+<h1>Serial Controller Auto-detection</h1>
+<h3>Step 2 - Connect & detect controller</h3>
+
+<div class="row">
+<div class="col-xs-12">
+    <p>
+        Now that we have a list of preexisting serial devices, we know what devices <i>aren't</i> the one we're looking for.
+    </p>
+
+    <p>
+        Go ahead and connect the device you want to control now. Wait a minute or so after plugging it in for it to
+        register, then click "Scan for New Devices" below.
+    </p>
+
+</div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4">
+        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <input type="hidden" name="step" value="3">
+            <input type="submit" value="Scan for New Devices" class="btn btn-block btn-lg btn-primary" />
+        </form>
+    </div>
+</div>
+
+<h5>Preexisting Devices</h5>
+    <p>
+        Curious about what devices were found during the scan? Take a look at the list below. If you see your controller
+        listed, please disconnect it and restart the serial autodetection process.
+    </p>
+
+    <table>
+        <tr>
+            <th>Device Name</th>
+        </tr>
+    {% for found_device in current_devices %}
+        <tr>
+            <td>{{ found_device }}</td>
+        </tr>
+    {% endfor %}
+
+    </table>
+<div class="row">
+    <div class="col-xs-4">
+        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <input type="hidden" name="step" value="2">
+            <input type="submit" value="Oops - Re-scan for Preexisting Devices" class="btn btn-block btn-lg btn-danger" />
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

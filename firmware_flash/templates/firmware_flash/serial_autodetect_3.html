@@ -1,7 +1,11 @@
-{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% extends "sitewide/flat_ui_template.html" %}
+{# This template is basically the same thing as the similarly numbered device_guided_serial_autodetect template #}
+{# The main change (for now) is the URL this redirects to #}
+
+{% load static %}
 {% load custom_tags %}
 
-{% block title %}Auto-detect Serial Controllers{% endblock %}
+{% block title %}Auto-detect Controller to Flash{% endblock %}
 
 {% block content %}
 
@@ -37,22 +41,19 @@
 
 <div class="row">
     <div class="col-xs-4">
-        <form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="2">
             <input type="submit" value="Restart from Step 1" class="btn btn-block btn-lg btn-danger" />
         </form>
     </div>
 
     <div class="col-xs-4">
-        <form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="3">
             <input type="submit" value="Rescan for New Devices" class="btn btn-block btn-lg btn-warning" />
         </form>
     </div>
 
-    <div class="col-xs-4">
-        <a href="{% url 'device_add' %}" class="btn btn-block btn-lg btn-primary">Add Device via Advanced Setup</a>
-    </div>
 </div>
 
 {% endif %}
@@ -84,9 +85,8 @@
                 <td>{{ this_device.vid }}</td>
                 <td>{{ this_device.known_name }}</td>
                 <td>
-                    <form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
-                        <input type="hidden" name="step" value="4">
-                        <input type="hidden" name="device" value="{{ this_device.device }}">
+                    <form action="{% url "firmware_flash_select_firmware" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+                        <input type="hidden" name="serial_port" value="{{ this_device.device }}">
                         <input type="submit" value="Set Up" class="btn btn-xs btn-success" />
                     </form>
                 </td>

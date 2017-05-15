@@ -171,3 +171,8 @@ upgrade.log
 
 # Also ignore the serial device cache (used for autodetection)
 device.cache
+
+
+# Ignore downloaded firmware files
+*.bin
+*.hex

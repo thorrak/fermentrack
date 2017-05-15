@@ -1,0 +1,21 @@
+{# TODO - Delete this once testing is complete #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Select Firmware</title>
+</head>
+<body>
+    This is a test template, designed to allow skipping straight to the "select firmware" portal. This is not intended
+    for use by anyone but Fermentrack, and may cause device corruption or data loss on both the device running
+    Fermentrack as well as devices connected to the device running Fermentrack. <b>If you are reading this and are not
+    a Fermentrack developer, close this window.</b>
+
+<form action="{% url "firmware_flash_select_firmware" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+    <input type="hidden" name="serial_port" value="/dev/fakedevice.donotuse">{# 	/dev/cu.SLAB_USBtoUART #}
+    <input type="submit" value="Set Up" class="btn btn-xs btn-success" />
+</form>
+
+
+</body>
+</html>

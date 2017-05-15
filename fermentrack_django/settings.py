@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
+    'firmware_flash.apps.AppConfig',
     'constance',
     'constance.backends.database',
     'django_celery_beat',

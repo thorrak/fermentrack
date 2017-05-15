@@ -1,7 +1,11 @@
-{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% extends "sitewide/flat_ui_template.html" %}
+{# This template is basically the same thing as the similarly numbered device_guided_serial_autodetect template #}
+{# The text and the URL are both changed #}
+
+{% load static %}
 {% load custom_tags %}
 
-{% block title %}Auto-detect Serial Controllers{% endblock %}
+{% block title %}Auto-detect Controller to Flash{% endblock %}
 
 {% block content %}
 
@@ -9,7 +13,11 @@
 <h3>Step 1 - Detect preexisting devices</h3>
 <div class="row">
 <div class="col-xs-12">
-    <p>Looking to connect a controller via Serial? Fantastic! Here's how this works:</p>
+    <p>
+        Fermentrack flashes all controllers via serial - including those you ultimately want to connect via WiFi. This
+        script will help you determine which serial device to flash.
+    </p>
+
     <p>
         All serial controllers have a system-generated device ID which is used to allow your system to connect to the
         device. Rather than have you search for this ID manually, we'll attempt to automatically detect the ID by
@@ -28,7 +36,7 @@
 
 <div class="row">
     <div class="col-xs-4">
-        <form action="{% url "device_guided_serial_autodetect" device_family %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="2">
             <input type="submit" value="Scan Devices" class="btn btn-block btn-lg btn-primary" />
         </form>

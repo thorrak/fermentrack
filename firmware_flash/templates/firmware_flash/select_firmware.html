@@ -1,0 +1,148 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{# This template is basically the same thing as the similarly numbered device_guided_serial_autodetect template #}
+{# The main change (for now) is the URL this redirects to #}
+
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Auto-detect Serial Controllers{% endblock %}
+
+{% block content %}
+
+<h1>Select Firmware to Flash</h1>
+<h3>Device Information</h3>
+<table>
+    <tr>
+        <td>Serial Port</td>
+        <td>{{ serial_port }}</td>
+    </tr>
+    <tr>
+        <td>Device Family</td>
+        <td>{{ flash_family.name }}</td>
+    </tr>
+</table>
+
+<div class="row">
+<div class="col-xs-12">
+
+{% if fermentrack_firmware %}
+<h4>Fermentrack-Supported Firmware</h4>
+
+
+{% for this_firmware in fermentrack_firmware %}
+<div class="row">
+    <div class="col-xs-12">
+        <h3>{{ this_firmware.name }}</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 col-xs-6">
+        <h4>Version:</h4>
+        {{ this_firmware.version }}
+    </div>
+    <div class="col-md-4 col-xs-6">
+        <h4>Revision:</h4>
+        {{ this_firmware.revision }}
+    </div>
+    <div class="col-md-4 col-xs-12">
+        <h4>Variant:</h4>
+        {{ this_firmware.variant }}
+    </div>
+</div>
+
+{# Firmware Descriptions #}
+<div class="row">
+    <h4>Description</h4>
+    <div class="col-xs-12">
+    {{ this_firmware.description }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+    <h4>Variant Description</h4>
+    {{ this_firmware.variant_description }}
+    </div>
+</div>
+
+{# Firmware Links #}
+<div class="row">
+    <div class="col-xs-4">
+        <h4>Project URL:</h4>
+    </div>
+    <div class="col-xs-8">
+        <a href="{{ this_firmware.project_url }}">{{ this_firmware.project_url }}</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4">
+        <h4>Documentation:</h4>
+    </div>
+    <div class="col-xs-8">
+        <a href="{{ this_firmware.documentation_url }}">{{ this_firmware.documentation_url }}</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4">
+        <h4>Firmware Download URL:</h4>
+    </div>
+    <div class="col-xs-8">
+        <a href="{{ this_firmware.download_url }}">{{ this_firmware.download_url }}</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-8">
+        <h4>This firmware is directly supported by Fermentrack for both flashing & ongoing use</h4>
+    </div>
+
+    <div class="col-xs-4">
+        <form action="{% url "firmware_flash_flash_firmware" flash_family.id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <input type="hidden" name="serial_port" value="{{ serial_port }}">
+            <input type="hidden" name="firmware_id" value="{{ this_firmware.id }}">
+            <input type="submit" value="Flash to Device" class="btn btn-xs btn-success" />
+        </form>
+    </div>
+</div>
+
+{% endfor %}
+{#    #}
+{#<table class="table table-hover">#}
+{#    <thead>#}
+{#        <tr> {# TODO - Add tooltips to explain what these mean #}
+{#            <th>Device Port</th>#}
+{#            <th>Description</th>#}
+{#            <th>PID</th>#}
+{#            <th>VID</th>#}
+{#            <th>Type (if known)</th>#}
+{#            <th></th>#}
+{#        </tr>#}
+{#    </thead>#}
+{#{% for this_device in new_devices %}#}
+{#    <tr>#}
+{#        <td>{{ this_device.device }}</td>#}
+{#        <td>{{ this_device.description }}</td>#}
+{#        <td>{{ this_device.pid }}</td>#}
+{#        <td>{{ this_device.vid }}</td>#}
+{#        <td>{{ this_device.known_name }}</td>#}
+{#        <td>#}
+{#            <form action="{% url "firmware_flash_select_firmware" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}#}
+{#                <input type="hidden" name="step" value="4">#}
+{#                <input type="hidden" name="device" value="{{ this_device.device }}">#}
+{#                <input type="submit" value="Set Up" class="btn btn-xs btn-success" />#}
+{#            </form>#}
+{#        </td>#}
+{#    </tr>#}
+{#{% endfor %}#}
+{#</table>#}
+{% endif %}
+
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

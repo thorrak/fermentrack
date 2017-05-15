@@ -1,0 +1,35 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Select Device Family{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Flash Firmware to Controller</h1>
+
+<h4>First, choose the family of the device you would like to set up:</h4>
+<div id="form_container">
+    <form action="{% url "firmware_flash_select_family" %}" class="form-horizontal" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" class="btn btn-primary" />
+    </form>
+</div>
+
+<div id="update_container">
+
+    <h3>Update List of Available Firmware</h3>
+    <a href="{% url 'firmware_flash_refresh_list' %}" class="btn btn-primary">Refresh Firmware List from Fermentrack.com</a>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
