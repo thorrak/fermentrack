@@ -1467,7 +1467,7 @@ class FermentationProfile(models.Model):
         if profile_type == self.PROFILE_STANDARD:
             # For PROFILE_STANDARD profiles the body looks like this:
             # ===============================
-            # | 3d 4h | 72.00 F             |
+            # | 3d4h  | 72.00 F             |
             # | 6d    | 64.00 F             |
             # ===============================
             for this_point in point_set:
@@ -1639,10 +1639,10 @@ class FermentationProfilePoint(models.Model):
         minutes, seconds = divmod(remainder, 60)
 
         if short_code:
-            day_string = "d "
-            hour_string = "h "
-            minute_string = "m "
-            second_string = "s "
+            day_string = "d"
+            hour_string = "h"
+            minute_string = "m"
+            second_string = "s"
         else:
             day_string = " days, "
             hour_string = " hours, "
