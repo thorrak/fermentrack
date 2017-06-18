@@ -1440,8 +1440,9 @@ class FermentationProfile(models.Model):
         interior_width = 0  # Interior width is the interior size that can be occupied by data (wall to wall)
 
         point_set = self.fermentationprofilepoint_set.order_by('ttl')
-
-        max_ttl_string = max([x.ttl_to_string() for x in point_set], key=len)
+        # We need to check there are any point_set yet
+        if len(point_set) < 0:
+            max_ttl_string = max([x.ttl_to_string() for x in point_set], key=len)
         max_ttl_length = len(max_ttl_string)
 
         # Set interior_width to the maximum interior width that we might need. This can be one of four things:
@@ -1466,7 +1467,7 @@ class FermentationProfile(models.Model):
         if profile_type == self.PROFILE_STANDARD:
             # For PROFILE_STANDARD profiles the body looks like this:
             # ===============================
-            # | 3d 4h | 72.00 F             |
+            # | 3d4h  | 72.00 F             |
             # | 6d    | 64.00 F             |
             # ===============================
             for this_point in point_set:
@@ -1638,10 +1639,10 @@ class FermentationProfilePoint(models.Model):
         minutes, seconds = divmod(remainder, 60)
 
         if short_code:
-            day_string = "d "
-            hour_string = "h "
-            minute_string = "m "
-            second_string = "s "
+            day_string = "d"
+            hour_string = "h"
+            minute_string = "m"
+            second_string = "s"
         else:
             day_string = " days, "
             hour_string = " hours, "
