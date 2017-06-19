@@ -17,3 +17,5 @@ django-celery-beat  # for scheduling asynchronous tasks with celery
 
 pyudev          # for managing udev rules for serial devices
 requests        # for loading firmware data from websites
+
+esptool         # for flashing ESP8266 devices

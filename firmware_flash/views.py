@@ -18,6 +18,13 @@ import random
 
 import os, subprocess
 
+# Fermentrack integration
+try:
+    from app.models import BrewPiDevice
+    FERMENTRACK_INTEGRATION = True
+except:
+    FERMENTRACK_INTEGRATION = False
+
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
@@ -212,6 +219,7 @@ def firmware_flash_flash_firmware(request, flash_family_id):
                                    context={'flash_family_id': flash_family_id})
 
     # Alright. Now we need to flash the firmware. First, download the selected firmware file
+    device_flashed = False
     firmware_path = firmware_to_flash.download_to_file()
     if firmware_path is None:
         messages.error(request, "Unable to download firmware file!")
@@ -220,23 +228,43 @@ def firmware_flash_flash_firmware(request, flash_family_id):
         # Ok, we now have the firmware file. Let's do something with it
         if firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ESP8266:
             # We're using an ESP8266, which means esptool.
-            flash_cmd = ["esptool", "--port", request.POST['serial_port'], "write_flash", "0x00000", firmware_path]
+            flash_cmd = ["esptool.py", "--port", request.POST['serial_port'], "write_flash", "--flash_mode", "dio", "0x00000", firmware_path]
         else:
             flash_cmd = []
 
+        # TODO - Explicitly need to disable any device on that port
+        if FERMENTRACK_INTEGRATION:
+            # If we are running as part of a fermentrack installation (which presumably, we are) we need to disable
+            # any device currently running on the serial port we're flashing.
 
+            devices_to_disable = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
+
+            for this_device in devices_to_disable:
+                this_device.status = BrewPiDevice.STATUS_UPDATING
+                this_device.save()
+                this_device.stop_process()
+
+        # And now, let's call the actual flasher
         retval = subprocess.call(flash_cmd)
+
+        # Last, reenable all the devices we disabled earlier
+        if FERMENTRACK_INTEGRATION:
+            devices_to_disable = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_UPDATING)
+            for this_device in devices_to_disable:
+                this_device.status = BrewPiDevice.STATUS_ACTIVE
+                this_device.save()
+                # We'll let Circus restart the process on the next cycle
+                # this_device.start_process()
 
         if retval == 0:
             messages.success(request, "Firmware successfully flashed to device!")
+            device_flashed = True
         else:
             messages.error(request, "Firmware didn't flash successfully. Please reattempt, or flash manually.")
 
-
-
     return render_with_devices(request, template_name='firmware_flash/flash_firmware.html',
                                context={'flash_family': flash_family, 'firmware': firmware_to_flash,
-                                        'flash_cmd': flash_cmd})
+                                        'flash_cmd': flash_cmd, 'device_flashed': device_flashed})
 
 
 
@@ -253,5 +281,3 @@ def firmware_flash_test_select_firmware(request):
 
     return render_with_devices(request, template_name='firmware_flash/test_select_firmware.html',
                                context={'flash_family_id': flash_family.id})
-
-

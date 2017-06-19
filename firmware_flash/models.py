@@ -160,6 +160,7 @@ class Firmware(models.Model):
                     in_error=row['in_error'], description=row['description'],
                     variant_description=row['variant_description'], download_url=row['download_url'],
                     project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
+                    checksum=row['checksum'],
                 )
                 newFirmware.save()
 

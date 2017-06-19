@@ -9,13 +9,19 @@
 
 <h3>Now Flashing Firmware</h3>
 
+{% if device_flashed %}
 <p>The requested firmware has been flashed to the controller</p>
+{% else %}
+<p>The requested firmware WAS NOT flashed to the controller</p>
+<p>This could be due to connectivity issues, invalid controller type selection, or insufficient memory on the device.</p>
+<p>Please reattempt flashing the device manually.</p>
+{% endif %}
 
 Firmware Selected: {{ firmware.name }}<br>
 {% if flash_cmd %}
     Flash Command: {% for cmd in flash_cmd %}{{ cmd }} {% endfor %}<br>
 {% endif %}
-
+    <a href="{% url 'siteroot' %}" class="btn btn-lg btn-success">Return to Fermentrack</a>
 {% endblock %}
 
 {% block scripts %}
