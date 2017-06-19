@@ -16,6 +16,8 @@ import app.serial_integration as serial_integration
 from app.decorators import site_is_configured  # Checks if user has completed constance configuration
 import random
 
+import os, subprocess
+
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
     all_devices = BrewPiDevice.objects.all()
@@ -38,6 +40,19 @@ def firmware_select_family(request):
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
+
+    # Test if avrdude is available. If not, the user will need to install it.
+    try:
+        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+        install_check = rettext.find("installed")
+
+        if install_check == -1:
+            # The package status isn't installed
+            # TODO - Provide link to instructions on how to resolve this error.
+            messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail!")
+    except:
+        messages.error(request, "Error checking for installed 'avrdude' package - Arduino installations may fail!")
+
 
     if request.POST:
         form = forms.FirmwareFamilyForm(request.POST)
@@ -166,6 +181,7 @@ def firmware_flash_select_firmware(request, flash_family_id):
 @login_required
 @site_is_configured
 def firmware_flash_flash_firmware(request, flash_family_id):
+    # TODO - Strip flash_family_id from being passed in, as we can pull it from the passed firmware_id
     try:
         flash_family = DeviceFamily.objects.get(id=flash_family_id)
     except:
@@ -195,10 +211,32 @@ def firmware_flash_flash_firmware(request, flash_family_id):
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
                                    context={'flash_family_id': flash_family_id})
 
-    # TODO - Actually trigger the flash of the firmware here
+    # Alright. Now we need to flash the firmware. First, download the selected firmware file
+    firmware_path = firmware_to_flash.download_to_file()
+    if firmware_path is None:
+        messages.error(request, "Unable to download firmware file!")
+        flash_cmd = None
+    else:
+        # Ok, we now have the firmware file. Let's do something with it
+        if firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ESP8266:
+            # We're using an ESP8266, which means esptool.
+            flash_cmd = ["esptool", "--port", request.POST['serial_port'], "write_flash", "0x00000", firmware_path]
+        else:
+            flash_cmd = []
+
+
+        retval = subprocess.call(flash_cmd)
+
+        if retval == 0:
+            messages.success(request, "Firmware successfully flashed to device!")
+        else:
+            messages.error(request, "Firmware didn't flash successfully. Please reattempt, or flash manually.")
+
+
 
     return render_with_devices(request, template_name='firmware_flash/flash_firmware.html',
-                               context={'flash_family': flash_family, 'firmware': firmware_to_flash})
+                               context={'flash_family': flash_family, 'firmware': firmware_to_flash,
+                                        'flash_cmd': flash_cmd})
 
 
 

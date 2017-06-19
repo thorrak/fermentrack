@@ -9,9 +9,12 @@
 
 <h3>Now Flashing Firmware</h3>
 
-<p>We are now flashing the firmware to the controller.</p>
+<p>The requested firmware has been flashed to the controller</p>
 
-    Firmware Selected: {{ firmware.name }}
+Firmware Selected: {{ firmware.name }}<br>
+{% if flash_cmd %}
+    Flash Command: {% for cmd in flash_cmd %}{{ cmd }} {% endfor %}<br>
+{% endif %}
 
 {% endblock %}
 

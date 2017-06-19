@@ -179,7 +179,7 @@ class Firmware(models.Model):
         return fname_base
 
     def local_filepath(self):
-        return os.path.join(settings.BASE_DIR, "firmware_flash", "firmwares")
+        return os.path.join(settings.BASE_DIR, "firmware_flash", "firmware")
 
     def download_to_file(self, check_checksum=True, force_download=False):
         full_path = os.path.join(self.local_filepath(), self.local_filename())
@@ -208,5 +208,7 @@ class Firmware(models.Model):
                 if self.checksum != fhash.hash_of_file(full_path):
                     os.remove(full_path)
                     return None
+            else:
+                return None
         # The file is valid (or we aren't checking checksums). Return the path.
         return full_path
