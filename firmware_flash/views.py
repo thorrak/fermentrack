@@ -108,8 +108,7 @@ def firmware_select_board(request, flash_family_id):
         form = forms.BoardForm(request.POST)
         form.set_choices(flash_family)
         if form.is_valid():
-            return redirect('firmware_flash_serial_autodetect', flash_family_id=flash_family_id,
-                            board_id=form.cleaned_data['board_type'])
+            return redirect('firmware_flash_serial_autodetect', board_id=form.cleaned_data['board_type'])
         else:
             return render_with_devices(request, template_name='firmware_flash/select_board.html',
                                        context={'form': form, 'flash_family': flash_family})
@@ -240,7 +239,7 @@ def firmware_flash_select_firmware(request, flash_family_id, board_id):
                                context={'other_firmware': other_firmware, 'fermentrack_firmware': fermentrack_firmware,
                                         'flash_family': flash_family, 'error_firmware': error_firmware,
                                         'board': board_obj, 'serial_port': request.POST['serial_port']})
-
+import json
 
 @login_required
 @site_is_configured
@@ -287,9 +286,19 @@ def firmware_flash_flash_firmware(request, board_id):
         # Ok, we now have the firmware file. Let's do something with it
         if firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ESP8266:
             # We're using an ESP8266, which means esptool.
-            flash_cmd = ["esptool.py", "--port", request.POST['serial_port'], "write_flash", "--flash_mode", "dio", "0x00000", firmware_path]
+            flash_cmd = ["esptool.py"]
+            #"--port", request.POST['serial_port'], "write_flash", "--flash_mode", "dio", "0x00000", firmware_path
+        elif firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ARDUINO:
+            flash_cmd = ["avrdude"]
         else:
-            flash_cmd = []
+            messages.error(request, "Selected device family is unsupported in this version of Fermentrack!")
+            return redirect('firmware_flash_select_family')
+
+        flash_args = json.loads(board_obj.flash_options_json)
+
+        for arg in flash_args:
+            flash_cmd.append(str(arg).replace("{serial_port}", request.POST['serial_port']).replace("firmware_path", firmware_path))
+
 
         # TODO - Explicitly need to disable any device on that port
         if FERMENTRACK_INTEGRATION:
