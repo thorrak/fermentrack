@@ -205,7 +205,7 @@ def firmware_flash_serial_autodetect(request, board_id):
 
 @login_required
 @site_is_configured
-def firmware_flash_select_firmware(request, flash_family_id, board_id):
+def firmware_flash_select_firmware(request, board_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
