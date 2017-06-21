@@ -297,7 +297,7 @@ def firmware_flash_flash_firmware(request, board_id):
         flash_args = json.loads(board_obj.flash_options_json)
 
         for arg in flash_args:
-            flash_cmd.append(str(arg).replace("{serial_port}", request.POST['serial_port']).replace("firmware_path", firmware_path))
+            flash_cmd.append(str(arg).replace("{serial_port}", request.POST['serial_port']).replace("{firmware_path}", firmware_path))
 
 
         # TODO - Explicitly need to disable any device on that port
