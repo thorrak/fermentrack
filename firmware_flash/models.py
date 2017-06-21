@@ -213,3 +213,57 @@ class Firmware(models.Model):
                 return None
         # The file is valid (or we aren't checking checksums). Return the path.
         return full_path
+
+
+class Board(models.Model):
+    class Meta:
+        verbose_name = "Board"
+        verbose_name_plural = "Boards"
+
+    WEIGHT_CHOICES=(
+        (1, "1 (Highest)"),
+        (2, "2"),
+        (3, "3"),
+        (4, "4"),
+        (5, "5"),
+        (6, "6"),
+        (7, "7"),
+        (8, "8"),
+        (9, "9  (Lowest)"),
+    )
+
+    name = models.CharField(max_length=128, blank=False, null=False, help_text="The name of the board")
+
+    family = models.ForeignKey('DeviceFamily')
+
+    description = models.TextField(default="", blank=True, null=False, help_text="The description of the board")
+
+    weight = models.IntegerField(default=5, help_text="Weight for sorting (Lower weights rise to the top)",
+                                 choices=WEIGHT_CHOICES)
+
+    flash_options_json = models.TextField(default="", blank=True, null=False,
+                                          help_text="A JSON list containing options to pass to subprocess")
+
+    @staticmethod
+    def load_from_website():
+        try:
+            url = FERMENTRACK_COM_URL + "/api/board_list/all/"
+            response = requests.get(url)
+            data = response.json()
+        except:
+            return False
+
+        if len(data) > 0:
+            # If we got data, clear out the cache of Firmware
+            Board.objects.all().delete()
+            # Then loop through the data we received and recreate it again
+            for row in data:
+                newBoard = Board(
+                    name=row['name'], family_id=row['family_id'], description=row['description'], weight=row['weight'],
+                    flash_options_json=row['flash_options_json'], id=row['id'],
+                )
+                newBoard.save()
+
+            return True  # Board table is updated
+        return False  # We didn't get data back from Fermentrack.com, or there was an error
+

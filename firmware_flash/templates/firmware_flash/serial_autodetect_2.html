@@ -27,7 +27,7 @@
 
 <div class="row">
     <div class="col-xs-4">
-        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" board_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="3">
             <input type="submit" value="Scan for New Devices" class="btn btn-block btn-lg btn-primary" />
         </form>
@@ -53,7 +53,7 @@
     </table>
 <div class="row">
     <div class="col-xs-4">
-        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" board_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="2">
             <input type="submit" value="Oops - Re-scan for Preexisting Devices" class="btn btn-block btn-lg btn-danger" />
         </form>

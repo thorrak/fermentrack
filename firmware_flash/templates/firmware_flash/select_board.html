@@ -1,0 +1,29 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Select Device Board{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Flash Firmware to Controller</h1>
+
+<h4>Next, select the specific board that your device uses:</h4>
+<div id="form_container">
+    <form action="{% url "firmware_select_board" flash_family.id %}" class="form-horizontal" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" class="btn btn-primary" />
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

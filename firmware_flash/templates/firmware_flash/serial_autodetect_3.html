@@ -41,14 +41,14 @@
 
 <div class="row">
     <div class="col-xs-4">
-        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" board_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="2">
             <input type="submit" value="Restart from Step 1" class="btn btn-block btn-lg btn-danger" />
         </form>
     </div>
 
     <div class="col-xs-4">
-        <form action="{% url "firmware_flash_serial_autodetect" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "firmware_flash_serial_autodetect" board_id %}" class="form-horizontal" method="post">{% csrf_token %}
             <input type="hidden" name="step" value="3">
             <input type="submit" value="Rescan for New Devices" class="btn btn-block btn-lg btn-warning" />
         </form>
@@ -85,7 +85,7 @@
                 <td>{{ this_device.vid }}</td>
                 <td>{{ this_device.known_name }}</td>
                 <td>
-                    <form action="{% url "firmware_flash_select_firmware" flash_family_id %}" class="form-horizontal" method="post">{% csrf_token %}
+                    <form action="{% url "firmware_flash_select_firmware" board_id %}" class="form-horizontal" method="post">{% csrf_token %}
                         <input type="hidden" name="serial_port" value="{{ this_device.device }}">
                         <input type="submit" value="Set Up" class="btn btn-xs btn-success" />
                     </form>

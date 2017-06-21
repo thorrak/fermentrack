@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 import forms
 
 from app.models import BrewPiDevice
-from firmware_flash.models import DeviceFamily, Firmware
+from firmware_flash.models import DeviceFamily, Firmware, Board
 
 import app.serial_integration as serial_integration
 
@@ -55,8 +55,7 @@ def firmware_select_family(request):
 
         if install_check == -1:
             # The package status isn't installed
-            # TODO - Provide link to instructions on how to resolve this error.
-            messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail!")
+            messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
     except:
         messages.error(request, "Error checking for installed 'avrdude' package - Arduino installations may fail!")
 
@@ -64,12 +63,61 @@ def firmware_select_family(request):
     if request.POST:
         form = forms.FirmwareFamilyForm(request.POST)
         if form.is_valid():
-            return redirect('firmware_flash_serial_autodetect', flash_family_id=form.cleaned_data['device_family'])
+            return redirect('firmware_select_board', flash_family_id=form.cleaned_data['device_family'])
+            # return redirect('firmware_flash_serial_autodetect', flash_family_id=form.cleaned_data['device_family'])
         else:
             return render_with_devices(request, template_name='firmware_flash/select_family.html', context={'form': form})
     else:
         form = forms.FirmwareFamilyForm()
         return render_with_devices(request, template_name='firmware_flash/select_family.html', context={'form': form})
+
+
+@login_required
+@site_is_configured
+def firmware_select_board(request, flash_family_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+
+    try:
+        flash_family = DeviceFamily.objects.get(id=flash_family_id)
+    except:
+        messages.error(request, "Invalid flash_family specified")
+        return redirect('firmware_flash_select_family')
+
+
+    # Test if avrdude is available. If not, the user will need to install it for flashing AVR-based devices.
+    if flash_family.flash_method == DeviceFamily.FLASH_ARDUINO:
+        try:
+            rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+            install_check = rettext.find("installed")
+
+            if install_check == -1:
+                # The package status isn't installed - we explicitly cannot install arduino images
+                messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
+                return redirect('firmware_flash_select_family')
+        except:
+            messages.error(request, "Error checking for installed 'avrdude' package - Arduino installations may fail!")
+            # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
+            # return redirect('firmware_flash_select_family')
+
+
+    if request.POST:
+        form = forms.BoardForm(request.POST)
+        form.set_choices(flash_family)
+        if form.is_valid():
+            return redirect('firmware_flash_serial_autodetect', flash_family_id=flash_family_id,
+                            board_id=form.cleaned_data['board_type'])
+        else:
+            return render_with_devices(request, template_name='firmware_flash/select_board.html',
+                                       context={'form': form, 'flash_family': flash_family})
+    else:
+        form = forms.BoardForm()
+        form.set_choices(flash_family)
+        return render_with_devices(request, template_name='firmware_flash/select_board.html',
+                                   context={'form': form, 'flash_family': flash_family})
 
 
 
@@ -79,7 +127,11 @@ def refresh_firmware():
 
     if families_loaded:
         # And if that worked, load the firmware list
-        firmware_loaded = Firmware.load_from_website()
+        board_loaded = Board.load_from_website()
+        if board_loaded:
+            firmware_loaded = Firmware.load_from_website()
+        else:
+            return False
     else:
         # If it didn't work, return False
         return False
@@ -107,7 +159,7 @@ def firmware_refresh_list(request):
 # NOTE - This is a modified version of device_guided_serial_autodetect
 @login_required
 @site_is_configured
-def firmware_flash_serial_autodetect(request, flash_family_id):
+def firmware_flash_serial_autodetect(request, board_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
@@ -115,64 +167,69 @@ def firmware_flash_serial_autodetect(request, flash_family_id):
 
     # device_guided_serial_autodetect contains all 4 steps in the Serial autodetection guided setup.
 
+
     try:
-        flash_family = DeviceFamily.objects.get(id=flash_family_id)
+        board_obj = Board.objects.get(id=board_id)
     except:
-        messages.error(request, "Invalid flash_family specified")
+        messages.error(request, "Invalid board ID specified")
         return redirect('firmware_flash_select_family')
+
+    flash_family = board_obj.family
 
     if not request.POST:
         # If we haven't had something posted to us, provide the instructions page. (Step 1)
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     else:
         # Something was posted - figure out what step we're on by looking at the "step" field
         if 'step' not in request.POST:
             # We received a form, but not the right form. Redirect to the start of the autodetection flow.
             return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                       context={'flash_family_id': flash_family_id})
+                                       context={'board_id': board_id})
         elif request.POST['step'] == "2":
             # Step 2 - Cache the current devices & present the next set of instructions to the user
             current_devices = serial_integration.cache_current_devices()
             return render_with_devices(request, template_name='firmware_flash/serial_autodetect_2.html',
-                                       context={'flash_family_id': flash_family_id, 'current_devices': current_devices})
+                                       context={'board_id': board_id, 'current_devices': current_devices})
         elif request.POST['step'] == "3":
             # Step 3 - Detect newly-connected devices & prompt the user to select the one that corresponds to the
             # device they want to configure.
             _, _, _, new_devices_enriched = serial_integration.compare_current_devices_against_cache(flash_family.detection_family)
             return render_with_devices(request, template_name='firmware_flash/serial_autodetect_3.html',
-                                       context={'flash_family_id': flash_family_id, 'new_devices': new_devices_enriched})
+                                       context={'board_id': board_id, 'new_devices': new_devices_enriched})
         else:
             # The step number we received was invalid. Redirect to the start of the autodetection flow.
             return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
-                                       context={'flash_family_id': flash_family_id})
+                                       context={'board_id': board_id})
 
 
 @login_required
 @site_is_configured
-def firmware_flash_select_firmware(request, flash_family_id):
+def firmware_flash_select_firmware(request, flash_family_id, board_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
     try:
-        flash_family = DeviceFamily.objects.get(id=flash_family_id)
+        board_obj = Board.objects.get(id=board_id)
     except:
-        messages.error(request, "Invalid flash_family specified")
+        messages.error(request, "Invalid board ID specified")
         return redirect('firmware_flash_select_family')
+
+    flash_family = board_obj.family
 
     if not request.POST:
         # If we weren't passed anything in request.POST, kick the user back to the autodetect routine
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     if 'serial_port' not in request.POST:
         # Same if we weren't explicitly passed request.POST['serial_port']
         messages.error(request, "Serial port wasn't provided to 'select_firmware'. Please restart serial autodetection & try again.")
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
 
     fermentrack_firmware = Firmware.objects.filter(is_fermentrack_supported=True, in_error=False, family=flash_family).order_by('weight')
@@ -182,41 +239,43 @@ def firmware_flash_select_firmware(request, flash_family_id):
     return render_with_devices(request, template_name='firmware_flash/select_firmware.html',
                                context={'other_firmware': other_firmware, 'fermentrack_firmware': fermentrack_firmware,
                                         'flash_family': flash_family, 'error_firmware': error_firmware,
-                                        'serial_port': request.POST['serial_port']})
+                                        'board': board_obj, 'serial_port': request.POST['serial_port']})
 
 
 @login_required
 @site_is_configured
-def firmware_flash_flash_firmware(request, flash_family_id):
-    # TODO - Strip flash_family_id from being passed in, as we can pull it from the passed firmware_id
+def firmware_flash_flash_firmware(request, board_id):
+
     try:
-        flash_family = DeviceFamily.objects.get(id=flash_family_id)
+        board_obj = Board.objects.get(id=board_id)
     except:
-        messages.error(request, "Invalid flash_family specified")
+        messages.error(request, "Invalid board ID specified")
         return redirect('firmware_flash_select_family')
+
+    flash_family = board_obj.family
 
     if not request.POST:
         # If we weren't passed anything in request.POST, kick the user back to the autodetect routine
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     if 'serial_port' not in request.POST:
         # Same if we weren't explicitly passed request.POST['serial_port']
         messages.error(request, "Serial port wasn't provided to 'select_firmware'. Please restart serial autodetection & try again.")
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     if 'firmware_id' not in request.POST:
         messages.error(request, "Invalid firmware ID was specified! Please restart serial autodetection & try again.")
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     try:
         firmware_to_flash = Firmware.objects.get(id=request.POST['firmware_id'])
     except:
         messages.error(request, "Invalid firmware ID was specified! Please restart serial autodetection & try again.")
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'flash_family_id': flash_family_id})
+                                   context={'board_id': board_id})
 
     # Alright. Now we need to flash the firmware. First, download the selected firmware file
     device_flashed = False
@@ -264,7 +323,8 @@ def firmware_flash_flash_firmware(request, flash_family_id):
 
     return render_with_devices(request, template_name='firmware_flash/flash_firmware.html',
                                context={'flash_family': flash_family, 'firmware': firmware_to_flash,
-                                        'flash_cmd': flash_cmd, 'device_flashed': device_flashed})
+                                        'flash_cmd': flash_cmd, 'device_flashed': device_flashed,
+                                        'board': board_obj})
 
 
 

@@ -173,6 +173,8 @@ CONSTANCE_CONFIG = {
     'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
     'ALLOW_GIT_BRANCH_SWITCHING': (False, 'Should the user be allowed to switch Git branches from within the app?',
                                    bool),
+    'FIRMWARE_LIST_LAST_REFRESHED': (None, 'When was the firmware list last refreshed from fermentrack.com?',
+                                     datetime.datetime)
 }
 
 

@@ -3,7 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
-from models import DeviceFamily, Firmware
+from models import DeviceFamily, Firmware, Board
 
 
 ###################################################################################################################
@@ -29,6 +29,21 @@ class FirmwareFamilyForm(forms.Form):
         family_choices = [(fam.id, fam.name) for fam in DeviceFamily.objects.all()]
 
         self.fields['device_family'].choices = family_choices
+
+
+class BoardForm(forms.Form):
+    DEVICE_BOARD_CHOICES = (
+    )
+
+    board_type = forms.ChoiceField(label="Board Type",
+                                   widget=forms.Select(attrs={'class': 'form-control', 'data-toggle': 'select'}),
+                                   choices=DEVICE_BOARD_CHOICES, required=True)
+
+    def set_choices(self, family):
+        # There's probably a better way of doing this
+        board_choices = [(brd.id, brd.name) for brd in Board.objects.filter(family=family)]
+
+        self.fields['board_type'].choices = board_choices
 
 
 # class GuidedDeviceFlashForm(forms.Form):

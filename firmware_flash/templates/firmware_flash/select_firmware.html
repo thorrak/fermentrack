@@ -18,6 +18,10 @@
         <td>Device Family</td>
         <td>{{ flash_family.name }}</td>
     </tr>
+    <tr>
+        <td>Board</td>
+        <td>{{ board.name }}</td>
+    </tr>
 </table>
 
 
@@ -119,7 +123,7 @@
 
                 <div class="row">
                     <div class="col-xs-4">
-                        <form action="{% url "firmware_flash_flash_firmware" flash_family.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                        <form action="{% url "firmware_flash_flash_firmware" board.id %}" class="form-horizontal" method="post">{% csrf_token %}
                             <input type="hidden" name="serial_port" value="{{ serial_port }}">
                             <input type="hidden" name="firmware_id" value="{{ this_firmware.id }}">
                             <input type="submit" value="Flash to Device" class="btn btn-lg btn-danger" />
