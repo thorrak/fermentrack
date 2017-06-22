@@ -1441,8 +1441,8 @@ class FermentationProfile(models.Model):
 
         point_set = self.fermentationprofilepoint_set.order_by('ttl')
         # We need to check there are any point_set yet
-        if len(point_set) < 0:
-            max_ttl_string = max([x.ttl_to_string() for x in point_set], key=len)
+        if len(point_set) > 0:
+            max_ttl_string = max([x.ttl_to_string(True) for x in point_set], key=len)
         max_ttl_length = len(max_ttl_string)
 
         # Set interior_width to the maximum interior width that we might need. This can be one of four things:
