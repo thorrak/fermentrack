@@ -110,7 +110,7 @@ def add_device(request):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='device_add.html', context={'form': form})
+            return render_with_devices(request, template_name='setup/device_add.html', context={'form': form})
     else:
         # We don't want two devices to have the same port, and the port number doesn't really matter. Just
         # randomize it.
@@ -118,7 +118,7 @@ def add_device(request):
         initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
 
         form = device_forms.DeviceForm(initial=initial_values)
-        return render_with_devices(request, template_name='device_add.html', context={'form': form})
+        return render_with_devices(request, template_name='setup/device_add.html', context={'form': form})
 
 
 @site_is_configured

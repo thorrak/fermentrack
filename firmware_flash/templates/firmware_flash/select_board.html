@@ -7,6 +7,8 @@
 
 <h1 class="page-header">Flash Firmware to Controller</h1>
 
+<p>Selected Family: {{ flash_family }}</p>
+
 <h4>Next, select the specific board that your device uses:</h4>
 <div id="form_container">
     <form action="{% url "firmware_select_board" flash_family.id %}" class="form-horizontal" method="post">{% csrf_token %}

@@ -70,10 +70,12 @@ def firmware_select_family(request):
             return redirect('firmware_select_board', flash_family_id=form.cleaned_data['device_family'])
             # return redirect('firmware_flash_serial_autodetect', flash_family_id=form.cleaned_data['device_family'])
         else:
-            return render_with_devices(request, template_name='firmware_flash/select_family.html', context={'form': form})
+            return render_with_devices(request, template_name='firmware_flash/select_family.html',
+                                       context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED})
     else:
         form = forms.FirmwareFamilyForm()
-        return render_with_devices(request, template_name='firmware_flash/select_family.html', context={'form': form})
+        return render_with_devices(request, template_name='firmware_flash/select_family.html',
+                                   context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED})
 
 
 @login_required
@@ -197,7 +199,7 @@ def firmware_flash_serial_autodetect(request, board_id):
     if not request.POST:
         # If we haven't had something posted to us, provide the instructions page. (Step 1)
         return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
+                                   context={'board_id': board_id, 'board': board_obj})
 
     else:
         # Something was posted - figure out what step we're on by looking at the "step" field
@@ -306,7 +308,6 @@ def firmware_flash_flash_firmware(request, board_id):
         if firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ESP8266:
             # We're using an ESP8266, which means esptool.
             flash_cmd = ["esptool.py"]
-            #"--port", request.POST['serial_port'], "write_flash", "--flash_mode", "dio", "0x00000", firmware_path
         elif firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ARDUINO:
             flash_cmd = ["avrdude"]
         else:
@@ -329,7 +330,12 @@ def firmware_flash_flash_firmware(request, board_id):
             for this_device in devices_to_disable:
                 this_device.status = BrewPiDevice.STATUS_UPDATING
                 this_device.save()
-                this_device.stop_process()
+                try:
+                    this_device.stop_process()
+                except:
+                    # Depending on how quickly circus checks, this may cause a race condition as the process gets
+                    # stopped twice
+                    pass
 
         # And now, let's call the actual flasher
         retval = subprocess.call(flash_cmd)

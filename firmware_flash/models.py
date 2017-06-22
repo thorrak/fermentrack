@@ -15,12 +15,14 @@ from constance import config
 try:
     from fermentrack_django import settings
 except:
-    from fermentrack_com import settings  # This file is a direct copy of what I'm using for fermentrack.com. Simplifying keeping things in sync.
+    from fermentrack_com import \
+        settings  # This file is a direct copy of what I'm using for fermentrack.com. Simplifying keeping things in sync.
 
 logger = logging.getLogger(__name__)
 
 FERMENTRACK_COM_URL = "http://www.fermentrack.com"
 MODEL_VERSION = 1
+
 
 def check_model_version():
     try:
@@ -36,6 +38,7 @@ def check_model_version():
 def get_model_version():
     return MODEL_VERSION
 
+
 class DeviceFamily(models.Model):
     class Meta:
         verbose_name = "Device Family"
@@ -44,7 +47,7 @@ class DeviceFamily(models.Model):
     FLASH_ARDUINO = "avrdude"
     FLASH_ESP8266 = "esptool"
 
-    FLASH_CHOICES=(
+    FLASH_CHOICES = (
         (FLASH_ARDUINO, "Avrdude (Arduino)"),
         (FLASH_ESP8266, "Esptool (ESP8266)")
     )
@@ -106,7 +109,7 @@ class Firmware(models.Model):
         verbose_name = "Firmware"
         verbose_name_plural = "Firmware"  # I don't care if this is ambiguous, it bothers me.
 
-    WEIGHT_CHOICES=(
+    WEIGHT_CHOICES = (
         (1, "1 (Highest)"),
         (2, "2"),
         (3, "3"),
@@ -123,7 +126,8 @@ class Firmware(models.Model):
 
     version = models.CharField(max_length=20, default="0.0", help_text="The major version number")
     revision = models.CharField(max_length=20, default="0.0", help_text="The minor revision number")
-    variant = models.CharField(max_length=80, default="", blank=True, help_text="The firmware 'variant' (if applicable)")
+    variant = models.CharField(max_length=80, default="", blank=True,
+                               help_text="The firmware 'variant' (if applicable)")
 
     is_fermentrack_supported = models.BooleanField(default=False,
                                                    help_text="Is this firmware officially supported by Fermentrack?")
@@ -132,7 +136,10 @@ class Firmware(models.Model):
                                                             "prevent it from being downloaded?")
 
     description = models.TextField(default="", blank=True, null=False, help_text="The description of the firmware")
-    variant_description = models.TextField(default="", blank=True, null=False, help_text="The description of the variant")
+    variant_description = models.TextField(default="", blank=True, null=False,
+                                           help_text="The description of the variant")
+    post_install_instructions = models.TextField(default="", blank=True, null=False,
+                                                 help_text="Instructions to be displayed to the user after installation")
 
     download_url = models.CharField(max_length=255, default="", blank=True, null=False,
                                     help_text="The URL at which the firmware can be downloaded")
@@ -141,7 +148,8 @@ class Firmware(models.Model):
     documentation_url = models.CharField(max_length=255, default="", blank=True, null=False,
                                          help_text="The URL for documentation/help on the firmware (if any)")
 
-    weight = models.IntegerField(default=5, help_text="Weight for sorting (Lower weights rise to the top)", choices=WEIGHT_CHOICES)
+    weight = models.IntegerField(default=5, help_text="Weight for sorting (Lower weights rise to the top)",
+                                 choices=WEIGHT_CHOICES)
 
     checksum = models.CharField(max_length=64, help_text="SHA256 checksum of the file (for checking validity)",
                                 default="", blank=True)
@@ -179,11 +187,11 @@ class Firmware(models.Model):
             return True  # Firmware table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
 
-
     def local_filename(self):
         def stripslashes(string):
             return string.replace('\\', '').replace('/', '')
-        fname_base =  stripslashes(self.family.name) + " - " + stripslashes(self.name) + " - "
+
+        fname_base = stripslashes(self.family.name) + " - " + stripslashes(self.name) + " - "
         fname_base += "v" + stripslashes(self.version) + "r" + stripslashes(self.revision)
         if len(self.variant) > 0:
             fname_base += " -- " + stripslashes(self.variant)
@@ -232,7 +240,7 @@ class Board(models.Model):
         verbose_name = "Board"
         verbose_name_plural = "Boards"
 
-    WEIGHT_CHOICES=(
+    WEIGHT_CHOICES = (
         (1, "1 (Highest)"),
         (2, "2"),
         (3, "3"),
