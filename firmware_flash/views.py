@@ -152,8 +152,8 @@ def refresh_firmware(request=None):
             messages.error(request, "Unable to load families from fermentrack.com")
         return False
 
-    if request is not None:
-        messages.error(request, "Unable to load firmware list from fermentrack.com")
+    # if request is not None:
+    #     messages.success(request, "Firmware list was successfully refreshed from fermentrack.com")
 
     config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now()  # Update the "last refreshed" check
     return firmware_loaded
