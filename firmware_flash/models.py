@@ -17,12 +17,24 @@ try:
 except:
     from fermentrack_com import settings  # This file is a direct copy of what I'm using for fermentrack.com. Simplifying keeping things in sync.
 
-import re
-
-
 logger = logging.getLogger(__name__)
 
 FERMENTRACK_COM_URL = "http://www.fermentrack.com"
+MODEL_VERSION = 1
+
+def check_model_version():
+    try:
+        url = FERMENTRACK_COM_URL + "/api/model_version/"
+        response = requests.get(url)
+        data = response.json()
+    except:
+        return False
+
+    return data
+
+
+def get_model_version():
+    return MODEL_VERSION
 
 class DeviceFamily(models.Model):
     class Meta:
@@ -243,6 +255,12 @@ class Board(models.Model):
 
     flash_options_json = models.TextField(default="", blank=True, null=False,
                                           help_text="A JSON list containing options to pass to subprocess")
+
+    def __str__(self):
+        return self.name + " - " + str(self.family)
+
+    def __unicode__(self):
+        return self.name + " - " + unicode(self.family)
 
     @staticmethod
     def load_from_website():

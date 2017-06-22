@@ -5,18 +5,18 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 import forms
 
 from app.models import BrewPiDevice
-from firmware_flash.models import DeviceFamily, Firmware, Board
+from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version
 
 import app.serial_integration as serial_integration
 
 from app.decorators import site_is_configured  # Checks if user has completed constance configuration
-import random
 
-import os, subprocess
+import os, subprocess, datetime
 
 # Fermentrack integration
 try:
@@ -48,6 +48,10 @@ def firmware_select_family(request):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
+    # If the firmware data is more than 24 hours old, attempt to refresh it
+    if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
+        refresh_firmware()
+
     # Test if avrdude is available. If not, the user will need to install it.
     try:
         rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
@@ -57,7 +61,7 @@ def firmware_select_family(request):
             # The package status isn't installed
             messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
     except:
-        messages.error(request, "Error checking for installed 'avrdude' package - Arduino installations may fail!")
+        messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
 
 
     if request.POST:
@@ -99,7 +103,7 @@ def firmware_select_board(request, flash_family_id):
                 messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
                 return redirect('firmware_flash_select_family')
         except:
-            messages.error(request, "Error checking for installed 'avrdude' package - Arduino installations may fail!")
+            messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
             # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
             # return redirect('firmware_flash_select_family')
 
@@ -119,8 +123,15 @@ def firmware_select_board(request, flash_family_id):
                                    context={'form': form, 'flash_family': flash_family})
 
 
+def refresh_firmware(request=None):
+    # Before we load anything, check to make sure that the model version on fermentrack.com matches the model version
+    # that we can support
+    if get_model_version() != check_model_version():
+        if request is not None:
+            messages.error(request, "The firmware information available at fermentrack.com isn't something this " +
+                                    "version of Fermentrack can interpret. Please update and try again.")
+        return False
 
-def refresh_firmware():
     # First, load the device family list
     families_loaded = DeviceFamily.load_from_website()
 
@@ -130,11 +141,19 @@ def refresh_firmware():
         if board_loaded:
             firmware_loaded = Firmware.load_from_website()
         else:
+            if request is not None:
+                messages.error(request, "Unable to load boards from fermentrack.com")
             return False
     else:
         # If it didn't work, return False
+        if request is not None:
+            messages.error(request, "Unable to load families from fermentrack.com")
         return False
 
+    if request is not None:
+        messages.error(request, "Unable to load firmware list from fermentrack.com")
+
+    config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now()  # Update the "last refreshed" check
     return firmware_loaded
 
 
@@ -146,7 +165,7 @@ def firmware_refresh_list(request):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-    if refresh_firmware():
+    if refresh_firmware(request):
         messages.success(request, "Firmware list was successfully refreshed from Fermentrack.com")
     else:
         messages.error(request, "Firmware list was not able to be refreshed from Fermentrack.com")
