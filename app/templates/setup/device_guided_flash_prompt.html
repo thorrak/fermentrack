@@ -60,22 +60,32 @@
 
                     {# No - Need to Flash Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="noPill">
-                        <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
-                            <p>Unfortunately, Fermentrack doesn't yet support flashing any devices from directly
-                            within this interface. This feature is coming in the v2 release for certain device families,
-                            however, so keep an eye on the discussions at HomeBrewTalk for updates.</p>
+                        {% if device_family == "ESP8266" or device_family == "Arduino" %}
+                            <p>No worries. Fermentrack can help with that. To launch the guided firmware "flash"
+                                procedure, click the button below:
+                            </p>
 
-                            <p>In the mean time, flash your device using the instructions appropriate for
-                                {{ device_family }}.
+                            <p><a href="{% url 'firmware_flash_select_family' %}" class="btn btn-large btn-primary">Begin Guided Firmware Flash</a></p>
 
+                            <p>
+                                Alternatively, you can manually flash the device without using Fermentrack.
                             {% if device_family == "ESP8266" %}
                                 For ESP8266-based devices, those instructions can be found
                                 <a href="https://github.com/thorrak/brewpi-esp8266/blob/master/docs/Installing%20the%20Firmware.md">here.</a>
                             {% else %}
-
+                                {# I don't have a good link for manual flashing instructions for Arduino, unfortunately #}
                             {% endif %}
+                                Whichever method you choose, once the device is flashed come back here to continue setup.
                             </p>
-                        </form>
+
+
+                        {% else %}
+                            <p>
+                                Unfortunately, Fermentrack doesn't yet support flashing any devices within this device
+                                family. Keep an eye on GitHub or the dicussions at HomeBrewTalk for updates.
+                            </p>
+                        {% endif %}
+
                     </div>{# No - Need to Flash Pane #}
 
                 </div>

@@ -1,0 +1,1 @@
+This folder contains firmware files automatically downloaded by Fermentrack when flashing controllers. 

@@ -7,6 +7,15 @@
 
 <h1 class="page-header">Add Device</h1>
 
+    <p>
+        Note - This form only works for devices that have already been flashed with the appropriate firmware. If you
+    need to flash your controller, please click here:
+    </p>
+
+    <p>
+        <a href="{% url 'firmware_flash_select_family' %}" class="btn btn-large btn-primary">Begin Guided Firmware Flash</a>
+    </p>
+
 <form action="{% url "device_add" %}" class="form-horizontal" method="post">{% csrf_token %}
 
     <div id="deviceConstantsSection">

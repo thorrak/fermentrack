@@ -12,12 +12,16 @@ import app.api.lcd
 import app.api.clog
 import app.circus_views
 
+import firmware_flash.urls
+
 admin.autodiscover()
 
 # In addition to urlpatterns below, three paths are mapped by the nginx config file:
 # r'^static/' - Maps to collected_static/. Contains collected static files.
 # r'^media/' - Maps to media/. Contains uploaded files. Currently unused.
 # r'^data/' - Maps to data/. Contains data points collected by brewpi.py.
+
+# Separately, all r'^firmware/' urls are contained in firmware_flash/urls.py
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -106,4 +110,6 @@ urlpatterns = [
     url(r'site/settings/$', app.views.site_settings, name="site_settings"),
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
-] + static(settings.DATA_URL, document_root=settings.DATA_ROOT)  # To enable viewing data files during development
+] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
+              firmware_flash.urls.firmware_flash_urlpatterns
+  # To enable viewing data files during development & add firmware_flash url patterns

@@ -256,7 +256,7 @@ elif dbConfig is not None:  # Load from the database
                    "this script. This instance will now exit.")
         exit(0)
 else:  # This should never be hit - Just adding it to the code to make it clear that if neither of these work, we exit
-    exit(1)
+    exit(0)
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
 pidFile = pid.PidFile(piddir=pidFileDir, pidname=brewpiName)
@@ -266,7 +266,7 @@ except pid.PidFileAlreadyLockedError:
     if not checkDontRunFile:  # Even for database configurations, we don't want to log this if the gatekeeper launched me
         logMessage("Another instance of BrewPi is already running, which will conflict with this instance. " \
                    "This instance will exit")
-        exit(0)
+    exit(0)
 
 if checkStartupOnly:
     exit(1)

@@ -1,0 +1,77 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{# This template is basically the same thing as the similarly numbered device_guided_serial_autodetect template #}
+{# The text and the URL are both changed #}
+
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Auto-detect Controller to Flash{% endblock %}
+
+{% block content %}
+
+<h1>Controller Auto-detection</h1>
+<h3>Step 1 - Detect preexisting devices</h3>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <i class="fa fa-exclamation-triangle fa-lg" aria-hidden="true"></i> Warning
+                </div>
+
+                <div class="panel-body">
+                    <p>
+                        Incorrectly flashing a controller can lead to the controller (and things connected to it) being
+                        damaged or destroyed.
+                    </p>
+                    <p>
+                        Please double check that you have selected the correct family and board type and have disconnected the
+                        controller from any other equipment before proceeding. Do not disconnect power to the controller or
+                        attempt to reset the controller during the flashing process.
+                    </p>
+                    <p>
+                        Selected Device Family: {{ board.family }}<br>
+                        Select Board Type: {{ board.name }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="row">
+<div class="col-xs-12">
+    <p>
+        Fermentrack flashes all controllers via serial - including those you ultimately want to connect via WiFi. This
+        script will help you determine which serial device to flash.
+    </p>
+
+    <p>
+        All serial controllers have a system-generated device ID which is used to allow your system to connect to the
+        device. Rather than have you search for this ID manually, we'll attempt to automatically detect the ID by
+        scanning what devices are connected, having you connect the controller, and then rescanning to see what new
+        devices popped up. Once we have the list we'll ask you to confirm the correct controller and then we'll
+        get everything configured. It's like magic!
+    </p>
+
+    <p>
+        Once you're ready to begin, make sure the controller you want to set up is <b>not</b> connected & click
+        "Scan Devices" below.
+    </p>
+
+</div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4">
+        <form action="{% url "firmware_flash_serial_autodetect" board.id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <input type="hidden" name="step" value="2">
+            <input type="submit" value="Scan Devices" class="btn btn-block btn-lg btn-primary" />
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}
