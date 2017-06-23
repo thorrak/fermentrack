@@ -79,3 +79,7 @@ class FermentationProfileImportForm(forms.Form):
 
 class FermentationProfileCopyForm(forms.Form):
     new_profile_name = forms.CharField(help_text="The text of the exported profile", max_length=128)
+
+
+class FermentationProfileRenameForm(forms.Form):
+    profile_name = forms.CharField(help_text="The new name for the profile", max_length=128)
