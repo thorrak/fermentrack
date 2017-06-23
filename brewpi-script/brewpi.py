@@ -1074,6 +1074,7 @@ while run:
             elif dbConfig is not None:  # Could technically break this out, but why?
                 if dbConfig.is_past_end_of_profile():
                     bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
+                    cs['mode'] = 'b'
                     # Reload dbConfig from the database (just to be safe)
                     dbConfig = models.BrewPiDevice.objects.get(device_name=a)
                     dbConfig.reset_profile()
