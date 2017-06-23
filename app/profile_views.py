@@ -48,13 +48,14 @@ def profile_edit(request, profile_id):
     #     return redirect("/")
     try:
         this_profile = FermentationProfile.objects.get(id=profile_id)
-        this_profile_points = this_profile.fermentationprofilepoint_set.order_by(
-            'ttl')
+        this_profile_points = this_profile.fermentationprofilepoint_set.order_by('ttl')
     except:
         # The URL contained an invalid profile ID. Redirect to the profile
         # list.
         messages.error(request, 'Invalid profile \'{}\' selected for editing'.format(profile_id))
         return redirect('profile_list')
+
+    rename_form = profile_forms.FermentationProfileRenameForm(initial={'profile_name': this_profile.name})
 
     if request.POST:
         form = profile_forms.FermentationProfilePointForm(request.POST)
@@ -73,13 +74,14 @@ def profile_edit(request, profile_id):
             # Regardless of whether we were successful or not - rerender the
             # existing edit page
         return render_with_devices(request, template_name='profile/profile_edit.html',
-                                   context={'form': form, 'this_profile': this_profile,
+                                   context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
                                             'this_profile_points': this_profile_points})
     else:
         form = profile_forms.FermentationProfilePointForm()
         return render_with_devices(
             request, template_name='profile/profile_edit.html',
-            context={'form': form, 'this_profile': this_profile, 'this_profile_points': this_profile_points})
+            context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
+                     'this_profile_points': this_profile_points})
 
 
 @login_required
@@ -251,8 +253,7 @@ def profile_copy(request, profile_id):
     try:
         this_profile = FermentationProfile.objects.get(id=profile_id)
     except:
-        # The URL contained an invalid profile ID. Redirect to the profile
-        # list.
+        # The URL contained an invalid profile ID. Redirect to the profile list.
         messages.error(request, 'Invalid source profile to copy')
         return redirect('profile_list')
 
@@ -277,3 +278,32 @@ def profile_copy(request, profile_id):
         form = profile_forms.FermentationProfileCopyForm()
         return render_with_devices(request, template_name='profile/profile_copy.html',
                                    context={'form': form, 'this_profile': this_profile})
+
+
+@login_required
+@site_is_configured
+def profile_rename(request, profile_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_fermentation_profile'):
+    #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
+    #     return redirect("/")
+    try:
+        this_profile = FermentationProfile.objects.get(id=profile_id)
+    except:
+        # The URL contained an invalid profile ID. Redirect to the profile list.
+        messages.error(request, u'Unable to locate profile with ID {}'.format(profile_id))
+        return redirect('profile_list')
+
+    if request.POST:
+        form = profile_forms.FermentationProfileRenameForm(request.POST)
+        if form.is_valid():
+            this_profile.name = form.cleaned_data['profile_name']
+            this_profile.save()
+            messages.success(request, u"Successfully renamed fermentation profile")
+            return redirect('profile_edit', profile_id=profile_id)
+        else:
+            messages.error(request, u"The new name specified was invalid")
+            return redirect('profile_edit', profile_id=profile_id)
+    else:
+        messages.error(request, u"No new profile name was specified")
+        return redirect('profile_edit', profile_id=profile_id)

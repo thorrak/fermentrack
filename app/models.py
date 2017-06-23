@@ -496,6 +496,15 @@ class BrewPiDevice(models.Model):
         # self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistent
         return self.active_profile.profile_temp(self.time_profile_started, self.temp_format)
 
+    def is_past_end_of_profile(self):
+        if self.active_profile is None:
+            return None
+        if self.time_profile_started is None:
+            return None
+
+        # self.sync_temp_format()  # Before we update the profile temp, make sure our math is consistent
+        return self.active_profile.past_end_of_profile(self.time_profile_started)
+
     # Other things that aren't persisted in the database
     # available_devices = []
     # installed_devices = []
@@ -1412,6 +1421,24 @@ class FermentationProfile(models.Model):
         # That is to say - we're at the end. Just return the last setpoint.
         return previous_setpoint
 
+    # past_end_of_profile allows us to test if we're in the last stage of a profile (which is effectively beer constant
+    # mode) so we can switch to explicitly be in beer constant mode
+    def past_end_of_profile(self, time_started):
+        timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
+        current_time = datetime.datetime.now(tz=timezone_obj)
+
+        last_profile_point = self.fermentationprofilepoint_set.order_by('-ttl')[:1]
+
+        if last_profile_point:
+            if current_time >= (time_started + last_profile_point[0].ttl):
+                return True
+            else:
+                return False
+        else:
+            # There are no profile points for us to test against
+            return None
+
+
 
     def to_export(self):
         # to_export generates a somewhat readable, machine interpretable representation of a fermentation profile
@@ -1441,8 +1468,8 @@ class FermentationProfile(models.Model):
 
         point_set = self.fermentationprofilepoint_set.order_by('ttl')
         # We need to check there are any point_set yet
-        if len(point_set) < 0:
-            max_ttl_string = max([x.ttl_to_string() for x in point_set], key=len)
+        if len(point_set) > 0:
+            max_ttl_string = max([x.ttl_to_string(True) for x in point_set], key=len)
         max_ttl_length = len(max_ttl_string)
 
         # Set interior_width to the maximum interior width that we might need. This can be one of four things:
