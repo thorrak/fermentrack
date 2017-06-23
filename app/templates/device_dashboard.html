@@ -94,19 +94,30 @@
         </div>
 
         <div class="col-md-3 col-xs-6">
-            <div class="dashpanel dashpanel-top bg-amethyst">
+            <div class="dashpanel dashpanel-top bg-amethyst" id="fridgeTempPanel">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
                 <div class="dashpanel-title">Fridge Temp</div>
                 <div class="dash-data" id="dashFridgeTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
-                <a href="#">
-                    <div class="dash-desc">
+                    <div class="dash-desc" id="fridgeTempToggle">
                         <div class="pull-left">View Room Temp</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
-                </a>
             </div>
+
+            <div class="dashpanel dashpanel-top bg-amethyst" style="display: none" id="roomTempPanel">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
+                <div class="dashpanel-title">Room Temp</div>
+                <div class="dash-data" id="dashRoomTemp">--&deg; -</div>
+                <div class="dashpanel-divider"></div>
+                    <div class="dash-desc" id="roomTempToggle">
+                        <div class="pull-left">View Fridge Temp</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+            </div>
+
         </div>
 
         <div class="col-md-3 col-xs-6">
@@ -345,13 +356,6 @@
 {% endblock %}
 
 
-
-
-
-
-
-
-
 {% block scripts %}
 
 {% load static %}
@@ -505,6 +509,7 @@ g2.ready(function () {
         success: function(data) {
             $('#dashBeerTemp').html(data[0].beer_temp);
             $('#dashFridgeTemp').html(data[0].fridge_temp);
+            $('#dashRoomTemp').html(data[0].room_temp);
             $('#dashControlMode').html(data[0].control_mode);
             $('#dashLogInterval').html(data[0].log_interval);
         },
@@ -515,6 +520,18 @@ g2.ready(function () {
     });
 })();
 
+$(function() {
+       $('#fridgeTempToggle').click(function() {
+           $('#roomTempPanel').show();
+           $('#fridgeTempPanel').hide();
+           return false;
+       });
+       $('#roomTempToggle').click(function() {
+           $('#roomTempPanel').hide();
+           $('#fridgeTempPanel').show();
+           return false;
+       });
+   });
 
 </script>
 

@@ -47,7 +47,8 @@ def getPanel(req, device_id):
     except:
         # We were given an invalid panel number - Just send back the equivalent of null data
         null_temp = temp_text(0, config.TEMPERATURE_FORMAT)
-        ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'control_mode': "--", 'log_interval': 0})
+        ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'room_temp': null_temp, 'control_mode': "--",
+                    'log_interval': 0})
         return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
 
@@ -68,6 +69,7 @@ def getPanel(req, device_id):
 
     ret.append({'beer_temp': temp_text(device_info['BeerTemp'], dev.temp_format),
                 'fridge_temp': temp_text(device_info['FridgeTemp'], dev.temp_format),
+                'room_temp': temp_text(device_info['RoomTemp'], dev.temp_format),
                 'control_mode': device_mode,
                 'log_interval': interval_text})
 
