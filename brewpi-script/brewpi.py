@@ -636,7 +636,8 @@ while run:
             cs['beerSet'] = round(newTemp, 2)
             bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
             if dbConfig is not None:
-                models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+                # Reload dbConfig from the database (in case we were using profiles)
+                dbConfig = models.BrewPiDevice.objects.get(device_name=a)
             logMessage("Notification: Beer temperature set to " +
                        str(cs['beerSet']) +
                        " degrees in web interface")
@@ -653,7 +654,8 @@ while run:
             cs['fridgeSet'] = round(newTemp, 2)
             bg_ser.writeln("j{mode:f, fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
             if dbConfig is not None:
-                models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+                # Reload dbConfig from the database (in case we were using profiles)
+                dbConfig = models.BrewPiDevice.objects.get(device_name=a)
             logMessage("Notification: Fridge temperature set to " +
                        str(cs['fridgeSet']) +
                        " degrees in web interface")
@@ -1069,6 +1071,14 @@ while run:
                 cs['beerSet'] = newTemp
                 # if temperature has to be updated send settings to controller
                 bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
+            elif dbConfig is not None:  # Could technically break this out, but why?
+                if dbConfig.is_past_end_of_profile():
+                    bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
+                    # Reload dbConfig from the database (just to be safe)
+                    dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+                    dbConfig.reset_profile()
+                    logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
+                               " degrees at end of profile")
 
     except socket.error as e:
         logMessage("Socket error(%d): %s" % (e.errno, e.strerror))
