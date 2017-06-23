@@ -15,7 +15,7 @@
 {% block content %}
     <h1>Profile: {{ this_profile.name }}</h1>
 
-    {# TODO - Add profile graph here. #}
+    {% if this_profile_points %}
     <div class="row">
         <div class="col-md-9 col-sm-12" id="graphdiv3">
             <div id="profilegraph" style="width:100%; height:250px;"></div>
@@ -40,9 +40,8 @@
 
             </div>
         </div>
-
-
     </div>
+    {% endif %}
 
     <h3>Profile Setpoints</h3>
 
@@ -101,11 +100,11 @@
         {% for this_line in this_profile.to_english %}
             {{ this_line|safe }}<br>
         {% endfor %}
-    {% endif %}
 
     <h2>Profile (Importable)</h2>
     <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
 
+    {% endif %}
 
     <p>
         <a href="{% url "profile_delete" this_profile.id %}" type="button" class="btn btn-sm btn-danger">Delete Profile</a>
