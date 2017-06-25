@@ -1913,7 +1913,7 @@ class OldControlConstants(models.Model):
 
         if prior_control_constants is None:
             # Load the preexisting control constants from the controller
-            prior_control_constants = OldControlConstants.load_from_controller(controller)
+            prior_control_constants = OldControlConstants().load_from_controller(controller)
 
         for this_field in self.firmware_field_list:
             # Now loop through and check each field to find out what changed
