@@ -1910,8 +1910,16 @@ class OldControlConstants(models.Model):
         :type controller: BrewPiDevice
         :return: boolean
         """
+
+        if prior_control_constants is None:
+            # Load the preexisting control constants from the controller
+            prior_control_constants = OldControlConstants.load_from_controller(controller)
+
         for this_field in self.firmware_field_list:
-            self.save_to_controller(controller, this_field)
+            # Now loop through and check each field to find out what changed
+            if getattr(self, this_field) != getattr(prior_control_constants, this_field):
+                # ...and only update those fields
+                self.save_to_controller(controller, this_field)
         return True
 
 
