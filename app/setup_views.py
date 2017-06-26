@@ -5,6 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 import setup_forms, device_forms
 import mdnsLocator, serial_integration
@@ -75,6 +76,7 @@ def setup_config(request):
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
+            config.PREFERRED_TIMEZONE = f['preferred_timezone']
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:

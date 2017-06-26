@@ -46,7 +46,6 @@ class PinDevice(models.Model):
     type = models.CharField(max_length=8, default="")
     pin = models.IntegerField(default=-1)  # 'val' in the dict
 
-
     def __str__(self):
         return self.text
 
@@ -822,7 +821,7 @@ class BrewPiDevice(models.Model):
 
             timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
             # We're subtracting start_at because we want to start in the past
-            self.time_profile_started = datetime.datetime.now(tz=timezone_obj) - start_at
+            self.time_profile_started = timezone.now() - start_at
 
             self.save()
 
@@ -1121,7 +1120,14 @@ class BeerLogPoint(models.Model):
         # 1333238400.0
         # self.log_time.strftime('%Y/%m/%d %H:%M:%S')
         # time_value = int(time.mktime(self.log_time.timetuple()) * 1000)
-        time_value = self.log_time.strftime('%Y/%m/%d %H:%M:%S')
+
+        # Going to store all time data in the preferred_tz for the time being.
+        # TODO - Determine if we can convert back to storing everything in UTC and then fixing everything on display
+        # time_value = self.log_time.strftime('%Y/%m/%d %H:%M:%S')
+
+        preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
+        time_value = self.log_time.astimezone(preferred_tz).strftime('%Y/%m/%d %H:%M:%S')
+
 
         if self.beer_temp:
             beerTemp = self.beer_temp
@@ -1389,8 +1395,7 @@ class FermentationProfile(models.Model):
         past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = 0.0
         previous_ttl = 0.0
-        timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
-        current_time = datetime.datetime.now(tz=timezone_obj)
+        current_time = timezone.now()
 
         for this_point in profile_points:
             if not past_first_point:
@@ -1424,8 +1429,7 @@ class FermentationProfile(models.Model):
     # past_end_of_profile allows us to test if we're in the last stage of a profile (which is effectively beer constant
     # mode) so we can switch to explicitly be in beer constant mode
     def past_end_of_profile(self, time_started):
-        timezone_obj = pytz.timezone(getattr(settings, 'TIME_ZONE', 'UTC'))
-        current_time = datetime.datetime.now(tz=timezone_obj)
+        current_time = timezone.now()
 
         last_profile_point = self.fermentationprofilepoint_set.order_by('-ttl')[:1]
 
@@ -1859,6 +1863,7 @@ class OldControlConstants(models.Model):
 
     tempFormat = models.CharField(
         verbose_name="Temperature format",
+        help_text="This is the temperature format that will be used by the device",
         max_length=1,
         choices=(
             ("F", "Fahrenheit"),

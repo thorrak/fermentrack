@@ -3,6 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
+import pytz
 
 
 ###################################################################################################################
@@ -64,6 +65,10 @@ class GuidedSetupConfigForm(forms.Form):
         choices=temperature_format_select_choices,
         )
 
+    preferred_timezone = forms.ChoiceField(
+        choices=[(x,x) for x in pytz.common_timezones]
+    )
+
     def __init__(self, *args, **kwargs):
         super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
@@ -74,6 +79,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['date_time_format_display'].initial = config.DATE_TIME_FORMAT_DISPLAY
         self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
+        self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
 
         # This is super-hackish, but whatever. If it works, it works
         for this_field in self.fields:

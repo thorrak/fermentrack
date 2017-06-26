@@ -1,8 +1,6 @@
-import datetime
-import time
 from django import template
 from app.models import BrewPiDevice, FermentationProfile, FermentationProfilePoint
-
+from django.utils import timezone
 
 register = template.Library()
 
@@ -29,4 +27,4 @@ def temp_control_label(this_device, control_status):
 @register.filter
 def durfromnow(td):
     """Take a timedelta and return now + timedelta as a date"""
-    return datetime.datetime.now() + td
+    return timezone.now() + td

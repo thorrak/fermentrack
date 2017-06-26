@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.utils import timezone
 
 from constance import config  # For the explicitly user-configurable stuff
 from decorators import site_is_configured, login_if_required_for_dashboard
@@ -53,13 +54,17 @@ def siteroot(request):
     if config.GIT_UPDATE_TYPE != "none":
         # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
-        now_time = pytz.timezone(settings.TIME_ZONE).localize(datetime.datetime.now())
+        now_time = timezone.now()
         if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-            if git_integration.app_is_current():
-                config.LAST_GIT_CHECK = now_time
-            else:
-                messages.info(request, "This app is not at the latest version! " +
-                              '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+            try:
+                if git_integration.app_is_current():
+                    config.LAST_GIT_CHECK = now_time
+                else:
+                    messages.info(request, "This app is not at the latest version! " +
+                                  '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+            except:
+                # If we can't check for the latest version info, skip and move on
+                pass
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
@@ -451,6 +456,7 @@ def site_settings(request):
             config.DATE_TIME_FORMAT_DISPLAY = f['date_time_format_display']
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
+            config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
