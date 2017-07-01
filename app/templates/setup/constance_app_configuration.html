@@ -21,10 +21,6 @@
         {% form_generic form.require_login_for_dashboard %}
         {% form_generic form.temperature_format %}
         {% form_generic form.preferred_timezone %}
-        <p>
-            Note - It is highly recommended that you restart all logging after updating the preferred timezone, as
-            this setting will only apply to future data points. Existing logs will not be updated.
-        </p>
         <input type="submit" value="Save Configuration" class="btn btn-primary"/>
     </div>
 </form>
