@@ -70,7 +70,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'constance.context_processors.config'
+                'constance.context_processors.config',
+                'app.context_processors.preferred_tz',
+                # 'app.context_processors.devices',
             ],
         },
     },
@@ -157,6 +159,10 @@ CONSTANCE_ADDITIONAL_FIELDS = {
                     ("tagged", "Prompt to upgrade on tagged (official, numbered) releases"),
                     ("none", "Do not automatically check/prompt for updates"))
     }],
+    'timezone_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': [(x,x) for x in pytz.common_timezones]
+    }],
 }
 
 # CONSTANCE_SUPERUSER_ONLY = False
@@ -174,7 +180,8 @@ CONSTANCE_CONFIG = {
     'ALLOW_GIT_BRANCH_SWITCHING': (False, 'Should the user be allowed to switch Git branches from within the app?',
                                    bool),
     'FIRMWARE_LIST_LAST_REFRESHED': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now())+datetime.timedelta(hours=-25), 'When was the firmware list last refreshed from fermentrack.com?',
-                                     datetime.datetime)
+                                     datetime.datetime),
+    'PREFERRED_TIMEZONE': ("UTC", 'What timezone would you prefer to use in Fermentrack?', 'timezone_select')
 }
 
 

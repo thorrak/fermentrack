@@ -61,7 +61,7 @@
                     <td>{{ this_point.ttl }}</td>
                     <td>{{ this_point.temp_to_preferred }}</td>
                     {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
-                    <td>{{ this_point.ttl | durfromnow | localtime | date:"r" }}</td>
+                    <td>{{ this_point.ttl | durfromnow | timezone:preferred_tz | date:"r" }}</td>
                     {% if this_profile.is_editable %}<td><a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>{% endif %}
                 </tr>
             {% endfor %}

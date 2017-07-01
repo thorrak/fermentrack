@@ -9,12 +9,10 @@ from django.http import HttpResponse
 from app.models import BrewPiDevice, FermentationProfilePoint, FermentationProfile
 # Cheating on this one.
 from views import render_with_devices
-import device_forms
-import profile_forms
-import json
-import time
+import device_forms, profile_forms
+import json, time, csv, pytz
 from datetime import datetime
-import csv
+from django.utils import timezone
 
 
 @login_required
@@ -199,6 +197,11 @@ def profile_undelete(request, profile_id):
 @login_required
 @site_is_configured
 def profile_points_to_csv(request, profile_id):
+    # profile_points_to_csv is used exclusively for displaying a graph of fermentation profiles on the profile edit
+    # page
+
+    preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
+
     profile = FermentationProfile.objects.get(id=profile_id)
     profile_points = profile.fermentationprofilepoint_set.order_by('ttl')
     response = HttpResponse(content_type='text/plain')
@@ -207,9 +210,9 @@ def profile_points_to_csv(request, profile_id):
     # If the profile's first point is in the future, add an additional point for today showing the temperature will be
     # held constant until that first point's ttl is reached.
     if profile_points[0].ttl != 0:
-        writer.writerow([datetime.now(), profile_points[0].temp_to_preferred()])
+        writer.writerow(["{:%Y/%m/%d %X}".format(timezone.now().astimezone(preferred_tz)), profile_points[0].temp_to_preferred()])
     for p in profile_points:
-        profilepoint_date = datetime.now() + p.ttl
+        profilepoint_date = "{:%Y/%m/%d %X}".format(timezone.now().astimezone(preferred_tz) + p.ttl)
         writer.writerow([profilepoint_date, p.temp_to_preferred()])
     return response
 

@@ -33,13 +33,15 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 Fermentrack provides some of its functionality using JavaScript. Some of the third party JavaScript packages used within Fermentrack include:
 
 
-| Package                                   	| License                                                                     	|
-|-------------------------------------------	|-----------------------------------------------------------------------------	|
-| [jQuery](https://jquery.com/)             	| [MIT (Expat)](https://github.com/jquery/jquery/blob/master/LICENSE.txt)     	|
-| [vue.js](https://vuejs.org/)              	| [MIT (Expat)](https://opensource.org/licenses/MIT)                          	|
-| [Dygraph](http://dygraphs.com/legal.html) 	| [MIT (Expat)](https://github.com/danvk/dygraphs/blob/master/LICENSE.txt)    	|
-| Respond.js                                	| [MIT (Expat)](https://github.com/scottjehl/Respond/blob/master/LICENSE-MIT) 	|
-| html5shiv.js                              	| MIT (Expat)                                                                 	|
+| Package                                       	| License                                                                     	|
+|-----------------------------------------------	|-----------------------------------------------------------------------------	|
+| [jQuery](https://jquery.com/)                 	| [MIT (Expat)](https://github.com/jquery/jquery/blob/master/LICENSE.txt)     	|
+| [vue.js](https://vuejs.org/)                  	| [MIT (Expat)](https://opensource.org/licenses/MIT)                          	|
+| [Dygraph](http://dygraphs.com/legal.html)     	| [MIT (Expat)](https://github.com/danvk/dygraphs/blob/master/LICENSE.txt)    	|
+| [Moment](http://momentjs.com/)                	| MIT (Expat)                                                                	|
+| [Moment Timezone](http://momentjs.com/timezone/) 	| MIT (Expat)                                                                 	|
+| Respond.js                                    	| [MIT (Expat)](https://github.com/scottjehl/Respond/blob/master/LICENSE-MIT) 	|
+| html5shiv.js                                  	| MIT (Expat)                                                                 	|
 
 
 
