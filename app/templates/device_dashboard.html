@@ -358,9 +358,11 @@
 
 {% block scripts %}
 
-{% load static %}
-
 {% if beer %}
+
+<script type="text/javascript" src="{% static "vendor/moment/moment.min.js" %}"></script>
+<script type="text/javascript" src="{% static "vendor/moment-timezone/moment-timezone-with-data-2012-2022.js" %}"></script>
+
 <script type="text/javascript">
 
 var temp_format = "{{ beer.format }}";  // Used in formatTempText
@@ -436,6 +438,10 @@ g2 = new Dygraph(
         displayAnnotations: true,
         showLabelsOnHighlight: true,
         hideOverlayOnMouseOut: false,
+        xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
+            var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
+            return m.toDate();
+        },
         highlightCallback: updateLegend
     }  // options
 );

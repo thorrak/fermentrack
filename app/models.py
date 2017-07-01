@@ -1125,8 +1125,11 @@ class BeerLogPoint(models.Model):
         # TODO - Determine if we can convert back to storing everything in UTC and then fixing everything on display
         # time_value = self.log_time.strftime('%Y/%m/%d %H:%M:%S')
 
-        preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
-        time_value = self.log_time.astimezone(preferred_tz).strftime('%Y/%m/%d %H:%M:%S')
+        # preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
+        # time_value = self.log_time.astimezone(preferred_tz).strftime('%Y/%m/%d %H:%M:%S')
+
+        utc_tz = pytz.timezone("UTC")
+        time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
 
 
         if self.beer_temp:
