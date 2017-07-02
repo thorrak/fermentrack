@@ -9,6 +9,7 @@ pages:
     - 'Index': 'install/index.md'
     - 'Raspberry Pi Setup': 'install/Raspi Setup.md'
     - 'Manual Installation': 'install/manual.md'
+    - 'Legacy (Apache/PHP) App Support': 'install/Apache and PHP Support.md'
   - Configuration:
     - 'Configuration': 'config/config.md'
     - 'Flashing a Controller': 'config/Flashing a Controller.md'

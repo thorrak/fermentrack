@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Controllers connected via serial can now have their serial port autodetected using the udev serial number 
 - Beer profiles are now displayed in graph form
 - Firmware can now be flashed to new Arduino & ESP8266-based controllers from within the app
+- Preferred timezone can now be selected for use throughout Fermentrack
+- Beer log management (deletion/downloading)
 
 ### Changed
 - Inversion flag for installed devices is now shown on the "configure pins/sensors" page
@@ -25,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - GitHub updates are no longer triggered automatically by visiting the update page, and must now be manually triggered by clicking a button
 - The IP address of a BrewPiDevice is now cached, and can be used if mDNS stops working
 - At end of a fermentation profile the controller will now be switched to beer constant mode
+- All data points are now explicitly recorded in UTC
 
 ### Fixed
 - Inversion state no longer improperly defaults
