@@ -441,7 +441,8 @@ g2 = new Dygraph(
         hideOverlayOnMouseOut: false,
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
-            return m.toDate();
+{#            return m.toDate();#}
+            return m.valueOf();
         },
         highlightCallback: updateLegend
     }  // options
