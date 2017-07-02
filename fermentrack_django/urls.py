@@ -89,7 +89,11 @@ urlpatterns = [
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/copy/$', app.profile_views.profile_copy, name='profile_copy'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/rename/$', app.profile_views.profile_rename, name='profile_rename'),
 
-                  # Api Views
+    # Beer Views
+    url(r'^beer/list/$', app.beer_views.beer_list, name='beer_list'),
+    url(r'^beer/(?P<beer_id>\d{1,20})/delete/$', app.beer_views.beer_delete, name='beer_delete'),
+
+    # Api Views
     url(r'^api/lcd/(?P<device_id>\d{1,20})/$', app.api.lcd.getLCD, name="getLCD"),  # For a single device
     url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),  # For all devices/LCDs
     url(r'^api/panel/(?P<device_id>\d{1,20})/$', app.api.lcd.getPanel, name="getPanel"),  # For a single device
