@@ -1,0 +1,49 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load static %}
+{% load tz %}
+
+{% block title %}List Beer Logs{% endblock %}
+
+{% block content %}
+    <h1>Available Beer Logs</h1>
+
+    {% if all_beers %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Beer Name</th>
+                    <th>Device</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            {% for this_beer in all_beers %}
+                <tr>
+                {% if this_beer.device %}
+                    <td><a href="{% url 'device_dashboard_beer' this_beer.device.id this_beer.id %}">{{ this_beer }}</a></td>
+                {% else %}
+                    <td>{{ this_beer }}</td>
+                    {% endif %}
+
+
+                    <td>{{ this_beer.device }}</td>
+                    <td>{{ this_beer.created|timezone:preferred_tz }}</td>
+                    <td>
+                        {# TODO - Make deleting this involve a modal #}
+                        <a href="{% url "beer_delete" this_beer.id %}" type="button" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="{{ this_beer.full_csv_url }}" type="button" class="btn btn-sm btn-success">View Full CSV</a>
+                    </td>
+
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h2>There are no available beer logs</h2>
+    {% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}

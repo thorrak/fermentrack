@@ -3,14 +3,10 @@ from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
-# BeerLogPoints
-import os.path
-import csv
-import logging
-
-
-import socket
+import os.path, csv, logging, socket
 import json, time, datetime, pytz
 from constance import config
 from fermentrack_django import settings
@@ -1065,10 +1061,30 @@ class Beer(models.Model):
     def data_file_url(self, which_file):
         return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
 
+    def full_csv_url(self):
+        return self.data_file_url('full_csv')
+
     # def base_csv_url(self):
     #     return self.data_file_url('base_csv')
 
     # TODO - Add function to allow conversion of log files between temp formats
+
+
+# When the user attempts to delete a beer, also delete the log files associated with it.
+@receiver(pre_delete, sender=Beer)
+def delete_beer(sender, instance, **kwargs):
+    file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, instance.base_filename())
+
+    base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
+    full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
+    annotation_json = file_name_base + instance.full_filename('annotation_json', extension_only=True)
+
+    for this_filepath in [base_csv_file, full_csv_file, annotation_json]:
+        try:
+            os.remove(this_filepath)
+        except OSError:
+            pass
+
 
 
 class BeerLogPoint(models.Model):

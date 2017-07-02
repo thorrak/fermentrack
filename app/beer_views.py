@@ -101,3 +101,33 @@ def beer_logging_status(request, device_id, logging_status):
 
     # In all cases, redirect to device dashboard
     return redirect('device_dashboard', device_id=device_id)
+
+
+@login_required
+@site_is_configured
+def beer_list(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
+    #     return redirect("/")
+
+    all_beers = Beer.objects.all().order_by('device').order_by('name')
+
+    return render_with_devices(request, template_name='beer/beer_list.html',
+                               context={'all_beers': all_beers})
+
+@login_required
+@site_is_configured
+def beer_delete(request, beer_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        beer_obj = Beer.objects.get(id=beer_id)
+        messages.success(request, u'Beer "{}" was deleted'.format(beer_obj.name))
+        beer_obj.delete()
+    except:
+        messages.error(request, u'Unable to locate beer with ID {}'.format(beer_id))
+    return redirect('beer_list')
