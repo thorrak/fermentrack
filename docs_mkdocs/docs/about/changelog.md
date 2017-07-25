@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Firmware can now be flashed to new Arduino & ESP8266-based controllers from within the app
 - Preferred timezone can now be selected for use throughout Fermentrack
 - Beer log management (deletion/downloading)
+- Added configuration options for graph line colors
+- Graph lines can be toggled by clicking the icon in the legend
 
 ### Changed
 - Inversion flag for installed devices is now shown on the "configure pins/sensors" page
@@ -28,6 +30,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - The IP address of a BrewPiDevice is now cached, and can be used if mDNS stops working
 - At end of a fermentation profile the controller will now be switched to beer constant mode
 - All data points are now explicitly recorded in UTC
+- Added icon to graph legend to display line color
 
 ### Fixed
 - Inversion state no longer improperly defaults
@@ -37,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - GIT_UPDATE_TYPE of 'none' will now properly disable update checks
 - BrewPi controllers now accept unicode names
 - "View Room Temp" link on Dashboard now functions
+- Room temp now included in legend for graphs
 
 ## [0.1.0] - 2017-03-17 - "v1 release"
 ### Added
