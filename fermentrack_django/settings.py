@@ -183,12 +183,12 @@ CONSTANCE_CONFIG = {
                                      datetime.datetime),
     'PREFERRED_TIMEZONE': ("UTC", 'What timezone would you prefer to use in Fermentrack?', 'timezone_select'),
 
-    'GRAPH_BEER_TEMP_COLOR': ("#0AD1B3", 'What color do you want the beer temperature line on the graph?', str),
+    'GRAPH_BEER_TEMP_COLOR': ("#E3B505", 'What color do you want the beer temperature line on the graph?', str),
     'GRAPH_BEER_SET_COLOR': ("#203340", 'What color do you want the beer setting line on the graph?', str),
-    'GRAPH_FRIDGE_TEMP_COLOR': ("#00BFFF", 'What color do you want the fridge temperature line on the graph?', str),
-    'GRAPH_FRIDGE_SET_COLOR': ("#40505B", 'What color do you want the fridge setting line on the graph?', str),
-    'GRAPH_ROOM_TEMP_COLOR': ("#D6D6D6", 'What color do you want the room temperature line on the graph?', str),
-    'GRAPH_GRAVITY_COLOR': ("#AAAAAA", 'What color do you want the specific gravity line on the graph?', str),
+    'GRAPH_FRIDGE_TEMP_COLOR': ("#044B7F", 'What color do you want the fridge temperature line on the graph?', str),
+    'GRAPH_FRIDGE_SET_COLOR': ("#107E7D", 'What color do you want the fridge setting line on the graph?', str),
+    'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
+    'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
 
 }
 
