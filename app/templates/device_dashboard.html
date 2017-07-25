@@ -185,7 +185,7 @@
                 <div class="panel-body">
                         <div class="chart-legend-row row" id="beerTempRow">
                             <div class="legend-label pull-left" style="padding-left: 10px;" id="beerTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}"></i>
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="beer_temp_legend" onClick="toggle_graph_visibility(this)"></i>
                                 Beer Temp
                             </div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="beerTempValue"></div>
@@ -193,7 +193,7 @@
 
                         <div class="chart-legend-row row" id="beerSetRow">
                             <div class="legend-label pull-left" style="padding-left: 10px;" id="beerSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}"></i>
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}" id="beer_set_legend" onClick="toggle_graph_visibility(this)"></i>
                                 Beer Setting
                             </div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="beerSetValue"></div>
@@ -201,7 +201,7 @@
 
                         <div class="chart-legend-row row" id="fridgeTempRow">
                             <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}"></i>
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}" id="fridge_temp_legend" onClick="toggle_graph_visibility(this)"></i>
                                 Fridge Temp
                             </div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeTempValue"></div>
@@ -209,7 +209,7 @@
 
                         <div class="chart-legend-row row" id="fridgeSetRow">
                             <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}"></i>
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="fridge_set_legend" onClick="toggle_graph_visibility(this)"></i>
                                 Fridge Setting
                             </div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeSetValue"></div>
@@ -481,6 +481,34 @@ function pull_and_update_annotations() {
 g2.ready(function () {
     pull_and_update_annotations();
 });
+
+var fridge_temp_visible = true;
+var fridge_set_visible = true;
+var beer_temp_visible = true;
+var beer_set_visible = true;
+
+function toggle_graph_visibility(el) {
+    if(el.id == "beer_temp_legend") {
+        beer_temp_visible = !beer_temp_visible;
+        g2.setVisibility(0, beer_temp_visible);
+
+    }
+    if(el.id == "beer_set_legend") {
+        beer_set_visible = !beer_set_visible;
+        g2.setVisibility(1, beer_set_visible);
+
+    }
+    if(el.id == "fridge_temp_legend") {
+        fridge_temp_visible = !fridge_temp_visible;
+        g2.setVisibility(1, fridge_temp_visible);
+
+    }
+    if(el.id == "fridge_set_legend") {
+        fridge_set_visible = !fridge_set_visible;
+        g2.setVisibility(1, fridge_set_visible);
+
+    }
+}
 
 
 

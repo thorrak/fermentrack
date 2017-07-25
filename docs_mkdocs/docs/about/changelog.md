@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Preferred timezone can now be selected for use throughout Fermentrack
 - Beer log management (deletion/downloading)
 - Added configuration options for graph line colors
+- Graph lines can be toggled by clicking the icon in the legend
 
 ### Changed
 - Inversion flag for installed devices is now shown on the "configure pins/sensors" page
