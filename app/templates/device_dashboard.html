@@ -464,7 +464,7 @@ g2 = new Dygraph(
         hideOverlayOnMouseOut: false,
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
-            return m.toDate();
+            return m.valueOf();
         },
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
         highlightCallback: updateLegend
