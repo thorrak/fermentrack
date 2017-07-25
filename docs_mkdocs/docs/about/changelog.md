@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - GIT_UPDATE_TYPE of 'none' will now properly disable update checks
 - BrewPi controllers now accept unicode names
 - "View Room Temp" link on Dashboard now functions
+- Room temp now included in legend for graphs
 
 ## [0.1.0] - 2017-03-17 - "v1 release"
 ### Added
