@@ -59,10 +59,13 @@
         
             <ul>
             
-                <li class="toctree-l3"><a href="#can-i-change-the-temperature-format-on-a-beer-ive-started-logging">Can I change the temperature format on a beer I've started logging?</a></li>
+                <li class="toctree-l3"><a href="#frequently-asked-questions">Frequently Asked Questions</a></li>
                 
-            
-                <li class="toctree-l3"><a href="#help-i-forgot-my-fermentrack-loginpassword">Help - I forgot my Fermentrack login/password!</a></li>
+                    <li><a class="toctree-l4" href="#can-i-change-the-temperature-format-on-a-beer-ive-started-logging">Can I change the temperature format on a beer I've started logging?</a></li>
+                
+                    <li><a class="toctree-l4" href="#help-i-forgot-my-fermentrack-loginpassword">Help - I forgot my Fermentrack login/password!</a></li>
+                
+                    <li><a class="toctree-l4" href="#what-happens-to-my-beer-logsactive-profilesother-data-if-i-change-the-fermentrack-preferred-timezone">What happens to my beer logs/active profiles/other data if I change the Fermentrack "Preferred Timezone"?</a></li>
                 
             
             </ul>
@@ -96,6 +99,13 @@
     </li>
 
         
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../install/Apache and PHP Support/">Legacy (Apache/PHP) App Support</a>
+        
+    </li>
+
+        
     </ul>
 <li>
           
@@ -107,6 +117,34 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../config/config/">Configuration</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../config/Flashing a Controller/">Flashing a Controller</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -160,6 +198,13 @@
             <li>
     <ul class="subnav">
     <li><span>About</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../about/architecture/">Architecture</a>
+        
+    </li>
 
         
             
@@ -249,7 +294,8 @@
           <div role="main">
             <div class="section">
               
-                <h6 id="can-i-change-the-temperature-format-on-a-beer-ive-started-logging">Can I change the temperature format on a beer I've started logging?</h6>
+                <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+<h6 id="can-i-change-the-temperature-format-on-a-beer-ive-started-logging">Can I change the temperature format on a beer I've started logging?</h6>
 <p>No. To prevent inconsistency the log format is permanently set when logging begins to the temperature format associated with the device. If you would like to change the format and restart logging, do the following:</p>
 <ol>
 <li>Update the temperature format in control constants to the desired format</li>
@@ -259,7 +305,7 @@
 <h6 id="help-i-forgot-my-fermentrack-loginpassword">Help - I forgot my Fermentrack login/password!</h6>
 <p>Thankfully, this is a pretty easy issue to overcome. Django provides the <code>manage.py</code> command line script which contains the <code>createsuperuser</code> command. To leverage this, do the following (assuming the standard install locations):</p>
 <ol>
-<li>Log into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command <code>sudo su brewpi</code> assuming you installed to the <code>brewpi</code> user)</li>
+<li>Log into your Raspberry Pi via ssh and switch to the user you installed Fermentrack to (generally this can be done with the command <code>sudo -u fermentrack -i</code> assuming you installed to the <code>fermentrack</code> user)</li>
 <li>Change to the user's home directory (<code>cd ~</code>)</li>
 <li>Enable the virtualenv (<code>source venv/bin/activate</code>)</li>
 <li>Change to the Fermentrack directory (<code>cd fermentrack</code>)</li>
@@ -267,6 +313,8 @@
 <li>Follow the prompts to create a new superuser account</li>
 <li>Log into the Fermentrack admin panel and delete/modify the old account. The Fermentrack admin panel can be accessed through the <code>Settings</code> page (the gear in the upper right) and clicking the "Django Admin" button.</li>
 </ol>
+<h6 id="what-happens-to-my-beer-logsactive-profilesother-data-if-i-change-the-fermentrack-preferred-timezone">What happens to my beer logs/active profiles/other data if I change the Fermentrack "Preferred Timezone"?</h6>
+<p>Not much. To prevent this being an issue Fermentrack uses UTC (GMT) internally and converts times to your local timezone on the fly. Feel free to update your preferred timezone as you move, travel, or are otherwise inclined without worrying about how this might impact your existing logs or active profiles. </p>
               
             </div>
           </div>

@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Arduino - Fermentrack</title>
+  <title>WiFi Controller Guided Setup - Fermentrack</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Arduino";
-    var mkdocs_page_input_path = "hardware/Arduino.md";
-    var mkdocs_page_url = "/hardware/Arduino/";
+    var mkdocs_page_name = "WiFi Controller Guided Setup";
+    var mkdocs_page_input_path = "config/WiFi Controller Setup.md";
+    var mkdocs_page_url = "/config/WiFi Controller Setup/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -103,35 +103,44 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../config/">Configuration</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Flashing a Controller/">Flashing a Controller</a>
+        <a class="" href="../Flashing a Controller/">Flashing a Controller</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../Serial Controller Setup/">Serial Controller Guided Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">WiFi Controller Guided Setup</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#setting-up-a-controller-connected-via-wifi-using-guided-workflow">Setting up a controller connected via WiFi using Guided Workflow</a></li>
+                
+                    <li><a class="toctree-l4" href="#using-the-guided-workflow">Using the Guided Workflow</a></li>
+                
+            
+            </ul>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
+        <a class="" href="../Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -146,44 +155,35 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../">Index</a>
+        <a class="" href="../../hardware/">Index</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../ESP8266/">ESP8266</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Arduino</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</a></li>
-                
-                    <li><a class="toctree-l4" href="#setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</a></li>
-                
-            
-            </ul>
+        <a class="" href="../../hardware/ESP8266/">ESP8266</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Native Python/">Native Python (Fuscus)</a>
+        <a class="" href="../../hardware/Arduino/">Arduino</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Spark/">Spark Core</a>
+        <a class="" href="../../hardware/Native Python/">Native Python (Fuscus)</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Spark/">Spark Core</a>
         
     </li>
 
@@ -278,11 +278,11 @@
     
       
         
-          <li>Hardware &raquo;</li>
+          <li>Configuration &raquo;</li>
         
       
     
-    <li>Arduino</li>
+    <li>WiFi Controller Guided Setup</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/thorrak/fermentrack/"> Edit on fermentrack</a>
@@ -294,13 +294,23 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</h1>
-<p>Fermentrack currently supports Arduino-based controllers connected via Serial (USB).</p>
-<p>By default, Fermentrack will detect the USB serial number associated with your Arduino when initially configured, and will use that - instead of the specified serial port - to connect. For more information, read the "About Serial Port Autodetection" note in the <a href="../config/Serial%20Controller%20Setup.md">"Guided Setup" instructions</a>.</p>
-<h2 id="setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</h2>
-<p>There are two options for setting up a controller in Fermentrack - Guided Setup and Advanced (Manual) Setup.</p>
-<p><a href="../config/Serial%20Controller%20Setup.md"><strong>Guided Setup</strong></a> - Instructions are available <a href="../config/Serial%20Controller%20Setup.md">here</a>. When choosing the board type, select "Arduino (and compatible)" from the dropdown.</p>
-<p><a href="../config/Advanced%20Controller%20Setup.md"><strong>Manual Setup</strong></a> - Instructions are available <a href="../config/Advanced%20Controller%20Setup.md">here</a>.</p>
+                <h1 id="setting-up-a-controller-connected-via-wifi-using-guided-workflow">Setting up a controller connected via WiFi using Guided Workflow</h1>
+<p>Prior to setting up a controller with Fermentrack, please read the documentation specific to your controller's hardware. Supported hardware families include:</p>
+<ul>
+<li><a href="../../hardware/Arduino/">Arduino (and compatible)</a></li>
+<li><a href="../../hardware/ESP8266/">ESP8266</a></li>
+<li><a href="../../hardware/Spark/">Spark Core</a></li>
+<li><a href="../hardware/Native%20Python.md">Native Python (Fuscus)</a></li>
+</ul>
+<h2 id="using-the-guided-workflow">Using the Guided Workflow</h2>
+<ol>
+<li>After the controller is powered on and connected to your network, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown</li>
+<li>Select the correct board type (ESP8266) from the dropdown and click "Submit"</li>
+<li>If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read <a href="Flashing%20a%20Controller.md">these instructions</a> before continuing. </li>
+<li>Select "WiFi" on the left, and then click "Scan WiFi via mDNS"</li>
+<li>Select the appropriate device from the "Available (Uninstalled) Devices" list, and click "Set Up"</li>
+<li>Enter a name for the device, adjust settings as needed, and click "Submit"</li>
+</ol>
               
             </div>
           </div>
@@ -308,10 +318,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../Native Python/" class="btn btn-neutral float-right" title="Native Python (Fuscus)">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Advanced Controller Setup/" class="btn btn-neutral float-right" title="Advanced (Manual) Controller Setup">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../ESP8266/" class="btn btn-neutral" title="ESP8266"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../Serial Controller Setup/" class="btn btn-neutral" title="Serial Controller Guided Setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -337,10 +347,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../ESP8266/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../Serial Controller Setup/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../Native Python/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../Advanced Controller Setup/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
