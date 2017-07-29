@@ -2,8 +2,6 @@
 
 Fermentrack currently supports Arduino-based controllers connected via Serial (USB).
 
-Fermentrack does **not** currently support flashing firmware to devices - to use an Arduino-based controller you will need to flash it before setting up with Fermentrack.
-
 By default, Fermentrack will detect the USB serial number associated with your Arduino when initially configured, and will use that - instead of the specified serial port - to connect. For more information, read the "About Serial Port Autodetection" note in the ["Guided Setup" instructions](../config/Serial%20Controller%20Setup.md).
 
 

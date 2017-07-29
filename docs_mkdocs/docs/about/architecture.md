@@ -1,8 +1,8 @@
 # The Fermentrack architecture
 
-The Fermentrack stack is based on a front end application, a controller and a firmware
+The Fermentrack stack is based on a front end application, a controller, and a firmware
 running on the device that handles reading temperatures, switching cooling and heating etc.
-Everything but the firmware part is running under a process manager, which takes care of
+Everything but the firmware part is running under a process manager which takes care of
 launching the front end and brewpi.py controller scripts.
 
 ![Fermentrack Architechture](img/fermentrack.png)
