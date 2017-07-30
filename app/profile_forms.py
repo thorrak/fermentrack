@@ -48,8 +48,19 @@ class FermentationProfilePointForm(forms.Form):
 
 
 class FermentationProfileImportForm(forms.Form):
-    # TODO - Add a placeholder here
-    import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off'}),
+
+    placeholder_profile = """Example:
+====================================
+| Sample Profile                   |
+| Standard Profile                 |
+====================================
+| 7d    | 68.00 F                  |
+| 10d   | 72.00 F                  |
+| 15d   | 35.00 F                  |
+===================================="""
+
+    import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off',
+                                                               'placeholder': placeholder_profile}),
                                   help_text="The text of the exported profile")
 
 
