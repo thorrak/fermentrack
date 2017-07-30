@@ -537,10 +537,7 @@ class BrewPiDevice(models.Model):
                     this_socket.connect((self.socketHost, self.socketPort))
                 else:
                     this_socket.connect(self.socket_name)
-                # TODO - Determine if I need to change the timeouts
-                # this_socket.setsockopt()
             except:
-                # TODO - Something here. We failed to connect to the socket.
                 this_socket.close()
 
         return this_socket
@@ -551,7 +548,6 @@ class BrewPiDevice(models.Model):
             this_socket.sendall(message)
             return True
         except:
-            # TODO - Do something here
             return False
 
     @staticmethod
@@ -754,7 +750,6 @@ class BrewPiDevice(models.Model):
 
         elif device_mode == 'o':  # Device mode is off
             control_status['device_mode'] = "off"
-            pass
 
         elif device_mode == 'b':  # Device mode is beer constant
             control_status['device_mode'] = "beer_constant"
@@ -766,12 +761,10 @@ class BrewPiDevice(models.Model):
 
         elif device_mode == 'p':  # Device mode is beer profile
             control_status['device_mode'] = "beer_profile"
-            pass
 
         else:
             # No idea what the device mode is
-            # TODO - Log this
-            pass
+            logger.error("Invalid device mode '{}' on device {}".format(device_mode, self.device_name))
 
         return control_status
 
@@ -783,7 +776,6 @@ class BrewPiDevice(models.Model):
         self.save()
 
     def set_temp_control(self, method, set_temp=None, profile=None, profile_startat=None):
-        # TODO - Convert this to raise actual errors instead of just returning false
         if method == "off":
             self.reset_profile()
             self.send_message("setOff")
@@ -792,20 +784,28 @@ class BrewPiDevice(models.Model):
                 self.reset_profile()
                 self.send_message("setBeer", str(set_temp))
             else:
+                logger.error("Device {} set to beer_constant without a setpoint".format(self.device_name))
                 return False
         elif method == "fridge_constant":
             if set_temp is not None:
                 self.reset_profile()
                 self.send_message("setFridge", str(set_temp))
             else:
+                logger.error("Device {} set to fridge_constant without a setpoint".format(self.device_name))
                 return False
         elif method == "beer_profile":
             try:
                 ferm_profile = FermentationProfile.objects.get(id=profile)
             except:
+                logger.error("Device {} set to beer_profile {} but the profile could not be located".format(
+                    self.device_name, profile
+                ))
                 return False
 
             if not ferm_profile.is_assignable():
+                logger.error("Device {} set to beer_profile {} but the profile isn't assignable".format(
+                    self.device_name, profile
+                ))
                 return False
 
             if profile_startat is not None:
@@ -1132,17 +1132,7 @@ class BeerLogPoint(models.Model):
 
 
     def data_point(self, data_format='base_csv', set_defaults=True):
-        # datetime.datetime(1970, 1, 1)).total_seconds()
-        # 1333238400.0
-        # self.log_time.strftime('%Y/%m/%d %H:%M:%S')
-        # time_value = int(time.mktime(self.log_time.timetuple()) * 1000)
-
-        # Going to store all time data in the preferred_tz for the time being.
-        # TODO - Determine if we can convert back to storing everything in UTC and then fixing everything on display
-        # time_value = self.log_time.strftime('%Y/%m/%d %H:%M:%S')
-
-        # preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
-        # time_value = self.log_time.astimezone(preferred_tz).strftime('%Y/%m/%d %H:%M:%S')
+        # Everything gets stored in UTC and then converted back on the fly
 
         utc_tz = pytz.timezone("UTC")
         time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
@@ -1188,7 +1178,7 @@ class BeerLogPoint(models.Model):
         elif self.fridge_ann is not None:
             combined_annotation = self.fridge_ann
         else:
-            combined_annotation = ""  # TODO - Check that this works as intended
+            combined_annotation = ""
 
         if data_format == 'base_csv':
             return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
@@ -1369,7 +1359,7 @@ class FermentationProfile(models.Model):
             if not past_first_point:
                 desc_text = "Start off by heating/cooling to {}&deg; {}".format(this_point.temp_to_preferred(), config.TEMPERATURE_FORMAT)
 
-                if this_point.ttl == 0:  # TODO - Test to make sure this works with timedelta objects the way I think it does
+                if this_point.ttl == datetime.timedelta(seconds=0):
                     desc_text += "."
                 else:
                     desc_text += " and hold this temperature for {}".format(this_point.ttl)
@@ -1574,7 +1564,6 @@ class FermentationProfile(models.Model):
                             # | 3d 4h | 72.00 F             |
                             # | 6d    | 64.00 F             |
                             # ===============================
-                            # TODO - Convert the temp formats in the pattern below to be dynamically generated rather than magic
                             point_pattern = r"(?P<time_str>[0-9ywdhms]+)[ ]*" + cls.EXPORT_COL_SEPARATOR_REGEX + \
                                                     r"(?P<temp_str>[0-9\.]+) (?P<temp_fmt>[CF]{1})"
                         else:
@@ -1676,7 +1665,7 @@ class FermentationProfilePoint(models.Model):
         elif self.temp_format == 'C' and desired_temp_format == 'F':
             return self.temp_to_f()
         else:
-            # TODO - Log This - We have an invalid format somewhere
+            logger.error("Invalid temperature format {} specified".format(desired_temp_format))
             return self.temperature_setting
 
     def ttl_to_string(self, short_code=False):
