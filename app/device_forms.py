@@ -1,5 +1,5 @@
 from django import forms
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice, FermentationProfile
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice, FermentationProfile, FermentationProfilePoint
 from django.core import validators
 import fermentrack_django.settings as settings
 
@@ -239,8 +239,6 @@ class TempControlForm(forms.Form):
 
     # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
     def clean_start_at(self):
-        # TODO - Convert this to instead use FermentationProfilePoint.string_to_ttl
-        # tz = pytz.timezone(getattr(settings, 'TIME_ZONE', False))
         if 'start_at' in self.cleaned_data:
             ttl_text = self.cleaned_data['start_at']
         else:
@@ -249,31 +247,4 @@ class TempControlForm(forms.Form):
         if len(ttl_text) <= 1:
             return None
 
-        # Split out the d/h/m/s of the timer
-        try:
-            timer_pattern = r"(?P<time_amt>[0-9]+)[ ]*(?P<ywdhms>[ywdhms]{1})"
-            timer_regex = re.compile(timer_pattern)
-            timer_matches = timer_regex.finditer(ttl_text)
-        except:
-            raise forms.ValidationError("Start At format is invalid")
-
-
-        # timer_time is equal to now + the time delta
-        time_delta = datetime.timedelta(seconds=0)
-        for this_match in timer_matches:
-            dhms = this_match.group('ywdhms')
-            delta_amt = int(this_match.group('time_amt'))
-            if dhms == 'y':  # This doesn't account for leap years, but whatever.
-                time_delta = time_delta + datetime.timedelta(days=(365*delta_amt))
-            elif dhms == 'w':
-                time_delta = time_delta + datetime.timedelta(weeks=delta_amt)
-            elif dhms == 'd':
-                time_delta = time_delta + datetime.timedelta(days=delta_amt)
-            elif dhms == 'h':
-                time_delta = time_delta + datetime.timedelta(hours=delta_amt)
-            elif dhms == 'm':
-                time_delta = time_delta + datetime.timedelta(minutes=delta_amt)
-            elif dhms == 's':
-                time_delta = time_delta + datetime.timedelta(seconds=delta_amt)
-
-        return time_delta
+        return FermentationProfilePoint.string_to_ttl(ttl_text)
