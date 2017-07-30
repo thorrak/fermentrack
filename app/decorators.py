@@ -12,7 +12,6 @@ from constance import config  # For the explicitly user-configurable stuff
 from django.contrib.auth.decorators import user_passes_test
 
 # There is really nothing that would prevent me from hijacking user_passes_test from the Django decorators here.
-# TODO - Decide if I'd rather hijack that rather than effectively copy/pasting it here with small renames
 def constance_check(test_func, next_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
     """
     A wrapper for views that check specific constance settings. Only used for site_is_configured below.
@@ -38,8 +37,7 @@ def constance_check(test_func, next_url=None, redirect_field_name=REDIRECT_FIELD
                 path = request.get_full_path()
             # TODO - Change this to redirect, not redirect to login
             from django.contrib.auth.views import redirect_to_login
-            return redirect_to_login(
-                path, resolved_setup_url, redirect_field_name)
+            return redirect_to_login(path, resolved_setup_url, redirect_field_name)
         return _wrapped_view
     return decorator
 
