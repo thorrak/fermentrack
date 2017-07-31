@@ -109,7 +109,7 @@ def setup_splash(request):
 #     |       |
 #     | No    | Yes
 #     |       |
-#     |       Redirect to flash device (TODO)
+#     |       Redirect to flash device
 #     |       |
 #     Select connection type (serial_wifi) *OR* if device doesn't support WiFi, redirect as "serial"
 #     |       |
@@ -160,14 +160,13 @@ def device_guided_flash_prompt(request, device_family):
         if form.is_valid():
             if not form.cleaned_data['should_flash_device']:
                 if form.cleaned_data['device_family'] in serial_only_families:
-                    # TODO - Redirect this to the actual serial autodetect script once complete
                     # The device doesn't support both serial and wifi. Redirect to the serial flow.
-                    return redirect('device_guided_serial_wifi', device_family=form.cleaned_data['device_family'])
+                    return redirect('device_guided_serial_autodetect', device_family=form.cleaned_data['device_family'])
                 else:
                     # The device can connect via either serial or wifi. prompt
                     return redirect('device_guided_serial_wifi', device_family=form.cleaned_data['device_family'])
             else:
-                # TODO - Actually flash the device
+                # I don't think this really will ever get called...
                 return redirect('device_guided_flash_prompt', device_family=form.cleaned_data['device_family'])
         else:
             return render_with_devices(request, template_name='setup/device_guided_flash_prompt.html',
