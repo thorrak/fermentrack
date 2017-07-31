@@ -241,8 +241,7 @@ def updateFromGitHub(userInput, beta, useDfu, restoreSettings = True, restoreDev
     return result
 
 if __name__ == '__main__':
-    # TODO - Restore this functionality!!!!
-    print("updateFirmware.py is disabled in this version of brewpi-script. Please update your firmware manually.")
+    print("updateFirmware.py is disabled in this version of brewpi-script. Please update your firmware manually, or using Fermentrack")
     sys.exit()
 
     import getopt
