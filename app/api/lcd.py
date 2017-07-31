@@ -64,8 +64,15 @@ def getPanel(req, device_id):
         # TODO - Log This
         device_mode = "--"
 
-    # TODO - Make this do division to get minutes, hours, etc.
-    interval_text = "{} seconds".format(int(device_info['LogInterval']))
+    if int(device_info['LogInterval']) <= 90:
+        interval_text = "{} seconds".format(int(device_info['LogInterval']))
+    elif int(device_info['LogInterval']) < (60*60):
+        interval_text = "{} minutes".format(int(device_info['LogInterval']/60))
+    else:
+        interval_text = "{} hour".format(int(device_info['LogInterval']/(60*60)))
+        if int(device_info['LogInterval']) >= (60*60*2):
+            interval_text += "s"  # IT WORKS. QUIT JUDGING.
+
 
     ret.append({'beer_temp': temp_text(device_info['BeerTemp'], dev.temp_format),
                 'fridge_temp': temp_text(device_info['FridgeTemp'], dev.temp_format),

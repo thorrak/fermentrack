@@ -1,5 +1,6 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
+{% load tz %}
 
 {% block title %}Select Device Family{% endblock %}
 
@@ -20,7 +21,7 @@
 <div id="update_container">
 
     <h3>Update List of Available Firmware</h3>
-    <p>Last Updated: {{ last_checked }}{# TODO - Fix timezone support here #}</p>
+    <p>Last Updated: {{ last_checked|timezone:preferred_tz }}</p>
     <a href="{% url 'firmware_flash_refresh_list' %}" class="btn btn-primary">Refresh Firmware List from Fermentrack.com</a>
 
 </div>

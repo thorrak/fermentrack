@@ -18,6 +18,6 @@ firmware_flash_urlpatterns = [
     url(r'^firmware/flash/(?P<board_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_flash_flash_firmware, name='firmware_flash_flash_firmware'),
 
     # TODO - Delete the following once everything is confirmed working as expected
-    url(r'^firmware/test/$', firmware_flash.views.firmware_flash_test_select_firmware, name='firmware_flash_test_select_firmware'),
+    # url(r'^firmware/test/$', firmware_flash.views.firmware_flash_test_select_firmware, name='firmware_flash_test_select_firmware'),
 
 ]
