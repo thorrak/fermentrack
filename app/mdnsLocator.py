@@ -1,8 +1,12 @@
-# This is (almost) the same exact file as brewpi-script/mdnsLocator.py
+# This is the same exact file as brewpi-script/mdnsLocator.py
 
 import zeroconf
 from time import sleep
-from models import BrewPiDevice
+try:
+    from models import BrewPiDevice
+    djangoLoaded = True
+except:
+    djangoLoaded = False
 
 
 class zeroconfListener(object):
@@ -47,11 +51,15 @@ def find_mdns_devices():
         found_device['revision'] = services[this_service].properties['revision']
         found_device['version'] = services[this_service].properties['version']
 
-        try:
-            # If we found the device, then we're golden - it's already installed (in theory)
-            found_device['device'] = BrewPiDevice.objects.get(wifi_host=found_device['mDNSname'])
-            installed_devices.append(found_device.copy())
-        except:
+        if djangoLoaded:  # Breaking this out so that we can have this be a direct clone for brewpi-script
+            try:
+                # If we found the device, then we're golden - it's already installed (in theory)
+                found_device['device'] = BrewPiDevice.objects.get(wifi_host=found_device['mDNSname'])
+                installed_devices.append(found_device.copy())
+            except:
+                found_device['device'] = None
+                available_devices.append(found_device.copy())
+        else:
             found_device['device'] = None
             available_devices.append(found_device.copy())
 
@@ -59,10 +67,20 @@ def find_mdns_devices():
 
 
 if __name__ == '__main__':
-    zeroconf_obj = zeroconf.Zeroconf()
-    listener = zeroconfListener()
-    browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
-    try:
-        input("Press enter to exit...\n\n")
-    finally:
-        zeroconf_obj.close()
+    # zeroconf_obj = zeroconf.Zeroconf()
+    # listener = zeroconfListener()
+    # browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
+
+    print "Scanning for available mDNS devices"
+    _, available_devices = find_mdns_devices()
+
+    for this_device in available_devices:
+        print "Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],
+                                                                             this_device['board'],
+                                                                             this_device['branch'],
+                                                                             this_device['revision'])
+    print "All found devices listed. Exiting."
+    # try:
+    #     input("Press enter to exit...\n\n")
+    # finally:
+    #     zeroconf_obj.close()
