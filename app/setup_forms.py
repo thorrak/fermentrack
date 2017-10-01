@@ -69,6 +69,11 @@ class GuidedSetupConfigForm(forms.Form):
         choices=[(x,x) for x in pytz.common_timezones]
     )
 
+    enable_gravity_support = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+        choices=true_false,
+        # widget=forms.RadioSelect(),
+        )
+
     def __init__(self, *args, **kwargs):
         super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
@@ -80,6 +85,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
+        self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
 
         # This is super-hackish, but whatever. If it works, it works
         for this_field in self.fields:

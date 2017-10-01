@@ -174,6 +174,7 @@ CONSTANCE_CONFIG = {
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select'),
     'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
+    'GRAVITY_SUPPORT_ENABLED': (False, 'Has the user enabled support for specific gravity sensors?', bool),
     'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
                        'When was the last time we checked GitHub for upgrades?', datetime.datetime),
     'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
