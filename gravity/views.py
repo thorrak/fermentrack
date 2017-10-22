@@ -7,23 +7,14 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-import forms
-
 from app.models import BrewPiDevice
-from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version
+from gravity.models import GravitySensor
 
-import app.serial_integration as serial_integration
-
-from app.decorators import site_is_configured  # Checks if user has completed constance configuration
+from app.decorators import site_is_configured, login_if_required_for_dashboard
 
 import os, subprocess, datetime, pytz
 
-# Fermentrack integration
-try:
-    from app.models import BrewPiDevice
-    FERMENTRACK_INTEGRATION = True
-except:
-    FERMENTRACK_INTEGRATION = False
+import gravity.forms as forms
 
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
@@ -42,92 +33,115 @@ def render_with_devices(request, template_name, context=None, content_type=None,
 
 @login_required
 @site_is_configured
-def firmware_select_family(request):
+def gravity_add_board(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-    preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
-
-    # If the firmware data is more than 24 hours old, attempt to refresh it
-    if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
-        refresh_firmware()
-
-    # Test if avrdude is available. If not, the user will need to install it.
-    try:
-        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
-        install_check = rettext.find("installed")
-
-        if install_check == -1:
-            # The package status isn't installed
-            messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
-    except:
-        messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
-
+    manual_form = forms.ManualForm()
 
     if request.POST:
-        form = forms.FirmwareFamilyForm(request.POST)
-        if form.is_valid():
-            return redirect('firmware_select_board', flash_family_id=form.cleaned_data['device_family'])
-            # return redirect('firmware_flash_serial_autodetect', flash_family_id=form.cleaned_data['device_family'])
-        else:
-            return render_with_devices(request, template_name='firmware_flash/select_family.html',
-                                       context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
-                                                'preferred_tz': preferred_tz})
-    else:
-        form = forms.FirmwareFamilyForm()
-        return render_with_devices(request, template_name='firmware_flash/select_family.html',
-                                   context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
-                                            'preferred_tz': preferred_tz})
+        if request.POST['sensor_family'] == "manual":
+            manual_form = forms.ManualForm(request.POST)
+            if manual_form.is_valid():
 
+                sensor = manual_form.save()
+                messages.success(request, 'Sensor added')
+
+                return redirect('gravity_list')
+        messages.error(request, 'Error adding sensor')
+
+    # Basically, if we don't get redirected, in every case we're just outputting the same template
+    return render_with_devices(request, template_name='gravity/gravity_family.html',
+                               context={'manual_form': manual_form,})
+
+
+@site_is_configured
+@login_if_required_for_dashboard
+def gravity_list(request):
+    # This handles generating the list of grav sensors
+    # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
+    return render_with_devices(request, template_name="gravity/gravity_list.html")
 
 @login_required
 @site_is_configured
-def firmware_select_board(request, flash_family_id):
+def gravity_add_point(request, manual_sensor_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-
     try:
-        flash_family = DeviceFamily.objects.get(id=flash_family_id)
+        sensor = GravitySensor.objects.get(id=manual_sensor_id)
     except:
-        messages.error(request, "Invalid flash_family specified")
-        return redirect('firmware_flash_select_family')
+        messages.error(request,'Unable to load sensor with ID {}'.format(manual_sensor_id))
+        return redirect('gravity_list')
 
-
-    # Test if avrdude is available. If not, the user will need to install it for flashing AVR-based devices.
-    if flash_family.flash_method == DeviceFamily.FLASH_ARDUINO:
-        try:
-            rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
-            install_check = rettext.find("installed")
-
-            if install_check == -1:
-                # The package status isn't installed - we explicitly cannot install arduino images
-                messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
-                return redirect('firmware_flash_select_family')
-        except:
-            messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
-            # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
-            # return redirect('firmware_flash_select_family')
-
+    form = forms.ManualPointForm()
 
     if request.POST:
-        form = forms.BoardForm(request.POST)
-        form.set_choices(flash_family)
+        form = forms.ManualPointForm(request.POST)
         if form.is_valid():
-            return redirect('firmware_flash_serial_autodetect', board_id=form.cleaned_data['board_type'])
-        else:
-            return render_with_devices(request, template_name='firmware_flash/select_board.html',
-                                       context={'form': form, 'flash_family': flash_family})
-    else:
-        form = forms.BoardForm()
-        form.set_choices(flash_family)
-        return render_with_devices(request, template_name='firmware_flash/select_board.html',
-                                   context={'form': form, 'flash_family': flash_family})
+            # Generate the new point (but don't save)
+            new_point = form.save(commit=False)
+            if sensor.active_log is not None:
+                new_point.associated_log = sensor.active_log
+            else:
+                new_point.associated_device = sensor
 
+            new_point.save()
+
+            messages.success(request, 'Successfully added manual log point')
+
+            return redirect('gravity_list')
+
+        messages.error(request, 'Unable to add new manual log point')
+
+    # Basically, if we don't get redirected, in every case we're just outputting the same template
+    return render_with_devices(request, template_name='gravity/gravity_add_point.html',
+                               context={'form': form, 'sensor': sensor})
+
+
+        #
+    #
+    # try:
+    #     flash_family = DeviceFamily.objects.get(id=flash_family_id)
+    # except:
+    #     messages.error(request, "Invalid flash_family specified")
+    #     return redirect('firmware_flash_select_family')
+    #
+    #
+    # # Test if avrdude is available. If not, the user will need to install it for flashing AVR-based devices.
+    # if flash_family.flash_method == DeviceFamily.FLASH_ARDUINO:
+    #     try:
+    #         rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+    #         install_check = rettext.find("installed")
+    #
+    #         if install_check == -1:
+    #             # The package status isn't installed - we explicitly cannot install arduino images
+    #             messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
+    #             return redirect('firmware_flash_select_family')
+    #     except:
+    #         messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
+    #         # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
+    #         # return redirect('firmware_flash_select_family')
+    #
+    #
+    # if request.POST:
+    #     form = forms.BoardForm(request.POST)
+    #     form.set_choices(flash_family)
+    #     if form.is_valid():
+    #         return redirect('firmware_flash_serial_autodetect', board_id=form.cleaned_data['board_type'])
+    #     else:
+    #         return render_with_devices(request, template_name='firmware_flash/select_board.html',
+    #                                    context={'form': form, 'flash_family': flash_family})
+    # else:
+    #     form = forms.BoardForm()
+    #     form.set_choices(flash_family)
+    #     return render_with_devices(request, template_name='firmware_flash/select_board.html',
+    #                                context={'form': form, 'flash_family': flash_family})
+    #
 
 def refresh_firmware(request=None):
     # Before we load anything, check to make sure that the model version on fermentrack.com matches the model version

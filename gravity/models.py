@@ -5,15 +5,19 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.core import serializers
 
 import os.path, csv, logging, socket
 import json, time, datetime, pytz
 from constance import config
 from fermentrack_django import settings
 import re
+import redis
 
 
 from lib.ftcircus.client import CircusMgr, CircusException
+
+from app.models import BrewPiDevice
 
 logger = logging.getLogger(__name__)
 
@@ -23,16 +27,21 @@ logger = logging.getLogger(__name__)
 # |  |
 # |  |- GravityLogPoint,GravityLogPoint...
 # |
-# |--OldControlConstants/NewControlConstants
+# |<-->TiltConfiguration
+# |    |
+# |    |- TiltTempCalibrationPoint, TiltTempCalibrationPoint...
+# |    |
+# |    |- TiltGravityCalibrationPoint, TiltGravityCalibrationPoint...
 
 
-# Specific gravity sensors are expected to 3 (optionally 4) data points per reading:
+# Specific gravity sensors are expected to log 4 (optionally 5) data points per reading:
 #  Specific Gravity
 #  Temperature
+#  Temp Format
 #  If the temp was an estimate
-#  An optional field
-
-
+#  Any extra data (optional)
+#
+# In addition to these 5 fields, we track when the data point was saved (but this isn't expected to be passed in)
 
 
 # Due to the fact that - unlike the BrewPi - we aren't assuming a single manufacturer/type of specific gravity sensor,
@@ -86,7 +95,7 @@ class GravitySensor(models.Model):
 
     STATUS_CHOICES = (
         (STATUS_ACTIVE, 'Active, Managed by Circus'),
-        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),
+        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),  # STATUS_UNMANAGED also applies for manual sensors /w no agent
         (STATUS_DISABLED, 'Explicitly disabled, cannot be launched'),
         (STATUS_UPDATING, 'Disabled, pending an update'),
     )
@@ -107,12 +116,34 @@ class GravitySensor(models.Model):
     # The beer that is currently active & being logged
     active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None)
 
+    # The assigned/linked BrewPi device (if applicable)
+    assigned_brewpi_device = models.ForeignKey(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL)
+
     def __str__(self):
         # TODO - Make this test if the name is unicode, and return a default name if that is the case
         return self.name
 
     def __unicode__(self):
         return self.name
+
+    def retrieve_latest_gravity(self):
+        point = self.retrieve_latest_point()
+        if point is None:
+            return None
+        else:
+            return point.gravity
+
+    def retrieve_latest_temp(self):
+        # So temp needs units... we'll return a tuple
+        point = self.retrieve_latest_point()
+        if point is None:
+            return None, None
+        else:
+            return point.temp, point.temp_format
+
+    def retrieve_latest_point(self):
+        return GravityLogPoint.load_from_redis(self.id)
+
 
 
 
@@ -128,7 +159,7 @@ class GravityLog(models.Model):
     # button that allows the user to convert the log files to the new format if they're different.
     format = models.CharField(max_length=1, default='F')
 
-    # model_version is the revision number of the "Beer" and "BeerLogPoint" models, designed to be iterated when any
+    # model_version is the revision number of the "GravityLog" and "GravityLogPoint" models, designed to be iterated when any
     # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
     # converter could then be written moving between each iteration of model_version that could then be sequentially
     # applied to bring a beer log in line with what the model then expects.
@@ -207,7 +238,7 @@ class GravityLog(models.Model):
         # def base_csv_url(self):
         #     return self.data_file_url('base_csv')
 
-        # TODO - Add function to allow conversion of log files between temp formats
+    # TODO - Add function to allow conversion of log files between temp formats
 
 
 # When the user attempts to delete a gravity log, also delete the log files associated with it.
@@ -246,7 +277,13 @@ class GravityLogPoint(models.Model):
     extra_data = models.CharField(max_length=255, null=True, blank=True, help_text='Extra data/notes about this point')
     log_time = models.DateTimeField(default=timezone.now, db_index=True)
 
-    associated_log = models.ForeignKey(GravityLog, db_index=True, on_delete=models.DO_NOTHING)
+    # Associated log is intended to be the collection of log points associated with the gravity sensor's latest
+    # logging efforts. That said, we're also using the model to store the latest gravity info in the absence of an
+    # active logging effort, hence the null=True.
+    associated_log = models.ForeignKey(GravityLog, db_index=True, on_delete=models.DO_NOTHING, null=True)
+
+    # Associated device is so we can save to redis even without an associated log
+    associated_device = models.ForeignKey(GravitySensor, db_index=True, on_delete=models.DO_NOTHING, null=True)
 
     def data_point(self, data_format='base_csv', set_defaults=True):
         # Everything gets stored in UTC and then converted back on the fly
@@ -328,35 +365,127 @@ class GravityLogPoint(models.Model):
                                                                       this_annotation['text']))
                     f.write('}')
 
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
+        # If we have a currently valid _gravity_ log, then write the data out. Otherwise, assume that we're just
+        # collecting data to display on the dashboard.
+        if self.associated_log is not None:
+            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_log.base_filename())
 
-        base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
-        full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
-        annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base + self.associated_log.full_filename('base_csv', extension_only=True)
+            full_csv_file = file_name_base + self.associated_log.full_filename('full_csv', extension_only=True)
+            annotation_json = file_name_base + self.associated_log.full_filename('annotation_json', extension_only=True)
 
-        # Write out headers (if the files don't exist)
-        check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
-        check_and_write_headers(full_csv_file, self.associated_beer.column_headers('full_csv'))
+            # Write out headers (if the files don't exist)
+            check_and_write_headers(base_csv_file, self.associated_log.column_headers('base_csv'))
+            check_and_write_headers(full_csv_file, self.associated_log.column_headers('full_csv'))
 
-        # And then write out the data
-        write_data(base_csv_file, self.data_point('base_csv'))
-        write_data(full_csv_file, self.data_point('full_csv'))
+            # And then write out the data
+            write_data(base_csv_file, self.data_point('base_csv'))
+            write_data(full_csv_file, self.data_point('full_csv'))
 
-        # Next, do the json file
-        annotation_data = self.data_point('annotation_json')
-        if len(annotation_data) > 0:  # Not all log points come with annotation data
-            json_existed = check_and_write_annotation_json_head(annotation_json)
-            write_annotation_json(annotation_json, annotation_data, json_existed)
+            # Next, do the json file
+            annotation_data = self.data_point('annotation_json')
+            if len(annotation_data) > 0:  # Not all log points come with annotation data
+                json_existed = check_and_write_annotation_json_head(annotation_json)
+                write_annotation_json(annotation_json, annotation_data, json_existed)
 
             # super(BeerLogPoint, self).save(*args, **kwargs)
 
+        # Once everything is written out, also write to redis as the cached current point
+        self.save_to_redis()
+
+    def save_to_redis(self, device_id=None):
+        # This saves the current (presumably complete) object as the 'current' point to redis
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        if device_id is None:
+            if self.associated_log is not None:
+                r.set('grav_{}_full'.format(self.associated_log.device_id), serializers.serialize('json', [self, ]))
+            elif self.associated_device is not None:
+                r.set('grav_{}_full'.format(self.associated_device_id), serializers.serialize('json', [self, ]))
+            else:
+                raise ReferenceError  # Not sure if this is the right error type, but running with it
+        else:
+            r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]))
 
 
-class TiltTempCalibrationPoint(models.Model):
-    pass
+    @classmethod
+    def load_from_redis(cls, sensor_id):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        try:
+            redis_response = r.get('grav_{}_full'.format(sensor_id))
+            serializer = serializers.deserialize('json', redis_response)
+            for obj2 in serializer:
+                obj = obj2.object
+                return obj
+        except:
+            return None
 
-class TiltGravityCalibrationPoint(models.Model):
-    pass
 
 
-
+##### Tilt Hydrometer Specific Models
+# class TiltTempCalibrationPoint(models.Model):
+#     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
+#
+#     sensor = models.ForeignKey(GravitySensor)
+#     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original Value")
+#     actual_value = models.DecimalField(max_digits=8, decimal_places=4)
+#
+#     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C')
+#
+#     # TODO - Write code to convert to the appropriate format as necessary
+#
+#
+# class TiltGravityCalibrationPoint(models.Model):
+#     sensor = models.ForeignKey(GravitySensor)
+#     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original Value")
+#     actual_value = models.DecimalField(max_digits=8, decimal_places=4)
+#
+# class TiltConfiguration(models.Model):
+#     COLOR_BLACK = "black"
+#     COLOR_ORANGE = "orange"
+#     COLOR_GREEN = "green"
+#     COLOR_BLUE = "blue"
+#     COLOR_PURPLE = "purple"
+#     COLOR_RED = "red"
+#     COLOR_YELLOW = "yellow"
+#     COLOR_PINK = "pink"
+#
+#     COLOR_CHOICES = (
+#         (COLOR_BLACK, 'Black'),
+#         (COLOR_ORANGE, 'Orange'),
+#         (COLOR_GREEN, 'Green'),
+#         (COLOR_BLUE, 'Blue'),
+#         (COLOR_PURPLE, 'Purple'),
+#         (COLOR_RED, 'Red'),
+#         (COLOR_YELLOW, 'Yellow'),
+#         (COLOR_PINK, 'Pink'),
+#     )
+#
+#
+#     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True)
+#     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
+#
+#     # The following two options are migrated from the Tilt manager configuration file
+#
+#     # Record values over a period in order to average/median the numbers. This is used to smooth noise.
+#     # Default: 5 mins
+#     average_period_secs = models.IntegerField(default=5*60)
+#
+#     # Use a median filter over the average period. The window will be applied multiple times.
+#     # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with a set of 360-380 values.
+#     # Setting the window to < 360, will then give you a moving average like function.
+#     # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes in temp/gravity will take ~2.5 mins to be observed.
+#     median_window_vals = models.IntegerField(default=10000)
+#
+#
+#     def tiltHydrometerName(self, uuid):
+#         return {
+#                 'a495bb10c5b14b44b5121370f02d74de' : self.COLOR_RED,
+#                 'a495bb20c5b14b44b5121370f02d74de' : self.COLOR_GREEN,
+#                 'a495bb30c5b14b44b5121370f02d74de' : self.COLOR_BLACK,
+#                 'a495bb40c5b14b44b5121370f02d74de' : self.COLOR_PURPLE,
+#                 'a495bb50c5b14b44b5121370f02d74de' : self.COLOR_ORANGE,
+#                 'a495bb60c5b14b44b5121370f02d74de' : self.COLOR_BLUE,
+#                 'a495bb70c5b14b44b5121370f02d74de' : self.COLOR_YELLOW,
+#                 'a495bb80c5b14b44b5121370f02d74de' : self.COLOR_PINK,
+#         }.get(uuid)
+#

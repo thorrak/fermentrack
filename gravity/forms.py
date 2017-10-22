@@ -16,7 +16,7 @@ from django.forms import ModelForm
 class ManualForm(ModelForm):
     class Meta:
         model = GravitySensor
-        fields = ['name', 'temp_format', 'sensor_type']
+        fields = ['name', 'temp_format',]
 
     def __init__(self, *args, **kwargs):
         super(ManualForm, self).__init__(*args, **kwargs)
@@ -27,7 +27,7 @@ class ManualForm(ModelForm):
 class ManualPointForm(ModelForm):
     class Meta:
         model = GravityLogPoint
-        fields = ['name', 'temp_format', 'sensor_type']
+        fields = ['gravity', 'temp', 'temp_format', 'temp_is_estimate', 'extra_data']
 
     def __init__(self, *args, **kwargs):
         super(ManualPointForm, self).__init__(*args, **kwargs)

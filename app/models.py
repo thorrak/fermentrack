@@ -481,6 +481,9 @@ class BrewPiDevice(models.Model):
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
 
+    # Optional gravity sensor support
+    gravity_sensor = models.ForeignKey('gravity.GravitySensor', on_delete=models.SET_NULL, null=True)
+
     def get_profile_temp(self):
         # If the object is inconsistent, don't return anything
         if self.active_profile is None:

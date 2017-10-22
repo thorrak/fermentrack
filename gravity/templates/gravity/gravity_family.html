@@ -1,0 +1,73 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Select Sensor Family{% endblock %}
+
+{% block header_scripts %}
+<link href="{% static "css/gravity_family.css" %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Select Sensor Type</h1>
+
+
+    <p>
+        There are several different types of specific gravity sensors that are available for use with Fermentrack.
+        Please select the sensor family that you are attempting to set up.
+    </p>
+
+
+
+    <!-- Accordion Selector -->
+
+    <div class="panel-group" id="family-selector">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#family-selector" href="#sensor-manual">
+                        <div class="gravlogo"> <!-- TODO - Fix this -->
+                            <i class="fa fa-pencil-square fa-5x"></i>
+                        </div>
+                        Manual Sensor
+                    </a>
+                </h4>
+            </div>
+
+            <div id="sensor-manual" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            Use this to track specific gravity readings you take in ways that don't automatically
+                            integrate with Fermentrack. Hydrometers, refractometers, pycnometers - all are welcome.
+                        </div>
+                    </div>
+                    <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
+                        <input type="hidden" name="sensor_family" value="manual">
+
+                        <div class="row col-xs-12">{% form_generic manual_form.name %}</div>
+                        <div class="row col-xs-12">{% form_generic manual_form.temp_format %}</div>
+                        <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

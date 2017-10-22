@@ -1,0 +1,44 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Select Sensor Family{% endblock %}
+
+{% block header_scripts %}
+<link href="{% static "css/gravity_family.css" %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Add Point to Manual Sensor</h1>
+
+    <h3>Sensor: {{ sensor.name }}</h3>
+
+
+    <form action="{% url "gravity_add_point" sensor.id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <div id="constanceSection">
+            <h3 class="form-header">Point Details</h3>
+
+            {% form_generic form.gravity %}
+            {% form_generic form.temp %}
+            {% form_generic form.temp_format %}
+            {% form_generic form.temp_is_estimate %}
+            {% form_generic form.extra_data %}
+            <input type="submit" value="Save Point" class="btn btn-primary"/>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
