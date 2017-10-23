@@ -1,0 +1,574 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load static %}
+
+{% block title %}{{ active_device.device_name }} Dashboard{% endblock %}
+
+{% block header_scripts %}
+<link href="{% static "css/dashboard_revised.css" %}" rel="stylesheet">
+<link href="{% static "vendor/dygraph/css/dygraph.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+{#        <!-- Panel 3 -->#}
+{#        <div class="col-md-3 col-sm-6">#}
+{#            <div class="panel panel-green">#}
+{#                <div class="panel-heading">#}
+{#                    <div class="row">#}
+{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
+{#                        <div class="col-xs-9 text-right">#}
+{#                            <div class="less-huge">Beer Const</div>#}
+{#                            <div class="">Control Mode</div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <a href="#">#}
+{#                    <div class="panel-footer">#}
+{#                        <div class="pull-left">View Details</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{##}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
+    <!-- Start Sensor Name Header -->
+    <div class="row">
+        <div class="col-lg-8">
+                <div class="dashpanel dashpanel-top bg-carrot">
+                    <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
+    {#                <div class="dashpanel-title">Beer Temp</div>#}
+                    <div class="dash-data" style="text-align: left">{{ active_device.name }}</div>
+                    <div class="dashpanel-divider"></div>
+                    <a href="#" data-toggle="modal" data-target="#logModal">
+{#            <button type="button" class="btn btn-small btn-sm btn-primary" data-toggle="modal" data-target="#logModal">Start New Beer/Log</button>#}
+                        <div class="dash-desc">
+                            <div class="pull-left">
+                                {% if selected_log_id %}Now Viewing:{% else %}Now Fermenting:{% endif %}
+                                {% if active_log %}{{ active_log.name }}{% else %}Nothing{% endif %}
+                            </div>
+    {#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+        </div>
+
+        <!--  Additional 4-column panel can go here  -->
+
+
+    </div>
+    <!-- End Sensor Name Header -->
+
+
+    <!-- Start Dashboard Panels -->
+    <div class="row">
+
+        <div class="col-md-4 col-xs-6">
+            <div class="dashpanel dashpanel-top bg-amethyst">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
+                <div class="dashpanel-title">Specific Gravity</div>
+                <div class="dash-data" id="dashGravity">--</div>
+                <div class="dashpanel-divider"></div>
+                <a href="#" data-toggle="modal" data-target="#beerLogModal">
+                    <div class="dash-desc">
+                        <div class="pull-left">Load Prior Log</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-xs-6">
+            <div class="dashpanel dashpanel-top bg-petermann" id="fridgeTempPanel">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
+                <div class="dashpanel-title">Temperature</div>
+                <div class="dash-data" id="dashTemp">--&deg; -</div>
+                <div class="dashpanel-divider"></div>
+                    <div class="dash-desc" id="fridgeTempToggle">
+                        <div class="pull-left">View Room Temp</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-4 col-xs-6">
+            <div class="dashpanel dashpanel-top bg-concrete">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
+                <div class="dashpanel-title">Assigned Device</div>
+                <div class="dash-data" id="dashDevice">--</div>
+                <div class="dashpanel-divider"></div>
+                {% if active_device.is_connected %}
+                <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
+                    <div class="dash-desc">
+                        <div class="pull-left" >Change Mode</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+                {% else %}
+                <a href="{% url 'device_debug_connection' active_device.id %}">
+                    <div class="dash-desc">
+                        <div class="pull-left" >Debug Connection</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+{#        <div class="col-md-3 col-xs-6">#}
+{#            <div class="dashpanel dashpanel-top bg-wet-asphalt">#}
+{#                <div class="dash-icon dash-icon-lg"><i class="fa fa-clock-o fa-fw"></i></div>#}
+{#                <div class="dashpanel-title">Log Interval</div>#}
+{#                <div class="dash-data" id="dashLogInterval">30s</div>#}
+{#                <div class="dashpanel-divider"></div>#}
+{#                <a href="{% url 'device_control_constants' active_device.id %}">#}
+{#                    <div class="dash-desc">#}
+{#                        <div class="pull-left">Configure Device</div>#}
+{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
+{#                        <div class="clearfix"></div>#}
+{#                    </div>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+    <!-- End Dashboard Panels -->
+
+{% if active_log %}
+    <!-- Begin Graph & Legend -->
+    <div class="row" style="margin-bottom: 20px">
+        <div class="col-md-9 col-sm-12" id="graphdiv3">
+            <div id="graphdiv2" style="width:100%; height:400px;"></div>
+        </div>
+
+        <div class="col-md-3 col-sm-12">
+            <div id="label-div" style="display: none!important;"></div>
+
+            <div class="panel panel-red">
+                <div class="panel-heading">
+                        <div class="chart-legend-time">
+                            <div id="chartLegendTime">Time</div>
+                        </div>
+                </div>
+                <div class="panel-body">
+                        <div class="chart-legend-row row" id="beerTempRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerTempLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="beer_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Beer Temp
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerTempValue"></div>
+                        </div>
+
+                        <div class="chart-legend-row row" id="beerSetRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerSetLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}" id="beer_set_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Beer Setting
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerSetValue"></div>
+                        </div>
+
+                        <div class="chart-legend-row row" id="fridgeTempRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeTempLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}" id="fridge_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Fridge Temp
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeTempValue"></div>
+                        </div>
+
+                        <div class="chart-legend-row row" id="fridgeSetRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeSetLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="fridge_set_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Fridge Setting
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeSetValue"></div>
+                        </div>
+
+                        <div class="chart-legend-row row" id="roomTempRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="roomTempLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="room_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Room Temp
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="roomTempValue"></div>
+                        </div>
+
+                </div>
+                <div class="panel-footer"></div>
+
+            </div>
+        </div>
+    </div>
+    <!-- End Graph & Legend -->
+
+
+    <!-- Begin Controls -->
+    <div class="row" >
+        <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
+        </div>
+
+        <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-info center" data-toggle="modal" data-target="#logModal">Control Logging</button>
+        </div>
+        <div class="col-md-4">
+            <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#beerLogModal">Load Prior Log</button>
+        </div>
+
+
+    </div>
+    <!-- End Controls -->
+{% else %}
+    <!-- No beer loaded, display "Load Beer" button -->
+    <div class="row col-xs-12">
+            <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Load Past Log</button>
+    </div>
+
+
+{% endif %}
+
+    <!-- Log Modal -->
+    <div class="modal fade" id="logModal" tabindex="-1" role="dialog" aria-labelledby="logModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+{% if active_device.assigned_brewpi_device %}
+    {# Modal for when there is an attached device #}
+                <h4 class="modal-title" id="logModalLabel" style="color: #000;">Attached to Device</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>
+                            This specific gravity sensor is currently attached to a temperature controller. While
+                            attached, the sensor cannot be independently controlled & will match the temperature
+                            controller's logging status.
+                        </p>
+
+                        <p>
+                            Use the links below to detach the sensor from the temperature controller or view the
+                            temperature controller's dashboard.
+                        </p>
+
+                        <a href="{% url 'device_dashboard' active_device.assigned_brewpi_device.id %}" class="btn btn-small btn-sm btn-default">View Temperature Controller</a>
+                        <a href="{% url 'gravity_detach' active_device.id %}" class="btn btn-small btn-sm btn-warning">Detach from Controller</a>
+
+                    </div>
+                </div>
+              </div>
+            </div>
+
+{% elif not active_device.active_log %}
+    {# Modal for when nothing is logging (start logging) -- and we aren't attached to a temperature controller #}
+                <h4 class="modal-title" id="logModalLabel" style="color: #000;">Start Logging</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form action="{% url "gravity_log_create" active_device.id %}" method="post" >{% csrf_token %}
+
+                            {% form_generic log_create_form.log_name %}
+
+                            <input type="hidden" name="device" value="{{ active_device.id }}">
+                            <button type="submit" class="btn btn-large btn-primary">Create Log & Start Logging</button>
+                        </form>
+                    </div>
+                </div>
+              </div>
+            </div>
+{% else %}
+    {# Modal for when logging is active (pause/end buttons) #}
+                <h4 class="modal-title" id="logModalLabel" style="color: #000;">Beer Logging Control</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row col-xs-12">
+                    Now Fermenting: {{ active_device.active_log }}
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        {% if active_device.logging_status == 'active' %}
+                            <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>
+                        {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}
+                            <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>
+                    </div>
+                </div>
+              </div>
+            </div>
+{% endif %}
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Log Modal -->
+
+
+
+
+    <!-- Log Modal -->
+    <div class="modal fade" id="beerLogModal" tabindex="-1" role="dialog" aria-labelledby="beerLogModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="beerLogModalLabel" style="color: #000;">Available Beer Logs</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row col-xs-12">
+                    Select a log to load/view
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        {% for this_log in available_logs %}
+                            <a href="{% url 'gravity_dashboard_log' active_device.id this_log.id %}">{{ this_log.name }}</a><br>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if selected_log_id %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <a href="{% url 'gravity_dashboard' active_device.id %}" class="btn btn-lg btn-success">Return to Active Log</a>
+                    </div>
+                </div>
+                {% endif %}
+
+              </div>
+            </div>
+
+
+            <div class="modal-footer">
+                <a href="{% url 'beer_list' %}" class="btn btn-primary">Manage Logs</a>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Log Modal -->
+
+
+
+{#{% temp_control_modal active_device %}#}
+
+
+<div class="result" id="results"></div>
+{% endblock %}
+
+
+{% block scripts %}
+
+{% if active_log %}
+
+<script type="text/javascript" src="{% static "vendor/moment/moment.min.js" %}"></script>
+<script type="text/javascript" src="{% static "vendor/moment-timezone/moment-timezone-with-data-2012-2022.js" %}"></script>
+
+<script type="text/javascript">
+
+var temp_format = "{{ active_log.format }}";  // Used in formatTempText
+var temp_display_format = "{{ temp_display_format }}";  // Used in formatTimeText
+
+function formatTempText(temp) {
+    // This takes the temperature that we are passed from DyGraph below and formats it in accordance with what we
+    // would expect
+    return temp + " " + window.temp_format;
+}
+
+function formatTimeText(time_code) {
+    var date_str = "";
+    var time_str = "";
+
+    // This takes a timestamp in milliseconds from the unix epoch and converts it to something readable.
+    var date_obj = new Date(time_code);
+
+    // Break out the date part of the timestamp so we can reassemble it in the proper format
+    // (Proper format is set in Constance as DATE_TIME_FORMAT_DISPLAY)
+    var month = "0" + (1+date_obj.getMonth());
+    var day = "0" + date_obj.getDate();
+    var year = "0" + date_obj.getYear();
+
+    if(window.temp_display_format == "mm/dd/yy") {
+        date_str = month.substr(-2) + "/" + day.substr(-2) + "/" + year.substr(-2);
+    } else if(window.temp_display_format == "dd/mm/yy") {
+        date_str = day.substr(-2) + "/" + month.substr(-2) + "/" + year.substr(-2);
+    } else if(window.temp_display_format == "yy-mm-dd") {
+        date_str = year.substr(-2) + "-" + month.substr(-2) + "-" + day.substr(-2);
+    }
+
+    // Break out the time part of the timestamp so we can reassemble it in the proper format
+    // TODO - Add a constance setting for time, so we can select 24 hour or AM/PM
+    var hours = "0" + date_obj.getHours();
+    var minutes = "0" + date_obj.getMinutes();
+    var seconds = "0" + date_obj.getSeconds();
+
+    time_str = hours.substr(-2) + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
+
+    return date_str + " " + time_str;
+}
+
+function updateLegend(e, x, pts, row) {
+
+    // Set the date/time in the header
+    $('#chartLegendTime').text(formatTimeText(pts[0].xval))
+
+    // Loop through the data points we have and update everything on the legend
+    for(var i = 0; i < pts.length; i++) {
+        if(pts[i].name == "beer_temp") {
+            $('#beerTempValue').text(formatTempText(pts[i].yval))
+        } else if(pts[i].name == "fridge_temp") {
+            $('#fridgeTempValue').text(formatTempText(pts[i].yval))
+        } else if(pts[i].name == "beer_set") {
+            $('#beerSetValue').text(formatTempText(pts[i].yval))
+        } else if(pts[i].name == "fridge_set") {
+            $('#fridgeSetValue').text(formatTempText(pts[i].yval))
+        } else if(pts[i].name == "room_temp") {
+            $('#roomTempValue').text(formatTempText(pts[i].yval))
+        }
+    }
+}
+
+
+g2 = new Dygraph(
+    document.getElementById("graphdiv2"),
+    {#  TODO - Something here if active log isn't set #}
+    "{{ log_file_url }}", // path to CSV file
+    {
+{#        labels: [{{ column_headers|safe }}],#}
+        labelsDiv: document.getElementById('label-div'), // Technically, this is unused because of legend:never
+        legend: "never",
+        axisLabelFontSize: 14,
+        displayAnnotations: true,
+        showLabelsOnHighlight: true,
+        hideOverlayOnMouseOut: false,
+        xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
+            var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
+            return m.valueOf();
+        },
+        colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
+        highlightCallback: updateLegend
+    }  // options
+);
+
+function pull_and_update_annotations() {
+     $.ajax({
+        type: 'GET',
+        async: true,
+        beforeSend: function (xhr) {
+            if (xhr && xhr.overrideMimeType) {
+                xhr.overrideMimeType('application/json;charset=utf-8');
+            }
+        },
+        dataType: 'json',
+        url: '{% if active_log %}{% url 'almost_json_view' active_device.id active_log.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
+        success: function(data) {
+            g2.setAnnotations(data);
+        },
+    });
+};
+
+
+g2.ready(function () {
+    pull_and_update_annotations();
+});
+
+var fridge_temp_visible = true;
+var fridge_set_visible = true;
+var beer_temp_visible = true;
+var beer_set_visible = true;
+var room_temp_visible = true;
+
+function toggle_graph_visibility(el) {
+    if(el.id == "beer_temp_legend") {
+        beer_temp_visible = !beer_temp_visible;
+        g2.setVisibility(0, beer_temp_visible);
+
+    } else if(el.id == "beer_set_legend") {
+        beer_set_visible = !beer_set_visible;
+        g2.setVisibility(1, beer_set_visible);
+
+    } else if(el.id == "fridge_temp_legend") {
+        fridge_temp_visible = !fridge_temp_visible;
+        g2.setVisibility(2, fridge_temp_visible);
+
+    } else if(el.id == "fridge_set_legend") {
+        fridge_set_visible = !fridge_set_visible;
+        g2.setVisibility(3, fridge_set_visible);
+
+    } else if(el.id == "room_temp_legend") {
+        room_temp_visible = !room_temp_visible;
+        g2.setVisibility(4, room_temp_visible);
+
+    }
+}
+
+
+
+</script>
+{% endif %}{# No reason to load the DyGraph javascript if we don't have a beer loaded #}
+
+
+<script type="text/javascript">
+
+(function panel_worker() {
+    $.ajax({
+        type: 'GET',
+        async: true,
+        beforeSend: function (xhr) {
+            if (xhr && xhr.overrideMimeType) {
+                xhr.overrideMimeType('application/json;charset=utf-8');
+            }
+        },
+        dataType: 'json',
+        url: '/api/gravity/{{ active_device.id }}/',
+        success: function(data) {
+            $('#dashGravity').html(data[0].current_gravity);
+            $('#dashTemp').html(data[0].temp_string);
+{#            $('#dashRoomTemp').html(data[0].room_temp);#}
+{#            $('#dashControlMode').html(data[0].control_mode);#}
+{#            $('#dashLogInterval').html(data[0].log_interval);#}
+        },
+        complete: function() {
+        // Schedule the next request when the current one's complete
+        setTimeout(panel_worker, 10000);
+        }
+    });
+})();
+
+
+</script>
+
+{% endblock %}
+
+
+
+
+

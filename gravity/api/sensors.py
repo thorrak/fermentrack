@@ -13,7 +13,7 @@ def getGravitySensors(req, device_id=None):
     if device_id is None:
         devices = GravitySensor.objects.all()
     else:
-        devices = GravitySensor.objects.get(id=device_id)
+        devices = [GravitySensor.objects.get(id=device_id),]
     for dev in devices:
         if dev.sensor_type == GravitySensor.SENSOR_MANUAL:
             # For manual sensors, we want the "manage device" link to be for adding a reading instead
@@ -27,6 +27,7 @@ def getGravitySensors(req, device_id=None):
 
         ret.append({"device_name": dev.name, "current_gravity": dev.retrieve_latest_gravity(),
                     "current_temp": temp, "temp_format": temp_format,
+                    "temp_string": "{}&deg; {}".format(temp, temp_format),
                     'device_url': reverse('gravity_dashboard', kwargs={'sensor_id': dev.id,}),
                     'manage_text': manage_text, 'manage_url': manage_url,
                     'modal_name': '#gravSensor{}'.format(dev.id)})

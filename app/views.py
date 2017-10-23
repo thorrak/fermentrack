@@ -278,9 +278,15 @@ def device_dashboard(request, device_id, beer_id=None):
 
     if beer_id is None:
         beer_obj = active_device.active_beer or None
-        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # Do I want to exclude the active beer?
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # TODO - Do I want to exclude the active beer?
     else:
-        beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id) or None
+        try:
+            beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id)
+        except:
+            # If we are given an invalid beer log ID, let's return an error & drop back to the (valid) dashboard
+            messages.error(request, 'Unable to load beer log with ID {}'.format(beer_id))
+            return redirect('device_dashboard', device_id=device_id)
+
         available_beer_logs = Beer.objects.filter(device_id=active_device.id).exclude(id=beer_id)
 
     if beer_obj is None:

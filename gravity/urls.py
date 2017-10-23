@@ -12,11 +12,17 @@ import gravity.api.sensors
 gravity_urlpatterns = [
     ## Device Guided Setup Views
     url(r'^gravity/$', gravity.views.gravity_list, name='gravity_list'),
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/dashboard/$', gravity.views.gravity_add_point, name='gravity_dashboard'),
     url(r'^gravity/add/$', gravity.views.gravity_add_board, name='gravity_add_board'),
     url(r'^gravity/manual_point/(?P<manual_sensor_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_add_point, name='gravity_add_point'),
     # url(r'^gravity/add/tilt/$', firmware_flash.views.firmware_refresh_list, name='firmware_flash_refresh_list'),
     # url(r'^gravity/add/tilt/$', firmware_flash.views.firmware_refresh_list, name='firmware_flash_refresh_list'),
+
+    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_dashboard, name='gravity_dashboard'),
+    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/(?P<log_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_dashboard, name='gravity_dashboard_log'),
+    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/attach/$', gravity.views.gravity_dashboard, name='gravity_attach'),
+    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/detach/$', gravity.views.gravity_dashboard, name='gravity_detach'),
+
+    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/create/$', gravity.views.gravity_log_create, name='gravity_log_create'),
 
     # url(r'^firmware/autodetect_serial/(?P<board_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_flash_serial_autodetect, name='firmware_flash_serial_autodetect'),
     # url(r'^firmware/select_board/(?P<flash_family_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_select_board, name='firmware_select_board'),

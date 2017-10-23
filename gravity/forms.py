@@ -37,28 +37,54 @@ class ManualPointForm(ModelForm):
 
 
 
-class BoardForm(forms.Form):
-    DEVICE_BOARD_CHOICES = (
-    )
 
-    board_type = forms.ChoiceField(label="Board Type",
-                                   widget=forms.Select(attrs={'class': 'form-control', 'data-toggle': 'select'}),
-                                   choices=DEVICE_BOARD_CHOICES, required=True)
+class GravityLogCreateForm(forms.Form):
+    log_name = forms.CharField(max_length=255, min_length=1, required=True, )
+    device = forms.ChoiceField(required=True)
 
-    def set_choices(self, family):
-        # There's probably a better way of doing this
-        board_choices = [(brd.id, brd.name) for brd in Board.objects.filter(family=family)]
+    @staticmethod
+    def get_device_choices():
+        choices = []
+        # We specifically do not want to include any devices that are assigned to temperature controllers as these are
+        # being controlled by the linked temperature controller
+        available_devices = GravitySensor.objects.filter(assigned_brewpi_device=None)
+        for this_device in available_devices:
+            device_tuple = (this_device.id, this_device.name)
+            choices.append(device_tuple)
+        return choices
 
-        self.fields['board_type'].choices = board_choices
+    def __init__(self, *args, **kwargs):
+        super(GravityLogCreateForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+        self.fields['device'] = forms.ChoiceField(required=True, choices=self.get_device_choices(),
+                                                  widget=forms.Select(attrs={'class': 'form-control',
+                                                                             'data-toggle': 'select'}))
 
+    def clean(self):
+        cleaned_data = self.cleaned_data
 
-# class GuidedDeviceFlashForm(forms.Form):
-#     DEVICE_FAMILY_CHOICES = GuidedDeviceSelectForm.DEVICE_FAMILY_CHOICES
-#
-#     device_family = forms.ChoiceField(label="Device Family",
-#                                       widget=forms.Select(attrs={'class': 'form-control',
-#                                                                  'data-toggle': 'select'}),
-#                                       choices=DEVICE_FAMILY_CHOICES, required=True)
-#     should_flash_device = forms.BooleanField(widget=forms.HiddenInput, required=False, initial=False)
-#
-#
+        if cleaned_data.get("log_name"):
+            # Due to the fact that the beer name is used in file paths, we need to validate it to prevent "injection"
+            # type attacks
+            log_name = cleaned_data.get("log_name")
+            if GravityLog.name_is_valid(log_name):
+                cleaned_data['log_name'] = log_name
+            else:
+                raise forms.ValidationError("Log name must only consist of letters, numbers, dashes, spaces, " +
+                                            "and underscores")
+        else:
+            raise forms.ValidationError("Log name must be specified")
+
+        try:
+            linked_device = GravitySensor.objects.get(id=cleaned_data.get('device'))
+            cleaned_data['device'] = linked_device
+        except:
+            raise forms.ValidationError("Invalid device ID specified!")
+
+        if linked_device.assigned_brewpi_device is not None:
+            raise forms.ValidationError("This device is managed by a temperature controller - To create a log, go to " +
+                                        "the controller's dashboard and start a new beer log there")
+
+        return cleaned_data
+

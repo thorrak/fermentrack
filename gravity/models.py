@@ -67,16 +67,6 @@ class GravitySensor(models.Model):
         (TEMP_NEVER_ESTIMATE, 'Temp is Never Estimate'),
     )
 
-    DATA_LOGGING_ACTIVE = 'active'
-    DATA_LOGGING_PAUSED = 'paused'
-    DATA_LOGGING_STOPPED = 'stopped'
-
-    DATA_LOGGING_CHOICES = (
-        (DATA_LOGGING_ACTIVE, 'Active'),
-        (DATA_LOGGING_PAUSED, 'Paused'),
-        (DATA_LOGGING_STOPPED, 'Stopped')
-    )
-
 
     SENSOR_TILT = 'tilt'
     SENSOR_MANUAL = 'manual'
@@ -108,16 +98,13 @@ class GravitySensor(models.Model):
     sensor_type = models.CharField(max_length=10, default=SENSOR_MANUAL, choices=SENSOR_TYPE_CHOICES,
                                    help_text="Type of gravity sensor used")
 
-    logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped',
-                                      help_text="Data logging status")
-
     status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES)
 
     # The beer that is currently active & being logged
     active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None)
 
     # The assigned/linked BrewPi device (if applicable)
-    assigned_brewpi_device = models.ForeignKey(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL)
+    assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL)
 
     def __str__(self):
         # TODO - Make this test if the name is unicode, and return a default name if that is the case

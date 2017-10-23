@@ -26,6 +26,7 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 | [circus-web](http://circus.readthedocs.io/en/latest/copyright/)             	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
 | [chaussette](https://github.com/circus-tent/chaussette/blob/master/LICENSE) 	| [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                            	|
 | [pid](https://pypi.python.org/pypi/pid/2.1.1)                               	| [Apache Public License v2](https://github.com/trbs/pid/blob/master/LICENSE)                       	|
+| [redis](https://redislabs.com/lp/python-redis/)                              	| [MIT (Expat)](https://github.com/andymccurdy/redis-py/blob/master/LICENSE)                         	|
 
 
 ## JavaScript Packages

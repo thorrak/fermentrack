@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor
+from gravity.models import GravitySensor, GravityLog
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard
 
@@ -142,6 +142,102 @@ def gravity_add_point(request, manual_sensor_id):
     #     return render_with_devices(request, template_name='firmware_flash/select_board.html',
     #                                context={'form': form, 'flash_family': flash_family})
     #
+
+
+
+
+@site_is_configured
+@login_if_required_for_dashboard
+def gravity_dashboard(request, sensor_id, log_id=None):
+    try:
+        active_device = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, "Unable to load gravity sensor with ID {}".format(sensor_id))
+        return redirect('gravity_list')
+
+    log_create_form = forms.GravityLogCreateForm()
+
+    if log_id is None:
+        active_log = active_device.active_log or None
+        available_logs = GravityLog.objects.filter(device_id=active_device.id)  # TODO - Do I want to exclude the active log?
+    else:
+        try:
+            active_log = GravityLog.objects.get(id=log_id, device_id=active_device.id)
+        except:
+            # If we are given an invalid log ID, let's return an error & drop back to the (valid) dashboard
+            messages.error(request, 'Unable to load log with ID {}'.format(log_id))
+            return redirect('gravity_dashboard', device_id=sensor_id)
+        available_logs = GravityLog.objects.filter(device_id=active_device.id).exclude(id=log_id)
+
+    if active_log is None:
+        # TODO - Determine if we want to load some fake "example" data (similar to what brewpi-www does)
+        log_file_url = "/data/gravity_fake.csv"
+    else:
+        log_file_url = active_log.data_file_url('base_csv')
+
+    return render_with_devices(request, template_name="gravity/gravity_dashboard.html",
+                               context={'active_device': active_device, 'log_create_form': log_create_form,
+                                        'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                                        'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
+                                        'log_file_url': log_file_url, 'available_logs': available_logs,
+                                        'selected_log_id': log_id})
+
+
+
+@login_required
+@site_is_configured
+def gravity_log_create(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add gravity logs. Please contact an admin')
+    #     return redirect("/")
+
+    # This view is only intended to process data posted, generally from gravity_dashboard. Redirect to the dashboard
+    # if we are accessed directly without post data.
+    if request.POST:
+        form = forms.GravityLogCreateForm(request.POST)
+        if form.is_valid():
+            new_log, created = GravityLog.objects.get_or_create(name=form.cleaned_data['log_name'],
+                                                                 device=form.cleaned_data['device'])
+            if created:
+                # If we just created the log, set the temp format (otherwise, defaults to Fahrenheit)
+                new_log.format = form.cleaned_data['device'].temp_format
+                new_log.save()
+                messages.success(
+                    request,
+                    "Successfully created beer '{}'.<br>Graph will not appear until the first log points \
+                    have been collected. You will need to refresh the page for it to \
+                    appear.".format(form.cleaned_data['beer_name']))
+            else:
+                messages.success(request, "Log {} already exists - assigning to device".format(form.cleaned_data['log_name']))
+
+            if form.cleaned_data['device'].active_log != new_log:
+                form.cleaned_data['device'].active_log = new_log
+                form.cleaned_data['device'].save()
+
+        else:
+            messages.error(request, "<p>Unable to create log</p> %s" % form.errors['__all__'])
+
+    # In all cases, redirect to device dashboard
+    return redirect('gravity_dashboard', device_id=sensor_id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def refresh_firmware(request=None):
     # Before we load anything, check to make sure that the model version on fermentrack.com matches the model version
