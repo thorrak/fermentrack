@@ -101,13 +101,13 @@
         <div class="col-md-4 col-xs-6">
             <div class="dashpanel dashpanel-top bg-concrete">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
-                <div class="dashpanel-title">Assigned Device</div>
+                <div class="dashpanel-title">Assigned Temp Controller</div>
                 <div class="dash-data" id="dashDevice">--</div>
                 <div class="dashpanel-divider"></div>
                 {% if active_device.is_connected %}
                 <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
                     <div class="dash-desc">
-                        <div class="pull-left" >Change Mode</div>
+                        <div class="pull-left" >Assign Device</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>

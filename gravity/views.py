@@ -166,7 +166,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         except:
             # If we are given an invalid log ID, let's return an error & drop back to the (valid) dashboard
             messages.error(request, 'Unable to load log with ID {}'.format(log_id))
-            return redirect('gravity_dashboard', device_id=sensor_id)
+            return redirect('gravity_dashboard', sensor_id=sensor_id)
         available_logs = GravityLog.objects.filter(device_id=active_device.id).exclude(id=log_id)
 
     if active_log is None:
@@ -203,11 +203,10 @@ def gravity_log_create(request, sensor_id):
                 # If we just created the log, set the temp format (otherwise, defaults to Fahrenheit)
                 new_log.format = form.cleaned_data['device'].temp_format
                 new_log.save()
-                messages.success(
-                    request,
-                    "Successfully created beer '{}'.<br>Graph will not appear until the first log points \
+                messages.success(request,
+                    "Successfully created log '{}'.<br>Graph will not appear until the first log points \
                     have been collected. You will need to refresh the page for it to \
-                    appear.".format(form.cleaned_data['beer_name']))
+                    appear.".format(form.cleaned_data['log_name']))
             else:
                 messages.success(request, "Log {} already exists - assigning to device".format(form.cleaned_data['log_name']))
 
@@ -219,7 +218,7 @@ def gravity_log_create(request, sensor_id):
             messages.error(request, "<p>Unable to create log</p> %s" % form.errors['__all__'])
 
     # In all cases, redirect to device dashboard
-    return redirect('gravity_dashboard', device_id=sensor_id)
+    return redirect('gravity_dashboard', sensor_id=sensor_id)
 
 
 
