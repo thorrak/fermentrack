@@ -94,6 +94,8 @@ def gravity_add_point(request, manual_sensor_id):
 
             messages.success(request, 'Successfully added manual log point')
 
+            if 'redirect' in form.data:
+                return redirect('gravity_dashboard', sensor_id=manual_sensor_id)
             return redirect('gravity_list')
 
         messages.error(request, 'Unable to add new manual log point')
@@ -156,6 +158,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         return redirect('gravity_list')
 
     log_create_form = forms.GravityLogCreateForm()
+    manual_add_form = forms.ManualPointForm()
 
     if log_id is None:
         active_log = active_device.active_log or None
@@ -180,7 +183,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
                                         'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
                                         'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
                                         'log_file_url': log_file_url, 'available_logs': available_logs,
-                                        'selected_log_id': log_id})
+                                        'selected_log_id': log_id, 'manual_add_form': manual_add_form})
 
 
 

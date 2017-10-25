@@ -213,7 +213,7 @@
     <!-- Begin Controls -->
     <div class="row" >
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
+            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#manualPointModal">Add Data Point</button>
         </div>
 
         <div class="col-md-4">
@@ -327,6 +327,50 @@
       </div>
     </div>
     <!-- End Log Modal -->
+
+
+
+    <!-- Manual Point Modal -->
+    <div class="modal fade" id="manualPointModal" tabindex="-1" role="dialog" aria-labelledby="manualPointModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="manualPointModalLabel" style="color: #000;">Add Manual Log Point</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form action="{% url "gravity_add_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                                <h3 class="form-header">Point Details</h3>
+
+                                {% form_generic manual_add_form.gravity %}
+                                {% form_generic manual_add_form.temp %}
+                                {% form_generic manual_add_form.temp_format %}
+                                {% form_generic manual_add_form.temp_is_estimate %}
+                                {% form_generic manual_add_form.extra_data %}
+                                <input type="hidden" name="redirect" value="dashboard">
+                                <input type="submit" value="Save Point" class="btn btn-primary"/>
+                        </form>
+
+                    </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- Manual Point Modal -->
+
+
 
 
 
