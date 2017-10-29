@@ -94,3 +94,8 @@
 	width: 80%;
 	height: 300px;
 }
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
