@@ -41,7 +41,7 @@ enum errorMessages{
 	MSG(ERROR_OUT_OF_MEMORY_FOR_DEVICE, "*** OUT OF MEMORY for device f=%d", config.deviceFunction),
 
 // DeviceManager.cpp
-	MSG(ERROR_DEVICE_DEFINITION_UPDATE_SPEC_INVALID, "Device defifination update specification is invalid"),
+	MSG(ERROR_DEVICE_DEFINITION_UPDATE_SPEC_INVALID, "Device definition update specification is invalid"),
 	MSG(ERROR_INVALID_CHAMBER, "Invalid chamber id %d", config.chamber),
 	MSG(ERROR_INVALID_BEER, "Invalid beer id %d", config.beer),
 	MSG(ERROR_INVALID_DEVICE_FUNCTION, "Invalid device function id %d", config.deviceFunction),

@@ -16,7 +16,7 @@ import app.serial_integration as serial_integration
 
 from app.decorators import site_is_configured  # Checks if user has completed constance configuration
 
-import os, subprocess, datetime
+import os, subprocess, datetime, pytz
 
 # Fermentrack integration
 try:
@@ -48,6 +48,8 @@ def firmware_select_family(request):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
+    preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
+
     # If the firmware data is more than 24 hours old, attempt to refresh it
     if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
         refresh_firmware()
@@ -71,11 +73,13 @@ def firmware_select_family(request):
             # return redirect('firmware_flash_serial_autodetect', flash_family_id=form.cleaned_data['device_family'])
         else:
             return render_with_devices(request, template_name='firmware_flash/select_family.html',
-                                       context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED})
+                                       context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
+                                                'preferred_tz': preferred_tz})
     else:
         form = forms.FirmwareFamilyForm()
         return render_with_devices(request, template_name='firmware_flash/select_family.html',
-                                   context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED})
+                                   context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
+                                            'preferred_tz': preferred_tz})
 
 
 @login_required
@@ -363,15 +367,15 @@ def firmware_flash_flash_firmware(request, board_id):
 
 
 
-# TODO - Delete this view!!
-@login_required
-@site_is_configured
-def firmware_flash_test_select_firmware(request):
-    try:
-        flash_family = DeviceFamily.objects.get(name="ESP8266")
-    except:
-        messages.error(request, "Invalid flash_family specified")
-        return redirect('firmware_flash_select_family')
-
-    return render_with_devices(request, template_name='firmware_flash/test_select_firmware.html',
-                               context={'flash_family_id': flash_family.id})
+# TODO - Delete this view
+# @login_required
+# @site_is_configured
+# def firmware_flash_test_select_firmware(request):
+#     try:
+#         flash_family = DeviceFamily.objects.get(name="ESP8266")
+#     except:
+#         messages.error(request, "Invalid flash_family specified")
+#         return redirect('firmware_flash_select_family')
+#
+#     return render_with_devices(request, template_name='firmware_flash/test_select_firmware.html',
+#                                context={'flash_family_id': flash_family.id})

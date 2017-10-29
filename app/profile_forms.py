@@ -36,44 +36,31 @@ class FermentationProfilePointForm(forms.Form):
 
     # Check that the ttl format is valid, and if it is, replace it with a datetime delta object
     def clean_ttl(self):
-        # TODO - Convert this to instead use FermentationProfilePoint.string_to_ttl
-        # tz = pytz.timezone(getattr(settings, 'TIME_ZONE', False))
-        ttl_text = self.cleaned_data['ttl']
+        if 'ttl' in self.cleaned_data:
+            ttl_text = self.cleaned_data['ttl']
+        else:
+            return None
 
-        # Split out the d/h/m/s of the timer
-        try:
-            timer_pattern = r"(?P<time_amt>[0-9]+)[ ]*(?P<ywdhms>[ywdhms]{1})"
-            timer_regex = re.compile(timer_pattern)
-            timer_matches = timer_regex.finditer(ttl_text)
-        except:
-            raise forms.ValidationError("TTL format is invalid")
+        if len(ttl_text) <= 1:
+            return None
 
-
-        # timer_time is equal to now + the time delta
-        time_delta = datetime.timedelta(seconds=0)
-        for this_match in timer_matches:
-            dhms = this_match.group('ywdhms')
-            delta_amt = int(this_match.group('time_amt'))
-            if dhms == 'y':  # This doesn't account for leap years, but whatever.
-                time_delta = time_delta + datetime.timedelta(days=(365*delta_amt))
-            elif dhms == 'w':
-                time_delta = time_delta + datetime.timedelta(weeks=delta_amt)
-            elif dhms == 'd':
-                time_delta = time_delta + datetime.timedelta(days=delta_amt)
-            elif dhms == 'h':
-                time_delta = time_delta + datetime.timedelta(hours=delta_amt)
-            elif dhms == 'm':
-                time_delta = time_delta + datetime.timedelta(minutes=delta_amt)
-            elif dhms == 's':
-                time_delta = time_delta + datetime.timedelta(seconds=delta_amt)
-
-        # return self.cleaned_data['ttl']
-        return time_delta
+        return FermentationProfilePoint.string_to_ttl(ttl_text)
 
 
 class FermentationProfileImportForm(forms.Form):
-    # TODO - Add a placeholder here
-    import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off'}),
+
+    placeholder_profile = """Example:
+====================================
+| Sample Profile                   |
+| Standard Profile                 |
+====================================
+| 7d    | 68.00 F                  |
+| 10d   | 72.00 F                  |
+| 15d   | 35.00 F                  |
+===================================="""
+
+    import_text = forms.CharField(widget=forms.Textarea(attrs={'style': "font-family:monospace; font-size:11pt;", 'wrap': 'off',
+                                                               'placeholder': placeholder_profile}),
                                   help_text="The text of the exported profile")
 
 

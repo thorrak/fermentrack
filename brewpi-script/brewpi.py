@@ -854,6 +854,7 @@ while run:
             except json.JSONDecodeError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
+            logMessage("Received applyDevice request, updating to: {}".format(value))
             bg_ser.writeln("U" + json.dumps(configStringJson))
 
             if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list

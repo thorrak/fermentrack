@@ -27,8 +27,8 @@
       <tbody>
         <tr>
             <th scope="row">{{ active_device.device_name }}</th>
-            <td><a href="/api/log/stderr/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stdout.log</a></td>
-            <td><a href="/api/log/stdout/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stderr.log</a></td>
+            <td><a href="/api/log/stdout/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stdout.log</a></td>
+            <td><a href="/api/log/stderr/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stderr.log</a></td>
             <td>{{ active_device.status }}</td>
             <td>{{ active_device.board_type }}</td>
         </tr>
@@ -138,8 +138,11 @@
             <p>I understand that all logs associated with this device will be delinked and may be irrecoverable</p>
         </div>
     </div>
-    <div class="row col-xs-12">
-        <input type="submit" value="Uninstall Device" class="btn btn-danger" />
+
+    <div class="row">
+        <div class="row col-xs-12">
+            <input type="submit" value="Uninstall Device" class="btn btn-danger" />
+        </div>
     </div>
 
     </form>
