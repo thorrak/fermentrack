@@ -73,13 +73,23 @@
                 <div class="dashpanel-title">Specific Gravity</div>
                 <div class="dash-data" id="dashGravity">--</div>
                 <div class="dashpanel-divider"></div>
-                <a href="#" data-toggle="modal" data-target="#beerLogModal">
+                {% if active_device.sensor_type == "manual" %}
+                <a href="#" data-toggle="modal" data-target="#manualPointModal">
                     <div class="dash-desc">
-                        <div class="pull-left">Load Prior Log</div>
+                        <div class="pull-left">Add Data Point</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
                 </a>
+                {% else %}
+                <a href="#" data-toggle="modal" data-target="#manualPointModal">
+                    <div class="dash-desc">
+                        <div class="pull-left">Add Data Point</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+                {% endif %}
             </div>
         </div>
 
@@ -89,11 +99,13 @@
                 <div class="dashpanel-title">Temperature</div>
                 <div class="dash-data" id="dashTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
+                <a href="#" data-toggle="modal" data-target="#beerLogModal">
                     <div class="dash-desc" id="fridgeTempToggle">
-                        <div class="pull-left">View Room Temp</div>
+                        <div class="pull-left">Load Prior Log</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
+                </a>
             </div>
 
         </div>
@@ -161,44 +173,20 @@
                         </div>
                 </div>
                 <div class="panel-body">
-                        <div class="chart-legend-row row" id="beerTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="beer_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Beer Temp
+                        <div class="chart-legend-row row" id="gravityRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Gravity
                             </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerTempValue"></div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityValue"></div>
                         </div>
 
-                        <div class="chart-legend-row row" id="beerSetRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}" id="beer_set_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Beer Setting
+                        <div class="chart-legend-row row" id="tempRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="tempLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Temperature
                             </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerSetValue"></div>
-                        </div>
-
-                        <div class="chart-legend-row row" id="fridgeTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}" id="fridge_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Fridge Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeTempValue"></div>
-                        </div>
-
-                        <div class="chart-legend-row row" id="fridgeSetRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="fridge_set_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Fridge Setting
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeSetValue"></div>
-                        </div>
-
-                        <div class="chart-legend-row row" id="roomTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="roomTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="room_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Room Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="roomTempValue"></div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="tempValue"></div>
                         </div>
 
                 </div>
@@ -447,6 +435,11 @@ function formatTempText(temp) {
     return temp + " " + window.temp_format;
 }
 
+function formatGravText(gravity) {
+    // This does nothing, but provides an easy place to change the format later if we want
+    return gravity
+}
+
 function formatTimeText(time_code) {
     var date_str = "";
     var time_str = "";
@@ -486,16 +479,10 @@ function updateLegend(e, x, pts, row) {
 
     // Loop through the data points we have and update everything on the legend
     for(var i = 0; i < pts.length; i++) {
-        if(pts[i].name == "beer_temp") {
-            $('#beerTempValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "fridge_temp") {
-            $('#fridgeTempValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "beer_set") {
-            $('#beerSetValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "fridge_set") {
-            $('#fridgeSetValue').text(formatTempText(pts[i].yval))
-        } else if(pts[i].name == "room_temp") {
-            $('#roomTempValue').text(formatTempText(pts[i].yval))
+        if(pts[i].name == "gravity") {
+            $('#gravityValue').text(formatGravText(pts[i].yval))
+        } else if(pts[i].name == "temp") {
+            $('#tempValue').text(formatTempText(pts[i].yval))
         }
     }
 }
@@ -513,11 +500,16 @@ g2 = new Dygraph(
         displayAnnotations: true,
         showLabelsOnHighlight: true,
         hideOverlayOnMouseOut: false,
+        series: {
+            'temp': {
+                axis: 'y2'
+            },
+        },
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
-        colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
+        colors: ["{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_BEER_TEMP_COLOR }}"],
         highlightCallback: updateLegend
     }  // options
 );
@@ -544,32 +536,17 @@ g2.ready(function () {
     pull_and_update_annotations();
 });
 
-var fridge_temp_visible = true;
-var fridge_set_visible = true;
-var beer_temp_visible = true;
-var beer_set_visible = true;
-var room_temp_visible = true;
+var gravity_visible = true;
+var temp_visible = true;
 
 function toggle_graph_visibility(el) {
-    if(el.id == "beer_temp_legend") {
-        beer_temp_visible = !beer_temp_visible;
-        g2.setVisibility(0, beer_temp_visible);
+    if(el.id == "gravity_legend") {
+        gravity_visible = !gravity_visible;
+        g2.setVisibility(0, gravity_visible);
 
-    } else if(el.id == "beer_set_legend") {
-        beer_set_visible = !beer_set_visible;
-        g2.setVisibility(1, beer_set_visible);
-
-    } else if(el.id == "fridge_temp_legend") {
-        fridge_temp_visible = !fridge_temp_visible;
-        g2.setVisibility(2, fridge_temp_visible);
-
-    } else if(el.id == "fridge_set_legend") {
-        fridge_set_visible = !fridge_set_visible;
-        g2.setVisibility(3, fridge_set_visible);
-
-    } else if(el.id == "room_temp_legend") {
-        room_temp_visible = !room_temp_visible;
-        g2.setVisibility(4, room_temp_visible);
+    } else if(el.id == "temp_legend") {
+        temp_visible = !temp_visible;
+        g2.setVisibility(1, temp_visible);
 
     }
 }
@@ -596,9 +573,6 @@ function toggle_graph_visibility(el) {
         success: function(data) {
             $('#dashGravity').html(data[0].current_gravity);
             $('#dashTemp').html(data[0].temp_string);
-{#            $('#dashRoomTemp').html(data[0].room_temp);#}
-{#            $('#dashControlMode').html(data[0].control_mode);#}
-{#            $('#dashLogInterval').html(data[0].log_interval);#}
         },
         complete: function() {
         // Schedule the next request when the current one's complete
