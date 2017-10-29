@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Arduino - Fermentrack</title>
+  <title>Advanced (Manual) Controller Setup - Fermentrack</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Arduino";
-    var mkdocs_page_input_path = "hardware/Arduino.md";
-    var mkdocs_page_url = "/hardware/Arduino/";
+    var mkdocs_page_name = "Advanced (Manual) Controller Setup";
+    var mkdocs_page_input_path = "config/Advanced Controller Setup.md";
+    var mkdocs_page_url = "/config/Advanced Controller Setup/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -103,35 +103,46 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../config/">Configuration</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Flashing a Controller/">Flashing a Controller</a>
+        <a class="" href="../Flashing a Controller/">Flashing a Controller</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../Serial Controller Setup/">Serial Controller Guided Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../WiFi Controller Setup/">WiFi Controller Guided Setup</a>
         
     </li>
 
         
             
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Advanced (Manual) Controller Setup</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#setting-up-a-controller-using-the-advanced-manual-workflow">Setting up a controller using the Advanced (Manual) Workflow</a></li>
+                
+                    <li><a class="toctree-l4" href="#setting-up-a-controller-using-advanced-workflow">Setting up a controller using Advanced Workflow</a></li>
+                
+                    <li><a class="toctree-l4" href="#about-serial-port-autodetection">About Serial Port Autodetection</a></li>
+                
+            
+            </ul>
         
     </li>
 
@@ -146,44 +157,35 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../">Index</a>
+        <a class="" href="../../hardware/">Index</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../ESP8266/">ESP8266</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Arduino</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</a></li>
-                
-                    <li><a class="toctree-l4" href="#setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</a></li>
-                
-            
-            </ul>
+        <a class="" href="../../hardware/ESP8266/">ESP8266</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Native Python/">Native Python (Fuscus)</a>
+        <a class="" href="../../hardware/Arduino/">Arduino</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Spark/">Spark Core</a>
+        <a class="" href="../../hardware/Native Python/">Native Python (Fuscus)</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Spark/">Spark Core</a>
         
     </li>
 
@@ -278,11 +280,11 @@
     
       
         
-          <li>Hardware &raquo;</li>
+          <li>Configuration &raquo;</li>
         
       
     
-    <li>Arduino</li>
+    <li>Advanced (Manual) Controller Setup</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/thorrak/fermentrack/"> Edit on fermentrack</a>
@@ -294,13 +296,25 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</h1>
-<p>Fermentrack currently supports Arduino-based controllers connected via Serial (USB).</p>
-<p>By default, Fermentrack will detect the USB serial number associated with your Arduino when initially configured, and will use that - instead of the specified serial port - to connect. For more information, read the "About Serial Port Autodetection" note in the <a href="../config/Serial%20Controller%20Setup.md">"Guided Setup" instructions</a>.</p>
-<h2 id="setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</h2>
-<p>There are two options for setting up a controller in Fermentrack - Guided Setup and Advanced (Manual) Setup.</p>
-<p><a href="../config/Serial%20Controller%20Setup.md"><strong>Guided Setup</strong></a> - Instructions are available <a href="../config/Serial%20Controller%20Setup.md">here</a>. When choosing the board type, select "Arduino (and compatible)" from the dropdown.</p>
-<p><a href="../config/Advanced%20Controller%20Setup.md"><strong>Manual Setup</strong></a> - Instructions are available <a href="../config/Advanced%20Controller%20Setup.md">here</a>.</p>
+                <h1 id="setting-up-a-controller-using-the-advanced-manual-workflow">Setting up a controller using the Advanced (Manual) Workflow</h1>
+<p>Prior to setting up a controller with Fermentrack, please read the documentation specific to your controller's hardware. Supported hardware families include:</p>
+<ul>
+<li><a href="../../hardware/Arduino/">Arduino (and compatible)</a></li>
+<li><a href="../../hardware/ESP8266/">ESP8266</a></li>
+<li><a href="../../hardware/Spark/">Spark Core</a></li>
+<li><a href="../hardware/Native%20Python.md">Native Python (Fuscus)</a></li>
+</ul>
+<p>Controllers can be se up to connect via both WiFi and serial. When setting up a controller to connect via serial the selected "port" is incredibly important but is prone to change on reboot or as other devices are connected. Please read the "About Serial Port Autodetection" note below for information on how Fermentrack handles this issue. </p>
+<h2 id="setting-up-a-controller-using-advanced-workflow">Setting up a controller using Advanced Workflow</h2>
+<ol>
+<li>Connect the controller to the Raspberry Pi</li>
+<li>Launch guided setup and select "Add New Device (Advanced)"</li>
+<li>Enter the configuration options associated with the device.</li>
+</ol>
+<h2 id="about-serial-port-autodetection">About Serial Port Autodetection</h2>
+<p>By default, Linux assigns serial ports to devices like BrewPi controllers based on the order they are connected. If you have multiple devices connected to your Raspberry Pi this can mean that Fermentrack could potentially mistake one device for another. To prevent this, Fermentrack includes a feature which will disregard the specified serial port when connecting to the controller and will instead connect to the device with the USB serial number that matches the device you set up.</p>
+<p>If you wish to disable this feature and instead only connect to the specified serial port, uncheck the "Prefer Connecting Via Udev" option in the "Manage Device" screen.</p>
+<p>This feature only works on Linux-based operating systems (including Raspbian for Raspberry Pi), and may not work if Fermentrack is installed on a Mac or Windows-based computer.</p>
               
             </div>
           </div>
@@ -308,10 +322,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../Native Python/" class="btn btn-neutral float-right" title="Native Python (Fuscus)">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../../hardware/" class="btn btn-neutral float-right" title="Index">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../ESP8266/" class="btn btn-neutral" title="ESP8266"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../WiFi Controller Setup/" class="btn btn-neutral" title="WiFi Controller Guided Setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -337,10 +351,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../ESP8266/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../WiFi Controller Setup/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../Native Python/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../../hardware/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

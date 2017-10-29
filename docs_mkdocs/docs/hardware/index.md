@@ -14,7 +14,7 @@ The following table shows which release is expected to have support for various 
 | v1         | No                 | Yes                | No                 | No              | No                     |
 | v1 (flash) | No                 | No                 | No                 | No              | No                     |
 | v2         | Yes                | Yes                | Yes                | No              | No                     |
-| v2 (flash) | Targeted           | Targeted           | Targeted           | No              | No                     |
+| v2 (flash) | Yes                | Yes                | Yes                | No              | No                     |
 | v3         | Yes                | Yes                | Yes                | Targeted        | Targeted               |
 
 

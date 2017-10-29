@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Arduino - Fermentrack</title>
+  <title>Flashing a Controller - Fermentrack</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Arduino";
-    var mkdocs_page_input_path = "hardware/Arduino.md";
-    var mkdocs_page_url = "/hardware/Arduino/";
+    var mkdocs_page_name = "Flashing a Controller";
+    var mkdocs_page_input_path = "config/Flashing a Controller.md";
+    var mkdocs_page_url = "/config/Flashing a Controller/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -103,35 +103,48 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../config/">Configuration</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Flashing a Controller</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#flashing-a-controller">Flashing a Controller</a></li>
+                
+                    <li><a class="toctree-l4" href="#video-documentation">Video Documentation</a></li>
+                
+                    <li><a class="toctree-l4" href="#accessing-the-flash-workflow">Accessing the Flash Workflow</a></li>
+                
+                    <li><a class="toctree-l4" href="#flashing-a-controller_1">Flashing a Controller</a></li>
+                
+            
+            </ul>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Flashing a Controller/">Flashing a Controller</a>
+        <a class="" href="../Serial Controller Setup/">Serial Controller Guided Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../WiFi Controller Setup/">WiFi Controller Guided Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
+        <a class="" href="../Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -146,44 +159,35 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../">Index</a>
+        <a class="" href="../../hardware/">Index</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../ESP8266/">ESP8266</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Arduino</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</a></li>
-                
-                    <li><a class="toctree-l4" href="#setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</a></li>
-                
-            
-            </ul>
+        <a class="" href="../../hardware/ESP8266/">ESP8266</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Native Python/">Native Python (Fuscus)</a>
+        <a class="" href="../../hardware/Arduino/">Arduino</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Spark/">Spark Core</a>
+        <a class="" href="../../hardware/Native Python/">Native Python (Fuscus)</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../hardware/Spark/">Spark Core</a>
         
     </li>
 
@@ -278,11 +282,11 @@
     
       
         
-          <li>Hardware &raquo;</li>
+          <li>Configuration &raquo;</li>
         
       
     
-    <li>Arduino</li>
+    <li>Flashing a Controller</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/thorrak/fermentrack/"> Edit on fermentrack</a>
@@ -294,13 +298,40 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="fermentrack-and-arduino-based-controllers">Fermentrack and Arduino-based Controllers</h1>
-<p>Fermentrack currently supports Arduino-based controllers connected via Serial (USB).</p>
-<p>By default, Fermentrack will detect the USB serial number associated with your Arduino when initially configured, and will use that - instead of the specified serial port - to connect. For more information, read the "About Serial Port Autodetection" note in the <a href="../config/Serial%20Controller%20Setup.md">"Guided Setup" instructions</a>.</p>
-<h2 id="setting-up-an-arduino-based-controller-in-fermentrack">Setting Up an Arduino-based Controller in Fermentrack</h2>
-<p>There are two options for setting up a controller in Fermentrack - Guided Setup and Advanced (Manual) Setup.</p>
-<p><a href="../config/Serial%20Controller%20Setup.md"><strong>Guided Setup</strong></a> - Instructions are available <a href="../config/Serial%20Controller%20Setup.md">here</a>. When choosing the board type, select "Arduino (and compatible)" from the dropdown.</p>
-<p><a href="../config/Advanced%20Controller%20Setup.md"><strong>Manual Setup</strong></a> - Instructions are available <a href="../config/Advanced%20Controller%20Setup.md">here</a>.</p>
+                <h1 id="flashing-a-controller">Flashing a Controller</h1>
+<p>Fermentrack includes software which allows you to easily download &amp; flash firmware to controllers. This feature is currently supported for the ESP8266 and Arduino architectures, and supports multiple families of firmware including BrewPi, BrewPiLess, and iSpindel. </p>
+<p>All devices will need be flashed via serial over USB - including devices you ultimately want to use over WiFi.</p>
+<h2 id="video-documentation">Video Documentation</h2>
+<p>Prefer to watch a video of this process? <a href="https://youtu.be/vpm-8k8tnGk">Click here to watch this on YouTube!</a> </p>
+<h2 id="accessing-the-flash-workflow">Accessing the Flash Workflow</h2>
+<p>Flashing a new controller is accomplished through the controller flashing interface. This can be accessed directly or through the guided device setup workflow. From the device menu, choose "Flash Controller".</p>
+<h2 id="flashing-a-controller_1">Flashing a Controller</h2>
+<ol>
+<li>
+<p>Once in the flash workflow, click "Refresh Firmware List from Fermentrack.com". This downloads a list of availble, screened firmware from Fermentrack.com.</p>
+</li>
+<li>
+<p>After the list downloads, select your device family and click "Submit".</p>
+</li>
+<li>
+<p>On the next screen, select the board (hardware variant) your device is based on. For some families, there may only be one option.</p>
+</li>
+<li>
+<p>Double check your device family &amp; board on the following screen and then ensure that the device you want to flash is <strong>not</strong> connected to the computer/device running Fermentrack. Once this is done click "Scan Devices"</p>
+</li>
+<li>
+<p>Review the "Preexisting Devices" list to ensure that the device you want to flash is <em>not</em> listed. Assuming this is the case, connect the device you want to flash to the device running Fermentrack via a USB cable. Click "Scan for New Devices"</p>
+</li>
+<li>
+<p>Your device should now be detected and displayed in the list. If it isn't, return to an earlier step and restart the process. Click the "Set Up" button next to your device.</p>
+</li>
+<li>
+<p>On the following screen, select the firmware you want to flash to the device. Click "Flash to Device".</p>
+</li>
+<li>
+<p>Once the firmware has flashed successfully, your device is ready to use! </p>
+</li>
+</ol>
               
             </div>
           </div>
@@ -308,10 +339,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../Native Python/" class="btn btn-neutral float-right" title="Native Python (Fuscus)">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Serial Controller Setup/" class="btn btn-neutral float-right" title="Serial Controller Guided Setup">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../ESP8266/" class="btn btn-neutral" title="ESP8266"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../config/" class="btn btn-neutral" title="Configuration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -337,10 +368,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../ESP8266/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../config/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../Native Python/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../Serial Controller Setup/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

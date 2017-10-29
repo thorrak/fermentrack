@@ -86,6 +86,13 @@
     </li>
 
         
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../install/Apache and PHP Support/">Legacy (Apache/PHP) App Support</a>
+        
+    </li>
+
+        
     </ul>
 <li>
           
@@ -110,6 +117,34 @@
                 
             
             </ul>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../Flashing a Controller/">Flashing a Controller</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../Serial Controller Setup/">Serial Controller Guided Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -163,6 +198,13 @@
             <li>
     <ul class="subnav">
     <li><span>About</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../about/architecture/">Architecture</a>
+        
+    </li>
 
         
             
@@ -259,14 +301,16 @@
                 <h1 id="configuring-fermentrack">Configuring Fermentrack</h1>
 <p>Once you have finished installing Fermentrack, you are ready to configure it. You will be guided through the configuration process when you first connect to Fermentrack. An overview of this configuration procedure is below.</p>
 <h2 id="user-setup">User Setup</h2>
-<p>When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs. </p>
+<p>When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will enable you to configure devices, configure the Fermentrack application, and view brew logs.</p>
 <p>Setting up the user account is extremely straightforward:</p>
 <ol>
 <li>From the root Fermentrack page, click "Continue to guided installation"</li>
-<li>On the next page, entering the following:</li>
+<li>On the next page, entering the following:<ul>
 <li><strong>Username</strong> - The username used to log into Fermentrack</li>
 <li><strong>Password</strong> - The password for the user account</li>
 <li><strong>Email Address</strong> - Currently unused, but may potentially be used later</li>
+</ul>
+</li>
 <li>Click "Create new user account"</li>
 <li>Done!</li>
 </ol>
@@ -275,16 +319,33 @@
 <p>After configuring a user account, the next step is to configure Fermentrack. The following are the available configuration options:</p>
 <ul>
 <li><strong>Brewery Name</strong> - The name displayed in the upper left of each Fermentrack page</li>
-<li><strong>Date time format</strong> - <em>Currently Unused</em> - May be removed in a future update</li>
 <li><strong>Date time format display</strong> - The date format used on the dashboard of each device</li>
 <li><strong>Require login for dashboard</strong> - <em>Currently Unused</em> - Should users be required to be logged in to <em>view</em> the dashboard/logs. Login will still be required to change temperature settings, configuration options, etc.</li>
 <li><strong>Temperature format</strong> - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.</li>
+<li><strong>Preferred timezone</strong> - The preferred timezone you would like graphs displayed in. <em>Note</em> - All data is stored in UTC (GMT) - you are only selecting how the data will be <em>displayed</em>. Feel free to change this at any time with no issues. </li>
+<li><strong>Git Update Type</strong> - Which releases you will be prompted to upgrade to. Can be set to "tagged versions" (which will generally be tested and stable), "all commits" which will include all new code releases, and "None".</li>
 </ul>
 <p>All of these can be updated at any time by clicking on the "gear" icon in the upper right of any Fermentrack page.</p>
 <h2 id="notes-for-advanced-users">Notes for Advanced Users</h2>
 <h4 id="user-accounts">User Accounts</h4>
-<p>Currently, Fermentrack has limited access control implemented, and is not designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.</p>
-<p>In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the "gear" icon). Each account will need "superuser" access to be able to use the full functionality of Fermentrack. Please be aware - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.</p>
+<p>Currently, Fermentrack has limited access control implemented, and is not yet designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.</p>
+<p>In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the "gear" icon). Each account will need "superuser" access to be able to use the full functionality of Fermentrack. Again - please keep in mind - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.</p>
+<h4 id="advanced-site-settings">Advanced Site Settings</h4>
+<p>There are a handful of additional site settings which are intended for advanced users and developers only. These settings can only be accessed via the Django admin. These settings include:</p>
+<ul>
+<li><strong>Allow Git Branch Switching</strong> - Allows switching to a different git branch from within Fermentrack</li>
+<li><strong>User Has Completed Configuration</strong> - Determines if the user has completed the initial configuration workflow, or should be prompted to set Fermentrack up on next login</li>
+</ul>
+<p>Additionally, graph colors can be configured via the Django admin. The graph color options include:</p>
+<ul>
+<li><strong>Graph Beer Set Color</strong> - The color of the "Beer Setting" line</li>
+<li><strong>Graph Beer Temp Color</strong> - The color of the "Beer Temperature" line</li>
+<li><strong>Graph Fridge Set Color</strong> - The color of the "Fridge Setting" line</li>
+<li><strong>Graph Fridge Temp Color</strong> - The color of the "Fridge Temp" line</li>
+<li><strong>Graph Room Temp Color</strong> - The color of the "Room Temp" line</li>
+<li><strong>Graph Gravity Color</strong> - (Currently unused) - For future specific gravity sensor support</li>
+<li></li>
+</ul>
               
             </div>
           </div>
@@ -292,10 +353,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../../hardware/" class="btn btn-neutral float-right" title="Index">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Flashing a Controller/" class="btn btn-neutral float-right" title="Flashing a Controller">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../../install/manual/" class="btn btn-neutral" title="Manual Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../install/Apache and PHP Support/" class="btn btn-neutral" title="Legacy (Apache/PHP) App Support"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -321,10 +382,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../../install/manual/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../../install/Apache and PHP Support/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../../hardware/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../Flashing a Controller/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
