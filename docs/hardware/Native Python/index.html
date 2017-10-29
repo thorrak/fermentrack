@@ -86,13 +86,6 @@
     </li>
 
         
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../install/Apache and PHP Support/">Legacy (Apache/PHP) App Support</a>
-        
-    </li>
-
-        
     </ul>
 <li>
           
@@ -104,34 +97,6 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../../config/config/">Configuration</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Flashing a Controller/">Flashing a Controller</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -192,13 +157,6 @@
             <li>
     <ul class="subnav">
     <li><span>About</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../about/architecture/">Architecture</a>
-        
-    </li>
 
         
             
@@ -293,10 +251,9 @@
             <div class="section">
               
                 <h1 id="fermentrack-and-fuscus-native-python-controller">Fermentrack and Fuscus (Native Python Controller)</h1>
-<p>As of now, serial connections are supported by Fermentrack, and therefore it is expected that Fuscus should be Fermentrack compatible. Fuscus support <em>has not been tested</em> and should be considered experimental.</p>
-<p>Due to the nature of the serial ports used by Fuscus, the serial autodetection process cannot be used to set up a Fuscus-based controller. Connections to Fuscus can be set up using the <a href="../config/Advanced%20Controller%20Setup.md">"advanced" workflow</a> and manually specifying the Fuscus serial port. </p>
-<p><strong>NOTE</strong> - If setting up a Fuscus-installation manually, make sure to set "prefer_connecting_via_udev" to False. If this is true, BrewPi-Script may either not connect or connect to the wrong device.</p>
-<p>Further down the development path are other features involving Fuscus such as direct installation and configuration management - though these are expected in v3 and beyond.</p>
+<p>Currently, Fermentrack does not support serial connections to controllers and therefore, due to the way it is implemented, does not directly support Fuscus - the native python implementation of the BrewPi controller firmware. Support for serial connections is considered a key missing feature, and is scheduled to be developed soon after the initial release.</p>
+<p>Once serial connections are implemented, Fermentrack should support connections to Fuscus via the "advanced" setup workflow in a manner similar to the Arduino implementation.</p>
+<p>Further down the development path are other features involving Fuscus such as direct installation and configuration management.</p>
               
             </div>
           </div>

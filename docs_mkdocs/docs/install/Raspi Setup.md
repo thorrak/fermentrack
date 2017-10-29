@@ -7,8 +7,8 @@ to watch a video showing how to prepare the Raspberry Pi using a Mac, or read th
 
 1. Download the latest version of Raspbian from [here](https://www.raspberrypi.org/downloads/raspbian/). I recommend the Lite version as I prefer headless installations, but the full version works as well.
 1. Burn Raspbian to your SD card using [these instructions](https://www.raspberrypi.org/documentation/installation/installing-images/).
-1. [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) on your Raspberry Pi by writing an empty file named "ssh" to the root of the SD card.
-1. *Optional* - Configure WiFi - See the note below if you want to configure WiFi now, thus preventing having to find an ethernet cable
+1. *NEW* - [Enable SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/) on your Raspberry Pi by writing an empty file named "ssh" to the root of the SD card.
+1. *Optional, NEW* - Configure WiFi - See the note below if you want to configure WiFi now, thus preventing having to find an ethernet cable
 1. Plug the SD card into your Raspberry Pi, connect the Pi to ethernet (if you did not configure WiFi), and plug in power.
 1. Locate the IP address for your Raspberry Pi This can generally be done by executing `arp -a | grep raspberry` however you can also locate your Raspberry Pi by logging into your router and looking for the device.
 1. Update the Raspberry Pi software by running `sudo apt-get update` and `sudo apt-get upgrade`.

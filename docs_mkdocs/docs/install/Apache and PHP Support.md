@@ -42,5 +42,8 @@ To manually install legacy app support, you will need to do the following as roo
 
 ## Legacy BrewPi-www Installation Support
 
-Although performing the above actions will allow brewpi-www to run alongside Fermentrack, doing so is not recommended. Attempting to run brewpi-www in this way can result in issues as Fermentrack and brewpi-www compete to access/manage your fermentation controller. 
+Although performing the above actions will allow brewpi-www to run alongside Fermentrack, doing so is not recommended. 
+
+## Optional/Advanced Configuration
+
 

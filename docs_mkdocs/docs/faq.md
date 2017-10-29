@@ -22,12 +22,3 @@ Thankfully, this is a pretty easy issue to overcome. Django provides the `manage
  1. Run the createsuperuser command (`./manage.py createsuperuser`)
  1. Follow the prompts to create a new superuser account
  1. Log into the Fermentrack admin panel and delete/modify the old account. The Fermentrack admin panel can be accessed through the `Settings` page (the gear in the upper right) and clicking the "Django Admin" button.
-
-
-
-###### What happens to my beer logs/active profiles/other data if I change the Fermentrack "Preferred Timezone"?
-
-Not much. To prevent this being an issue Fermentrack uses UTC (GMT) internally and converts times to your local timezone on the fly. Feel free to update your preferred timezone as you move, travel, or are otherwise inclined without worrying about how this might impact your existing logs or active profiles. 
-
-
-

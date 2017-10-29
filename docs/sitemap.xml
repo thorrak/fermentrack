@@ -4,7 +4,7 @@
     
     <url>
      <loc>/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -12,7 +12,7 @@
     
     <url>
      <loc>/faq/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -21,25 +21,19 @@
         
     <url>
      <loc>/install/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/install/Raspi Setup/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/install/manual/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/install/Apache and PHP Support/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -49,31 +43,7 @@
         
     <url>
      <loc>/config/config/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/config/Flashing a Controller/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/config/Serial Controller Setup/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/config/WiFi Controller Setup/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
-     <loc>/config/Advanced Controller Setup/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -83,31 +53,31 @@
         
     <url>
      <loc>/hardware/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/hardware/ESP8266/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/hardware/Arduino/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/hardware/Native Python/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/hardware/Spark/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -116,32 +86,26 @@
     
         
     <url>
-     <loc>/about/architecture/</loc>
-     <lastmod>2017-07-29</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
-    <url>
      <loc>/about/contribute/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/about/changelog/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/about/license/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/about/components/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -151,13 +115,13 @@
         
     <url>
      <loc>/develop/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/develop/models/</loc>
-     <lastmod>2017-07-29</lastmod>
+     <lastmod>2017-03-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
         

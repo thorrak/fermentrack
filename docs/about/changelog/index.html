@@ -86,13 +86,6 @@
     </li>
 
         
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../install/Apache and PHP Support/">Legacy (Apache/PHP) App Support</a>
-        
-    </li>
-
-        
     </ul>
 <li>
           
@@ -104,34 +97,6 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../../config/config/">Configuration</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Flashing a Controller/">Flashing a Controller</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="../../config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -189,13 +154,6 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../architecture/">Architecture</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
         <a class="" href="../contribute/">Contribute</a>
         
     </li>
@@ -209,9 +167,7 @@
             
                 <li class="toctree-l3"><a href="#changelog">Changelog</a></li>
                 
-                    <li><a class="toctree-l4" href="#unversioned">[Unversioned]</a></li>
-                
-                    <li><a class="toctree-l4" href="#010-2017-03-17-v1-release">[0.1.0] - 2017-03-17 - "v1 release"</a></li>
+                    <li><a class="toctree-l4" href="#010-2017-03-18-est-v1-release">[0.1.0] - 2017-03-18 (est.) - "v1 release"</a></li>
                 
             
             </ul>
@@ -299,49 +255,8 @@
                 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="http://keepachangelog.com/">Keep a Changelog</a> because it was the first relatively standard format to pop up when I googled "changelog formats".</p>
-<h2 id="unversioned">[Unversioned]</h2>
+<h2 id="010-2017-03-18-est-v1-release">[0.1.0] - 2017-03-18 (est.) - "v1 release"</h2>
 <h3 id="added">Added</h3>
-<ul>
-<li>Added fermentation controller "Manage Device" page</li>
-<li>Upgrades are now logged to upgrade.log</li>
-<li>Controller "stdout" and "stderr" logs are now saved/accessible</li>
-<li>Support for serial devices</li>
-<li>Support for Arduino-based devices</li>
-<li>Support for in-app git branch switching</li>
-<li>Autodetection of serial devices</li>
-<li>Celery (delayed/scheduled task) support (currently unused)</li>
-<li>Controllers connected via serial can now have their serial port autodetected using the udev serial number </li>
-<li>Beer profiles are now displayed in graph form</li>
-<li>Firmware can now be flashed to new Arduino &amp; ESP8266-based controllers from within the app</li>
-<li>Preferred timezone can now be selected for use throughout Fermentrack</li>
-<li>Beer log management (deletion/downloading)</li>
-<li>Added configuration options for graph line colors</li>
-<li>Graph lines can be toggled by clicking the icon in the legend</li>
-</ul>
-<h3 id="changed">Changed</h3>
-<ul>
-<li>Inversion flag for installed devices is now shown on the "configure pins/sensors" page</li>
-<li>Form errors are now displayed on "configure pins/sensors" page</li>
-<li>Beer logs are no longer deleted along with the parent device (but they will become inaccessible from within Fermentrack)</li>
-<li>GitHub updates are no longer triggered automatically by visiting the update page, and must now be manually triggered by clicking a button</li>
-<li>The IP address of a BrewPiDevice is now cached, and can be used if mDNS stops working</li>
-<li>At end of a fermentation profile the controller will now be switched to beer constant mode</li>
-<li>All data points are now explicitly recorded in UTC</li>
-<li>Added icon to graph legend to display line color</li>
-</ul>
-<h3 id="fixed">Fixed</h3>
-<ul>
-<li>Inversion state no longer improperly defaults</li>
-<li>Minimum graph size adjusted to account for smaller displays</li>
-<li>Changed on_delete behavior to allow deletion of fermentation controllers</li>
-<li>Git update check will now properly wait between checks if up to date</li>
-<li>GIT_UPDATE_TYPE of 'none' will now properly disable update checks</li>
-<li>BrewPi controllers now accept unicode names</li>
-<li>"View Room Temp" link on Dashboard now functions</li>
-<li>Room temp now included in legend for graphs</li>
-</ul>
-<h2 id="010-2017-03-17-v1-release">[0.1.0] - 2017-03-17 - "v1 release"</h2>
-<h3 id="added_1">Added</h3>
 <ul>
 <li>First release!</li>
 </ul>

@@ -103,13 +103,6 @@
     </li>
 
         
-            
-    <li class="toctree-l1 ">
-        <a class="" href="install/Apache and PHP Support/">Legacy (Apache/PHP) App Support</a>
-        
-    </li>
-
-        
     </ul>
 <li>
           
@@ -121,34 +114,6 @@
             
     <li class="toctree-l1 ">
         <a class="" href="config/config/">Configuration</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="config/Flashing a Controller/">Flashing a Controller</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="config/Serial Controller Setup/">Serial Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="config/Advanced Controller Setup/">Advanced (Manual) Controller Setup</a>
         
     </li>
 
@@ -202,13 +167,6 @@
             <li>
     <ul class="subnav">
     <li><span>About</span></li>
-
-        
-            
-    <li class="toctree-l1 ">
-        <a class="" href="about/architecture/">Architecture</a>
-        
-    </li>
 
         
             
@@ -300,8 +258,8 @@
               
                 <h1 id="fermentrack-documentation">Fermentrack documentation</h1>
 <h3 id="what-is-fermentrack">What is Fermentrack?</h3>
-<p>Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming.</p>
-<p>Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server.</p>
+<p>Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. </p>
+<p>Fermentrack is currently intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same server. </p>
 <h3 id="included-with-fermentrack">Included with Fermentrack</h3>
 <ul>
 <li><strong>Fermentrack</strong> - The Django-based replacement for brewpi-www. Licensed under MIT license.</li>
@@ -317,11 +275,13 @@
 <li>Integrated support for ESP8266-based controllers</li>
 <li>Official support for "legacy" controllers</li>
 <li>Native support (including mDNS autodetection) for WiFi controllers</li>
-<li>Robust device detection for serial controllers </li>
 </ul>
 <h2 id="missing-features">Missing Features</h2>
 <p>At the moment, Fermentrack doesn't support 100% of the features of the official BrewPi web client. Some of these missing features (as well as the version they are expected to be added) include:</p>
 <ul>
+<li>Serial controller support (expected in v2)</li>
+<li>Serial controller autodetection (v2)</li>
+<li>Arduino support (v2)</li>
 <li>Spark/Fuscus support (v3)</li>
 <li>Fuscus support (v3)</li>
 <li>Support for "modern" (non-legacy branch) controllers (v3)</li>
@@ -333,7 +293,7 @@
 <li>Fresh Raspbian install (Lite/Pixel supported, Oct 2016 version or later)</li>
 <li>1GB of free space available</li>
 </ul>
-<p><strong>PLEASE NOTE</strong> - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is <strong>not</strong> intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.</p>
+<p><strong>PLEASE NOTE</strong> - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is <strong>not</strong> intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs. </p>
               
             </div>
           </div>
@@ -380,5 +340,5 @@
 
 <!--
 MkDocs version : 0.16.1
-Build Date UTC : 2017-07-29 04:51:00
+Build Date UTC : 2017-03-10 04:46:21
 -->

@@ -4,7 +4,7 @@ There are three main ways to install Fermentrack - One-line fully automated, sem
 
 Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working copy of Raspbian. 
 
-## Fully Automated - [Video](https://youtu.be/9hRH1dNygnk)
+## Fully Automated - [Video]()
 
 The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this method, simply SSH into your Raspberry Pi and execute:
 

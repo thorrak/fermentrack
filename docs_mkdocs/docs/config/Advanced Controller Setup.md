@@ -7,13 +7,13 @@ Prior to setting up a controller with Fermentrack, please read the documentation
 * [Spark Core](../hardware/Spark.md)
 * [Native Python (Fuscus)](../hardware/Native%20Python.md)
 
-Controllers can be se up to connect via both WiFi and serial. When setting up a controller to connect via serial the selected "port" is incredibly important but is prone to change on reboot or as other devices are connected. Please read the "About Serial Port Autodetection" note below for information on how Fermentrack handles this issue. 
+When setting up a controller to connect via serial, the selected "port" is incredibly important, but is prone to change on reboot or as other devices are connected. Please read the "About Serial Port Autodetection" note below for information on how Fermentrack handles this issue. 
 
 ## Setting up a controller using Advanced Workflow
 
 1. Connect the controller to the Raspberry Pi
 2. Launch guided setup and select "Add New Device (Advanced)"
-3. Enter the configuration options associated with the device.
+3. Enter the configuration options associated with the device. Be sure to select "serial" as the connection type, and specify the correct serial port for the controller. Do not select "auto" as the serial port as this is unlikely to work.
 
 
 ## About Serial Port Autodetection
