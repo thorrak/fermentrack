@@ -224,7 +224,41 @@ def gravity_log_create(request, sensor_id):
     return redirect('gravity_dashboard', sensor_id=sensor_id)
 
 
+@login_required
+@site_is_configured
+def gravity_log_list(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
+    #     return redirect("/")
 
+    all_logs = GravityLog.objects.all().order_by('device').order_by('name')
+
+    return render_with_devices(request, template_name='gravity/gravity_log_list.html', context={'all_logs': all_logs})
+
+
+@login_required
+@site_is_configured
+def gravity_log_delete(request, log_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        log_obj = GravityLog.objects.get(id=log_id)
+
+        if log_obj.device:
+            if log_obj.device.active_log == log_obj:
+                # If the log is currently being logged to, we don't want to trigger a delete
+                messages.error(request, u'Requested log is currently in use - Stop logging on device and reattempt')
+                return redirect('gravity_log_list')
+
+        log_obj.delete()
+        messages.success(request, u'Log "{}" was deleted'.format(log_obj.name))
+    except:
+        messages.error(request, u'Unable to delete log with ID {}'.format(log_id))
+    return redirect('gravity_log_list')
 
 
 

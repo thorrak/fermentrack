@@ -1,0 +1,48 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load static %}
+{% load tz %}
+
+{% block title %}List Gravity Logs{% endblock %}
+
+{% block content %}
+    <h1>Available Logs</h1>
+
+    {% if all_logs %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Log Name</th>
+                    <th>Device</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            {% for this_log in all_logs %}
+                <tr>
+                {% if this_log.device %}
+                    <td><a href="{% url 'gravity_dashboard_log' this_log.device.id this_log.id %}">{{ this_log }}</a></td>
+                {% else %}
+                    <td>{{ this_log }}</td>
+                {% endif %}
+
+                    <td>{{ this_log.device }}</td>
+                    <td>{{ this_log.created|timezone:preferred_tz }}</td>
+                    <td>
+                        {# TODO - Make deleting this involve a modal #}
+                        <a href="{% url "gravity_log_delete" this_log.id %}" type="button" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="{{ this_log.full_csv_url }}" type="button" class="btn btn-sm btn-success">View Full CSV</a>
+                    </td>
+
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h2>There are no available gravity logs</h2>
+    {% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}

@@ -17,20 +17,16 @@ gravity_urlpatterns = [
     # url(r'^gravity/add/tilt/$', firmware_flash.views.firmware_refresh_list, name='firmware_flash_refresh_list'),
     # url(r'^gravity/add/tilt/$', firmware_flash.views.firmware_refresh_list, name='firmware_flash_refresh_list'),
 
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_dashboard, name='gravity_dashboard'),
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/(?P<log_id>[A-Za-z0-9]{1,20})/view/$', gravity.views.gravity_dashboard, name='gravity_dashboard_log'),
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/attach/$', gravity.views.gravity_dashboard, name='gravity_attach'),
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/detach/$', gravity.views.gravity_dashboard, name='gravity_detach'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_dashboard, name='gravity_dashboard'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/(?P<log_id>[A-Za-z0-9]{1,20})/view/$', gravity.views.gravity_dashboard, name='gravity_dashboard_log'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/attach/$', gravity.views.gravity_dashboard, name='gravity_attach'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/detach/$', gravity.views.gravity_dashboard, name='gravity_detach'),
 
-    url(r'^gravity/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/create/$', gravity.views.gravity_log_create, name='gravity_log_create'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/create/$', gravity.views.gravity_log_create, name='gravity_log_create'),
 
-    # url(r'^firmware/autodetect_serial/(?P<board_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_flash_serial_autodetect, name='firmware_flash_serial_autodetect'),
-    # url(r'^firmware/select_board/(?P<flash_family_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_select_board, name='firmware_select_board'),
-    # url(r'^firmware/select_firmware/(?P<board_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_flash_select_firmware, name='firmware_flash_select_firmware'),
-    # url(r'^firmware/flash/(?P<board_id>[A-Za-z0-9]{1,20})/$', firmware_flash.views.firmware_flash_flash_firmware, name='firmware_flash_flash_firmware'),
-
-    # TODO - Delete the following once everything is confirmed working as expected
-    # url(r'^firmware/test/$', firmware_flash.views.firmware_flash_test_select_firmware, name='firmware_flash_test_select_firmware'),
+    # Log Management
+    url(r'^gravity/logs/$', gravity.views.gravity_log_list, name='gravity_log_list'),
+    url(r'^gravity/logs/(?P<log_id>\d{1,20})/delete/$', gravity.views.gravity_log_delete, name='gravity_log_delete'),
 
     url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getGravitySensors, name="getSensor"),  # For a single device
     url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors

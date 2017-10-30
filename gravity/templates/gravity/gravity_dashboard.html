@@ -37,7 +37,7 @@
 
     <!-- Start Sensor Name Header -->
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-xs-12">
                 <div class="dashpanel dashpanel-top bg-carrot">
                     <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
     {#                <div class="dashpanel-title">Beer Temp</div>#}
@@ -138,21 +138,6 @@
             </div>
         </div>
 
-{#        <div class="col-md-3 col-xs-6">#}
-{#            <div class="dashpanel dashpanel-top bg-wet-asphalt">#}
-{#                <div class="dash-icon dash-icon-lg"><i class="fa fa-clock-o fa-fw"></i></div>#}
-{#                <div class="dashpanel-title">Log Interval</div>#}
-{#                <div class="dash-data" id="dashLogInterval">30s</div>#}
-{#                <div class="dashpanel-divider"></div>#}
-{#                <a href="{% url 'device_control_constants' active_device.id %}">#}
-{#                    <div class="dash-desc">#}
-{#                        <div class="pull-left">Configure Device</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-{#        </div>#}
     </div>
     <!-- End Dashboard Panels -->
 
@@ -291,17 +276,8 @@
                     Now Fermenting: {{ active_device.active_log }}
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-6">
-                        {% if active_device.logging_status == 'active' %}
-                            <a href="{% url 'beer_logging_status' active_device.id 'paused' %}" class="btn btn-small btn-sm btn-warning">Pause Logging</a>
-                        {% elif active_device.logging_status == 'paused' or active_device.logging_status == 'stopped' %}
-                            <a href="{% url 'beer_logging_status' active_device.id 'active' %}" class="btn btn-small btn-sm btn-success">Resume Logging</a>
-                        {% endif %}
-                    </div>
-                    <div class="col-sm-6">
-                        <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>
-                    </div>
+                <div class="row col-xs-12">
+                    <a href="{% url 'beer_logging_status' active_device.id 'stopped' %}" class="btn btn-small btn-sm btn-danger">End Logging & Finalize Beer</a>
                 </div>
               </div>
             </div>
@@ -400,7 +376,7 @@
 
 
             <div class="modal-footer">
-                <a href="{% url 'beer_list' %}" class="btn btn-primary">Manage Logs</a>
+                <a href="{% url 'gravity_log_list' %}" class="btn btn-primary">Manage Logs</a>
                 <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -571,7 +547,13 @@ function toggle_graph_visibility(el) {
         dataType: 'json',
         url: '/api/gravity/{{ active_device.id }}/',
         success: function(data) {
-            $('#dashGravity').html(data[0].current_gravity);
+            if(data[0].current_gravity>0) {
+                $('#dashGravity').html(data[0].current_gravity);
+            } else {
+                $('#dashGravity').html("-.---");
+            }
+
+
             $('#dashTemp').html(data[0].temp_string);
         },
         complete: function() {

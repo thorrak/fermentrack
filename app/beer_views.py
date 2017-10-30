@@ -126,8 +126,15 @@ def beer_delete(request, beer_id):
 
     try:
         beer_obj = Beer.objects.get(id=beer_id)
-        messages.success(request, u'Beer "{}" was deleted'.format(beer_obj.name))
+
+        if beer_obj.device:
+            if beer_obj.device.active_beer == beer_obj:
+                # If the log is currently being logged to, we don't want to trigger a delete
+                messages.error(request, u'Requested log is currently in use - Stop logging on device and reattempt')
+                return redirect('beer_list')
+
         beer_obj.delete()
+        messages.success(request, u'Beer "{}" was deleted'.format(beer_obj.name))
     except:
         messages.error(request, u'Unable to locate beer with ID {}'.format(beer_id))
     return redirect('beer_list')

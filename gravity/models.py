@@ -144,7 +144,8 @@ class GravityLog(models.Model):
     # format generally should be equal to device.temp_format. We're caching it here specifically so that if the user
     # updates the device temp format somehow we will continue to log in the OLD format. We'll need to make a giant
     # button that allows the user to convert the log files to the new format if they're different.
-    format = models.CharField(max_length=1, default='F')
+    TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
+    format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F')
 
     # model_version is the revision number of the "GravityLog" and "GravityLogPoint" models, designed to be iterated when any
     # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
@@ -259,7 +260,7 @@ class GravityLogPoint(models.Model):
 
     gravity = models.DecimalField(max_digits=13, decimal_places=11)
     temp = models.DecimalField(max_digits=13, decimal_places=10, null=True)
-    temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C')
+    temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F')
     temp_is_estimate = models.BooleanField(default=True, help_text='Is this temperature an estimate?')
     extra_data = models.CharField(max_length=255, null=True, blank=True, help_text='Extra data/notes about this point')
     log_time = models.DateTimeField(default=timezone.now, db_index=True)
@@ -271,6 +272,20 @@ class GravityLogPoint(models.Model):
 
     # Associated device is so we can save to redis even without an associated log
     associated_device = models.ForeignKey(GravitySensor, db_index=True, on_delete=models.DO_NOTHING, null=True)
+
+
+    def temp_to_f(self):
+        if self.temp_format == 'F':
+            return self.temp
+        else:
+            return (self.temp*9/5) + 32
+
+    def temp_to_c(self):
+        if self.temp_format == 'C':
+            return self.temp
+        else:
+            return (self.temp-32) * 5 / 9
+
 
     def data_point(self, data_format='base_csv', set_defaults=True):
         # Everything gets stored in UTC and then converted back on the fly
@@ -355,6 +370,15 @@ class GravityLogPoint(models.Model):
         # If we have a currently valid _gravity_ log, then write the data out. Otherwise, assume that we're just
         # collecting data to display on the dashboard.
         if self.associated_log is not None:
+            # If we have an associated log, we always want to save the temperature in the format of the associated log
+            # Convert the temp & then save in the appropriate format
+            if self.associated_log.format != self.temp_format:
+                if self.associated_log.format == 'F':
+                    self.temp = self.temp_to_f()
+                else:
+                    self.temp = self.temp_to_c()
+                self.temp_format = self.associated_log.format
+
             file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_log.base_filename())
 
             base_csv_file = file_name_base + self.associated_log.full_filename('base_csv', extension_only=True)
