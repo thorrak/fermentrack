@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
+    #TODO - Remove all references to "render_with_devices" in favor of the context processor
     all_devices = BrewPiDevice.objects.all()
 
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
@@ -72,7 +73,8 @@ def siteroot(request):
         return redirect('setup_splash')
     else:
         # The default screen is the "lcd list" screen
-        return device_lcd_list(request=request)
+        return render(request, template_name="siteroot.html")
+        # return device_lcd_list(request=request)
 
 
 @login_required
@@ -299,7 +301,7 @@ def device_dashboard(request, device_id, beer_id=None):
     return render_with_devices(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': Beer.column_headers_to_graph_string('base_csv'),
+                                        'column_headers': beer_obj.column_headers_to_graph_string('base_csv'),
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
 
@@ -464,6 +466,7 @@ def site_settings(request):
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
+            config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:

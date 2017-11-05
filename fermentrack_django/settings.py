@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'constance.context_processors.config',
                 'app.context_processors.preferred_tz',
+                'app.context_processors.devices',
                 # 'app.context_processors.devices',
             ],
         },

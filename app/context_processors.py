@@ -1,6 +1,7 @@
 import pytz
 from constance import config
 from app.models import BrewPiDevice  #, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
+from gravity.models import GravitySensor
 
 
 def preferred_tz(request):
@@ -19,5 +20,12 @@ def devices(request):
     """
 
     all_devices = BrewPiDevice.objects.all()
+    if config.GRAVITY_SUPPORT_ENABLED:
+        all_gravity_sensors = GravitySensor.objects.all()
+        unassigned_gravity_sensors = GravitySensor.objects.filter(assigned_brewpi_device=None)
+    else:
+        all_gravity_sensors = None
+        unassigned_gravity_sensors = None
 
-    return {'all_devices': all_devices}
+    return {'all_devices': all_devices, 'all_gravity_sensors': all_gravity_sensors,
+            'unassigned_gravity_sensors': unassigned_gravity_sensors}

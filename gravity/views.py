@@ -10,7 +10,7 @@ from django.utils import timezone
 from app.models import BrewPiDevice
 from gravity.models import GravitySensor, GravityLog
 
-from app.decorators import site_is_configured, login_if_required_for_dashboard
+from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
 import os, subprocess, datetime, pytz
 
@@ -33,6 +33,7 @@ def render_with_devices(request, template_name, context=None, content_type=None,
 
 @login_required
 @site_is_configured
+@gravity_support_enabled
 def gravity_add_board(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -59,6 +60,7 @@ def gravity_add_board(request):
 
 @site_is_configured
 @login_if_required_for_dashboard
+@gravity_support_enabled
 def gravity_list(request):
     # This handles generating the list of grav sensors
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
@@ -66,6 +68,7 @@ def gravity_list(request):
 
 @login_required
 @site_is_configured
+@gravity_support_enabled
 def gravity_add_point(request, manual_sensor_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_device'):
@@ -150,6 +153,7 @@ def gravity_add_point(request, manual_sensor_id):
 
 @site_is_configured
 @login_if_required_for_dashboard
+@gravity_support_enabled
 def gravity_dashboard(request, sensor_id, log_id=None):
     try:
         active_device = GravitySensor.objects.get(id=sensor_id)
@@ -189,6 +193,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
 
 @login_required
 @site_is_configured
+@gravity_support_enabled
 def gravity_log_create(request, sensor_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):
@@ -226,6 +231,7 @@ def gravity_log_create(request, sensor_id):
 
 @login_required
 @site_is_configured
+@gravity_support_enabled
 def gravity_log_list(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):
@@ -239,6 +245,7 @@ def gravity_log_list(request):
 
 @login_required
 @site_is_configured
+@gravity_support_enabled
 def gravity_log_delete(request, log_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):

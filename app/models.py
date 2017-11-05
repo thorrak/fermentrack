@@ -1036,9 +1036,8 @@ class Beer(models.Model):
 
         return headers
 
-    @staticmethod
-    def column_headers_to_graph_string(which='base_csv'):
-        col_headers = Beer.column_headers(which, True)
+    def column_headers_to_graph_string(self, which='base_csv'):
+        col_headers = self.column_headers(which, True)
 
         graph_string = ""
 
