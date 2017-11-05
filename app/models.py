@@ -1287,6 +1287,15 @@ class BeerLogPoint(models.Model):
                                                                       this_annotation['text']))
                     f.write('}')
 
+        # This really isn't the right place to do this, but I don't know of anywhere else to add this check.
+        # TODO - Figure out if there is somewhere better to do this
+        if self.has_gravity_enabled() and self.associated_beer.device.gravity_sensor is None:
+            # We're logging a gravity enabled beer, but there is no gravity sensor to pull data from. Stop logging.
+            if self.associated_beer.device.active_beer == self.associated_beer:
+                logger.error('Gravity sensor was deleted without cessation of logging on device {}. Logging has been force-stopped within BeerLogPoint.save()'.format(self.associated_beer.device_id))
+                self.associated_beer.device.manage_logging(status='stop')
+                return False
+
         file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
 
         base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
