@@ -837,6 +837,10 @@ class BrewPiDevice(models.Model):
     def manage_logging(self, status):
         if status == 'stop':
             # This will be repeated by brewpi.py, but doing it here so we get up-to-date display in the dashboard
+            if self.gravity_sensor is not None:
+                # If there is a linked gravity log, stop that as well
+                self.gravity_sensor.active_log = None
+                self.gravity_sensor.save()
             self.active_beer = None
             self.save()
             response = self.send_message("stopLogging", read_response=True)
