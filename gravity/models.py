@@ -98,13 +98,20 @@ class GravitySensor(models.Model):
     sensor_type = models.CharField(max_length=10, default=SENSOR_MANUAL, choices=SENSOR_TYPE_CHOICES,
                                    help_text="Type of gravity sensor used")
 
-    status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES,
+                              help_text='Status of the gravity sensor (used by scripts that interact with it)')
 
     # The beer that is currently active & being logged
-    active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None)
+    active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None,
+                                   help_text='The currently active log of readings')
 
     # The assigned/linked BrewPi device (if applicable)
-    assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL)
+    assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL,
+                                                  related_name='gravity_sensor')
+
+    use_averaged_readings = models.BooleanField(default=False, help_text='Should this sensor use an average of the last X readings rather than just the last reading?')
+
+    readings_to_average = models.IntegerField(default=1, help_text='If using averaged readings, how many readings should be included in the average?')
 
     def __str__(self):
         # TODO - Make this test if the name is unicode, and return a default name if that is the case
@@ -128,8 +135,27 @@ class GravitySensor(models.Model):
         else:
             return point.temp, point.temp_format
 
+    def retrieve_loggable_gravity(self):
+        if self.use_averaged_readings:
+            return False
+        else:
+            return self.retrieve_latest_gravity()
+
     def retrieve_latest_point(self):
         return GravityLogPoint.load_from_redis(self.id)
+
+    def create_log_and_start_logging(self, name):
+        # First, create the new gravity log
+        new_log = GravityLog(
+            name= name,
+            device=self,
+            format=self.temp_format,
+        )
+        new_log.save()
+
+        # Now that the log has been created, assign it to me so we can start logging
+        self.active_log = new_log
+        self.save()
 
 
 

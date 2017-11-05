@@ -978,20 +978,24 @@ class BrewPiDevice(models.Model):
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
-    name = models.CharField(max_length=255, db_index=True)
-    device = models.ForeignKey(BrewPiDevice, db_index=True, on_delete=models.SET_NULL, null=True)
-    created = models.DateTimeField(default=timezone.now)
+    name = models.CharField(max_length=255, db_index=True,
+                            help_text='Name of the beer being logged (must be unique)')
+    device = models.ForeignKey(BrewPiDevice, db_index=True, on_delete=models.SET_NULL, null=True,
+                               help_text='The linked temperature control device from which data is logged')
+    created = models.DateTimeField(default=timezone.now, help_text='When the beer log was initially created')
 
     # format generally should be equal to device.temp_format. We're caching it here specifically so that if the user
     # updates the device temp format somehow we will continue to log in the OLD format. We'll need to make a giant
     # button that allows the user to convert the log files to the new format if they're different.
-    format = models.CharField(max_length=1, default='F')
+    format = models.CharField(max_length=1, default='F', help_text='Temperature format to write the logs in')
 
     # model_version is the revision number of the "Beer" and "BeerLogPoint" models, designed to be iterated when any
     # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
     # converter could then be written moving between each iteration of model_version that could then be sequentially
     # applied to bring a beer log in line with what the model then expects.
-    model_version = models.IntegerField(default=1)
+    model_version = models.IntegerField(default=1, help_text='Version # used for the logged file format')
+
+    gravity_enabled = models.BooleanField(default=False, help_text='Is gravity logging enabled for this beer log?')
 
     def __str__(self):
         return self.name
@@ -999,22 +1003,34 @@ class Beer(models.Model):
     def __unicode__(self):
         return self.__str__()
 
-    @staticmethod
-    def column_headers(which='base_csv', human_readable=False):
+    def column_headers(self, which='base_csv', human_readable=False):
         if which == 'base_csv':
             if human_readable:
-                return ['Log Time', 'Beer Temp', 'Beer Setting', 'Fridge Temp', 'Fridge Setting', 'Room Temp']
+                headers = ['Log Time', 'Beer Temp', 'Beer Setting', 'Fridge Temp', 'Fridge Setting', 'Room Temp']
             else:
-                return ['log_time', 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'room_temp']
+                headers = ['log_time', 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'room_temp']
+
         elif which == 'full_csv':
             if human_readable:
-                return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
-                        'room_temp', 'state', 'temp_format', 'associated_beer_id']
+                # Currently unused
+                headers = ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
+                           'room_temp', 'state', 'temp_format', 'associated_beer_id']
             else:
-                return ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
-                        'room_temp', 'state', 'temp_format', 'associated_beer_id']
+                headers = ['log_time', 'beer_temp', 'beer_set', 'beer_ann', 'fridge_temp', 'fridge_set', 'fridge_ann',
+                           'room_temp', 'state', 'temp_format', 'associated_beer_id']
         else:
             return None
+
+        # This works because we're appending the gravity data to both logs
+        if self.gravity_enabled:
+            if human_readable:
+                headers.append('Gravity')
+                headers.append('Gravity Sensor Temp')
+            else:
+                headers.append('gravity')
+                headers.append('grav_temp')
+
+        return headers
 
     @staticmethod
     def column_headers_to_graph_string(which='base_csv'):
@@ -1130,6 +1146,22 @@ class BeerLogPoint(models.Model):
 
     associated_beer = models.ForeignKey(Beer, db_index=True, on_delete=models.DO_NOTHING)
 
+    gravity = models.DecimalField(max_digits=5, decimal_places=3, null=True)
+    gravity_temp = models.DecimalField(max_digits=13, decimal_places=10, null=True)
+
+
+    def has_gravity_enabled(self):
+        # Just punting this upstream
+        return self.associated_beer.gravity_enabled
+
+
+    def enrich_gravity_data(self):
+        # enrich_graity_data is called to enrich this data point with the relevant gravity data
+        # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
+        if self.has_gravity_enabled():
+            self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
+            self.gravity_temp = self.associated_beer.device.gravity_sensor.retrieve_latest_temp()
+
 
     def data_point(self, data_format='base_csv', set_defaults=True):
         # Everything gets stored in UTC and then converted back on the fly
@@ -1180,11 +1212,29 @@ class BeerLogPoint(models.Model):
         else:
             combined_annotation = ""
 
+        if self.has_gravity_enabled():
+            gravity_log = self.gravity
+            gravity_temp = self.gravity_temp
+        else:
+            # Shouldn't ever get used, but just in case
+            gravity_log = None
+            gravity_temp = None
+
+
         if data_format == 'base_csv':
-            return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
+            if self.has_gravity_enabled() == False:
+                return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
+            else:
+                return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, gravity_log, gravity_temp]
+
         elif data_format == 'full_csv':
-            return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
-                    roomTemp, self.state, self.temp_format, self.associated_beer_id]
+            if self.has_gravity_enabled() == False:
+                return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
+                        roomTemp, self.state, self.temp_format, self.associated_beer_id]
+            else:
+                return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
+                        roomTemp, self.state, self.temp_format, self.associated_beer_id, gravity_log, gravity_temp]
+
         elif data_format == 'annotation_json':
             retval = []
             if self.beer_ann is not None:

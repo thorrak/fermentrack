@@ -199,6 +199,8 @@ def save_beer_log_point(db_config_object, beer_row):
     new_log_point.temp_format = db_config_object.temp_format
     new_log_point.associated_beer = db_config_object.active_beer
 
+    new_log_point.enrich_gravity_data()  # If gravity sensing is turned on, this will capture & populate everything
+
     new_log_point.save()
 
 def printStdErr(*objs):
