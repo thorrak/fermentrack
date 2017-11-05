@@ -192,6 +192,7 @@ CONSTANCE_CONFIG = {
     'GRAPH_FRIDGE_SET_COLOR': ("#107E7D", 'What color do you want the fridge setting line on the graph?', str),
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
+    'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
 
 }
 

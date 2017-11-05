@@ -62,9 +62,9 @@ class GravitySensor(models.Model):
     TEMP_NEVER_ESTIMATE = 'exact (automatic)'
 
     TEMP_ESTIMATE_CHOICES = (
-        (TEMP_ALWAYS_ESTIMATE, 'Temp is Always Estimate'),
-        (TEMP_SOMETIMES_ESTIMATE, 'Temp is Sometimes Estimate'),
-        (TEMP_NEVER_ESTIMATE, 'Temp is Never Estimate'),
+        (TEMP_ALWAYS_ESTIMATE, 'Temp is always estimate'),
+        (TEMP_SOMETIMES_ESTIMATE, 'Temp is sometimes estimate'),
+        (TEMP_NEVER_ESTIMATE, 'Temp is never estimate'),
     )
 
 
