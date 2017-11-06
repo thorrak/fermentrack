@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - At end of a fermentation profile the controller will now be switched to beer constant mode
 - All data points are now explicitly recorded in UTC
 - Added icon to graph legend to display line color
+- Updated to Django v1.11 (Long term support version)
 
 ### Fixed
 - Inversion state no longer improperly defaults
