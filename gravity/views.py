@@ -268,267 +268,59 @@ def gravity_log_delete(request, log_id):
     return redirect('gravity_log_list')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def refresh_firmware(request=None):
-    # Before we load anything, check to make sure that the model version on fermentrack.com matches the model version
-    # that we can support
-    if get_model_version() != check_model_version():
-        if request is not None:
-            messages.error(request, "The firmware information available at fermentrack.com isn't something this " +
-                                    "version of Fermentrack can interpret. Please update and try again.")
-        return False
-
-    # First, load the device family list
-    families_loaded = DeviceFamily.load_from_website()
-
-    if families_loaded:
-        # And if that worked, load the firmware list
-        board_loaded = Board.load_from_website()
-        if board_loaded:
-            firmware_loaded = Firmware.load_from_website()
-        else:
-            if request is not None:
-                messages.error(request, "Unable to load boards from fermentrack.com")
-            return False
-    else:
-        # If it didn't work, return False
-        if request is not None:
-            messages.error(request, "Unable to load families from fermentrack.com")
-        return False
-
-    # if request is not None:
-    #     messages.success(request, "Firmware list was successfully refreshed from fermentrack.com")
-
-    config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now()  # Update the "last refreshed" check
-    return firmware_loaded
-
-
 @login_required
 @site_is_configured
-def firmware_refresh_list(request):
+@gravity_support_enabled
+def gravity_attach(request, sensor_id):
     # TODO - Add user permissioning
-    # if not request.user.has_perm('app.add_device'):
-    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
-    #     return redirect("/")
-
-    if refresh_firmware(request):
-        messages.success(request, "Firmware list was successfully refreshed from Fermentrack.com")
-    else:
-        messages.error(request, "Firmware list was not able to be refreshed from Fermentrack.com")
-
-    return redirect('firmware_flash_select_family')
-
-
-
-# NOTE - This is a modified version of device_guided_serial_autodetect
-@login_required
-@site_is_configured
-def firmware_flash_serial_autodetect(request, board_id):
-    # TODO - Add user permissioning
-    # if not request.user.has_perm('app.add_device'):
-    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
-    #     return redirect("/")
-
-    # device_guided_serial_autodetect contains all 4 steps in the Serial autodetection guided setup.
-
-
-    try:
-        board_obj = Board.objects.get(id=board_id)
-    except:
-        messages.error(request, "Invalid board ID specified")
-        return redirect('firmware_flash_select_family')
-
-    flash_family = board_obj.family
-
-    if not request.POST:
-        # If we haven't had something posted to us, provide the instructions page. (Step 1)
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id, 'board': board_obj})
-
-    else:
-        # Something was posted - figure out what step we're on by looking at the "step" field
-        if 'step' not in request.POST:
-            # We received a form, but not the right form. Redirect to the start of the autodetection flow.
-            return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                       context={'board_id': board_id})
-        elif request.POST['step'] == "2":
-            # Step 2 - Cache the current devices & present the next set of instructions to the user
-            current_devices = serial_integration.cache_current_devices()
-            return render_with_devices(request, template_name='firmware_flash/serial_autodetect_2.html',
-                                       context={'board_id': board_id, 'current_devices': current_devices})
-        elif request.POST['step'] == "3":
-            # Step 3 - Detect newly-connected devices & prompt the user to select the one that corresponds to the
-            # device they want to configure.
-            _, _, _, new_devices_enriched = serial_integration.compare_current_devices_against_cache(flash_family.detection_family)
-            return render_with_devices(request, template_name='firmware_flash/serial_autodetect_3.html',
-                                       context={'board_id': board_id, 'new_devices': new_devices_enriched})
-        else:
-            # The step number we received was invalid. Redirect to the start of the autodetection flow.
-            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
-                                       context={'board_id': board_id})
-
-
-@login_required
-@site_is_configured
-def firmware_flash_select_firmware(request, board_id):
-    # TODO - Add user permissioning
-    # if not request.user.has_perm('app.add_device'):
-    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
     #     return redirect("/")
 
     try:
-        board_obj = Board.objects.get(id=board_id)
+        sensor = GravitySensor.objects.get(id=sensor_id)
     except:
-        messages.error(request, "Invalid board ID specified")
-        return redirect('firmware_flash_select_family')
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
 
-    flash_family = board_obj.family
-
-    if not request.POST:
-        # If we weren't passed anything in request.POST, kick the user back to the autodetect routine
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
-
-    if 'serial_port' not in request.POST:
-        # Same if we weren't explicitly passed request.POST['serial_port']
-        messages.error(request, "Serial port wasn't provided to 'select_firmware'. Please restart serial autodetection & try again.")
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
+    if sensor.assigned_brewpi_device is not None:
+        messages.error(request, u'Device {} already has an assigned temperature controller'.format(str(sensor)))
+        return redirect('gravity_dashboard', sensor_id=sensor_id)
 
 
-    fermentrack_firmware = Firmware.objects.filter(is_fermentrack_supported=True, in_error=False, family=flash_family).order_by('weight')
-    other_firmware = Firmware.objects.filter(is_fermentrack_supported=False, in_error=False, family=flash_family).order_by('weight')
-    error_firmware = Firmware.objects.filter(in_error=True, family=flash_family).order_by('weight')
+    form = forms.SensorAttachForm()
+    if request.POST:
+        form = forms.SensorAttachForm(request.POST)
+        if form.is_valid():
 
-    return render_with_devices(request, template_name='firmware_flash/select_firmware.html',
-                               context={'other_firmware': other_firmware, 'fermentrack_firmware': fermentrack_firmware,
-                                        'flash_family': flash_family, 'error_firmware': error_firmware,
-                                        'board': board_obj, 'serial_port': request.POST['serial_port']})
-import json
+            # If the form is valid, we know a couple of things:
+            # 1. That the device is unbound
+            # 2. That the sensor is unbound
+            # ...but we DON'T know if either device is actively logging.
 
-@login_required
-@site_is_configured
-def firmware_flash_flash_firmware(request, board_id):
+            # Breaking this out for ease of use
+            form_sensor = GravitySensor.objects.get(id=form.cleaned_data['sensor'].id)
 
-    try:
-        board_obj = Board.objects.get(id=board_id)
-    except:
-        messages.error(request, "Invalid board ID specified")
-        return redirect('firmware_flash_select_family')
+            if form_sensor.active_log is not None:
+                # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
+                form_sensor.active_log = None
+                messages.warning(request, "Gravity sensor {} was actively logging, but has now been stopped.".format(form_sensor))
+                # We'll save in a bit
 
-    flash_family = board_obj.family
+            if form.cleaned_data['temp_controller'].active_beer is not None:
+                # The temperature sensor is currently actively logging something. This is not ideal. Lets stop it.
+                form.cleaned_data['temp_controller'].manage_logging('stop')
+                # The save on this one is embedded in the manage_logging method
+                messages.warning(request, "Controller {} was actively logging, but has now been stopped.".format(form.cleaned_data['temp_controller']))
 
-    if not request.POST:
-        # If we weren't passed anything in request.POST, kick the user back to the autodetect routine
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
+            form_sensor.assigned_brewpi_device = form.cleaned_data['temp_controller']
+            form_sensor.save()
 
-    if 'serial_port' not in request.POST:
-        # Same if we weren't explicitly passed request.POST['serial_port']
-        messages.error(request, "Serial port wasn't provided to 'select_firmware'. Please restart serial autodetection & try again.")
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
+            messages.success(request, "Succesfully assigned sensor {} to temperature controller {}".format(form_sensor, form.cleaned_data['temp_controller']))
+            return redirect('gravity_dashboard', sensor_id=sensor_id)
 
-    if 'firmware_id' not in request.POST:
-        messages.error(request, "Invalid firmware ID was specified! Please restart serial autodetection & try again.")
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
-
-    try:
-        firmware_to_flash = Firmware.objects.get(id=request.POST['firmware_id'])
-    except:
-        messages.error(request, "Invalid firmware ID was specified! Please restart serial autodetection & try again.")
-        return render_with_devices(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                   context={'board_id': board_id})
-
-    # Alright. Now we need to flash the firmware. First, download the selected firmware file
-    device_flashed = False
-    firmware_path = firmware_to_flash.download_to_file()
-    if firmware_path is None:
-        messages.error(request, "Unable to download firmware file!")
-        flash_cmd = None
-    else:
-        # Ok, we now have the firmware file. Let's do something with it
-        if firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ESP8266:
-            # We're using an ESP8266, which means esptool.
-            flash_cmd = ["esptool.py"]
-        elif firmware_to_flash.family.flash_method == DeviceFamily.FLASH_ARDUINO:
-            flash_cmd = ["avrdude"]
-        else:
-            messages.error(request, "Selected device family is unsupported in this version of Fermentrack!")
-            return redirect('firmware_flash_select_family')
-
-        flash_args = json.loads(board_obj.flash_options_json)
-
-        for arg in flash_args:
-            flash_cmd.append(str(arg).replace("{serial_port}", request.POST['serial_port']).replace("{firmware_path}", firmware_path))
+            # else:
+        #     messages.error(request, "Invalid " % form.errors['__all__'])
 
 
-        # TODO - Explicitly need to disable any device on that port
-        if FERMENTRACK_INTEGRATION:
-            # If we are running as part of a fermentrack installation (which presumably, we are) we need to disable
-            # any device currently running on the serial port we're flashing.
-
-            devices_to_disable = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
-
-            for this_device in devices_to_disable:
-                this_device.status = BrewPiDevice.STATUS_UPDATING
-                this_device.save()
-                try:
-                    this_device.stop_process()
-                except:
-                    # Depending on how quickly circus checks, this may cause a race condition as the process gets
-                    # stopped twice
-                    pass
-
-        # And now, let's call the actual flasher
-        retval = subprocess.call(flash_cmd)
-
-        # Last, reenable all the devices we disabled earlier
-        if FERMENTRACK_INTEGRATION:
-            devices_to_disable = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_UPDATING)
-            for this_device in devices_to_disable:
-                this_device.status = BrewPiDevice.STATUS_ACTIVE
-                this_device.save()
-                # We'll let Circus restart the process on the next cycle
-                # this_device.start_process()
-
-        if retval == 0:
-            messages.success(request, "Firmware successfully flashed to device!")
-            device_flashed = True
-        else:
-            messages.error(request, "Firmware didn't flash successfully. Please reattempt, or flash manually.")
-
-    return render_with_devices(request, template_name='firmware_flash/flash_firmware.html',
-                               context={'flash_family': flash_family, 'firmware': firmware_to_flash,
-                                        'flash_cmd': flash_cmd, 'device_flashed': device_flashed,
-                                        'board': board_obj})
-
-
-
-
-# TODO - Delete this view
-# @login_required
-# @site_is_configured
-# def firmware_flash_test_select_firmware(request):
-#     try:
-#         flash_family = DeviceFamily.objects.get(name="ESP8266")
-#     except:
-#         messages.error(request, "Invalid flash_family specified")
-#         return redirect('firmware_flash_select_family')
-#
-#     return render_with_devices(request, template_name='firmware_flash/test_select_firmware.html',
-#                                context={'flash_family_id': flash_family.id})
+    return render(request, template_name='gravity/gravity_attach.html', context={'selected_sensor': sensor, 'form': form})

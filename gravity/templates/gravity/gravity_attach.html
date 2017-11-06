@@ -1,0 +1,43 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Attach Sensor{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Attach Sensor to Controller</h1>
+
+    <form action="{% url 'gravity_attach' selected_sensor.id %}" class="form-horizontal" method="post">{% csrf_token %}
+        <input type="hidden" name="sensor" value="{{ selected_sensor.id }}">
+
+        {% form_generic form.temp_controller %}
+
+        <p>
+            NOTE - If the temperature controller selected is currently logging a beer, the log will be stopped to allow
+            the gravity sensor to be assigned.
+        </p>
+        <p>{# TODO - Make this only appear if the gravity sensor -is- actively logging #}
+            NOTE - If the gravity sensor is currently logging independently, the log will be stopped to allow the
+            gravity sensor to be assigned.
+        </p>
+
+        <input type="submit" value="Create Sensor" class="btn btn-primary" />
+    </form>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

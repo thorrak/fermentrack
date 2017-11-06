@@ -419,8 +419,6 @@ class BrewPiDevice(models.Model):
         (STATUS_UPDATING, 'Disabled, pending an update'),
     )
 
-#    active_beer = models.ForeignKey()
-
     device_name = models.CharField(max_length=48, help_text="Unique name for this device", unique=True)
 
     # This is set at the device level, and should probably be read from the device as well. Going to include here
@@ -837,7 +835,7 @@ class BrewPiDevice(models.Model):
     def manage_logging(self, status):
         if status == 'stop':
             # This will be repeated by brewpi.py, but doing it here so we get up-to-date display in the dashboard
-            if self.gravity_sensor is not None:
+            if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
                 # If there is a linked gravity log, stop that as well
                 self.gravity_sensor.active_log = None
                 self.gravity_sensor.save()

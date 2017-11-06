@@ -114,20 +114,20 @@
             <div class="dashpanel dashpanel-top bg-concrete">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
                 <div class="dashpanel-title">Assigned Temp Controller</div>
-                <div class="dash-data" id="dashDevice">--</div>
+                <div class="dash-data" id="dashDevice">{% if active_device.assigned_brewpi_device %}{{ active_device.assigned_brewpi_device }}{% else %}--{% endif %}</div>
                 <div class="dashpanel-divider"></div>
-                {% if active_device.is_connected %}
-                <a href="#" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">
+                {% if active_device.assigned_brewpi_device %}
+                <a href="{% url 'gravity_detach' active_device.id %}">
                     <div class="dash-desc">
-                        <div class="pull-left" >Assign Device</div>
+                        <div class="pull-left" >Unassign Device</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
                 </a>
                 {% else %}
-                <a href="{% url 'device_debug_connection' active_device.id %}">
+                <a href="{% url 'gravity_attach' active_device.id %}">
                     <div class="dash-desc">
-                        <div class="pull-left" >Debug Connection</div>
+                        <div class="pull-left" >Assign Device</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>
