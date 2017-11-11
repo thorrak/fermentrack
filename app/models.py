@@ -479,6 +479,9 @@ class BrewPiDevice(models.Model):
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
 
+    def is_temp_controller(self):  # This is a hack used in the site template so we can display relevant functionality
+        return True
+
     def get_profile_temp(self):
         # If the object is inconsistent, don't return anything
         if self.active_profile is None:
@@ -1161,7 +1164,7 @@ class BeerLogPoint(models.Model):
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
         if self.has_gravity_enabled():
             self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
-            self.gravity_temp = self.associated_beer.device.gravity_sensor.retrieve_latest_temp()
+            self.gravity_temp = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
 
     def data_point(self, data_format='base_csv', set_defaults=True):
@@ -1170,41 +1173,23 @@ class BeerLogPoint(models.Model):
         utc_tz = pytz.timezone("UTC")
         time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
 
-
-        if self.beer_temp:
-            beerTemp = self.beer_temp
-        elif set_defaults:
-            beerTemp = 0
+        if set_defaults:
+            beerTemp = self.beer_temp or 0
+            fridgeTemp = self.fridge_temp or 0
+            roomTemp = self.room_temp or 0
+            beerSet = self.beer_set or 0
+            fridgeSet = self.fridge_set or 0
+            gravity_log = self.gravity or 0  # We'll set this just in case
+            gravity_temp = self.gravity_temp or 0  # We'll set this just in case
         else:
-            beerTemp = None
+            beerTemp = self.beer_temp or None
+            fridgeTemp = self.fridge_temp or None
+            roomTemp = self.room_temp or None
+            beerSet = self.beer_set or None
+            fridgeSet = self.fridge_set or None
+            gravity_log = self.gravity or None  # We'll set this just in case
+            gravity_temp = self.gravity_temp or None  # We'll set this just in case
 
-        if self.fridge_temp:
-            fridgeTemp = self.fridge_temp
-        elif set_defaults:
-            fridgeTemp = 0
-        else:
-            fridgeTemp = None
-
-        if self.room_temp:
-            roomTemp = self.room_temp
-        elif set_defaults:
-            roomTemp = 0
-        else:
-            roomTemp = None
-
-        if self.beer_set:
-            beerSet = self.beer_set
-        elif set_defaults:
-            beerSet = 0
-        else:
-            beerSet = None
-
-        if self.fridge_set:
-            fridgeSet = self.fridge_set
-        elif set_defaults:
-            fridgeSet = 0
-        else:
-            fridgeSet = None
 
         if self.beer_ann is not None:
             combined_annotation = self.beer_ann
@@ -1212,14 +1197,6 @@ class BeerLogPoint(models.Model):
             combined_annotation = self.fridge_ann
         else:
             combined_annotation = ""
-
-        if self.has_gravity_enabled():
-            gravity_log = self.gravity
-            gravity_temp = self.gravity_temp
-        else:
-            # Shouldn't ever get used, but just in case
-            gravity_log = None
-            gravity_temp = None
 
 
         if data_format == 'base_csv':
@@ -1246,7 +1223,8 @@ class BeerLogPoint(models.Model):
                                'text': self.fridge_ann})
             return retval
         else:
-            pass
+            # Should never hit this
+            logger.warning("Invalid data format '{}' provided to BeerLogPoint.data_point".format(data_format))
 
 
 

@@ -19,7 +19,11 @@ def devices(request):
     Simple context processor that puts all BrewPiDevice objects into every request as "all_devices"
     """
 
-    all_devices = BrewPiDevice.objects.all()
+    if config.TEMP_CONTROL_SUPPORT_ENABLED:
+        all_devices = BrewPiDevice.objects.all()  # TODO - Rename all_devices to all_temp_controllers
+    else:
+        all_devices = None
+
     if config.GRAVITY_SUPPORT_ENABLED:
         all_gravity_sensors = GravitySensor.objects.all()
         unassigned_gravity_sensors = GravitySensor.objects.filter(assigned_brewpi_device=None)

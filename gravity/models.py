@@ -109,9 +109,6 @@ class GravitySensor(models.Model):
     assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL,
                                                   related_name='gravity_sensor')
 
-    use_averaged_readings = models.BooleanField(default=False, help_text='Should this sensor use an average of the last X readings rather than just the last reading?')
-
-    readings_to_average = models.IntegerField(default=1, help_text='If using averaged readings, how many readings should be included in the average?')
 
     def __str__(self):
         # TODO - Make this test if the name is unicode, and return a default name if that is the case
@@ -120,29 +117,39 @@ class GravitySensor(models.Model):
     def __unicode__(self):
         return self.name
 
+    def is_gravity_sensor(self):  # This is a hack used in the site template so we can display relevant functionality
+        return True
+
+    # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
+    def retrieve_latest_point(self):
+        return GravityLogPoint.load_from_redis(self.id)
+
+    # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
     def retrieve_latest_gravity(self):
         point = self.retrieve_latest_point()
-        if point is None:
-            return None
-        else:
-            return point.gravity
+        return None if point is None else point.latest_gravity
 
     def retrieve_latest_temp(self):
-        # So temp needs units... we'll return a tuple
+        # So temp needs units... we'll return a tuple (temp, temp_format)
+        point = self.retrieve_latest_point()
+        if point is None:
+            return None, None
+        else:
+            return point.latest_temp, point.temp_format
+
+    # Loggable gravity & loggable temp are what we generally want. These can have smoothing/filtering applied.
+    def retrieve_loggable_gravity(self):
+        point = self.retrieve_latest_point()
+        return None if point is None else point.gravity
+
+    def retrieve_loggable_temp(self):
+        # So temp needs units... we'll return a tuple (temp, temp_format)
         point = self.retrieve_latest_point()
         if point is None:
             return None, None
         else:
             return point.temp, point.temp_format
 
-    def retrieve_loggable_gravity(self):
-        if self.use_averaged_readings:
-            return False
-        else:
-            return self.retrieve_latest_gravity()
-
-    def retrieve_latest_point(self):
-        return GravityLogPoint.load_from_redis(self.id)
 
     def create_log_and_start_logging(self, name):
         # First, create the new gravity log
@@ -196,9 +203,11 @@ class GravityLog(models.Model):
                 return ['log_time', 'gravity', 'temp']
         elif which == 'full_csv':
             if human_readable:
-                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'extra_data', 'log_id']
+                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'gravity_latest',
+                        'temp_latest', 'extra_data', 'log_id']
             else:
-                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'extra_data', 'log_id']
+                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'gravity_latest',
+                        'temp_latest', 'extra_data', 'log_id']
         else:
             return None
 
@@ -284,12 +293,19 @@ class GravityLogPoint(models.Model):
 
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
 
-    gravity = models.DecimalField(max_digits=13, decimal_places=11)
-    temp = models.DecimalField(max_digits=13, decimal_places=10, null=True)
+    gravity = models.DecimalField(max_digits=13, decimal_places=11, help_text="The current (loggable) sensor gravity")
+    temp = models.DecimalField(max_digits=13, decimal_places=10, null=True, help_text="The current (loggable) temperature")
     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F')
     temp_is_estimate = models.BooleanField(default=True, help_text='Is this temperature an estimate?')
     extra_data = models.CharField(max_length=255, null=True, blank=True, help_text='Extra data/notes about this point')
     log_time = models.DateTimeField(default=timezone.now, db_index=True)
+
+    # To support sensors that require some type of data smoothing/filtering, we'll also allow for logging the exact
+    # reading we pulled off the sensor rather than just the smoothed/filtered one
+    gravity_latest = models.DecimalField(max_digits=13, decimal_places=11, null=True, default=None,
+                                         help_text="The latest gravity (without smoothing/filtering if applicable)")
+    temp_latest = models.DecimalField(max_digits=13, decimal_places=10, null=True, default=None,
+                                      help_text="The latest temperature (without smoothing/filtering if applicable)")
 
     # Associated log is intended to be the collection of log points associated with the gravity sensor's latest
     # logging efforts. That said, we're also using the model to store the latest gravity info in the absence of an
@@ -319,36 +335,26 @@ class GravityLogPoint(models.Model):
         utc_tz = pytz.timezone("UTC")
         time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
 
-        gravity = self.gravity
 
-        if self.temp:
-            temp = self.temp
-        elif set_defaults:
-            temp = 0
+        if set_defaults:
+            temp = self.temp or 0
+            temp_format = self.temp_format or ''
+            extra_data = self.extra_data or 0  # Not sure how we should proceed on this one
+            gravity_latest = self.gravity_latest or 0
+            temp_latest = self.temp_latest or 0
         else:
-            temp = None
-
-        if self.temp_format:
-            temp_format = self.temp_format
-        elif set_defaults:
-            temp_format = 0
-        else:
-            temp_format = None
-
-        temp_is_estimate = self.temp_is_estimate
-
-        if self.extra_data:
-            extra_data = self.extra_data
-        elif set_defaults:
-            extra_data = 0
-        else:
-            extra_data = None
+            temp = self.temp or None
+            temp_format = self.temp_format or None
+            extra_data = self.extra_data or None
+            gravity_latest = self.gravity_latest or None
+            temp_latest = self.temp_latest or None
 
 
         if data_format == 'base_csv':
-            return [time_value, gravity, temp]
+            return [time_value, self.gravity, temp]
         elif data_format == 'full_csv':
-            return [time_value, gravity, temp, temp_format, temp_is_estimate, extra_data, self.associated_log]
+            return [time_value, self.gravity, temp, temp_format, self.temp_is_estimate, gravity_latest,
+                    temp_latest, extra_data, self.associated_log]
         elif data_format == 'annotation_json':
             # Annotations are just the extra data (for now)
             retval = []

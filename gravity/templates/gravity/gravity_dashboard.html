@@ -117,7 +117,7 @@
                 <div class="dash-data" id="dashDevice">{% if active_device.assigned_brewpi_device %}{{ active_device.assigned_brewpi_device }}{% else %}--{% endif %}</div>
                 <div class="dashpanel-divider"></div>
                 {% if active_device.assigned_brewpi_device %}
-                <a href="{% url 'gravity_detach' active_device.id %}">
+                <a href="#" data-toggle="modal" data-target="#detachSensorModal">
                     <div class="dash-desc">
                         <div class="pull-left" >Unassign Device</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
@@ -231,12 +231,12 @@
                         </p>
 
                         <p>
-                            Use the links below to detach the sensor from the temperature controller or view the
-                            temperature controller's dashboard.
+                            Use the links below to view the temperature controller's dashboard or detach the sensor from
+                            the temperature controller.
                         </p>
 
                         <a href="{% url 'device_dashboard' active_device.assigned_brewpi_device.id %}" class="btn btn-small btn-sm btn-default">View Temperature Controller</a>
-                        <a href="{% url 'gravity_detach' active_device.id %}" class="btn btn-small btn-sm btn-warning">Detach from Controller</a>
+                        <button type="button" class="btn btn-small btn-sm btn-warning" data-toggle="modal" data-target="#detachSensorModal">Detach from Controller</button>
 
                     </div>
                 </div>
@@ -384,6 +384,61 @@
     </div>
     <!-- End Log Modal -->
 
+    
+{% if active_device.assigned_brewpi_device %}
+    <!-- Detach Sensor Modal -->
+    <div class="modal fade" id="detachSensorModal" tabindex="-1" role="dialog" aria-labelledby="detachSensorModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="detachSensorModalLabel" style="color: #000;">Detach Sensor from Controller</h4>
+            </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        <p>
+                            This sensor is currently attached to the <b>{{ active_device.assigned_brewpi_device }}</b>
+                            temperature controller and {% if active_device.active_log %}is{% else %}is not{% endif %}
+                            currently logging.
+                        </p>
+
+
+{#                    <form action="{% url "gravity_detach" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}#}
+                    {% if active_device.active_log %}
+                        <p>
+                            Detaching this sensor from the controller will stop the active log on both the temperature
+                            sensor as well as the specific gravity sensor and finalize the log files. While the sensor
+                            can be reassigned to the temperature controller, you will NOT be able to resume the
+                            stopped log.
+                        </p>
+                    {% endif %}
+
+
+                        <a href="{% url 'gravity_detach' active_device.id %}" class="btn btn-small btn-sm btn-warning">Detach from Controller</a>
+
+{#                            <input type="submit" value="Save Point" class="btn btn-primary"/>#}
+{#                        </form>#}
+
+                    </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- Detach Sensor Modal -->
+{% endif %}
+    
 
 
 {#{% temp_control_modal active_device %}#}

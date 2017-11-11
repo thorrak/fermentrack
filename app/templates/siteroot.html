@@ -120,7 +120,7 @@ No gravity sensors have been configured yet. To get started, add a new sensor:
                             <div class="dash-data" style="text-align: left">Device: {% verbatim %}{{ sensor.device_name }}{% endverbatim %}</div>
                             <div class="dashpanel-divider"></div>
                                 <div class="dash-desc">
-                                    <div class="pull-left" v-if="sensor.bound_device"> Bound To: {% verbatim %}{{ sensor.bound_device }}{% endverbatim %}</div>
+                                    <div class="pull-left" v-if="sensor.bound_device.id"> Bound To: {% verbatim %}{{ sensor.bound_device.name }}{% endverbatim %}</div>
                                     <div class="pull-left" v-else> Currently Unbound</div>
                                     <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                                     <div class="clearfix"></div>

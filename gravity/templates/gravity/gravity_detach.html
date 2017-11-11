@@ -9,23 +9,20 @@
 
 {% block content %}
 
-<h1 class="page-header">Attach Sensor to Controller</h1>
+<h1 class="page-header">Detach Sensor to Controller</h1>
 
-    <form action="{% url 'gravity_attach' selected_sensor.id %}" class="form-horizontal" method="post">{% csrf_token %}
+    <form action="{% url 'gravity_detach' selected_sensor.id %}" class="form-horizontal" method="post">{% csrf_token %}
         <input type="hidden" name="sensor" value="{{ selected_sensor.id }}">
 
         {% form_generic form.temp_controller %}
 
         <p>
             NOTE - If the temperature controller selected is currently logging a beer, the log will be stopped to allow
-            the gravity sensor to be assigned.
-        </p>
-        <p>{# TODO - Make this only appear if the gravity sensor -is- actively logging #}
-            NOTE - If the gravity sensor is currently logging independently, the log will be stopped to allow the
-            gravity sensor to be assigned.
+            the gravity sensor to be detached.
         </p>
 
-        <input type="submit" value="Attach Sensor to Controller" class="btn btn-primary" />
+
+        <input type="submit" value="Create Sensor" class="btn btn-primary" />
     </form>
 
 

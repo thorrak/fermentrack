@@ -324,3 +324,37 @@ def gravity_attach(request, sensor_id):
 
 
     return render(request, template_name='gravity/gravity_attach.html', context={'selected_sensor': sensor, 'form': form})
+
+
+
+@login_required
+@site_is_configured
+@gravity_support_enabled
+def gravity_detach(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add beers. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if sensor.assigned_brewpi_device is None:
+        messages.error(request, u'Device {} is already detached from any temperature controller'.format(str(sensor)))
+        return redirect('gravity_dashboard', sensor_id=sensor_id)
+
+    if sensor.assigned_brewpi_device.active_beer is not None:
+        # The temperature sensor is currently actively logging something. Let's stop it. This will also stop the logging
+        # for the gravity sensor.
+        sensor.assigned_brewpi_device.manage_logging('stop')
+        # The save on this one is embedded in the manage_logging method
+        messages.warning(request, "Controller {} was actively logging, and has now been stopped.".format(sensor.assigned_brewpi_device))
+
+    sensor.assigned_brewpi_device = None
+    sensor.save()
+
+    messages.success(request, "Succesfully detached sensor {} from temperature controller".format(sensor))
+    return redirect('gravity_dashboard', sensor_id=sensor_id)

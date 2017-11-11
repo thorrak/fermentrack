@@ -1,5 +1,6 @@
 {% if active_device %}
                 <li class="dropdown">
+                {% if active_device.is_temp_controller %}
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ active_device.device_name }} <b class="caret"></b></a>
                   <span class="dropdown-arrow"></span>
                   <ul class="dropdown-menu">
@@ -10,6 +11,20 @@
                     <li><a href="{% url 'device_manage' active_device.id %}">Manage Device/View Logs</a></li>
                   </ul>
                 </li>
+                {% elif active_device.is_gravity_sensor %}
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ active_device.name }} <b class="caret"></b></a>
+                  <span class="dropdown-arrow"></span>
+                  <ul class="dropdown-menu">
+                    <li><a href="{% url 'gravity_dashboard' active_device.id %}">Dashboard</a></li>
+                      {% if not active_device.assigned_brewpi_device %}
+                    <li><a href="{% url 'gravity_attach' active_device.id %}">Attach to Temp Controller</a></li>
+                          {% endif %}
+{#                    <li><a href="{% url 'sensor_list' active_device.id %}">Configure Sensors/Pins/Devices</a></li>#}
+{#                    <li class="divider"></li>#}
+{#                    <li><a href="{% url 'device_manage' active_device.id %}">Manage Device/View Logs</a></li>#}
+                  </ul>
+                </li>
+                {% endif %}
 {% endif %}
 
                 <li class="dropdown">
@@ -20,15 +35,33 @@
 {% endif %}
                   <span class="dropdown-arrow"></span>
                   <ul class="dropdown-menu">
-{% for this_device in all_devices %}
-                    <li><a href="{% url 'device_dashboard' this_device.id %}">{{ this_device.device_name }}</a></li>{% endfor %}
+
+{% if config.TEMP_CONTROL_SUPPORT_ENABLED %}{% for this_device in all_devices %}
+                    <li><a href="{% url 'device_dashboard' this_device.id %}">{{ this_device.device_name }}</a></li>
+{% endfor %}{% endif %}
+
+{# The idea is that for assigned gravity sensors, there's not really much of a reason to go into the individual #}
+{# sensor as everything should be on the controller dashboard. #}
+{% if config.GRAVITY_SUPPORT_ENABLED %}{% for this_device in unassigned_gravity_sensors %}
+                    <li><a href="{% url 'gravity_dashboard' this_device.id %}">{{ this_device.name }}</a></li>
+{% endfor %}{% endif %}
+
+                  {% if config.TEMP_CONTROL_SUPPORT_ENABLED %}
                     <li class="divider"></li>
-                    <li><a href="{% url 'device_guided_select_device' %}"><i class="fa fa-fw fa-plus"></i> Add New Device (Guided)</a></li>
-                    <li><a href="{% url 'device_add' %}"><i class="fa fa-fw fa-plus"></i> Add New Device (Advanced)</a></li>
-                    <li><a href="{% url 'firmware_flash_select_family' %}"><i class="fa fa-fw fa-microchip"></i> Flash Controller</a></li>
+                    <li><a href="{% url 'device_guided_select_device' %}"><i class="fa fa-fw fa-plus"></i> Add New Temp Controller (Guided)</a></li>
+                    <li><a href="{% url 'device_add' %}"><i class="fa fa-fw fa-plus"></i> Add Temp Controller (Advanced)</a></li>
+                  {% endif %}
+
                   {% if config.GRAVITY_SUPPORT_ENABLED %}
+                    <li class="divider"></li>
                     <li><a href="{% url 'gravity_add_board' %}"><i class="fa fa-fw fa-plus"></i> Add Gravity Sensor</a></li>
                   {% endif %}
+
+                    <li class="divider"></li>
+                  {# Flash Device can be used to flash anything. It's always accessable #}
+                    <li><a href="{% url 'firmware_flash_select_family' %}"><i class="fa fa-fw fa-microchip"></i> Flash Device</a></li>
                   </ul>
                 </li>
+{% if config.TEMP_CONTROL_SUPPORT_ENABLED %}
                 <li><a href="{% url 'profile_list' %}">Ferm Profiles</a></li>
+{% endif %}

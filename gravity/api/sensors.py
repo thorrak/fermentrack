@@ -23,17 +23,22 @@ def getGravitySensors(req, device_id=None):
             manage_text = "Manage Device"
             manage_url = reverse('gravity_dashboard', kwargs={'sensor_id': dev.id,})
 
-        temp, temp_format = dev.retrieve_latest_temp()
+        temp, temp_format = dev.retrieve_loggable_temp()
         if temp is None:
             temp_string = "--.-&deg; -"
         else:
             temp_string = "{}&deg; {}".format(temp, temp_format)
 
-        ret.append({"device_name": dev.name, "current_gravity": dev.retrieve_latest_gravity(),
+        bound_device = {}
+        if dev.assigned_brewpi_device is not None:
+            bound_device['id'] = dev.assigned_brewpi_device_id
+            bound_device['name'] = dev.assigned_brewpi_device.device_name
+
+        ret.append({"device_name": dev.name, "current_gravity": dev.retrieve_loggable_gravity(),
                     "current_temp": temp, "temp_format": temp_format, "temp_string": temp_string,
                     'device_url': reverse('gravity_dashboard', kwargs={'sensor_id': dev.id,}),
                     'manage_text': manage_text, 'manage_url': manage_url,
-                    'bound_device': dev.assigned_brewpi_device,
+                    'bound_device': bound_device,
                     'modal_name': '#gravSensor{}'.format(dev.id)})
     return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
