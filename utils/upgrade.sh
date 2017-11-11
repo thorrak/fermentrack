@@ -104,7 +104,7 @@ git pull &>> upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip..."
-pip install -r requirements.txt --upgrade &>> upgrade.log
+pip install -U -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."
