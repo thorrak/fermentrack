@@ -9,6 +9,8 @@ zeroconf        # for locating ESP8266 devices
 circus          # for managing Fermentrack wsgi & brewpi.py processes
 circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
+huey            # asynchronous task queue
+huey[backends]  # backends for huey
 pid             # for pid-file handling
 pyserial        # for serial interaction
 
@@ -18,6 +20,3 @@ requests        # for loading firmware data from websites
 esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
-
-huey            # asynchronous task queue
-huey[backends]  # backends for huey

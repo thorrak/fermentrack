@@ -224,7 +224,7 @@ HUEY = {
     'name': 'fermentrack_huey',
     'events': True,
     'store_none': False,
-    'always_eager': DEBUG,
+    'always_eager': False,
     'store_errors': True,
 
     'connection': {
