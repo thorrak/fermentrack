@@ -20,8 +20,8 @@
                     <li><a href="{% url 'gravity_attach' active_device.id %}">Attach to Temp Controller</a></li>
                           {% endif %}
 {#                    <li><a href="{% url 'sensor_list' active_device.id %}">Configure Sensors/Pins/Devices</a></li>#}
-{#                    <li class="divider"></li>#}
-{#                    <li><a href="{% url 'device_manage' active_device.id %}">Manage Device/View Logs</a></li>#}
+                    <li class="divider"></li>
+                    <li><a href="{% url 'gravity_manage' active_device.id %}">Manage Sensor{# /View Logs #}</a></li>
                   </ul>
                 </li>
                 {% endif %}

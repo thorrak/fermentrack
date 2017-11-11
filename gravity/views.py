@@ -78,7 +78,7 @@ def gravity_add_point(request, manual_sensor_id):
     try:
         sensor = GravitySensor.objects.get(id=manual_sensor_id)
     except:
-        messages.error(request,'Unable to load sensor with ID {}'.format(manual_sensor_id))
+        messages.error(request, u'Unable to load sensor with ID {}'.format(manual_sensor_id))
         return redirect('gravity_list')
 
     form = forms.ManualPointForm()
@@ -158,7 +158,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     try:
         active_device = GravitySensor.objects.get(id=sensor_id)
     except:
-        messages.error(request, "Unable to load gravity sensor with ID {}".format(sensor_id))
+        messages.error(request, u"Unable to load gravity sensor with ID {}".format(sensor_id))
         return redirect('gravity_list')
 
     log_create_form = forms.GravityLogCreateForm()
@@ -172,7 +172,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
             active_log = GravityLog.objects.get(id=log_id, device_id=active_device.id)
         except:
             # If we are given an invalid log ID, let's return an error & drop back to the (valid) dashboard
-            messages.error(request, 'Unable to load log with ID {}'.format(log_id))
+            messages.error(request, u'Unable to load log with ID {}'.format(log_id))
             return redirect('gravity_dashboard', sensor_id=sensor_id)
         available_logs = GravityLog.objects.filter(device_id=active_device.id).exclude(id=log_id)
 
@@ -212,11 +212,11 @@ def gravity_log_create(request, sensor_id):
                 new_log.format = form.cleaned_data['device'].temp_format
                 new_log.save()
                 messages.success(request,
-                    "Successfully created log '{}'.<br>Graph will not appear until the first log points \
+                    u"Successfully created log '{}'.<br>Graph will not appear until the first log points \
                     have been collected. You will need to refresh the page for it to \
                     appear.".format(form.cleaned_data['log_name']))
             else:
-                messages.success(request, "Log {} already exists - assigning to device".format(form.cleaned_data['log_name']))
+                messages.success(request, u"Log {} already exists - assigning to device".format(form.cleaned_data['log_name']))
 
             if form.cleaned_data['device'].active_log != new_log:
                 form.cleaned_data['device'].active_log = new_log
@@ -304,19 +304,19 @@ def gravity_attach(request, sensor_id):
             if form_sensor.active_log is not None:
                 # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
                 form_sensor.active_log = None
-                messages.warning(request, "Gravity sensor {} was actively logging, but has now been stopped.".format(form_sensor))
+                messages.warning(request, u"Gravity sensor {} was actively logging, but has now been stopped.".format(form_sensor))
                 # We'll save in a bit
 
             if form.cleaned_data['temp_controller'].active_beer is not None:
                 # The temperature sensor is currently actively logging something. This is not ideal. Lets stop it.
                 form.cleaned_data['temp_controller'].manage_logging('stop')
                 # The save on this one is embedded in the manage_logging method
-                messages.warning(request, "Controller {} was actively logging, but has now been stopped.".format(form.cleaned_data['temp_controller']))
+                messages.warning(request, u"Controller {} was actively logging, but has now been stopped.".format(form.cleaned_data['temp_controller']))
 
             form_sensor.assigned_brewpi_device = form.cleaned_data['temp_controller']
             form_sensor.save()
 
-            messages.success(request, "Succesfully assigned sensor {} to temperature controller {}".format(form_sensor, form.cleaned_data['temp_controller']))
+            messages.success(request, u"Succesfully assigned sensor {} to temperature controller {}".format(form_sensor, form.cleaned_data['temp_controller']))
             return redirect('gravity_dashboard', sensor_id=sensor_id)
 
             # else:
@@ -351,10 +351,65 @@ def gravity_detach(request, sensor_id):
         # for the gravity sensor.
         sensor.assigned_brewpi_device.manage_logging('stop')
         # The save on this one is embedded in the manage_logging method
-        messages.warning(request, "Controller {} was actively logging, and has now been stopped.".format(sensor.assigned_brewpi_device))
+        messages.warning(request, u"Controller {} was actively logging, and has now been stopped.".format(sensor.assigned_brewpi_device))
 
     sensor.assigned_brewpi_device = None
     sensor.save()
 
-    messages.success(request, "Succesfully detached sensor {} from temperature controller".format(sensor))
+    messages.success(request, u"Succesfully detached sensor {} from temperature controller".format(sensor))
     return redirect('gravity_dashboard', sensor_id=sensor_id)
+
+
+@login_required
+@site_is_configured
+@gravity_support_enabled
+def gravity_uninstall(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.delete_device'):
+    #     messages.error(request, 'Your account is not permissioned to uninstall devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if request.POST:
+        if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
+            if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
+
+                if sensor.assigned_brewpi_device is not None:
+                    if sensor.assigned_brewpi_device.active_beer is not None:
+                        # The temperature sensor is currently actively logging something. Let's stop it.
+                        sensor.assigned_brewpi_device.manage_logging('stop')
+
+                sensor.delete()
+                messages.success(request, u"The device '{}' was successfully uninstalled.".format(sensor))
+                return redirect("siteroot")
+
+        # If we get here, one of the switches wasn't toggled
+        messages.error(request, "All three switches must be set to 'yes' to uninstall a sensor.")
+        return redirect("gravity_manage", sensor_id=sensor_id)
+    else:
+        messages.error(request, "To uninstall a device, use the form on the 'Manage Sensor' page.")
+        return redirect("gravity_manage", sensor_id=sensor_id)
+
+
+
+
+@login_required
+@site_is_configured
+def gravity_manage(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    return render(request, template_name='gravity/gravity_manage.html', context={'active_device': sensor})

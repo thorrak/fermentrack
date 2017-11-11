@@ -619,6 +619,9 @@ def device_manage(request, device_id):
         return render_with_devices(request, template_name='device_manage.html',
                                    context={'form': form, 'active_device': active_device})
 
+
+@login_required
+@site_is_configured
 def device_uninstall(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.delete_device'):
@@ -634,14 +637,22 @@ def device_uninstall(request, device_id):
     if request.POST:
         if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
             if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
-                # messages.success(request, "The device '" + unicode(active_device) + "' was successfully uninstalled.")
-                messages.success(request, u"The device '{}' was successfully uninstalled.".format(active_device))
+
+                if active_device.gravity_sensor:
+                    # If there's an associated gravity sensor, let's disassociate the sensor & stop it from logging
+                    grav_sensor = active_device.gravity_sensor
+                    if grav_sensor.active_log is not None:
+                        # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
+                        grav_sensor.active_log = None
+                        messages.warning(request,
+                                         u"Gravity sensor {} was actively logging, and has now been stopped.".format(
+                                             grav_sensor))
+
+                        grav_sensor.assigned_brewpi_device = None
+                        grav_sensor.save()
+
                 active_device.delete()
-                # TODO - Trigger Circus to reload properly, rather than using an external script
-                # As stone noted - this isn't needed as Circus will autodetect if a controller was removed and kill
-                # the instance of brewpi-script associated with it. This isn't necessary as a result.
-                # cmd = "nohup utils/reset_circus.sh &"
-                # subprocess.call(cmd, shell=True)
+                messages.success(request, u"The device '{}' was successfully uninstalled.".format(active_device))
                 return redirect("siteroot")
 
         # If we get here, one of the switches wasn't toggled
@@ -672,6 +683,8 @@ def almost_json_view(request, device_id, beer_id):
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
 
+@login_required
+@site_is_configured
 def debug_connection(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.delete_device'):
