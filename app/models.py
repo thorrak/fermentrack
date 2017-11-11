@@ -1164,7 +1164,19 @@ class BeerLogPoint(models.Model):
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
         if self.has_gravity_enabled():
             self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
-            self.gravity_temp = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
+            temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
+
+            if self.temp_format <> temp_format:
+                if self.temp_format == 'C' and temp_format == 'F':
+                    # Convert Fahrenheit to Celsius
+                    temp = (temp-32) * 5 / 9
+                elif self.temp_format == 'F' and temp_format == 'C':
+                    # Convert Celsius to Fahrenheit
+                    temp = (temp*9/5) + 32
+                else:
+                    logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(temp_format))
+
+            self.gravity_temp = temp
 
 
     def data_point(self, data_format='base_csv', set_defaults=True):
