@@ -18,6 +18,9 @@ from app.decorators import site_is_configured  # Checks if user has completed co
 
 import os, subprocess, datetime, pytz
 
+import json
+
+
 # Fermentrack integration
 try:
     from app.models import BrewPiDevice
@@ -264,7 +267,6 @@ def firmware_flash_select_firmware(request, board_id):
                                context={'other_firmware': other_firmware, 'fermentrack_firmware': fermentrack_firmware,
                                         'flash_family': flash_family, 'error_firmware': error_firmware,
                                         'board': board_obj, 'serial_port': request.POST['serial_port']})
-import json
 
 @login_required
 @site_is_configured

@@ -1,0 +1,169 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Sensor {{ active_device.name }} Settings{% endblock %}
+
+{% block content %}
+
+    <h1 class="page-header">{{ active_device.name }} Configuration</h1>
+{##}
+{#    <h3>Device Logs</h3>#}
+{##}
+    {# I shamelessly borrowed this from site_help.html. It could/should be refactored to make more sense when only #}
+    {# displaying logs for a single device. #}
+{#    <table class="table">#}
+{#      <thead class="thead-inverse">#}
+{#        <tr>#}
+{#          <th>Device Name</th>#}
+{#          <th>Stdout Log</th>#}
+{#          <th>Stderr Log</th>#}
+{#          <th>Status</th>#}
+{#          <td>Board Type</th>#}
+{#        </tr>#}
+{#      </thead>#}
+{#      <tbody>#}
+{#        <tr>#}
+{#            <th scope="row">{{ active_device.device_name }}</th>#}
+{#            <td><a href="/api/log/stdout/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stdout.log</a></td>#}
+{#            <td><a href="/api/log/stderr/{{ active_device.id }}/">log/dev-brewpi{{ active_device.id }}-stderr.log</a></td>#}
+{#            <td>{{ active_device.status }}</td>#}
+{#            <td>{{ active_device.board_type }}</td>#}
+{#        </tr>#}
+{#      </tbody>#}
+{#    </table>#}
+{##}
+{#    <p><a href="{% url 'device_debug_connection' active_device.id %}" class="btn btn-primary btn-large btn-lg">Debug Device Connection</a></p>#}
+{##}
+{#<h3 class="page-header">Update Device Settings</h3>#}
+{##}
+{#<form action="{% url "device_manage" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}#}
+{##}
+{#    <div id="deviceConstantsSection">#}
+{#        <h4 class="form-header">Device Constants</h4>#}
+{#        {% form_generic form.device_name %}#}
+{#        {% form_generic form.temp_format %}#}
+{#        {% form_generic form.data_point_log_interval %}#}
+{#        {% form_generic form.board_type %}#}
+{#    </div>#}
+{##}
+{##}
+{#    <div id="inetSocketSection">#}
+{#        <h4 class="form-header">Connect Interface to Script</h4>#}
+{#        {% form_generic form.useInetSocket %}#}
+{##}
+{#        <div id="localSocketHidden" style="display: none">{# Although I don't recommend local sockets, some people might want them #}
+{#            {% form_generic form.socket_name %}#}
+{#        </div>#}
+{##}
+{#        <div id="inetSocketHidden" style="display: block">#}
+{#            {% form_generic form.socketHost %}#}
+{#            {% form_generic form.socketPort %}#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{##}
+{#    <div id="connectivitySection">#}
+{#        <h4 class="form-header">Connect Script to Device</h4>#}
+{#        {% form_generic form.connection_type %}#}
+{#        <div id="serialSocketSection" style="display: none"> {# The javascript below will show the relevant section (serial or wifi) #}
+{#                {% form_generic form.serial_port %}#}
+{#                {% form_generic form.serial_alt_port %}#}
+{#                {% form_generic form.prefer_connecting_via_udev %}#}
+{#        </div>#}
+{##}
+{#        <div id="wifiSection" style="display: none">#}
+{#                {% form_generic form.wifi_host %}#}
+{#                {% form_generic form.wifi_port %}#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <input type="submit" value="Submit" class="btn btn-primary" />#}
+{#</form>#}
+
+
+
+
+
+{# ########### UNINSTALL DEVICE SECTION ############# #}
+
+    <h2>Uninstall Device</h2>
+    <p>
+        To uninstall a device from Fermentrack, approve the following statements and click the "Uninstall Sensor" button
+        below. Removing the device will take effect immediately, and this operation cannot be reversed. Once removed,
+        the device will need to be set up again from scratch to be used with Fermentrack. All logs associated with
+        removed devices will not be linked from within Fermentrack and may become irrecoverable.
+    </p>
+
+    <p>
+        Once a device is removed from Fermentrack it will no longer be managed by the app and may not continue to
+        control temperature as expected. If you are actively controlling a heating/cooling source it is highly
+        recommended you have your device actively controlled.
+    </p>
+
+    {% if active_device.assigned_brewpi_device %}
+        {% if active_device.assigned_brewpi_device.active_beer %}
+        <p>
+            This gravity sensor is currently associated with a temperature controller which is actively logging both
+            temperature and specific gravity. Uninstalling this device will stop the currently active beer log
+            preventing any additional data collection until a new log is created.
+        </p>
+        {% endif %}
+    {% endif %}
+
+    <form action="{% url "gravity_uninstall" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_1" />
+        </div>
+        <div class="col-xs-11">
+            I want to uninstall the device "{{ active_device.name }}" from this instance of Fermentrack
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_2" />
+        </div>
+        <div class="col-xs-11">{# TODO - Customize this if there is a linked controller #}
+            <p>I understand that logging - for both temperature by any linked controller (if applicable) and specific gravity will stop upon deinstallation</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-1">
+            <input type="checkbox" data-toggle="switch" data-on-color="danger" data-on-text="Yes" data-off-text="No" name="remove_3" />
+        </div>
+        <div class="col-xs-11">
+            <p>I understand that all logs associated with this device will be delinked and may be irrecoverable</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="row col-xs-12">
+            <input type="submit" value="Uninstall Sensor" class="btn btn-danger" />
+        </div>
+    </div>
+
+    </form>
+
+
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+// Switches
+if ($('[data-toggle="switch"]').length) {
+  $('[data-toggle="switch"]').bootstrapSwitch();
+}
+</script>
+
+{% endblock %}

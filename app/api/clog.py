@@ -16,7 +16,7 @@ def brewpi_spawner_log(req, lines=100):
     return HttpResponse(ret, content_type="text/plain")
 
 def fermentrack_log(req, lines=100):
-    logfile_path = os.path.join(settings.BASE_DIR, 'log', 'fermentrack.log')
+    logfile_path = os.path.join(settings.BASE_DIR, 'log', 'fermentrack-stderr.log')
     try:
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))

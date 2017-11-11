@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 
 
 def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
+    #TODO - Remove all references to "render_with_devices" in favor of the context processor
     all_devices = BrewPiDevice.objects.all()
 
     if context:  # Append to the context dict if it exists, otherwise create the context dict to add
@@ -72,7 +73,8 @@ def siteroot(request):
         return redirect('setup_splash')
     else:
         # The default screen is the "lcd list" screen
-        return device_lcd_list(request=request)
+        return render(request, template_name="siteroot.html")
+        # return device_lcd_list(request=request)
 
 
 @login_required
@@ -278,9 +280,15 @@ def device_dashboard(request, device_id, beer_id=None):
 
     if beer_id is None:
         beer_obj = active_device.active_beer or None
-        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # Do I want to exclude the active beer?
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # TODO - Do I want to exclude the active beer?
     else:
-        beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id) or None
+        try:
+            beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id)
+        except:
+            # If we are given an invalid beer log ID, let's return an error & drop back to the (valid) dashboard
+            messages.error(request, 'Unable to load beer log with ID {}'.format(beer_id))
+            return redirect('device_dashboard', device_id=device_id)
+
         available_beer_logs = Beer.objects.filter(device_id=active_device.id).exclude(id=beer_id)
 
     if beer_obj is None:
@@ -290,10 +298,15 @@ def device_dashboard(request, device_id, beer_id=None):
         beer_file_url = beer_obj.data_file_url('base_csv')
 
 
+    if beer_obj is None:
+        column_headers = {}
+    else:
+        column_headers = beer_obj.column_headers_to_graph_string('base_csv')
+
     return render_with_devices(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': Beer.column_headers_to_graph_string('base_csv'),
+                                        'column_headers': column_headers,
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
 
@@ -458,6 +471,7 @@ def site_settings(request):
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
+            config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
@@ -605,6 +619,9 @@ def device_manage(request, device_id):
         return render_with_devices(request, template_name='device_manage.html',
                                    context={'form': form, 'active_device': active_device})
 
+
+@login_required
+@site_is_configured
 def device_uninstall(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.delete_device'):
@@ -620,14 +637,22 @@ def device_uninstall(request, device_id):
     if request.POST:
         if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
             if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
-                # messages.success(request, "The device '" + unicode(active_device) + "' was successfully uninstalled.")
-                messages.success(request, u"The device '{}' was successfully uninstalled.".format(active_device))
+
+                if active_device.gravity_sensor:
+                    # If there's an associated gravity sensor, let's disassociate the sensor & stop it from logging
+                    grav_sensor = active_device.gravity_sensor
+                    if grav_sensor.active_log is not None:
+                        # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
+                        grav_sensor.active_log = None
+                        messages.warning(request,
+                                         u"Gravity sensor {} was actively logging, and has now been stopped.".format(
+                                             grav_sensor))
+
+                        grav_sensor.assigned_brewpi_device = None
+                        grav_sensor.save()
+
                 active_device.delete()
-                # TODO - Trigger Circus to reload properly, rather than using an external script
-                # As stone noted - this isn't needed as Circus will autodetect if a controller was removed and kill
-                # the instance of brewpi-script associated with it. This isn't necessary as a result.
-                # cmd = "nohup utils/reset_circus.sh &"
-                # subprocess.call(cmd, shell=True)
+                messages.success(request, u"The device '{}' was successfully uninstalled.".format(active_device))
                 return redirect("siteroot")
 
         # If we get here, one of the switches wasn't toggled
@@ -658,6 +683,8 @@ def almost_json_view(request, device_id, beer_id):
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
 
+@login_required
+@site_is_configured
 def debug_connection(request, device_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.delete_device'):

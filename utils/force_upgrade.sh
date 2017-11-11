@@ -72,7 +72,7 @@ shift $((OPTIND-1))
 exec > >(tee -i upgrade.log)
 
 
-printinfo "Triggering upgrade from branch ${BRANCH}"
+printinfo "Forcing upgrade & reset to upstream branch ${BRANCH}"
 # First, launch the virtualenv
 source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
 
@@ -88,8 +88,8 @@ circusctl stop &>> upgrade.log
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
-git fetch --prune &>> upgrade.log
-git reset --hard &>> upgrade.log
+git fetch --all &>> upgrade.log
+git reset --hard @{u} &>> upgrade.log
 
 # If we have a tag set, use it
 if [ "${TAG}" = "" ]
@@ -104,7 +104,7 @@ git pull &>> upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip..."
-pip install -U -r requirements.txt --upgrade &>> upgrade.log
+pip install -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."

@@ -13,6 +13,7 @@ import app.api.clog
 import app.circus_views
 
 import firmware_flash.urls
+import gravity.urls
 
 admin.autodiscover()
 
@@ -106,6 +107,8 @@ urlpatterns = [
     # Other logs
     url(r'^api/log/brewpi_spawner/$', app.api.clog.brewpi_spawner_log, name="brewpi_spawner_log"),
     url(r'^api/log/fermentrack/$', app.api.clog.fermentrack_log, name="fermentrack_log"),
+    # api/gravity views are located in the gravity app
+
 
     # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL
@@ -116,5 +119,4 @@ urlpatterns = [
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
-              firmware_flash.urls.firmware_flash_urlpatterns
-  # To enable viewing data files during development & add firmware_flash url patterns
+              firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns

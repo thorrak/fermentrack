@@ -81,3 +81,20 @@ def login_if_required_for_dashboard(function=None, redirect_field_name=REDIRECT_
         return actual_decorator(function)
     return actual_decorator
 
+
+def gravity_support_enabled(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+    """
+    Decorator for views that checks that the user is logged in, redirecting
+    to the log-in page if necessary.
+    """
+    def check_gravity_support_enabled():
+        return config.GRAVITY_SUPPORT_ENABLED
+
+    actual_decorator = constance_check(
+        check_gravity_support_enabled,
+        next_url=login_url,
+        redirect_field_name=redirect_field_name
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
