@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'gravity.apps.AppConfig',
     'constance',
     'constance.backends.database',
-    'django_celery_beat',
+    'huey.contrib.djhuey',
     # 'raven.contrib.django.raven_compat',
 ]
 
@@ -212,14 +212,30 @@ LOGIN_URL = 'login'              # Used in @login_required decorator
 CONSTANCE_SETUP_URL = 'setup_config'    # Used in @site_is_configured decorator
 
 
-# Celery Configuration
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost//'
+# Redis Configuration (primarily for gravity sensor support)
+REDIS_HOSTNAME = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell in a thread & we'll add to Constance
 
-#: Only add pickle to this list if your broker is secured
-#: from unwanted access (see userguide/security.html)
-CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
-CELERY_TASK_SERIALIZER = 'json'
+
+
+# Huey Configuration
+HUEY = {
+    'name': 'fermentrack_huey',
+    'events': True,
+    'store_none': False,
+    'always_eager': False,
+    'store_errors': True,
+
+    'connection': {
+        'host': REDIS_HOSTNAME,
+        'port': REDIS_PORT,
+        'password': REDIS_PASSWORD,  # TODO - Check if this actually works
+        'read_timeout': 1,
+        'max_errors': 100,
+    }
+}
+
 
 
 # Redis Configuration (primarily for gravity sensor support)
