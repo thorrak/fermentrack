@@ -236,7 +236,7 @@
                         <div class="chart-legend-row row" id="gravityTempRow">
                             <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityTempLabel">
                                 <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Gravity Sensor Temp
+                                Grav Sensor Temp
                             </div>
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityTempValue"></div>
                         </div>
@@ -471,7 +471,7 @@ function updateLegend(e, x, pts, row) {
         }{% if beer.gravity_enabled %} else if(pts[i].name == "gravity") {
             $('#gravityValue').text(formatGravText(pts[i].yval))
         } else if(pts[i].name == "grav_temp") {
-            $('#gravTempValue').text(formatTempText(pts[i].yval))
+            $('#gravityTempValue').text(formatTempText(pts[i].yval))
         }{% endif %}
     }
 }
