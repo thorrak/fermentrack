@@ -1173,6 +1173,9 @@ class BeerLogPoint(models.Model):
                 elif self.temp_format == 'F' and temp_format == 'C':
                     # Convert Celsius to Fahrenheit
                     temp = (temp*9/5) + 32
+                elif self.temp_format is None:
+                    # No data exists in redis yet for this sensor
+                    temp = None
                 else:
                     logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(temp_format))
 
