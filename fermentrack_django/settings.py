@@ -237,3 +237,11 @@ HUEY = {
 }
 
 
+
+# Redis Configuration (primarily for gravity sensor support)
+REDIS_HOSTNAME = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell in a thread & we'll add to Constance
+
+
+
