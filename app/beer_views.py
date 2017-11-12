@@ -36,6 +36,7 @@ def beer_create(request, device_id):
         form = beer_forms.BeerCreateForm(request.POST)
         if form.is_valid():
 
+            # TODO - Adjust this to just create the beer. Beer filenames now contain the id, and are therefore always unique
             new_beer, created = Beer.objects.get_or_create(name=form.cleaned_data['beer_name'],
                                                            device=form.cleaned_data['device'])
             if created:
@@ -47,6 +48,16 @@ def beer_create(request, device_id):
                     "Successfully created beer '{}'.<br>Graph will not appear until the first log points \
                     have been collected. You will need to refresh the page for it to \
                     appear.".format(form.cleaned_data['beer_name']))
+
+                if new_beer.device.gravity_sensor is not None:
+                    # The device this beer is being assigned to has an active gravity sensor. Lets enable logging.
+                    new_beer.gravity_enabled = True
+                    new_beer.save()
+
+                    # This also means we need to start a log on the gravity sensor as well.
+                    new_beer.device.gravity_sensor.create_log_and_start_logging(name=form.cleaned_data['beer_name'])
+                    messages.success(request, 'Started logging gravity data for sensor {}'.format(str(new_beer.device.gravity_sensor)))
+
             else:
                 messages.success(request, "Beer {} already exists - assigning to device".format(form.cleaned_data['beer_name']))
 
@@ -126,8 +137,15 @@ def beer_delete(request, beer_id):
 
     try:
         beer_obj = Beer.objects.get(id=beer_id)
-        messages.success(request, u'Beer "{}" was deleted'.format(beer_obj.name))
+
+        if beer_obj.device:
+            if beer_obj.device.active_beer == beer_obj:
+                # If the log is currently being logged to, we don't want to trigger a delete
+                messages.error(request, u'Requested log is currently in use - Stop logging on device and reattempt')
+                return redirect('beer_list')
+
         beer_obj.delete()
+        messages.success(request, u'Beer "{}" was deleted'.format(beer_obj.name))
     except:
         messages.error(request, u'Unable to locate beer with ID {}'.format(beer_id))
     return redirect('beer_list')

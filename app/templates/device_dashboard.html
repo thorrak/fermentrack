@@ -223,6 +223,24 @@
                             <div class="legend-value pull-right" style="padding-right: 15px;" id="roomTempValue"></div>
                         </div>
 
+                        {# This is part of the specific gravity sensor support #}
+                        {% if beer.gravity_enabled %}
+                        <div class="chart-legend-row row" id="gravityRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Gravity
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityValue"></div>
+                        </div>
+
+                        <div class="chart-legend-row row" id="gravityTempRow">
+                            <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityTempLabel">
+                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                Grav Sensor Temp
+                            </div>
+                            <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityTempValue"></div>
+                        </div>
+                        {% endif %}
                 </div>
                 <div class="panel-footer"></div>
 
@@ -396,6 +414,11 @@ function formatTempText(temp) {
     return temp + " " + window.temp_format;
 }
 
+function formatGravText(gravity) {
+    // This does nothing, but provides an easy place to change the format later if we want
+    return gravity
+}
+
 function formatTimeText(time_code) {
     var date_str = "";
     var time_str = "";
@@ -445,7 +468,11 @@ function updateLegend(e, x, pts, row) {
             $('#fridgeSetValue').text(formatTempText(pts[i].yval))
         } else if(pts[i].name == "room_temp") {
             $('#roomTempValue').text(formatTempText(pts[i].yval))
-        }
+        }{% if beer.gravity_enabled %} else if(pts[i].name == "gravity") {
+            $('#gravityValue').text(formatGravText(pts[i].yval))
+        } else if(pts[i].name == "grav_temp") {
+            $('#gravityTempValue').text(formatTempText(pts[i].yval))
+        }{% endif %}
     }
 }
 
@@ -466,7 +493,18 @@ g2 = new Dygraph(
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
+{% if beer.gravity_enabled %}
+        colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
+        ylabel: 'Temperature',
+        y2label: 'Gravity',
+        series: {
+            'gravity': {
+                axis: 'y2'
+            }
+        },
+{% else %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
+{% endif %}
         highlightCallback: updateLegend
     }  // options
 );
@@ -498,6 +536,8 @@ var fridge_set_visible = true;
 var beer_temp_visible = true;
 var beer_set_visible = true;
 var room_temp_visible = true;
+var gravity_visible = true;
+var gravity_temp_visible = true;
 
 function toggle_graph_visibility(el) {
     if(el.id == "beer_temp_legend") {
@@ -520,9 +560,15 @@ function toggle_graph_visibility(el) {
         room_temp_visible = !room_temp_visible;
         g2.setVisibility(4, room_temp_visible);
 
+    } else if(el.id == "gravity_legend") {
+        gravity_visible = !gravity_visible;
+        g2.setVisibility(5, gravity_visible);
+
+    } else if(el.id == "gravity_temp_legend") {
+        gravity_temp_visible = !gravity_temp_visible;
+        g2.setVisibility(6, gravity_temp_visible);
     }
 }
-
 
 
 </script>

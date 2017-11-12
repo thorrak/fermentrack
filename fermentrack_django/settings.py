@@ -41,9 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
     'firmware_flash.apps.AppConfig',
+    'gravity.apps.AppConfig',
     'constance',
     'constance.backends.database',
-    'django_celery_beat',
+    'huey.contrib.djhuey',
     # 'raven.contrib.django.raven_compat',
 ]
 
@@ -72,6 +73,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'constance.context_processors.config',
                 'app.context_processors.preferred_tz',
+                'app.context_processors.devices',
                 # 'app.context_processors.devices',
             ],
         },
@@ -174,6 +176,8 @@ CONSTANCE_CONFIG = {
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select'),
     'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
+    'TEMP_CONTROL_SUPPORT_ENABLED': (True, 'Has the user enabled support for temp tracking/control (eg BrewPi)?', bool),
+    'GRAVITY_SUPPORT_ENABLED': (False, 'Has the user enabled support for specific gravity sensors?', bool),
     'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
                        'When was the last time we checked GitHub for upgrades?', datetime.datetime),
     'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
@@ -189,6 +193,7 @@ CONSTANCE_CONFIG = {
     'GRAPH_FRIDGE_SET_COLOR': ("#107E7D", 'What color do you want the fridge setting line on the graph?', str),
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
+    'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
 
 }
 
@@ -207,12 +212,36 @@ LOGIN_URL = 'login'              # Used in @login_required decorator
 CONSTANCE_SETUP_URL = 'setup_config'    # Used in @site_is_configured decorator
 
 
-# Celery Configuration
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost//'
+# Redis Configuration (primarily for gravity sensor support)
+REDIS_HOSTNAME = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell in a thread & we'll add to Constance
 
-#: Only add pickle to this list if your broker is secured
-#: from unwanted access (see userguide/security.html)
-CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
-CELERY_TASK_SERIALIZER = 'json'
+
+
+# Huey Configuration
+HUEY = {
+    'name': 'fermentrack_huey',
+    'events': True,
+    'store_none': False,
+    'always_eager': False,
+    'store_errors': True,
+
+    'connection': {
+        'host': REDIS_HOSTNAME,
+        'port': REDIS_PORT,
+        'password': REDIS_PASSWORD,  # TODO - Check if this actually works
+        'read_timeout': 1,
+        'max_errors': 100,
+    }
+}
+
+
+
+# Redis Configuration (primarily for gravity sensor support)
+REDIS_HOSTNAME = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell in a thread & we'll add to Constance
+
+
 

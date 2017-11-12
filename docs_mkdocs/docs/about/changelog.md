@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Support for Arduino-based devices
 - Support for in-app git branch switching
 - Autodetection of serial devices
-- Celery (delayed/scheduled task) support (currently unused)
+- Huey (delayed/scheduled task) support (currently unused)
 - Controllers connected via serial can now have their serial port autodetected using the udev serial number 
 - Beer profiles are now displayed in graph form
 - Firmware can now be flashed to new Arduino & ESP8266-based controllers from within the app
@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - At end of a fermentation profile the controller will now be switched to beer constant mode
 - All data points are now explicitly recorded in UTC
 - Added icon to graph legend to display line color
+- Updated to Django v1.11 (Long term support version)
 
 ### Fixed
 - Inversion state no longer improperly defaults

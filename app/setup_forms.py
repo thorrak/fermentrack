@@ -44,9 +44,14 @@ class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting
     date_time_display_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_display_select'][1]['choices']
     temperature_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['temperature_format_select'][1]['choices']
-    true_false = [
-        ('true', 'Yes - Require Login'),
-        ('false', 'No - Can be seen without logging in')
+    login_true_false = [
+        (True, 'Yes - Require Login'),
+        (False, 'No - Can be seen without logging in')
+    ]
+
+    true_false =[
+        (True, 'Yes'),
+        (False, 'No')
     ]
 
     # Fields for our form, the initial value taken from configuration.
@@ -58,7 +63,7 @@ class GuidedSetupConfigForm(forms.Form):
         choices=date_time_display_select_choices,
         )
     require_login_for_dashboard = forms.ChoiceField(  # initial=config.REQUIRE_LOGIN_FOR_DASHBOARD
-        choices=true_false,
+        choices=login_true_false,
         # widget=forms.RadioSelect(),
         )
     temperature_format = forms.ChoiceField(  # initial=config.TEMPERATURE_FORMAT
@@ -68,6 +73,11 @@ class GuidedSetupConfigForm(forms.Form):
     preferred_timezone = forms.ChoiceField(
         choices=[(x,x) for x in pytz.common_timezones]
     )
+
+    enable_gravity_support = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+        choices=true_false,
+        # widget=forms.RadioSelect(),
+        )
 
     def __init__(self, *args, **kwargs):
         super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
@@ -80,6 +90,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
+        self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
 
         # This is super-hackish, but whatever. If it works, it works
         for this_field in self.fields:
