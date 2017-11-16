@@ -49,7 +49,7 @@ def beer_create(request, device_id):
                     have been collected. You will need to refresh the page for it to \
                     appear.".format(form.cleaned_data['beer_name']))
 
-                if new_beer.device.gravity_sensor is not None:
+                if hasattr(new_beer.device, 'gravity_sensor'):
                     # The device this beer is being assigned to has an active gravity sensor. Lets enable logging.
                     new_beer.gravity_enabled = True
                     new_beer.save()
