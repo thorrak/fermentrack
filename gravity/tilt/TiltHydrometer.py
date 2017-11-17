@@ -162,7 +162,7 @@ class TiltHydrometer:
                 else:
                     returnValue = self.medianValues(self.medianWindow)
 
-                self.cleanValues();
+                self.cleanValues()
         return returnValue
 
     def averageValues(self):
@@ -239,6 +239,7 @@ class TiltHydrometer:
 
     # Load the calibration settings from file and create the calibration functions
     def tiltHydrometerCalibrationFunction(self, type, colour):
+        # This function is replaced under Fermentrack
         returnFunction = noCalibration
 
         originalValues = []
@@ -355,6 +356,7 @@ class TiltHydrometerManager:
 
     # Store function
     def storeValue(self, colour, temperature, gravity):
+        # This function is replaced under Fermentrack (just so we can override the class being used)
         tiltHydrometer = self.tiltHydrometers.get(colour)
         if (tiltHydrometer is None):
             tiltHydrometer = TiltHydrometer(colour, self.averagingPeriod, self.medianWindow, self.debug)
@@ -437,6 +439,7 @@ class TiltHydrometerManager:
 
     # Checks to see if the settings file has changed, then reloads the settings if it has. Returns True if the settings were reloaded.
     def reloadSettings(self):
+        # This function is replaced under Fermentrack
         filename = "tiltHydrometer/settings.ini"
         reloadSettings = False
 
@@ -459,6 +462,7 @@ class TiltHydrometerManager:
 
     # Load Settings from config file, overriding values given at creation. This needs to be called before the start function is called.
     def loadSettings(self, filename):
+        # This function is replaced under Fermentrack
         try:
             print "Loading settings from file: " + filename
 

@@ -141,3 +141,6 @@ class SensorAttachForm(forms.Form):
             raise forms.ValidationError("Invalid temperature controller specified!")
 
         return cleaned_data
+
+
+

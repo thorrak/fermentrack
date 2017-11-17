@@ -10,7 +10,6 @@ circus          # for managing Fermentrack wsgi & brewpi.py processes
 circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
 huey            # asynchronous task queue
-huey[backends]  # backends for huey
 pid             # for pid-file handling
 pyserial        # for serial interaction
 

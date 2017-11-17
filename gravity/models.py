@@ -465,70 +465,121 @@ class GravityLogPoint(models.Model):
 
 
 ##### Tilt Hydrometer Specific Models
-# class TiltTempCalibrationPoint(models.Model):
-#     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
-#
-#     sensor = models.ForeignKey(GravitySensor)
-#     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original Value")
-#     actual_value = models.DecimalField(max_digits=8, decimal_places=4)
-#
-#     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C')
-#
-#     # TODO - Write code to convert to the appropriate format as necessary
-#
-#
-# class TiltGravityCalibrationPoint(models.Model):
-#     sensor = models.ForeignKey(GravitySensor)
-#     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original Value")
-#     actual_value = models.DecimalField(max_digits=8, decimal_places=4)
-#
-# class TiltConfiguration(models.Model):
-#     COLOR_BLACK = "black"
-#     COLOR_ORANGE = "orange"
-#     COLOR_GREEN = "green"
-#     COLOR_BLUE = "blue"
-#     COLOR_PURPLE = "purple"
-#     COLOR_RED = "red"
-#     COLOR_YELLOW = "yellow"
-#     COLOR_PINK = "pink"
-#
-#     COLOR_CHOICES = (
-#         (COLOR_BLACK, 'Black'),
-#         (COLOR_ORANGE, 'Orange'),
-#         (COLOR_GREEN, 'Green'),
-#         (COLOR_BLUE, 'Blue'),
-#         (COLOR_PURPLE, 'Purple'),
-#         (COLOR_RED, 'Red'),
-#         (COLOR_YELLOW, 'Yellow'),
-#         (COLOR_PINK, 'Pink'),
-#     )
-#
-#
-#     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True)
-#     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
-#
-#     # The following two options are migrated from the Tilt manager configuration file
-#
-#     # Record values over a period in order to average/median the numbers. This is used to smooth noise.
-#     # Default: 5 mins
-#     average_period_secs = models.IntegerField(default=5*60)
-#
-#     # Use a median filter over the average period. The window will be applied multiple times.
-#     # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with a set of 360-380 values.
-#     # Setting the window to < 360, will then give you a moving average like function.
-#     # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes in temp/gravity will take ~2.5 mins to be observed.
-#     median_window_vals = models.IntegerField(default=10000)
-#
-#
-#     def tiltHydrometerName(self, uuid):
-#         return {
-#                 'a495bb10c5b14b44b5121370f02d74de' : self.COLOR_RED,
-#                 'a495bb20c5b14b44b5121370f02d74de' : self.COLOR_GREEN,
-#                 'a495bb30c5b14b44b5121370f02d74de' : self.COLOR_BLACK,
-#                 'a495bb40c5b14b44b5121370f02d74de' : self.COLOR_PURPLE,
-#                 'a495bb50c5b14b44b5121370f02d74de' : self.COLOR_ORANGE,
-#                 'a495bb60c5b14b44b5121370f02d74de' : self.COLOR_BLUE,
-#                 'a495bb70c5b14b44b5121370f02d74de' : self.COLOR_YELLOW,
-#                 'a495bb80c5b14b44b5121370f02d74de' : self.COLOR_PINK,
-#         }.get(uuid)
-#
+class TiltTempCalibrationPoint(models.Model):
+    TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
+
+    sensor = models.ForeignKey('TiltConfiguration')
+    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Temp Value")
+    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Temp Value")
+
+    temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C')
+
+    def temp_to_f(self, temp):
+        if self.temp_format == 'F':
+            return temp
+        else:
+            return (temp*9/5) + 32
+
+    def temp_to_c(self, temp):
+        if self.temp_format == 'C':
+            return temp
+        else:
+            return (temp-32) * 5 / 9
+
+    def orig_in_preferred_format(self):
+        # Converts the temperature format of the configuration point to the currently active format assigned to the
+        # sensor
+        preferred_format = self.sensor.sensor.temp_format
+
+        if preferred_format == self.temp_format:
+            return self.orig_value
+        elif preferred_format == 'F' and self.temp_format == 'C':
+            return self.temp_to_f(self.orig_value)
+        elif preferred_format == 'C' and self.temp_format == 'F':
+            return self.temp_to_c(self.orig_value)
+        else:
+            raise NotImplementedError
+
+    def actual_in_preferred_format(self):
+        # Converts the temperature format of the configuration point to the currently active format assigned to the
+        # sensor
+        preferred_format = self.sensor.sensor.temp_format
+
+        if preferred_format == self.temp_format:
+            return self.actual_value
+        elif preferred_format == 'F' and self.temp_format == 'C':
+            return self.temp_to_f(self.actual_value)
+        elif preferred_format == 'C' and self.temp_format == 'F':
+            return self.temp_to_c(self.actual_value)
+        else:
+            raise NotImplementedError
+
+
+class TiltGravityCalibrationPoint(models.Model):
+    sensor = models.ForeignKey('TiltConfiguration')
+    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Gravity Value")
+    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Gravity Value")
+
+
+class TiltConfiguration(models.Model):
+    COLOR_BLACK = "black"
+    COLOR_ORANGE = "orange"
+    COLOR_GREEN = "green"
+    COLOR_BLUE = "blue"
+    COLOR_PURPLE = "purple"
+    COLOR_RED = "red"
+    COLOR_YELLOW = "yellow"
+    COLOR_PINK = "pink"
+
+    COLOR_CHOICES = (
+        (COLOR_BLACK, 'Black'),
+        (COLOR_ORANGE, 'Orange'),
+        (COLOR_GREEN, 'Green'),
+        (COLOR_BLUE, 'Blue'),
+        (COLOR_PURPLE, 'Purple'),
+        (COLOR_RED, 'Red'),
+        (COLOR_YELLOW, 'Yellow'),
+        (COLOR_PINK, 'Pink'),
+    )
+
+
+    sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
+                                  related_name="tilt_configuration")
+    color = models.CharField(max_length=32, choices=COLOR_CHOICES)
+
+    # The following two options are migrated from the Tilt manager configuration file
+
+    # Record values over a period in order to average/median the numbers. This is used to smooth noise.
+    # Default: 5 mins
+    average_period_secs = models.IntegerField(default=5*60)
+
+    # Use a median filter over the average period. The window will be applied multiple times.
+    # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with a set of 360-380 values.
+    # Setting the window to < 360, will then give you a moving average like function.
+    # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes in temp/gravity will take ~2.5 mins to be observed.
+    median_window_vals = models.IntegerField(default=10000)
+
+
+    def tiltHydrometerName(self, uuid):
+        return {
+                'a495bb10c5b14b44b5121370f02d74de' : self.COLOR_RED,
+                'a495bb20c5b14b44b5121370f02d74de' : self.COLOR_GREEN,
+                'a495bb30c5b14b44b5121370f02d74de' : self.COLOR_BLACK,
+                'a495bb40c5b14b44b5121370f02d74de' : self.COLOR_PURPLE,
+                'a495bb50c5b14b44b5121370f02d74de' : self.COLOR_ORANGE,
+                'a495bb60c5b14b44b5121370f02d74de' : self.COLOR_BLUE,
+                'a495bb70c5b14b44b5121370f02d74de' : self.COLOR_YELLOW,
+                'a495bb80c5b14b44b5121370f02d74de' : self.COLOR_PINK,
+        }.get(uuid)
+
+
+    def inFahrenheit(self):
+        if self.sensor.temp_format == 'F':
+            return True
+        elif self.sensor.temp_format == 'C':
+            return False
+        else:
+            raise NotImplementedError
+
+    def dev_id(self):
+        return 0
