@@ -30,14 +30,18 @@ def getGravitySensors(req, device_id=None):
             temp_string = "{}&deg; {}".format(temp, temp_format)
 
         gravity = dev.retrieve_loggable_gravity()
-        grav_string = "{:05.3f}".format(gravity)
+        if gravity is None:
+            grav_string = "-.---"
+        else:
+            grav_string = "{:05.3f}".format(gravity)
+
 
         bound_device = {}
         if dev.assigned_brewpi_device is not None:
             bound_device['id'] = dev.assigned_brewpi_device_id
             bound_device['name'] = dev.assigned_brewpi_device.device_name
 
-        ret.append({"device_name": dev.name, "current_gravity": dev.grav_string,
+        ret.append({"device_name": dev.name, "current_gravity": grav_string,
                     "current_temp": temp, "temp_format": temp_format, "temp_string": temp_string,
                     'device_url': reverse('gravity_dashboard', kwargs={'sensor_id': dev.id,}),
                     'manage_text': manage_text, 'manage_url': manage_url,
