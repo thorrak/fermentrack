@@ -391,7 +391,7 @@ class TiltHydrometerManager:
                 while self.scanning:
                     self.processSocket(sock)
 
-                    reloaded = self.reloadSettings();
+                    reloaded = self.reloadSettings()
                     if (reloaded):
                         break
             except Exception, e:

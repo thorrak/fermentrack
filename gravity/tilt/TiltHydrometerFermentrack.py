@@ -2,19 +2,39 @@ import threading
 import functools
 
 
-import TiltHydrometer
+import os, sys
+
+
+# For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded
+# as false. If it turns out the user tried to launch with dblist/dbcfg, die with an error message.
+# Load up the Django specific stuff
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# This is so Django knows where to find stuff.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
+sys.path.append(BASE_DIR)
+
+# This is so my local_settings.py gets loaded.
+os.chdir(BASE_DIR)
+
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+
+
 import gravity.models
 
-# To ease the overrides, going to import the appropriate functions directly
-from TiltHydrometer import extrap1d, extrapolationCalibration, interp1d, offsetCalibration, noCalibration
+# Since this is designed to replace the base TiltHydrometer classes, let's import everything from the parent file
+from TiltHydrometer import *
 
 
-class TiltHydrometerFermentrack(TiltHydrometer.TiltHydrometer):
+class TiltHydrometerFermentrack(TiltHydrometer):
 
-    def __init__(self, colour, averagingPeriod=0, medianWindow=0, debug=False, tilt_manager = None):
+    def __init__(self, colour, tilt_manager, averagingPeriod=0, medianWindow=0, debug=False):
         self.temp_initialized = False  # Adding this for Fermentrack
         self.gravity_initialized = False  # Adding this for Fermentrack
 
+        # TiltManager is an instance of TiltHydrometerManagerFermentrack
         self.tilt_manager = tilt_manager
         self.colour = colour
         self.lock = threading.Lock()
@@ -41,7 +61,7 @@ class TiltHydrometerFermentrack(TiltHydrometer.TiltHydrometer):
 
             self.temp_initialized = True
 
-            calibration_points = self.tilt_manager.obj.tilttempcalibrationpoint_set()
+            calibration_points = self.tilt_manager.obj.tilttempcalibrationpoint_set.all()
 
             for this_point in calibration_points:
                 # For the temperature calibration points, we need to convert to the appropriate temperature format
@@ -56,7 +76,7 @@ class TiltHydrometerFermentrack(TiltHydrometer.TiltHydrometer):
 
             self.gravity_initialized = True
 
-            calibration_points = self.tilt_manager.obj.tiltgravitycalibrationpoint_set()
+            calibration_points = self.tilt_manager.obj.tiltgravitycalibrationpoint_set.all()
 
             for this_point in calibration_points:
                 originalValues.append(this_point.orig_value)
@@ -81,11 +101,10 @@ class TiltHydrometerFermentrack(TiltHydrometer.TiltHydrometer):
 
 
 
-class TiltHydrometerManagerFermentrack(TiltHydrometer.TiltHydrometerManager):
-    def __init__(self, device_id):
+class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
+    def __init__(self, device):
         self.initialized = False
-        self.fermentrack_device_id = device_id
-        self.obj = gravity.models.TiltConfiguration.objects.get(self.fermentrack_device_id)
+        self.obj = device
         self.debug = False
 
         self.reloadSettings()
@@ -102,7 +121,7 @@ class TiltHydrometerManagerFermentrack(TiltHydrometer.TiltHydrometerManager):
         return False
 
     def loadSettings(self, filename=""):  # Preserving the filename argument just in case something changes later on
-        self.obj = gravity.models.TiltConfiguration.objects.get(self.fermentrack_device_id)
+        self.obj = gravity.models.TiltConfiguration.objects.get(color=self.obj.color)
 
         self.inFahrenheit = self.obj.inFahrenheit()
         self.dev_id = self.obj.dev_id()
@@ -115,7 +134,7 @@ class TiltHydrometerManagerFermentrack(TiltHydrometer.TiltHydrometerManager):
         tiltHydrometer = self.tiltHydrometers.get(colour)
         if (tiltHydrometer is None):
             # TODO - Clean up the initialization function for TiltHydrometerFermentrack
-            tiltHydrometer = TiltHydrometerFermentrack(colour, self.averagingPeriod, self.medianWindow, self.debug, self)
+            tiltHydrometer = TiltHydrometerFermentrack(colour, self, self.averagingPeriod, self.medianWindow, self.debug)
             self.tiltHydrometers[colour] = tiltHydrometer
 
         tiltHydrometer.setValues(temperature, gravity)

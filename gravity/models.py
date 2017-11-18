@@ -56,7 +56,7 @@ class GravitySensor(models.Model):
     # TEMP_FORMAT_CHOICES is used to track what the temperature readings are coming off the sensor
     TEMP_CELSIUS = 'C'
     TEMP_FAHRENHEIT = 'F'
-    TEMP_FORMAT_CHOICES = ((TEMP_CELSIUS, 'Celsius'), (TEMP_FAHRENHEIT, 'Fahrenheit'))
+    TEMP_FORMAT_CHOICES = ((TEMP_FAHRENHEIT, 'Fahrenheit'), (TEMP_CELSIUS, 'Celsius'))
 
     TEMP_ALWAYS_ESTIMATE = 'estimate (automatic)'
     TEMP_SOMETIMES_ESTIMATE = 'unknown (manual)'
@@ -93,7 +93,7 @@ class GravitySensor(models.Model):
 
     name = models.CharField(max_length=48, help_text="Unique name for this device", unique=True)
 
-    temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='C',
+    temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F',
                                    help_text="Temperature units")
 
     sensor_type = models.CharField(max_length=10, default=SENSOR_MANUAL, choices=SENSOR_TYPE_CHOICES,
@@ -522,14 +522,14 @@ class TiltGravityCalibrationPoint(models.Model):
 
 
 class TiltConfiguration(models.Model):
-    COLOR_BLACK = "black"
-    COLOR_ORANGE = "orange"
-    COLOR_GREEN = "green"
-    COLOR_BLUE = "blue"
-    COLOR_PURPLE = "purple"
-    COLOR_RED = "red"
-    COLOR_YELLOW = "yellow"
-    COLOR_PINK = "pink"
+    COLOR_BLACK = "Black"
+    COLOR_ORANGE = "Orange"
+    COLOR_GREEN = "Green"
+    COLOR_BLUE = "Blue"
+    COLOR_PURPLE = "Purple"
+    COLOR_RED = "Red"
+    COLOR_YELLOW = "Yellow"
+    COLOR_PINK = "Pink"
 
     COLOR_CHOICES = (
         (COLOR_BLACK, 'Black'),
