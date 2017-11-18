@@ -44,8 +44,9 @@ logger = logging.getLogger(__name__)
 # In addition to these 5 fields, we track when the data point was saved (but this isn't expected to be passed in)
 
 
-# Due to the fact that - unlike the BrewPi - we aren't assuming a single manufacturer/type of specific gravity sensor,
-# we use the GravitySensor model to tie together the fields that don't require differentiation between sensor types
+# Due to the fact that - unlike temp controllers - we aren't assuming a single manufacturer/type of specific gravity
+# sensor, we use the GravitySensor model to tie together the fields that don't require differentiation between sensor
+# types
 
 class GravitySensor(models.Model):
     class Meta:
@@ -463,7 +464,6 @@ class GravityLogPoint(models.Model):
             return None
 
 
-
 ##### Tilt Hydrometer Specific Models
 class TiltTempCalibrationPoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
@@ -545,7 +545,7 @@ class TiltConfiguration(models.Model):
 
     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
                                   related_name="tilt_configuration")
-    color = models.CharField(max_length=32, choices=COLOR_CHOICES)
+    color = models.CharField(max_length=32, choices=COLOR_CHOICES, unique=True)
 
     # The following two options are migrated from the Tilt manager configuration file
 
@@ -583,3 +583,10 @@ class TiltConfiguration(models.Model):
 
     def dev_id(self):
         return 0
+
+    def __str__(self):
+        return self.color
+
+    def __unicode__(self):
+        return str(self)
+

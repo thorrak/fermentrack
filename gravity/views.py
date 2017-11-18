@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor, GravityLog
+from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -41,21 +41,41 @@ def gravity_add_board(request):
     #     return redirect("/")
 
     manual_form = forms.ManualForm()
+    tilt_form = forms.TiltCreateForm()
 
     if request.POST:
         if request.POST['sensor_family'] == "manual":
             manual_form = forms.ManualForm(request.POST)
             if manual_form.is_valid():
-
                 sensor = manual_form.save()
-                messages.success(request, 'Sensor added')
+                messages.success(request, 'New manual sensor added')
 
                 return redirect('gravity_list')
+
+        elif request.POST['sensor_family'] == "tilt":
+            tilt_form = forms.TiltCreateForm(request.POST)
+            if tilt_form.is_valid():
+                sensor = GravitySensor(
+                    name=tilt_form.cleaned_data['name'],
+                    temp_format=tilt_form.cleaned_data['temp_format'],
+                    sensor_type=GravitySensor.SENSOR_TILT,
+                )
+                sensor.save()
+
+                tilt_config = TiltConfiguration(
+                    sensor=sensor,
+                    color=tilt_form.cleaned_data['color'],
+                )
+                tilt_config.save()
+                messages.success(request, 'New tilt sensor added')
+
+                return redirect('gravity_list')
+
         messages.error(request, 'Error adding sensor')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render_with_devices(request, template_name='gravity/gravity_family.html',
-                               context={'manual_form': manual_form,})
+                               context={'manual_form': manual_form, 'tilt_form': tilt_form})
 
 
 @site_is_configured
@@ -106,49 +126,6 @@ def gravity_add_point(request, manual_sensor_id):
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render_with_devices(request, template_name='gravity/gravity_add_point.html',
                                context={'form': form, 'sensor': sensor})
-
-
-        #
-    #
-    # try:
-    #     flash_family = DeviceFamily.objects.get(id=flash_family_id)
-    # except:
-    #     messages.error(request, "Invalid flash_family specified")
-    #     return redirect('firmware_flash_select_family')
-    #
-    #
-    # # Test if avrdude is available. If not, the user will need to install it for flashing AVR-based devices.
-    # if flash_family.flash_method == DeviceFamily.FLASH_ARDUINO:
-    #     try:
-    #         rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
-    #         install_check = rettext.find("installed")
-    #
-    #         if install_check == -1:
-    #             # The package status isn't installed - we explicitly cannot install arduino images
-    #             messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
-    #             return redirect('firmware_flash_select_family')
-    #     except:
-    #         messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
-    #         # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
-    #         # return redirect('firmware_flash_select_family')
-    #
-    #
-    # if request.POST:
-    #     form = forms.BoardForm(request.POST)
-    #     form.set_choices(flash_family)
-    #     if form.is_valid():
-    #         return redirect('firmware_flash_serial_autodetect', board_id=form.cleaned_data['board_type'])
-    #     else:
-    #         return render_with_devices(request, template_name='firmware_flash/select_board.html',
-    #                                    context={'form': form, 'flash_family': flash_family})
-    # else:
-    #     form = forms.BoardForm()
-    #     form.set_choices(flash_family)
-    #     return render_with_devices(request, template_name='firmware_flash/select_board.html',
-    #                                context={'form': form, 'flash_family': flash_family})
-    #
-
-
 
 
 @site_is_configured
