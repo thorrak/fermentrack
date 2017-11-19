@@ -4,22 +4,17 @@
 # type of process driven by one type of model (ie - brewpi_script, tilt_manager, etc.)
 
 
-import os
-import sys
+import os, sys
 import time
 import logging
 
-from circus.client import CircusClient
-from circus.exc import CallError
-from circus.util import DEFAULT_ENDPOINT_DEALER
+# from circus.client import CircusClient
+# from circus.exc import CallError
+# from circus.util import DEFAULT_ENDPOINT_DEALER
 
-# # Load up the Django specific stuff
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# # This is so Django knows where to find stuff.
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
-# sys.path.append(BASE_DIR)
-# from django.core.wsgi import get_wsgi_application
-# application = get_wsgi_application()
+# Amend the base to the path so we can include lib.ftcircus.client
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
 
 from lib.ftcircus.client import CircusMgr, CircusException
 
@@ -69,13 +64,13 @@ class ProcessManager(object):
         if device should be running or not
         """
         # Get all devices from database
-        db_devices = self._querydb()
+        db_devices = self._querydb(self)
         # Only get devices that are run within circus with the prefix
         running_devices = self._running()
 
         self.log.debug(
             "DB devices (active): %s, Running device processes: %s",
-            ", ".join([dev.device_name for dev in db_devices]),
+            ", ".join([dev.circus_parameter() for dev in db_devices]),
             ", ".join([dev for dev in running_devices])
             )
         names = []
