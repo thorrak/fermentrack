@@ -3,7 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
-from gravity.models import GravitySensor, GravityLogPoint, GravityLog
+from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration
 from app.models import BrewPiDevice
 from django.forms import ModelForm
 
@@ -141,3 +141,34 @@ class SensorAttachForm(forms.Form):
             raise forms.ValidationError("Invalid temperature controller specified!")
 
         return cleaned_data
+
+
+
+class TiltCreateForm(forms.Form):
+    name = forms.CharField(max_length=255, min_length=1, required=True, )
+    temp_format = forms.ChoiceField(required=True, choices=GravitySensor.TEMP_FORMAT_CHOICES)
+
+    color = forms.ChoiceField(required=True, choices=TiltConfiguration.COLOR_CHOICES)
+
+    def clean_color(self):
+        if self.cleaned_data.get("color"):
+            # Although the color uniqueness check is enforced on the database insert, I want to check it here as well
+            try:
+                # If an object already exists with the color that was specified, error out.
+                obj_with_color = TiltConfiguration.objects.get(color=self.cleaned_data['color'])
+            except:
+                obj_with_color = None
+
+            if obj_with_color is not None:
+                raise forms.ValidationError("There is already a Tilt sensor configured with "
+                                            "the color {}".format(self.cleaned_data['color']))
+        else:
+            raise forms.ValidationError("Tilt sensors require a color to be specified")
+
+        return self.cleaned_data['color']
+
+    def __init__(self, *args, **kwargs):
+        super(TiltCreateForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
