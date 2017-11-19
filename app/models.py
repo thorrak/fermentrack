@@ -870,34 +870,38 @@ class BrewPiDevice(models.Model):
     def get_dashpanel_info(self):
         return json.loads(self.send_message("getDashInfo", read_response=True))
 
+    def circus_parameter(self):
+        """Returns the parameter used by Circus to track this device's processes"""
+        return self.device_name
+
     def start_process(self):
         """Start this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.circus_parameter())
         fc.start(name=circus_device_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.circus_parameter())
         fc.remove(name=circus_device_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.circus_parameter())
         fc.stop(name=circus_device_name)
 
     def restart_process(self):
         """Restart the deviece process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.circus_parameter())
         fc.restart(name=circus_device_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.device_name)
+        circus_device_name = u"dev-{}".format(self.circus_parameter())
         status = fc.application_status(name=circus_device_name)
         return status
 

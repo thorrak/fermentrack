@@ -3,7 +3,7 @@
 # This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
 # a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
 
-# This is the new version of the BrewPi-script log manager which isn't fully in use.
+# This is the old new version of the BrewPi-script log manager which isn't fully in use.
 
 
 import os
@@ -194,7 +194,6 @@ def run():
         debug=args.debug)
     process_spawner.run_forvever()
 
+
 if __name__ == '__main__':
     run()
-
-

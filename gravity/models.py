@@ -603,3 +603,8 @@ class TiltConfiguration(models.Model):
     def __unicode__(self):
         return str(self)
 
+    def circus_parameter(self):
+        """Returns the parameter used by Circus to track this device's processes"""
+        return self.color
+
+
