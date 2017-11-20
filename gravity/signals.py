@@ -16,7 +16,7 @@ def handle_gravitysensor_post_save(sender, **kwargs):
 
     sensor = kwargs.get('instance')
 
-    if 'tilt_configuration' in sensor:
+    if hasattr(sensor, 'tilt_configuration'):
         # Every time we update a GravitySensor we want to trigger a reload of the Tilt configuration in case logging
         # is enabled/disabled. Otherwise, no data will get logged (or data will erroneously continue to be logged)
         sensor.tilt_configuration.set_redis_reload_flag()
