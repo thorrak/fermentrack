@@ -155,7 +155,7 @@ No gravity sensors have been configured yet. To get started, add a new sensor:
                         <div class="dashpanel dashpanel-top bg-concrete">
                             <div class="dash-icon dash-icon-lg" style="right: 15; left: inherit;"><i class="fa fa-tasks fa-fw"></i></div>
                             {# Vue.js uses the same template tags ({{ and }}) as does Django. Use verbatim to escape. #}
-                            <div class="dash-data" style="text-align: left">Current Temp: {% verbatim %}{{{ sensor.temp_string }}}{% endverbatim %}</div>
+                            <div class="dash-data" style="text-align: left">Current Temp: {% verbatim %}{{ sensor.temp_string }}{% endverbatim %}</div>
                             <div class="dashpanel-divider"></div>
                                 <div class="dash-desc">
                                     <div class="pull-left"> {% verbatim %}{{ sensor.manage_text }}{% endverbatim %}</div>
