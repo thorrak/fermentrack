@@ -607,4 +607,24 @@ class TiltConfiguration(models.Model):
         """Returns the parameter used by Circus to track this device's processes"""
         return self.color
 
+    def set_redis_reload_flag(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
+                        socket_timeout=5)
+        r.set('tilt_reload_{}'.format(self.color), True)
+
+    def clear_redis_reload_flag(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
+                        socket_timeout=5)
+        r.set('tilt_reload_{}'.format(self.color), None)
+
+    def check_redis_reload_flag(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
+                        socket_timeout=5)
+        reload_flag = r.get('tilt_reload_{}'.format(self.color))
+
+        if reload_flag is None:
+            return False
+        else:
+            return True
+
 

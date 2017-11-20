@@ -116,9 +116,13 @@ class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
             self.initialized = True
             return True
 
-        # TODO - Add a flag to trigger a reload from Redis or somewhere like that
-
-        return False
+        # If the reload flag is set (in redis) then we need to reload the settings.
+        if self.obj.check_redis_reload_flag():
+            self.loadSettings()
+            self.obj.clear_redis_reload_flag()  # Clear the flag once reloaded
+            return True
+        else:
+            return False
 
     def loadSettings(self, filename=""):  # Preserving the filename argument just in case something changes later on
         self.obj = gravity.models.TiltConfiguration.objects.get(color=self.obj.color)
@@ -127,6 +131,14 @@ class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
         self.dev_id = self.obj.dev_id()
         self.averagingPeriod = self.obj.average_period_secs
         self.medianWindow = self.obj.median_window_vals
+
+        # Since we're now only managing a single Tilt per manager, reload the settings that would have been reloaded
+        tiltHydrometer = self.tiltHydrometers.get(self.obj.color)
+        if tiltHydrometer is not None:
+            tiltHydrometer.averagingPeriod = self.averagingPeriod
+            tiltHydrometer.medianWindow = self.medianWindow
+            tiltHydrometer.temp_initialized = False  # This will force a reload
+            tiltHydrometer.gravity_initialized = False  # This will force a reload
 
 
     # Store function
