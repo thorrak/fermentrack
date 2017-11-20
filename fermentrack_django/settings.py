@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
     'firmware_flash.apps.AppConfig',
-    'gravity.apps.AppConfig',
+    'gravity.apps.GravityAppConfig',
     'constance',
     'constance.backends.database',
     'huey.contrib.djhuey',
