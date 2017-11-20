@@ -25,6 +25,7 @@ gravity_urlpatterns = [
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/manage/$', gravity.views.gravity_manage, name='gravity_manage'),
 
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/create/$', gravity.views.gravity_log_create, name='gravity_log_create'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/log/stop/$', gravity.views.gravity_log_stop, name='gravity_log_stop'),
 
     # Log Management
     url(r'^gravity/logs/$', gravity.views.gravity_log_list, name='gravity_log_list'),

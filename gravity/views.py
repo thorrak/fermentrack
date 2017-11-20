@@ -209,6 +209,37 @@ def gravity_log_create(request, sensor_id):
 @login_required
 @site_is_configured
 @gravity_support_enabled
+def gravity_log_stop(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_beer'):
+    #     messages.error(request, 'Your account is not permissioned to add gravity logs. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if sensor.active_log:
+        # We'll stop logging -- but only if the sensor isn't attached to a BrewPiDevice
+        if sensor.assigned_brewpi_device is not None:
+            messages.error(request, u'This sensor is currently assigned to a temperature controller. Please stop '
+                                    u'logging for that temperature controller to stop logging for this sensor.')
+        else:
+            sensor.active_log = None
+            sensor.save()
+            messages.success(request, u'Logging has been stopped for sensor {}'.format(sensor))
+
+    else:
+        messages.error(request, u'Unable to stop logging as that sensor wasn\'t actively logging something')
+
+    return redirect('gravity_dashboard', sensor_id=sensor_id)
+
+
+@login_required
+@site_is_configured
+@gravity_support_enabled
 def gravity_log_list(request):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.add_beer'):
