@@ -394,13 +394,13 @@ def github_trigger_upgrade(request, variant=""):
 
             cmds = {}
             if variant == "":
-                cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST['tag'])
+                cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
                 cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
+                cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
             elif variant == "force":
-                cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST['tag'])
+                cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
                 cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
+                cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
             else:
                 messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
                 cmds['tag'] = ""
