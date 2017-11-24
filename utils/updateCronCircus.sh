@@ -23,7 +23,7 @@ REBOOT_CRON="@reboot ~/fermentrack/utils/updateCronCircus.sh start"
 CHECK_CRON="*/10 * * * * ~/fermentrack/utils/updateCronCircus.sh startifstopped"
 
 # Source in our virtualenv
-if [ ! -f ~/venv/bin/activate ]; then
+if [ ! -e ~/venv/bin/activate ]; then
     echo "ERROR: Could not find python virtualenv enviroment"
     exit -1
 fi
