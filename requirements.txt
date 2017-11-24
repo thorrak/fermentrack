@@ -7,7 +7,7 @@ django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices
 circus          # for managing Fermentrack wsgi & brewpi.py processes
-circus-web      # for managing Fermentrack wsgi & brewpi.py processes
+#circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
 huey            # asynchronous task queue
 pid             # for pid-file handling
