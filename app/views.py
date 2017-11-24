@@ -390,22 +390,22 @@ def github_trigger_upgrade(request, variant=""):
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
         else:
-            messages.success(request, "Triggered an upgrade from GitHub")
-
             cmds = {}
             if variant == "":
                 cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
                 cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
                 cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                messages.success(request, "Triggered an upgrade from GitHub")
             elif variant == "force":
                 cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
                 cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
                 cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                messages.success(request, "Triggered an upgrade from GitHub")
             else:
-                messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
                 cmds['tag'] = ""
                 cmds['no_branch'] = ""
                 cmds['branch'] = ""
+                messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
 
             if 'tag' in request.POST:
                 # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
@@ -416,6 +416,7 @@ def github_trigger_upgrade(request, variant=""):
                 cmd = cmds['no_branch']
             else:
                 cmd = cmds['branch']
+
             subprocess.call(cmd, shell=True)
 
     else:
