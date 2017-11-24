@@ -317,7 +317,8 @@ to watch a video showing how to prepare the Raspberry Pi using a Mac, or read th
 <p>"If a wpa_supplicant.conf file is placed into the /boot/ directory, this will be moved to the /etc/wpa_supplicant/ directory the next time the system is booted, overwriting the network settings; this allows a Wifi configuration to be preloaded onto a card from a Windows or other machine that can only see the boot partition."</p>
 <p>While not discussed in the official documentation, this greatly simplifies headless configuration (especially for Raspberry Pi zeros).</p>
 <p>To utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a <code>wpa_supplicant.conf</code> file in the <code>/boot</code> directory of the SD card with the following contents (adjusting to match your network configuration):</p>
-<pre><code>network={
+<pre><code>ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+network={
     ssid=&quot;YOUR_SSID&quot;
     psk=&quot;YOUR_PASSWORD&quot;
     key_mgmt=WPA-PSK
