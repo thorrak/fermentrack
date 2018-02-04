@@ -141,7 +141,7 @@ class GravitySensor(models.Model):
     # Loggable gravity & loggable temp are what we generally want. These can have smoothing/filtering applied.
     def retrieve_loggable_gravity(self):
         point = self.retrieve_latest_point()
-        return None if point is None else point.gravity
+        return None if point is None else round(point.gravity, 3)
 
     def retrieve_loggable_temp(self):
         # So temp needs units... we'll return a tuple (temp, temp_format)
@@ -149,7 +149,7 @@ class GravitySensor(models.Model):
         if point is None:
             return None, None
         else:
-            return point.temp, point.temp_format
+            return round(point.temp, 2), point.temp_format
 
 
     def create_log_and_start_logging(self, name):
