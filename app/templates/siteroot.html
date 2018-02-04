@@ -158,7 +158,7 @@ No gravity sensors have been configured yet. To get started, add a new sensor:
                             <div class="dash-data" style="text-align: left">Current Temp: {% verbatim %}{{ sensor.temp_string }}{% endverbatim %}</div>
                             <div class="dashpanel-divider"></div>
                                 <div class="dash-desc">
-                                    <div class="pull-left"> {% verbatim %}{{ sensor.manage_text }}{% endverbatim %}</div>
+                                    <div class="pull-left"> <span v-html="sensor.manage_text"></span></div>
                                     <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                                     <div class="clearfix"></div>
                                 </div>
