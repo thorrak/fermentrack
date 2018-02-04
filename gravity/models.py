@@ -149,7 +149,7 @@ class GravitySensor(models.Model):
         if point is None:
             return None, None
         else:
-            return point.temp, point.temp_format
+            return round(point.temp, 2), point.temp_format
 
 
     def create_log_and_start_logging(self, name):
