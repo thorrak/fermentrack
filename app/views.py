@@ -371,7 +371,7 @@ def device_temp_control(request, device_id):
 
 @login_required
 @site_is_configured
-def github_trigger_upgrade(request):
+def github_trigger_upgrade(request, variant=""):
     # TODO - Add permission check here
     commit_info = git_integration.get_local_remote_commit_info()
 
@@ -390,17 +390,33 @@ def github_trigger_upgrade(request):
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
         else:
-            messages.success(request, "Triggered an upgrade from GitHub")
+            cmds = {}
+            if variant == "":
+                cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+                cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                messages.success(request, "Triggered an upgrade from GitHub")
+            elif variant == "force":
+                cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+                cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                messages.success(request, "Triggered an upgrade from GitHub")
+            else:
+                cmds['tag'] = ""
+                cmds['no_branch'] = ""
+                cmds['branch'] = ""
+                messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
 
             if 'tag' in request.POST:
                 # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
-                cmd = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST['tag'])
+                cmd = cmds['tag']
             elif not allow_git_branch_switching or 'new_branch' not in request.POST:
                 # We'll use the branch name from the current commit if we either aren't allowed to directly switch branches
                 # or haven't been passed a branch name
-                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+                cmd = cmds['no_branch']
             else:
-                cmd = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST['new_branch'])
+                cmd = cmds['branch']
+
             subprocess.call(cmd, shell=True)
 
     else:
@@ -412,6 +428,13 @@ def github_trigger_upgrade(request):
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching})
+
+@login_required
+@site_is_configured
+def github_trigger_force_upgrade(request):
+    # TODO - Get rid of this in favor of a better urlpattern
+    return github_trigger_upgrade(request, variant="force")
+
 
 
 def login(request, next=None):

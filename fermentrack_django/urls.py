@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^$', app.views.siteroot, name='siteroot'),
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
+    url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
 
     ### Device Views
     url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),

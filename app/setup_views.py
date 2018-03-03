@@ -334,7 +334,7 @@ def device_guided_serial_autodetect(request, device_family):
                 if device_family == 'ESP8266':
                     board_type = 'esp8266'
                 elif device_family == 'Arduino':
-                    board_type = 'arduino'
+                    board_type = 'uno'
                 else:
                     # Invalid board type - shouldn't ever get here.
                     messages.error(request, "Invalid board type for serial autodetection")

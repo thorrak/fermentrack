@@ -64,6 +64,13 @@
 <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
     <input type="submit" value="Click Here to Upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />
 </form>
+
+    <p>Having trouble upgrading? You can also try this, which is a bit more forceful in triggering the upgrade:</p>
+<form action="{% url "github_trigger_force_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
+    <input type="submit" value="Click Here to force an upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />
+</form>
+
+
 {% endif %}
 
 {% if allow_git_branch_switching %}
