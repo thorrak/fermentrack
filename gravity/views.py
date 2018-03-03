@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import pprint
+import json
 
 from app.models import BrewPiDevice
 from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint
@@ -429,14 +430,12 @@ def gravity_manage(request, sensor_id):
 @csrf_exempt
 def ispindel_handler(request):
 
-    if request.POST is not None:
-        with open('ispindel_post_output.txt', 'w') as logFile:
-            pprint.pprint(request.POST, logFile)
-
-    if request.GET is not None:
-        with open('ispindel_get_output.txt', 'w') as logFile:
-            pprint.pprint(request.GET, logFile)
-
+    if request.body is not None:
+        with open('ispindel_body_output.txt', 'w') as logFile:
+            pprint.pprint(request.body, logFile)
+        with open('ispindel_json_output.txt', 'w') as logFile:
+            ispindel_data = json.loads(request.body)
+            pprint.pprint(ispindel_data, logFile)
 
     # try:
     #     sensor = GravitySensor.objects.get(id=manual_sensor_id)
