@@ -661,7 +661,7 @@ def device_uninstall(request, device_id):
         if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
             if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
 
-                if active_device.gravity_sensor:
+                if active_device.gravity_sensor is not None:
                     # If there's an associated gravity sensor, let's disassociate the sensor & stop it from logging
                     grav_sensor = active_device.gravity_sensor
                     if grav_sensor.active_log is not None:
