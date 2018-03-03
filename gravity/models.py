@@ -639,7 +639,7 @@ class IspindelGravityCalibrationPoint(models.Model):
 
 class IspindelConfiguration(models.Model):
     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
-                                  related_name="tilt_configuration")
+                                  related_name="ispindel_configuration")
 
     name_on_device = models.CharField(max_length=64, unique=True,
                                       help_text="The name configured on the iSpindel device itself")
@@ -648,13 +648,20 @@ class IspindelConfiguration(models.Model):
     # re-convert inside Fermentrack. The conversion equation takes the form of gravity = a*x^3 + b*x^2 + c*x + d
     # where x is the angle, a is the third degree coefficient, b is the second degree coefficient, c is the first
     # degree coefficient, and d is the constant term.
-    third_degree_coefficient = models.DecimalField(default=0.0, help_text="The third degree coefficient in the gravity "
-                                                                          "conversion equation")
-    second_degree_coefficient = models.DecimalField(default=0.0, help_text="The second degree coefficient in the "
-                                                                           "gravity conversion equation")
-    first_degree_coefficient = models.DecimalField(default=0.0, help_text="The first degree coefficient in the gravity "
-                                                                          "conversion equation")
-    constant_term = models.DecimalField(default=0.0, help_text="The constant term in the gravity conversion equation")
+    third_degree_coefficient = models.DecimalField(default=0.0, decimal_places=10, max_digits=13,
+                                                   help_text="The third degree coefficient in the gravity conversion "
+                                                             "equation")
+    second_degree_coefficient = models.DecimalField(default=0.0, decimal_places=10, max_digits=13,
+                                                    help_text="The second degree coefficient in the gravity conversion "
+                                                              "equation")
+    first_degree_coefficient = models.DecimalField(default=0.0, decimal_places=10, max_digits=13,
+                                                   help_text="The first degree coefficient in the gravity conversion "
+                                                             "equation")
+    constant_term = models.DecimalField(default=0.0, decimal_places=10, max_digits=13,
+                                        help_text="The constant term in the gravity conversion equation")
+
+    coefficients_up_to_date = models.BooleanField(default=False, help_text="Have the calibration points changed since "
+                                                                           "the coefficient calculator was run?")
 
     def __str__(self):
         return self.name_on_device
