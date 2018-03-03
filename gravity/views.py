@@ -5,7 +5,9 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+import pprint
 
 from app.models import BrewPiDevice
 from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint
@@ -421,3 +423,44 @@ def gravity_manage(request, sensor_id):
         return redirect('gravity_log_list')
 
     return render(request, template_name='gravity/gravity_manage.html', context={'active_device': sensor})
+
+
+
+@csrf_exempt
+def ispindel_handler(request):
+
+    with open('ispindel_post_output.txt', 'w') as logFile:
+        pprint.pprint(request.POST, logFile)
+
+    with open('ispindel_get_output.txt', 'w') as logFile:
+        pprint.pprint(request.GET, logFile)
+
+
+    # try:
+    #     sensor = GravitySensor.objects.get(id=manual_sensor_id)
+    # except:
+    #     messages.error(request, u'Unable to load sensor with ID {}'.format(manual_sensor_id))
+    #     return redirect('gravity_list')
+    #
+    # form = forms.ManualPointForm()
+    #
+    # if request.POST:
+    #     form = forms.ManualPointForm(request.POST)
+    #     if form.is_valid():
+    #         # Generate the new point (but don't save)
+    #         new_point = form.save(commit=False)
+    #         if sensor.active_log is not None:
+    #             new_point.associated_log = sensor.active_log
+    #         else:
+    #             new_point.associated_device = sensor
+    #
+    #         new_point.save()
+    #
+    #         messages.success(request, 'Successfully added manual log point')
+    #
+    #         if 'redirect' in form.data:
+    #             return redirect('gravity_dashboard', sensor_id=manual_sensor_id)
+    #         return redirect('gravity_list')
+    #
+    #     messages.error(request, 'Unable to add new manual log point')
+
