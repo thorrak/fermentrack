@@ -74,7 +74,7 @@ class GravitySensor(models.Model):
     SENSOR_ISPINDEL = 'ispindel'
     SENSOR_TYPE_CHOICES = (
         (SENSOR_TILT, 'Tilt Hydrometer'),
-        # (SENSOR_ISPINDEL, 'iSpindel'),
+        (SENSOR_ISPINDEL, 'iSpindel'),
         (SENSOR_MANUAL, 'Manual'),
     )
 
@@ -520,7 +520,7 @@ class TiltGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('TiltConfiguration')
     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Gravity Value")
     actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Gravity Value")
-    created = models.DateTimeField(default=timezone.now)  # So we can track when the configuration was current as of
+    created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
 
 
 class TiltConfiguration(models.Model):
@@ -628,3 +628,36 @@ class TiltConfiguration(models.Model):
             return True
 
 
+### iSpindel specific models
+class IspindelGravityCalibrationPoint(models.Model):
+    # Eventually (sadly, not quite yet) we'll add the ability to calibrate from within Fermentrack
+    sensor = models.ForeignKey('IspindelConfiguration')
+    angle = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Angle (Measured by Device)")
+    gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
+    created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
+
+
+class IspindelConfiguration(models.Model):
+    sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
+                                  related_name="tilt_configuration")
+
+    name_on_device = models.CharField(max_length=64, unique=True,
+                                      help_text="The name configured on the iSpindel device itself")
+
+    # Although iSpindel devices do gravity conversion on the device itself, to make future calibration easier we'll
+    # re-convert inside Fermentrack. The conversion equation takes the form of gravity = a*x^3 + b*x^2 + c*x + d
+    # where x is the angle, a is the third degree coefficient, b is the second degree coefficient, c is the first
+    # degree coefficient, and d is the constant term.
+    third_degree_coefficient = models.DecimalField(default=0.0, help_text="The third degree coefficient in the gravity "
+                                                                          "conversion equation")
+    second_degree_coefficient = models.DecimalField(default=0.0, help_text="The second degree coefficient in the "
+                                                                           "gravity conversion equation")
+    first_degree_coefficient = models.DecimalField(default=0.0, help_text="The first degree coefficient in the gravity "
+                                                                          "conversion equation")
+    constant_term = models.DecimalField(default=0.0, help_text="The constant term in the gravity conversion equation")
+
+    def __str__(self):
+        return self.name_on_device
+
+    def __unicode__(self):
+        return str(self)

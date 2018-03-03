@@ -7,11 +7,11 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-import pprint
 import json
+from django.http import JsonResponse
 
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint
+from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -45,6 +45,7 @@ def gravity_add_board(request):
 
     manual_form = forms.ManualForm()
     tilt_form = forms.TiltCreateForm()
+    ispindel_form = forms.IspindelCreateForm()
 
     if request.POST:
         if request.POST['sensor_family'] == "manual":
@@ -74,11 +75,36 @@ def gravity_add_board(request):
 
                 return redirect('gravity_list')
 
+        elif request.POST['sensor_family'] == "ispindel":
+            ispindel_form = forms.IspindelCreateForm(request.POST)
+            if ispindel_form.is_valid():
+                sensor = GravitySensor(
+                    name=ispindel_form.cleaned_data['name'],
+                    temp_format=ispindel_form.cleaned_data['temp_format'],
+                    sensor_type=GravitySensor.SENSOR_ISPINDEL,
+                )
+                sensor.save()
+
+                ispindel_config = IspindelConfiguration(
+                    sensor=sensor,
+                    name_on_device=ispindel_form.cleaned_data['name_on_device'],
+                    third_degree_coefficient=ispindel_form.cleaned_data['a'],
+                    second_degree_coefficient=ispindel_form.cleaned_data['b'],
+                    first_degree_coefficient=ispindel_form.cleaned_data['c'],
+                    constant_term=ispindel_form.cleaned_data['d'],
+                )
+                ispindel_config.save()
+
+                messages.success(request, 'New iSpindel sensor added')
+
+                return redirect('gravity_list')
+
         messages.error(request, 'Error adding sensor')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render_with_devices(request, template_name='gravity/gravity_family.html',
-                               context={'manual_form': manual_form, 'tilt_form': tilt_form})
+                               context={'manual_form': manual_form, 'tilt_form': tilt_form,
+                                        'ispindel_form': ispindel_form})
 
 
 @site_is_configured
@@ -430,38 +456,56 @@ def gravity_manage(request, sensor_id):
 @csrf_exempt
 def ispindel_handler(request):
 
-    if request.body is not None:
-        with open('ispindel_body_output.txt', 'w') as logFile:
-            pprint.pprint(request.body, logFile)
-        with open('ispindel_json_output.txt', 'w') as logFile:
-            ispindel_data = json.loads(request.body)
-            pprint.pprint(ispindel_data, logFile)
+    if request.body is None:
+        # TODO - Log this
+        return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
+                            json_dumps_params={'indent': 4})
 
-    # try:
-    #     sensor = GravitySensor.objects.get(id=manual_sensor_id)
-    # except:
-    #     messages.error(request, u'Unable to load sensor with ID {}'.format(manual_sensor_id))
-    #     return redirect('gravity_list')
-    #
-    # form = forms.ManualPointForm()
-    #
-    # if request.POST:
-    #     form = forms.ManualPointForm(request.POST)
-    #     if form.is_valid():
-    #         # Generate the new point (but don't save)
-    #         new_point = form.save(commit=False)
-    #         if sensor.active_log is not None:
-    #             new_point.associated_log = sensor.active_log
-    #         else:
-    #             new_point.associated_device = sensor
-    #
-    #         new_point.save()
-    #
-    #         messages.success(request, 'Successfully added manual log point')
-    #
-    #         if 'redirect' in form.data:
-    #             return redirect('gravity_dashboard', sensor_id=manual_sensor_id)
-    #         return redirect('gravity_list')
-    #
-    #     messages.error(request, 'Unable to add new manual log point')
+    # import pprint
+    # with open('ispindel_json_output.txt', 'w') as logFile:
+    #     pprint.pprint(ispindel_data, logFile)
 
+    # As of the iSpindel firmware version X.XX, the json posted contains the following fields: (TODO - add version # to this comment)
+    # {u'ID': 3003098,
+    #  u'angle': 77.4576,
+    #  u'battery': 4.171011,
+    #  u'gravity': 27.22998,
+    #  u'name': u'iSpindel123',
+    #  u'temperature': 24.75,
+    #  u'token': u'tokengoeshere'}
+
+    ispindel_data = json.loads(request.body)
+
+    try:
+        sensor = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
+    except:
+        # TODO - Log This
+        messages.error(request, u'Unable to load sensor with name {}'.format(ispindel_data['name']))
+        return JsonResponse({'status': 'failed', 'message': "Unable to load sensor with that name"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
+
+    # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
+    # reconfigure on the fly.
+    calculated_gravity = sensor.third_degree_coefficient * (ispindel_data['angle']^3)
+    calculated_gravity += sensor.second_degree_coefficient * (ispindel_data['angle']^2)
+    calculated_gravity += sensor.first_degree_coefficient * (ispindel_data['angle'])
+    calculated_gravity += sensor.constant_term
+
+    new_point = GravityLogPoint(
+        gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
+        temp=ispindel_data['temperature'],
+        temp_format='C',                    # iSpindel devices always report temp in celsius
+        temp_is_estimate=False,
+        associated_device=sensor.sensor,
+        gravity_latest=calculated_gravity,
+        temp_latest=ispindel_data['temperature'],
+        extra_data=ispindel_data['angle'],
+    )
+
+    if sensor.sensor.active_log is not None:
+        new_point.associated_log = sensor.sensor.active_log
+
+    new_point.save()
+
+    return JsonResponse({'status': 'ok', 'gravity': calculated_gravity}, safe=False, json_dumps_params={'indent': 4})

@@ -3,7 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
-from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration
+from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration
 from app.models import BrewPiDevice
 from django.forms import ModelForm
 
@@ -169,6 +169,41 @@ class TiltCreateForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(TiltCreateForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
+class IspindelCreateForm(forms.Form):
+    name = forms.CharField(max_length=255, min_length=1, required=True, )
+    temp_format = forms.ChoiceField(required=True, choices=GravitySensor.TEMP_FORMAT_CHOICES)
+    name_on_device = forms.CharField(max_length=64, min_length=1, required=True,
+                                     widget=forms.TextInput(attrs={'placeholder': 'iSpindel000'}))
+
+    # Allow for inputting the coefficients/constant term of the gravity equation (if known)
+    a = forms.DecimalField(required=False, help_text="The third degree coefficient of the gravity equation")
+    b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
+    c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
+    d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
+
+    def clean_name_on_device(self):
+        if self.cleaned_data.get("name_on_device"):
+            # Although the name_on_device uniqueness check is enforced on the database insert, I want to check it here as well
+            try:
+                # If an object already exists with the name_on_device that was specified, error out.
+                obj_with_name = IspindelConfiguration.objects.get(name_on_device=self.cleaned_data['name_on_device'])
+            except:
+                obj_with_name = None
+
+            if obj_with_name is not None:
+                raise forms.ValidationError("There is already an iSpindel sensor configured with "
+                                            "the name {}".format(self.cleaned_data['name_on_device']))
+        else:
+            raise forms.ValidationError("iSpindel sensors require a name on device to be specified")
+
+        return self.cleaned_data['name_on_device']
+
+    def __init__(self, *args, **kwargs):
+        super(IspindelCreateForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
