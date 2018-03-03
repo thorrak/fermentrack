@@ -39,6 +39,6 @@ gravity_urlpatterns = [
     url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors
 
     # iSpindel Endpoint
-    url(r'^ispindel/$', gravity.views.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
+    url(r'^ispindel/?$', gravity.views.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
 
 ]

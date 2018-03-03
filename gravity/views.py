@@ -429,11 +429,13 @@ def gravity_manage(request, sensor_id):
 @csrf_exempt
 def ispindel_handler(request):
 
-    with open('ispindel_post_output.txt', 'w') as logFile:
-        pprint.pprint(request.POST, logFile)
+    if request.POST is not None:
+        with open('ispindel_post_output.txt', 'w') as logFile:
+            pprint.pprint(request.POST, logFile)
 
-    with open('ispindel_get_output.txt', 'w') as logFile:
-        pprint.pprint(request.GET, logFile)
+    if request.GET is not None:
+        with open('ispindel_get_output.txt', 'w') as logFile:
+            pprint.pprint(request.GET, logFile)
 
 
     # try:
