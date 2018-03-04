@@ -7,7 +7,7 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-import json, socket
+import json, socket, decimal
 from django.http import JsonResponse
 
 from app.models import BrewPiDevice
@@ -534,9 +534,9 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    calculated_gravity = sensor.third_degree_coefficient * (ispindel_data['angle']**3)
-    calculated_gravity += sensor.second_degree_coefficient * (ispindel_data['angle']**2)
-    calculated_gravity += sensor.first_degree_coefficient * (ispindel_data['angle'])
+    calculated_gravity = sensor.third_degree_coefficient * decimal.Decimal(ispindel_data['angle']**3)
+    calculated_gravity += sensor.second_degree_coefficient * decimal.Decimal(ispindel_data['angle']**2)
+    calculated_gravity += sensor.first_degree_coefficient * decimal.Decimal(ispindel_data['angle'])
     calculated_gravity += sensor.constant_term
 
     new_point = GravityLogPoint(
