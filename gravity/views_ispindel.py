@@ -10,8 +10,8 @@ from django.utils import timezone
 import json, socket, decimal
 from django.http import JsonResponse
 
-from app.models import BrewPiDevice
 from gravity.models import GravitySensor, GravityLog, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
+import numpy
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -251,5 +251,75 @@ def gravity_ispindel_delete_calibration_point(request, sensor_id, point_id):
                                   u"the specific gravity equation.")
         sensor.ispindel_configuration.coefficients_up_to_date = False
         sensor.save()
+
+    return redirect("gravity_manage", sensor_id=sensor_id)
+
+
+
+
+
+@login_required
+@site_is_configured
+def gravity_ispindel_calibrate(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
+        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration)
+
+
+    # Before we do the polyfit, we need to determine the degree of the equation we want to end up with. It doesn't make
+    # sense to do a cubic fit with less than 4 points, a quadratic fit less than 3, linear with less than 2, etc. so
+    # determine the maximum degrees here (as num points - 1). Max out at cubic.
+    if points.count() < 2:
+        messages.error(request, u"Coefficient calculation requires at least 2 (preferably 3+) points to function")
+        return redirect("gravity_manage", sensor_id=sensor_id)
+    elif points.count() >= 4:
+        # If we have more than 4 points, max out at a cubic function
+        degree = 3
+    else:
+        # If we have 2 or 3 points, do a first or second order polyfit
+        degree = points.count() - 1
+
+    if degree == 1:
+        # Although we can do a linear fit, it's not really a good idea. Let the user know what they're getting into.
+        messages.warning(request, u"Only 2 calibration points available. Your resulting function will be linear, and"
+                                  u"will likely not be accurate. It is highly recommended to add additional points and"
+                                  u"re-perform calibration.")
+
+    # Now set up the x/y arrays and have numpy do the heavy lifting
+    x=[point.angle for point in points]
+    y=[point.gravity for point in points]
+    poly_terms = numpy.polyfit(x, y, degree)
+
+    # Save the results out to our ispindel configuration...
+    i = 0  # This is a bit hackish, but it works
+    if degree == 3:
+        sensor.ispindel_configuration.third_degree_coefficient = poly_terms[i]
+        i += 1
+    if degree >= 2:
+        sensor.ispindel_configuration.second_degree_coefficient = poly_terms[i]
+        i += 1
+    if degree >= 1:
+        sensor.ispindel_configuration.first_degree_coefficient = poly_terms[i]
+        i += 1
+    sensor.ispindel_configuration.constant_term = poly_terms[i]
+
+    sensor.ispindel_configuration.coefficients_up_to_date = True
+    sensor.save()
+
+    # ...and we're done!
+    messages.success(request, u"Coefficients have been updated based on the calibration points")
 
     return redirect("gravity_manage", sensor_id=sensor_id)

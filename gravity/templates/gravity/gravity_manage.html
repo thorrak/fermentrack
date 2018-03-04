@@ -75,6 +75,11 @@
                 </tr>
             {% endfor %}
         </table>
+
+        {% if ispindel_calibration_points|length >= 2 %}
+            <a href="{% url "gravity_ispindel_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        {% endif %}
+
     {% else %}
         <h5>There are no calibration points saved for this sensor</h5>
     {% endif %}
