@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 - Beer log management (deletion/downloading)
 - Added configuration options for graph line colors
 - Graph lines can be toggled by clicking the icon in the legend
+- Added support for specific gravity sensors
+- Added support for Tilt Hydrometers
+- Added support for iSpindel specific gravity sensors
 
 ### Changed
 - Inversion flag for installed devices is now shown on the "configure pins/sensors" page
