@@ -675,7 +675,7 @@ class IspindelConfiguration(models.Model):
 
         extras = {}
 
-        extras = {'ispindel_ID': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
+        extras = {'ispindel_id': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
                   'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras))
@@ -686,6 +686,18 @@ class IspindelConfiguration(models.Model):
         try:
             redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
             extras = json.loads(redis_response)
+
+            if 'ispindel_id' in extras:
+                self.ispindel_id = extras['ispindel_id']
+            if 'angle' in extras:
+                self.angle = extras['angle']
+            if 'battery' in extras:
+                self.battery = extras['battery']
+            if 'ispindel_gravity' in extras:
+                self.ispindel_gravity = extras['ispindel_gravity']
+            if 'token' in extras:
+                self.token = extras['token']
+
             return extras
         except:
             return None
