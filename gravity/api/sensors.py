@@ -58,7 +58,8 @@ def getIspindelExtras(req, device_id):
     if device.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # Load the iSpindel 'extras' from redis
         extras = device.ispindel_configuration.load_extras_from_redis()
-        extras.append({"device_name": device.name, "device_id": device.id})
+        extras['device_name'] = device.name
+        extras['device_id'] = device.id
     else:
         extras = {}
 
