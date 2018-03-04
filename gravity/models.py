@@ -632,7 +632,7 @@ class TiltConfiguration(models.Model):
 class IspindelGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('IspindelConfiguration')
     # TODO - Change angle definition to 10/7 (angles don't exist outside +/- 360)
-    angle = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Angle (Measured by Device)")
+    angle = models.DecimalField(max_digits=10, decimal_places=7, verbose_name="Angle (Measured by Device)")
     gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
 
