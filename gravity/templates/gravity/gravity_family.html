@@ -106,6 +106,58 @@
 
         </div>
         <!-- End Tilt Hydrometer -->
+
+
+        <!-- iSpindel -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#family-selector" href="#sensor-ispindel">
+                        <div class="row vertical-align">
+                            <div class="col-xs-1 family-logo">
+                                <i class="fa fa-microchip fa-5x"></i>
+                            </div>
+                            <div class="col-xs-11">
+                                <div class="family-name">iSpindel</div>
+                            </div>
+                        </div>
+                    </a>
+                </h4>
+            </div>
+
+            <div id="sensor-ispindel" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            Use this to set Fermentrack up to interact with
+                            <a href="https://github.com/universam1/iSpindel">iSpindel devices</a>.
+
+                            The iSpindel is a DIY gravity sensing device which implies the specific gravity of your beer
+                            by measuring the change in tilt of the device as it ferments. These devices provide a
+                            constant stream of information on your beer's fermentation progress allowing Fermentrack to
+                            graph the progress as your beer ferments.
+                        </div>
+                    </div>
+                    <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
+                        <input type="hidden" name="sensor_family" value="ispindel">
+
+                        <div class="row col-xs-12">{% form_generic ispindel_form.name %}</div>
+                        <div class="row col-xs-12">{% form_generic ispindel_form.temp_format %}</div>
+                        <div class="row col-xs-12">{% form_generic ispindel_form.name_on_device %}</div>
+
+                        <p>After clicking "Create Sensor" you will need to connect to the iSpindel device itself and
+                        configure it to communicate with Fermentrack.</p>
+
+                        <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+        <!-- End iSpindel -->
+
     </div>
 
 

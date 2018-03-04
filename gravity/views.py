@@ -5,10 +5,12 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.http import JsonResponse
 
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint
+from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -42,6 +44,7 @@ def gravity_add_board(request):
 
     manual_form = forms.ManualForm()
     tilt_form = forms.TiltCreateForm()
+    ispindel_form = forms.IspindelCreateForm()
 
     if request.POST:
         if request.POST['sensor_family'] == "manual":
@@ -71,11 +74,32 @@ def gravity_add_board(request):
 
                 return redirect('gravity_list')
 
+        elif request.POST['sensor_family'] == "ispindel":
+            ispindel_form = forms.IspindelCreateForm(request.POST)
+            if ispindel_form.is_valid():
+                sensor = GravitySensor(
+                    name=ispindel_form.cleaned_data['name'],
+                    temp_format=ispindel_form.cleaned_data['temp_format'],
+                    sensor_type=GravitySensor.SENSOR_ISPINDEL,
+                )
+                sensor.save()
+
+                ispindel_config = IspindelConfiguration(
+                    sensor=sensor,
+                    name_on_device=ispindel_form.cleaned_data['name_on_device'],
+                )
+                ispindel_config.save()
+
+                messages.success(request, 'New iSpindel sensor added')
+
+                return redirect('gravity_ispindel_setup', sensor_id=sensor.id)
+
         messages.error(request, 'Error adding sensor')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render_with_devices(request, template_name='gravity/gravity_family.html',
-                               context={'manual_form': manual_form, 'tilt_form': tilt_form})
+                               context={'manual_form': manual_form, 'tilt_form': tilt_form,
+                                        'ispindel_form': ispindel_form})
 
 
 @site_is_configured
@@ -420,4 +444,21 @@ def gravity_manage(request, sensor_id):
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
-    return render(request, template_name='gravity/gravity_manage.html', context={'active_device': sensor})
+    context = {'active_device': sensor}
+
+    if sensor.sensor_type == 'ispindel':
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        initial = {'a': sensor.ispindel_configuration.third_degree_coefficient,
+                   'b': sensor.ispindel_configuration.second_degree_coefficient,
+                   'c': sensor.ispindel_configuration.first_degree_coefficient,
+                   'd': sensor.ispindel_configuration.constant_term,
+                   }
+        ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
+        context['ispindel_coefficient_form'] = ispindel_coefficient_form
+
+        calibration_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration).order_by('angle')
+        context['ispindel_calibration_points'] = calibration_points
+        ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
+        context['ispindel_calibration_form'] = ispindel_calibration_form
+
+    return render(request, template_name='gravity/gravity_manage.html', context=context)

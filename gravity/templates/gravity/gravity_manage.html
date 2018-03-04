@@ -1,5 +1,7 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
+{% load static %}
+{% load tz %}
 
 
 {% block title %}Sensor {{ active_device.name }} Settings{% endblock %}
@@ -7,7 +9,170 @@
 {% block content %}
 
     <h1 class="page-header">{{ active_device.name }} Configuration</h1>
-{##}
+
+    {% if active_device.sensor_type == "ispindel" %}
+        {# Begin iSpindel Configuration Section #}
+
+        <h2>Tilt-to-Gravity Equation</h2>
+
+        <p>
+            iSpindel devices measure the angle the device floats at, and use that to compute the specific gravity of
+            your beer. Although the iSpindel device can perform its own calculation of specific gravity we recalculate
+            it within Fermentrack to allow you to tweak the conversion equation on the fly. Fermentrack performs the
+            conversion using a cubic formula in the format gravity = ax^3 + bx^2 + cx + d, where x is the float angle.
+        </p>
+
+        <p>
+            Current Formula: gravity = {{ active_device.ispindel_configuration.third_degree_coefficient }}x^3 +
+            {{ active_device.ispindel_configuration.second_degree_coefficient }}x^2 +
+            {{ active_device.ispindel_configuration.first_degree_coefficient }}x +
+            {{ active_device.ispindel_configuration.constant_term }}
+        </p>
+
+        <p>
+            You can update the coefficients of this formula below manually, or enter gravity & tilt calibration points
+            and have Fermentrack calculate the coefficients automatically.
+        </p>
+
+        <form action="{% url "gravity_ispindel_coefficients" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.a %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.b %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.c %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.d %}</div>
+            <div class="row col-xs-12"><input type="submit" value="Update Coefficients" class="btn btn-primary" /></div>
+
+            <div class="row col-xs-12">
+                For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>
+            </div>
+        </form>
+
+        <h2>Calibration Points</h2>
+
+        <p>
+            After entering a handful of tilt/specific gravity readings, Fermentrack can automatically determine the
+            proper coefficients for calculating specific gravity. To enter
+        </p>
+
+
+        {% if ispindel_calibration_points %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Angle (&deg;)</th>
+                    <th>Gravity</th>
+                    <th>Entered</th>
+                    <th>Remove Point</th>
+                </tr>
+            </thead>
+
+            {% for this_point in ispindel_calibration_points %}
+                <tr>
+                    <td>{{ this_point.angle }}</td>
+                    <td>{{ this_point.gravity }}</td>
+                    {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
+                    <td>{{ this_point.created | timezone:preferred_tz | date:"r" }}</td>
+                    <td><a href="{% url 'gravity_ispindel_delete_calibration_point' active_device.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% if ispindel_calibration_points|length >= 2 %}
+            <a href="{% url "gravity_ispindel_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        {% endif %}
+
+    {% else %}
+        <h5>There are no calibration points saved for this sensor</h5>
+    {% endif %}
+
+
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel" style="color: #000;">Add calibration point to {{ active_device.name }}</h4>
+              </div>
+
+
+                <div class="modal-body">
+                  <div class="container-fluid">
+                    <div class="row">
+                        {# Fridge Constant Form #}
+                        <div class="col-md-12">
+
+                            <div class="row col-xs-12">
+                                <h5>Data from Sensor:</h5>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">Reported Angle</div>
+                                <div class="col-sm-8" id="ispindelCalibrationAngleFeed"></div>
+                            </div>
+
+                            {# TODO - Add report time to data feed #}
+{#                            <div class="row">#}
+{#                                <div class="col-sm-2">Report Time</div>#}
+{#                                <div class="col-sm-10"></div>#}
+{#                            </div>#}
+
+                            <form action="{% url "gravity_ispindel_add_calibration_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                                <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
+{#                                {% form_generic ispindel_calibration_form.angle %}#}
+{#                                {% form_generic ispindel_calibration_form.gravity %}#}
+                                    <div class="row col-xs-12">
+                                        <h5>New Calibration Point:</h5>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-4">Angle</div>
+                                        <div class="col-sm-8">{{ ispindel_calibration_form.angle }}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-4">Gravity</div>
+                                        <div class="col-sm-8">{{ ispindel_calibration_form.gravity }}</div>
+                                    </div>
+
+                                <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
+
+{#                                <div class="row col-xs-12">#}
+{#                                    For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>#}
+{#                                </div>#}
+                            </form>
+
+
+                        </div>{# End Fridge Constant #}
+                    </div>
+                  </div>
+                </div>
+
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        {# End iSpindel Configuration Section #}
+    {% elif active_device.sensor_type == "tilt" %}
+
+
+
+
+
+    {% endif %}
+
+
+
+    {##}
 {#    <h3>Device Logs</h3>#}
 {##}
     {# I shamelessly borrowed this from site_help.html. It could/should be refactored to make more sense when only #}
@@ -158,12 +323,40 @@
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()
-})
+});
 
 // Switches
 if ($('[data-toggle="switch"]').length) {
   $('[data-toggle="switch"]').bootstrapSwitch();
 }
 </script>
+
+
+{% if active_device.sensor_type == "ispindel" %}
+    {# This script pulls in the "extra data" that the iSpindel transmits & populates it on the manage page #}
+    <script type="text/javascript">
+        (function ispindel_worker() {
+            $.ajax({
+                type: 'GET',
+                async: true,
+                beforeSend: function (xhr) {
+                    if (xhr && xhr.overrideMimeType) {
+                        xhr.overrideMimeType('application/json;charset=utf-8');
+                    }
+                },
+                dataType: 'json',
+                url: '/api/gravity/ispindel/{{ active_device.id }}/',
+                success: function(data) {
+                    $('#ispindelCalibrationAngleFeed').html(data.angle);
+                },
+                complete: function() {
+                // Schedule the next request when the current one's complete
+                setTimeout(ispindel_worker, 5000);
+                }
+            });
+        })();
+    </script>
+{% endif %}
+
 
 {% endblock %}

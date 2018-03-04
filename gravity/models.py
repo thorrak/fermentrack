@@ -74,7 +74,7 @@ class GravitySensor(models.Model):
     SENSOR_ISPINDEL = 'ispindel'
     SENSOR_TYPE_CHOICES = (
         (SENSOR_TILT, 'Tilt Hydrometer'),
-        # (SENSOR_ISPINDEL, 'iSpindel'),
+        (SENSOR_ISPINDEL, 'iSpindel'),
         (SENSOR_MANUAL, 'Manual'),
     )
 
@@ -520,7 +520,7 @@ class TiltGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('TiltConfiguration')
     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Gravity Value")
     actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Gravity Value")
-    created = models.DateTimeField(default=timezone.now)  # So we can track when the configuration was current as of
+    created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
 
 
 class TiltConfiguration(models.Model):
@@ -626,5 +626,79 @@ class TiltConfiguration(models.Model):
             return False
         else:
             return True
+
+
+### iSpindel specific models
+class IspindelGravityCalibrationPoint(models.Model):
+    sensor = models.ForeignKey('IspindelConfiguration')
+    # TODO - Change angle definition to 10/7 (angles don't exist outside +/- 360)
+    angle = models.DecimalField(max_digits=10, decimal_places=7, verbose_name="Angle (Measured by Device)")
+    gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
+    created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
+
+
+class IspindelConfiguration(models.Model):
+    sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
+                                  related_name="ispindel_configuration")
+
+    name_on_device = models.CharField(max_length=64, unique=True,
+                                      help_text="The name configured on the iSpindel device itself")
+
+    # Although iSpindel devices do gravity conversion on the device itself, to make future calibration easier we'll
+    # re-convert inside Fermentrack. The conversion equation takes the form of gravity = a*x^3 + b*x^2 + c*x + d
+    # where x is the angle, a is the third degree coefficient, b is the second degree coefficient, c is the first
+    # degree coefficient, and d is the constant term.
+    third_degree_coefficient = models.FloatField(default=0.0, help_text="The third degree coefficient in the gravity "
+                                                                        "conversion equation")
+    second_degree_coefficient = models.FloatField(default=0.0, help_text="The second degree coefficient in the gravity "
+                                                                         "conversion equation")
+    first_degree_coefficient = models.FloatField(default=0.0, help_text="The first degree coefficient in the gravity "
+                                                                        "conversion equation")
+    constant_term = models.FloatField(default=0.0, help_text="The constant term in the gravity conversion equation")
+
+    # While coefficients_up_to_date is kept accurate, at the moment it doesn't really get used anywhere.
+    # TODO - Do something useful with this
+    coefficients_up_to_date = models.BooleanField(default=False, help_text="Have the calibration points changed since "
+                                                                           "the coefficient calculator was run?")
+
+    def __str__(self):
+        return self.name_on_device
+
+    def __unicode__(self):
+        return str(self)
+
+    def save_extras_to_redis(self):
+        # This saves the current (presumably complete) object as the 'current' point to redis
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+
+        extras = {}
+
+        extras = {'ispindel_id': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
+                  'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
+
+        r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras))
+
+
+    def load_extras_from_redis(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        try:
+            redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+            extras = json.loads(redis_response)
+
+            if 'ispindel_id' in extras:
+                self.ispindel_id = extras['ispindel_id']
+            if 'angle' in extras:
+                self.angle = extras['angle']
+            if 'battery' in extras:
+                self.battery = extras['battery']
+            if 'ispindel_gravity' in extras:
+                self.ispindel_gravity = extras['ispindel_gravity']
+            if 'token' in extras:
+                self.token = extras['token']
+
+            return extras
+        except:
+            return None
+
 
 
