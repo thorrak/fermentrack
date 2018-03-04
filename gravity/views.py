@@ -460,6 +460,7 @@ def gravity_manage(request, sensor_id):
         calibration_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor)
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelGravityCalibrationPoint()
+        context['ispindel_calibration_form'] = ispindel_calibration_form
 
     return render(request, template_name='gravity/gravity_manage.html', context=context)
 
@@ -554,12 +555,58 @@ def ispindel_handler(request):
 
     new_point.save()
 
+    # Set & save the 'extra' data points to redis (so we can load & use later)
+    if 'angle' in ispindel_data:
+        sensor.angle = ispindel_data['angle']
+    if 'ID' in ispindel_data:
+        sensor.ispindel_id = ispindel_data['ID']
+    if 'battery' in ispindel_data:
+        sensor.battery = ispindel_data['battery']
+    if 'gravity' in ispindel_data:
+        sensor.ispindel_gravity = ispindel_data['gravity']
+    if 'token' in ispindel_data:
+        sensor.token = ispindel_data['token']
+    sensor.save_extras_to_redis()
+
     return JsonResponse({'status': 'ok', 'gravity': calculated_gravity}, safe=False, json_dumps_params={'indent': 4})
 
 
 @login_required
 @site_is_configured
 def gravity_ispindel_coefficients(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if request.POST:
+        ispindel_coefficient_form = forms.IspindelCoefficientForm(request.POST)
+        if ispindel_coefficient_form.is_valid():
+            sensor.ispindel_configuration.third_degree_coefficient = ispindel_coefficient_form.cleaned_data['a']
+            sensor.ispindel_configuration.second_degree_coefficient = ispindel_coefficient_form.cleaned_data['b']
+            sensor.ispindel_configuration.first_degree_coefficient = ispindel_coefficient_form.cleaned_data['c']
+            sensor.ispindel_configuration.constant_term = ispindel_coefficient_form.cleaned_data['d']
+
+            sensor.ispindel_configuration.save()
+            messages.success(request, u"Coefficients updated")
+
+        else:
+            messages.error(request, u"Invalid coefficients provided")
+    else:
+        messages.error(request, u"No coefficients provided")
+
+    return redirect("gravity_manage", sensor_id=sensor_id)
+
+
+@login_required
+@site_is_configured
+def gravity_ispindel_calibration(request, sensor_id):
     # TODO - Add user permissioning
     # if not request.user.has_perm('app.edit_device'):
     #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')

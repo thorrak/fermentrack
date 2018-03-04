@@ -3,7 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
-from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration
+from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint
 from app.models import BrewPiDevice
 from django.forms import ModelForm
 
@@ -213,3 +213,9 @@ class IspindelCoefficientForm(forms.Form):
         super(IspindelCoefficientForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
+class IspindelCalibrationPointForm(forms.ModelForm):
+    class Meta:
+        model=IspindelGravityCalibrationPoint
+        fields=['angle', 'gravity']

@@ -37,10 +37,12 @@ gravity_urlpatterns = [
     # TODO - rename views below to prepend 'gravity'
     url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getGravitySensors, name="getSensor"),  # For a single device
     url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors
+    url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getIspindelExtras, name="getIspindelExtras"),  # Specific to iSpindel devices, allows for easy calibration
 
     # iSpindel-specific Views
     url(r'^ispindel/?$', gravity.views.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/setup/$', gravity.views.gravity_ispindel_setup, name='gravity_ispindel_setup'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/coefficients/$', gravity.views.gravity_ispindel_coefficients, name='gravity_ispindel_coefficients'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/$', gravity.views.gravity_ispindel_calibration, name='gravity_ispindel_calibration'),
 
 ]

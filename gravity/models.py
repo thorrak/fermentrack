@@ -668,3 +668,29 @@ class IspindelConfiguration(models.Model):
 
     def __unicode__(self):
         return str(self)
+
+    def save_extras_to_redis(self):
+        # This saves the current (presumably complete) object as the 'current' point to redis
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+
+        extras = {}
+
+        extras = {'ispindel_ID': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
+                  'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
+
+        r.set('ispindel_{}_extras'.format(self.sensor_id), serializers.serialize('json', [extras, ]))
+
+
+    def load_extras_from_redis(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        try:
+            redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+            serializer = serializers.deserialize('json', redis_response)
+            for obj2 in serializer:
+                extras = obj2.object
+                return extras
+        except:
+            return None
+
+
+

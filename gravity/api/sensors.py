@@ -49,6 +49,22 @@ def getGravitySensors(req, device_id=None):
                     'modal_name': '#gravSensor{}'.format(dev.id)})
     return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
+
+def getIspindelExtras(req, device_id):
+    ret = []
+
+    device = GravitySensor.objects.get(id=device_id)
+
+    if device.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+        # Load the iSpindel 'extras' from redis
+        extras = device.ispindel_configuration.load_extras_from_redis()
+        extras.append({"device_name": device.name, "device_id": device.id})
+    else:
+        extras = {}
+
+    return JsonResponse(extras, safe=False, json_dumps_params={'indent': 4})
+
+
 #
 #
 # def getPanel(req, device_id):
