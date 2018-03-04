@@ -11,7 +11,7 @@ import json, socket
 from django.http import JsonResponse
 
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint
+from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -457,6 +457,10 @@ def gravity_manage(request, sensor_id):
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
+        calibration_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor)
+        context['ispindel_calibration_points'] = calibration_points
+        ispindel_calibration_form = forms.IspindelGravityCalibrationPoint()
+
     return render(request, template_name='gravity/gravity_manage.html', context=context)
 
 
@@ -529,8 +533,8 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    calculated_gravity = sensor.third_degree_coefficient * (ispindel_data['angle']^3)
-    calculated_gravity += sensor.second_degree_coefficient * (ispindel_data['angle']^2)
+    calculated_gravity = sensor.third_degree_coefficient * (ispindel_data['angle']**3)
+    calculated_gravity += sensor.second_degree_coefficient * (ispindel_data['angle']**2)
     calculated_gravity += sensor.first_degree_coefficient * (ispindel_data['angle'])
     calculated_gravity += sensor.constant_term
 
