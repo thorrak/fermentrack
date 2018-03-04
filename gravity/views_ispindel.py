@@ -90,9 +90,9 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    calculated_gravity = sensor.third_degree_coefficient * decimal.Decimal(ispindel_data['angle']**3)
-    calculated_gravity += sensor.second_degree_coefficient * decimal.Decimal(ispindel_data['angle']**2)
-    calculated_gravity += sensor.first_degree_coefficient * decimal.Decimal(ispindel_data['angle'])
+    calculated_gravity = sensor.third_degree_coefficient * ispindel_data['angle']**3
+    calculated_gravity += sensor.second_degree_coefficient * ispindel_data['angle']**2
+    calculated_gravity += sensor.first_degree_coefficient * ispindel_data['angle']
     calculated_gravity += sensor.constant_term
 
     new_point = GravityLogPoint(
@@ -306,15 +306,15 @@ def gravity_ispindel_calibrate(request, sensor_id):
     # Save the results out to our ispindel configuration...
     i = 0  # This is a bit hackish, but it works
     if degree == 3:
-        sensor.ispindel_configuration.third_degree_coefficient = decimal.Decimal(poly_terms[i])
+        sensor.ispindel_configuration.third_degree_coefficient = poly_terms[i]
         i += 1
     if degree >= 2:
-        sensor.ispindel_configuration.second_degree_coefficient = decimal.Decimal(poly_terms[i])
+        sensor.ispindel_configuration.second_degree_coefficient = poly_terms[i]
         i += 1
     if degree >= 1:
-        sensor.ispindel_configuration.first_degree_coefficient = decimal.Decimal(poly_terms[i])
+        sensor.ispindel_configuration.first_degree_coefficient = poly_terms[i]
         i += 1
-    sensor.ispindel_configuration.constant_term = decimal.Decimal(poly_terms[i])
+    sensor.ispindel_configuration.constant_term = poly_terms[i]
 
     sensor.ispindel_configuration.coefficients_up_to_date = True
     sensor.ispindel_configuration.save()
