@@ -93,7 +93,7 @@ def gravity_add_board(request):
 
                 messages.success(request, 'New iSpindel sensor added')
 
-                return redirect('gravity_ispindel_setup')
+                return redirect('gravity_ispindel_setup', sensor_id=sensor.id)
 
         messages.error(request, 'Error adding sensor')
 
