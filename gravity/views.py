@@ -480,16 +480,20 @@ def gravity_ispindel_setup(request, sensor_id):
 
     # When we're configuring the iSpindel sensor, we need to tell it how to connect back to Fermentrack. Get the
     # hostname, port, and IP address here so we can provide it to the user to enter.
-    fermentrack_host = request.META['SERVER_NAME']
-    fermentrack_port = request.META['SERVER_PORT']
-    ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
-    ip_list = [result[-1][0] for result in ais]
-    ip_list = list(set(ip_list))
-    resolved_address = ip_list[0]
+    fermentrack_host = request.META['HTTP_HOST']
+    try:
+        ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+        ip_list = [result[-1][0] for result in ais]
+        ip_list = list(set(ip_list))
+        resolved_address = ip_list[0]
+    except:
+        # For some reason we failed to resolve the IP address of this host. Let's let the user know they'll have to
+        # figure it out.
+        resolved_address = "<The IP address of Fermentrack> (Unable to autodetect. Sorry.)"
 
     return render(request, template_name='gravity/gravity_ispindel_setup.html',
                   context={'active_device': sensor, 'fermentrack_host': fermentrack_host,
-                           'fermentrack_ip': resolved_address, 'fermentrack_port': fermentrack_port})
+                           'fermentrack_ip': resolved_address})
 
 
 @csrf_exempt
