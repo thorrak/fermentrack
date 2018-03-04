@@ -1,0 +1,119 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Configure iSpindel{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Finish Configuring iSpindel</h1>
+
+
+    <p>
+        There are still a few more steps left before your iSpindel device is ready for use. The first of these is to
+        configure the iSpindel device itself.
+    </p>
+
+
+    <div class="row">
+        <div class="col-sm-3 col-xs-12">Step 1.</div>
+        <div class="col-sm-9 col-xs-12">
+            <h3>Put the iSpindel into Configuration Mode</h3>
+
+            <p>
+                To put the iSpindel into configuration mode, turn the iSpindel on, and press the "reset" button on the
+                side of the WeMos board. Within 2-3 seconds of pushing the reset button, press it a second time.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3 col-xs-12">Step 2.</div>
+        <div class="col-sm-9 col-xs-12">
+            <h3>Connect to the iSpindel</h3>
+
+            <p>
+                If the iSpindel is in configuration mode, you should be able to see an "iSpindel" WiFi network available
+                on nearby devices. Connect to this network. Once connected, you may see a configuration page
+                automatically appear. If you do not, open a web browser and attempt to navigate to any website. The
+                configuration page should appear instead.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3 col-xs-12">Step 3.</div>
+        <div class="col-sm-9 col-xs-12">
+            <h3>Configure the iSpindel</h3>
+
+            <p>
+                Once you have connected to the iSpindel, click "Configuration" and enter the information for your WiFi
+                network. <b>Please note</b> - the iSpindel must be connected to the same WiFi network as Fermentrack for
+                them to be able to reliably communicate. Set the "iSpindel Name" to {{ active_device.ispindel_configuration.name_on_device }} and
+                choose service type "HTTP". Then configure the HTTP service as follows:
+            </p>
+
+            <div class="row">
+                <div class="col-xs-3">Service Type</div>
+                <div class="col-xs-12">HTTP</div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-3">Token</div>
+                <div class="col-xs-12">fermentrack</div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-3">Server Address</div>
+                <div class="col-xs-12">{{ fermentrack_ip }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-3">Server Port</div>
+                <div class="col-xs-12">{{ fermentrack_port }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-3">Server URL</div>
+                <div class="col-xs-12">{{ fermentrack_host }}/ispindel</div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3 col-xs-12">Step 4.</div>
+        <div class="col-sm-9 col-xs-12">
+            <h3>Finalize Configuration within Fermentrack</h3>
+
+            <p>
+                Once the iSpindel is configured, it should begin sending data to Fermentrack. Reconnect to your regular
+                WiFi network, and click "Continue" below to be redirected to the gravity sensor configuration page.
+                Before your iSpindel device can begin logging gravity you need to set up the gravity equation within
+                Fermentrack.
+            </p>
+        </div>
+    </div>
+
+    <div class="row col-xs-12">
+        <a href="{% url "gravity_manage" active_device.id %}" class="button btn-success">Continue to Fermentrack Sensor Configuration Page</a>
+    </div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

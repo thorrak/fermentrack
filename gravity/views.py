@@ -7,7 +7,7 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-import json
+import json, socket
 from django.http import JsonResponse
 
 from app.models import BrewPiDevice
@@ -88,16 +88,12 @@ def gravity_add_board(request):
                 ispindel_config = IspindelConfiguration(
                     sensor=sensor,
                     name_on_device=ispindel_form.cleaned_data['name_on_device'],
-                    third_degree_coefficient=ispindel_form.cleaned_data['a'],
-                    second_degree_coefficient=ispindel_form.cleaned_data['b'],
-                    first_degree_coefficient=ispindel_form.cleaned_data['c'],
-                    constant_term=ispindel_form.cleaned_data['d'],
                 )
                 ispindel_config.save()
 
                 messages.success(request, 'New iSpindel sensor added')
 
-                return redirect('gravity_list')
+                return redirect('gravity_ispindel_setup')
 
         messages.error(request, 'Error adding sensor')
 
@@ -449,13 +445,55 @@ def gravity_manage(request, sensor_id):
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
-    return render(request, template_name='gravity/gravity_manage.html', context={'active_device': sensor})
+    context = {'active_device': sensor}
 
+    if sensor.sensor_type == 'ispindel':
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        initial = {'a': sensor.ispindel_configuration.third_degree_coefficient,
+                   'b': sensor.ispindel_configuration.second_degree_coefficient,
+                   'c': sensor.ispindel_configuration.first_degree_coefficient,
+                   'd': sensor.ispindel_configuration.constant_term,
+                   }
+        ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
+        context['ispindel_coefficient_form'] = ispindel_coefficient_form
+
+    return render(request, template_name='gravity/gravity_manage.html', context=context)
+
+
+@login_required
+@site_is_configured
+def gravity_ispindel_setup(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if sensor.sensor_type != "ispindel":
+        messages.error(request, u"Sensor {} is not an iSpindel sensor".format(sensor.name))
+        return redirect('gravity_log_list')
+
+    # When we're configuring the iSpindel sensor, we need to tell it how to connect back to Fermentrack. Get the
+    # hostname, port, and IP address here so we can provide it to the user to enter.
+    fermentrack_host = request.META['SERVER_NAME']
+    fermentrack_port = request.META['SERVER_PORT']
+    ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+    ip_list = [result[-1][0] for result in ais]
+    ip_list = list(set(ip_list))
+    resolved_address = ip_list[0]
+
+    return render(request, template_name='gravity/gravity_ispindel_setup.html',
+                  context={'active_device': sensor, 'fermentrack_host': fermentrack_host,
+                           'fermentrack_ip': resolved_address, 'fermentrack_port': fermentrack_port})
 
 
 @csrf_exempt
 def ispindel_handler(request):
-
     if request.body is None:
         # TODO - Log this
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
@@ -465,7 +503,7 @@ def ispindel_handler(request):
     # with open('ispindel_json_output.txt', 'w') as logFile:
     #     pprint.pprint(ispindel_data, logFile)
 
-    # As of the iSpindel firmware version X.XX, the json posted contains the following fields: (TODO - add version # to this comment)
+    # As of the iSpindel firmware version 5.6.1, the json posted contains the following fields:
     # {u'ID': 3003098,
     #  u'angle': 77.4576,
     #  u'battery': 4.171011,
@@ -509,3 +547,36 @@ def ispindel_handler(request):
     new_point.save()
 
     return JsonResponse({'status': 'ok', 'gravity': calculated_gravity}, safe=False, json_dumps_params={'indent': 4})
+
+
+@login_required
+@site_is_configured
+def gravity_ispindel_coefficients(request, sensor_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if request.POST:
+        ispindel_coefficient_form = forms.IspindelCoefficientForm(request.POST)
+        if ispindel_coefficient_form.is_valid():
+            sensor.ispindel_configuration.third_degree_coefficient = ispindel_coefficient_form.cleaned_data['a']
+            sensor.ispindel_configuration.second_degree_coefficient = ispindel_coefficient_form.cleaned_data['b']
+            sensor.ispindel_configuration.first_degree_coefficient = ispindel_coefficient_form.cleaned_data['c']
+            sensor.ispindel_configuration.constant_term = ispindel_coefficient_form.cleaned_data['d']
+
+            sensor.ispindel_configuration.save()
+            messages.success(request, u"Coefficients updated")
+
+        else:
+            messages.error(request, u"Invalid coefficients provided")
+    else:
+        messages.error(request, u"No coefficients provided")
+
+    redirect("gravity_manage", sensor_id=sensor_id)

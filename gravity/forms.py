@@ -179,12 +179,6 @@ class IspindelCreateForm(forms.Form):
     name_on_device = forms.CharField(max_length=64, min_length=1, required=True,
                                      widget=forms.TextInput(attrs={'placeholder': 'iSpindel000'}))
 
-    # Allow for inputting the coefficients/constant term of the gravity equation (if known)
-    a = forms.DecimalField(required=False, help_text="The third degree coefficient of the gravity equation")
-    b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
-    c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
-    d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
-
     def clean_name_on_device(self):
         if self.cleaned_data.get("name_on_device"):
             # Although the name_on_device uniqueness check is enforced on the database insert, I want to check it here as well
@@ -207,3 +201,15 @@ class IspindelCreateForm(forms.Form):
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
+
+class IspindelCoefficientForm(forms.Form):
+    # Allow for inputting the coefficients/constant term of the gravity equation (if known)
+    a = forms.DecimalField(required=False, help_text="The third degree coefficient of the gravity equation")
+    b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
+    c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
+    d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
+
+    def __init__(self, *args, **kwargs):
+        super(IspindelCoefficientForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"

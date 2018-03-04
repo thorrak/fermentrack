@@ -7,7 +7,58 @@
 {% block content %}
 
     <h1 class="page-header">{{ active_device.name }} Configuration</h1>
-{##}
+
+    {% if active_device.sensor_type == "ispindel" %}
+        {# Begin iSpindel Configuration Section #}
+
+        <h3>Tilt-to-Gravity Equation</h3>
+
+        <p>
+            iSpindel devices measure the angle the device floats at, and use that to compute the specific gravity of
+            your beer. Although the iSpindel device can perform its own calculation of specific gravity we recalculate
+            it within Fermentrack to allow you to tweak the conversion equation on the fly. Fermentrack performs the
+            conversion using a cubic formula in the format gravity = ax^3 + bx^2 + cx + d, where x is the float angle.
+        </p>
+
+        <p>
+            Current Formula: gravity = {{ active_device.ispindel_configuration.third_degree_coefficient }}x^3 +
+            {{ active_device.ispindel_configuration.second_degree_coefficient }}x^2 +
+            {{ active_device.ispindel_configuration.first_degree_coefficient }}x +
+            {{ active_device.ispindel_configuration.constant_term }}
+        </p>
+
+        <p>
+            You can update the coefficients of this formula below manually, or enter gravity & tilt readings and have
+            Fermentrack calculate the coefficients automatically.
+        </p>
+
+        <form action="{% url "gravity_ispindel_coefficients" %}" class="form-horizontal" method="post">{% csrf_token %}
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.a %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.b %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.c %}</div>
+            <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.d %}</div>
+            <div class="row col-xs-12"><input type="submit" value="Update Coefficients" class="btn btn-primary" /></div>
+
+            <div class="row col-xs-12">
+                For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>
+            </div>
+
+        </form>
+
+
+
+        {# End iSpindel Configuration Section #}
+    {% elif active_device.sensor_type == "tilt" %}
+
+
+
+
+
+    {% endif %}
+
+
+
+    {##}
 {#    <h3>Device Logs</h3>#}
 {##}
     {# I shamelessly borrowed this from site_help.html. It could/should be refactored to make more sense when only #}

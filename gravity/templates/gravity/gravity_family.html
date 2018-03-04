@@ -146,21 +146,8 @@
                         <div class="row col-xs-12">{% form_generic ispindel_form.temp_format %}</div>
                         <div class="row col-xs-12">{% form_generic ispindel_form.name_on_device %}</div>
 
-                        <div class="row col-xs-12">
-                            For ease of configuration, iSpindel devices report back an angle which is converted to a
-                            specific gravity value within Fermentrack. The formula used to convert takes the format of
-                            a*x^3 + b*x^2 + c*x + d = gravity where x is the angle reported by the device. Please enter
-                            the coefficients of this equation below. For more information, please read the iSpindel
-                            <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">
-                                calibration documentation.
-                            </a>
-                        </div>
-                        <div class="row col-xs-12">{% form_generic ispindel_form.a %}</div>
-                        <div class="row col-xs-12">{% form_generic ispindel_form.b %}</div>
-                        <div class="row col-xs-12">{% form_generic ispindel_form.c %}</div>
-                        <div class="row col-xs-12">{% form_generic ispindel_form.d %}</div>
-
-
+                        <p>After clicking "Create Sensor" you will need to connect to the iSpindel device itself and
+                        configure it to communicate with Fermentrack.</p>
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
                     </form>
