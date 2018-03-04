@@ -190,7 +190,7 @@ def gravity_ispindel_add_calibration_point(request, sensor_id):
     if request.POST:
         ispindel_calibration_point_form = forms.IspindelCalibrationPointForm(request.POST)
         if ispindel_calibration_point_form.is_valid():
-
+            ispindel_calibration_point_form.save()
             messages.success(request, u"Calibration point added")
 
             if sensor.ispindel_configuration.coefficients_up_to_date:
