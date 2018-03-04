@@ -579,4 +579,4 @@ def gravity_ispindel_coefficients(request, sensor_id):
     else:
         messages.error(request, u"No coefficients provided")
 
-    redirect("gravity_manage", sensor_id=sensor_id)
+    return redirect("gravity_manage", sensor_id=sensor_id)
