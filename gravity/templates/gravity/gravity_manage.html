@@ -61,7 +61,7 @@
                     <th>Angle (&deg;)</th>
                     <th>Gravity</th>
                     <th>Entered</th>
-                    <th>Delete Point</th>
+                    <th>Remove Point</th>
                 </tr>
             </thead>
 
@@ -71,7 +71,7 @@
                     <td>{{ this_point.gravity }}</td>
                     {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
                     <td>{{ this_point.created | durfromnow | timezone:preferred_tz | date:"r" }}</td>
-{#                    <td><a href="{% url 'profile_setpoint_delete' this_profile.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>#}
+                    <td><a href="{% url 'gravity_ispindel_delete_calibration_point' active_device.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>
                 </tr>
             {% endfor %}
         </table>
@@ -80,17 +80,63 @@
     {% endif %}
 
 
-        <h4>Enter New Calibration Point</h4>
-
-        <form action="{% url "gravity_ispindel_calibration" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
-            <div class="row col-xs-12">{% form_generic ispindel_calibration_form.angle %}</div>
-            <div class="row col-xs-12">{% form_generic ispindel_calibration_form.tilt %}</div>
-            <div class="row col-xs-12"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
-
-            <div class="row col-xs-12">
-                For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
             </div>
-        </form>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel" style="color: #000;">Add calibration point to {{ active_device.name }}</h4>
+              </div>
+
+
+                <div class="modal-body">
+                  <div class="container-fluid">
+                    <div class="row">
+                        {# Fridge Constant Form #}
+                        <div class="col-md-12">
+
+                            <div class="row">
+                                <div class="col-sm-2">Reported Angle</div>
+                                <div class="col-sm-10" id="ispindelCalibrationAngleFeed"></div>
+                            </div>
+
+                            {# TODO - Add report time to data feed #}
+{#                            <div class="row">#}
+{#                                <div class="col-sm-2">Report Time</div>#}
+{#                                <div class="col-sm-10"></div>#}
+{#                            </div>#}
+
+                            <form action="{% url "gravity_ispindel_add_calibration_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                                <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
+                                <div class="row">{% form_generic ispindel_calibration_form.angle %}</div>
+                                <div class="row">{% form_generic ispindel_calibration_form.tilt %}</div>
+                                <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
+
+                                <div class="row col-xs-12">
+                                    For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>
+                                </div>
+                            </form>
+
+
+                        </div>{# End Fridge Constant #}
+                    </div>
+                  </div>
+                </div>
+
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
 
         {# End iSpindel Configuration Section #}
@@ -262,5 +308,33 @@ if ($('[data-toggle="switch"]').length) {
   $('[data-toggle="switch"]').bootstrapSwitch();
 }
 </script>
+
+
+{% if active_device.sensor_type == "ispindel" %}
+    {# This script pulls in the "extra data" that the iSpindel transmits & populates it on the manage page #}
+    <script type="text/javascript">
+        (function ispindel_worker() {
+            $.ajax({
+                type: 'GET',
+                async: true,
+                beforeSend: function (xhr) {
+                    if (xhr && xhr.overrideMimeType) {
+                        xhr.overrideMimeType('application/json;charset=utf-8');
+                    }
+                },
+                dataType: 'json',
+                url: '/api/gravity/ispindel/{{ active_device.id }}/',
+                success: function(data) {
+                    $('#ispindelCalibrationAngleFeed').html(data[0].angle);
+                },
+                complete: function() {
+                // Schedule the next request when the current one's complete
+                setTimeout(ispindel_worker, 5000);
+                }
+            });
+        })();
+    </script>
+{% endif %}
+
 
 {% endblock %}

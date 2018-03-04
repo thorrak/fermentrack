@@ -218,4 +218,4 @@ class IspindelCoefficientForm(forms.Form):
 class IspindelCalibrationPointForm(forms.ModelForm):
     class Meta:
         model=IspindelGravityCalibrationPoint
-        fields=['angle', 'gravity']
+        fields=['angle', 'gravity', 'sensor']

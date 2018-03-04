@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 import gravity.views
+import gravity.views_ispindel
 import gravity.api.sensors
 
 
@@ -40,9 +41,11 @@ gravity_urlpatterns = [
     url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getIspindelExtras, name="getIspindelExtras"),  # Specific to iSpindel devices, allows for easy calibration
 
     # iSpindel-specific Views
-    url(r'^ispindel/?$', gravity.views.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
-    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/setup/$', gravity.views.gravity_ispindel_setup, name='gravity_ispindel_setup'),
-    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/coefficients/$', gravity.views.gravity_ispindel_coefficients, name='gravity_ispindel_coefficients'),
-    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/$', gravity.views.gravity_ispindel_calibration, name='gravity_ispindel_calibration'),
+    url(r'^ispindel/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/setup/$', gravity.views_ispindel.gravity_ispindel_setup, name='gravity_ispindel_setup'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/coefficients/$', gravity.views_ispindel.gravity_ispindel_coefficients, name='gravity_ispindel_coefficients'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/add/$', gravity.views_ispindel.gravity_ispindel_add_calibration_point, name='gravity_ispindel_add_calibration_point'),
+    url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/delete/(?P<point_id>[A-Za-z0-9]{1,20})/$',
+        gravity.views_ispindel.gravity_ispindel_delete_calibration_point, name='gravity_ispindel_delete_calibration_point'),
 
 ]

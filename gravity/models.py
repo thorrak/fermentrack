@@ -630,8 +630,8 @@ class TiltConfiguration(models.Model):
 
 ### iSpindel specific models
 class IspindelGravityCalibrationPoint(models.Model):
-    # Eventually (sadly, not quite yet) we'll add the ability to calibrate from within Fermentrack
     sensor = models.ForeignKey('IspindelConfiguration')
+    # TODO - Change angle definition to 10/7 (angles don't exist outside +/- 360)
     angle = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Angle (Measured by Device)")
     gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
