@@ -32,7 +32,7 @@
             Fermentrack calculate the coefficients automatically.
         </p>
 
-        <form action="{% url "gravity_ispindel_coefficients" %}" class="form-horizontal" method="post">{% csrf_token %}
+        <form action="{% url "gravity_ispindel_coefficients" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
             <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.a %}</div>
             <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.b %}</div>
             <div class="row col-xs-12">{% form_generic ispindel_coefficient_form.c %}</div>
