@@ -299,8 +299,8 @@ def gravity_ispindel_calibrate(request, sensor_id):
                                   u"re-perform calibration.")
 
     # Now set up the x/y arrays and have numpy do the heavy lifting
-    x=[point.angle for point in points]
-    y=[point.gravity for point in points]
+    x = [float(point.angle) for point in points]
+    y = [float(point.gravity) for point in points]
     poly_terms = numpy.polyfit(x, y, degree)
 
     # Save the results out to our ispindel configuration...

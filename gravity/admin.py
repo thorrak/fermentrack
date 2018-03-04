@@ -14,7 +14,7 @@ class tiltConfigurationAdmin(admin.ModelAdmin):
 class ispindelConfigurationAdmin(admin.ModelAdmin):
     list_display = ('sensor', 'name_on_device', )
 
-@admin.register(IspindelGravityCalibrationPoint)
-class IspindelGravityCalibrationPointAdmin(admin.ModelAdmin):
-    list_display = ('sensor', 'angle', 'gravity', 'created' )
-
+# @admin.register(IspindelGravityCalibrationPoint)
+# class IspindelGravityCalibrationPointAdmin(admin.ModelAdmin):
+#     list_display = ('sensor', 'angle', 'gravity', 'created' )
+#
