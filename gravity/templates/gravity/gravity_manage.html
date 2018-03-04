@@ -116,7 +116,7 @@
                             <form action="{% url "gravity_ispindel_add_calibration_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
                                 <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
                                 {% form_generic ispindel_calibration_form.angle %}
-                                {% form_generic ispindel_calibration_form.tilt %}
+                                {% form_generic ispindel_calibration_form.gravity %}
                                 <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
 
                                 <div class="row col-xs-12">
@@ -301,7 +301,7 @@
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()
-})
+});
 
 // Switches
 if ($('[data-toggle="switch"]').length) {
