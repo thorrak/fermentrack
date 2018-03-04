@@ -323,3 +323,107 @@ def gravity_ispindel_calibrate(request, sensor_id):
     messages.success(request, u"Coefficients have been updated based on the calibration points")
 
     return redirect("gravity_manage", sensor_id=sensor_id)
+
+
+
+
+@login_required
+@site_is_configured
+def gravity_ispindel_guided_calibration(request, sensor_id, step):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        sensor = GravitySensor.objects.get(id=sensor_id)
+    except:
+        messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
+        messages.error(request, u"Sensor {} is not an iSpindel sensor".format(sensor.name))
+        return redirect('gravity_log_list')
+
+    # Let's coerce step to an integer so we can do math on it
+    step = int(step)
+
+    # Before we do anything, see if we were passed data. If we were, process it.
+    if "sensor" in request.POST:
+        ispindel_calibration_point_form = forms.IspindelCalibrationPointForm(request.POST)
+        if ispindel_calibration_point_form.is_valid():
+            try:
+                # If a point exists with the exact same specific gravity that we just entered, delete it.
+                # This is specifically to prevent the user from accidentally running this calibration twice.
+                point_to_delete = IspindelGravityCalibrationPoint.objects.get(gravity=ispindel_calibration_point_form.cleaned_data['gravity'])
+                point_to_delete.delete()
+            except:
+                # No point existed. We're good.
+                pass
+
+            ispindel_calibration_point_form.save()
+            messages.success(request, u"Calibration point added")
+
+            if sensor.ispindel_configuration.coefficients_up_to_date:
+                sensor.ispindel_configuration.coefficients_up_to_date = False
+                sensor.ispindel_configuration.save()
+
+        else:
+            messages.error(request, u"Invalid calibration point provided - recheck the angle you entered & try again")
+            return redirect("gravity_ispindel_guided_calibration", sensor_id=sensor_id, step=(step-1))
+    else:
+        # If we hit this, the user isn't submitting data. The user is allowed to skip steps - it just isn't recommended.
+        pass
+
+    # Alrighty. Let's calculate where we should land on each step of the calibration.
+
+    # Water additions by step & sugar additions by step are both the amount of water/sugar being added in each step
+    # in grams.
+    water_additions_by_step = [2750, 125, 125, 250, 250, 250, 250, 250]
+    sugar_additions_by_step = [0,    150, 150, 300, 300, 300, 300, 300]
+
+    # Now let's translate that into data, organized by step (Note - step number is one-off from the 'step' parameter)
+
+    step_data = []
+    for i in xrange(len(water_additions_by_step)):
+        this_step = {'step': (i+1)}
+        this_step['water_addition'] = water_additions_by_step[i]
+        this_step['sugar_addition'] = sugar_additions_by_step[i]
+
+        this_step['cumulative_water'] = this_step['water_addition']
+        this_step['cumulative_sugar'] = this_step['sugar_addition']
+        if i > 0:
+            this_step['cumulative_water'] += step_data[i-1]['cumulative_water']
+            this_step['cumulative_sugar'] += step_data[i-1]['cumulative_sugar']
+
+        this_step['plato'] = 1.0*this_step['cumulative_sugar'] / (this_step['cumulative_sugar'] + this_step['cumulative_water']) * 100
+        this_step['specific_gravity'] = round(decimal.Decimal(1+this_step['plato']/(258.6-(227.1*(this_step['plato']/258.2)))), 4)
+        this_step['plato'] = round(decimal.Decimal(this_step['plato']),2)  # Make it pretty to look at
+
+        try:
+            point_with_grav = IspindelGravityCalibrationPoint.objects.get(gravity=this_step['specific_gravity'])
+            this_step['angle'] = point_with_grav.angle
+        except:
+            this_step['angle'] = ""
+
+        step_data.append(this_step)
+
+    # Now we're ready to proceed. Let's build the context & then determine what template to output to the user
+    context = {'all_steps_data': step_data, 'on_step': step, 'next_step': step+1, 'active_device': sensor}
+
+    if step == 0:
+        # Step 0 just lays out the basic instructions. We do want to collect existing points (if any) so we can warn
+        # the user, however.
+        existing_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration)
+        context['existing_points'] = existing_points
+        return render(request, template_name='gravity/gravity_ispindel_calibrate_start.html', context=context)
+    elif step <= len(water_additions_by_step):
+        ispindel_calibration_form = forms.IspindelCalibrationPointForm(
+            initial={'sensor': sensor.ispindel_configuration, 'gravity': step_data[step-1]['specific_gravity']})
+        context['ispindel_calibration_form'] = ispindel_calibration_form
+        context['this_step_data'] = step_data[step - 1]
+        return render(request, template_name='gravity/gravity_ispindel_calibrate_step.html', context=context)
+    else:
+        # Last step is just a message.
+        return render(request, template_name='gravity/gravity_ispindel_calibrate_end.html', context=context)
+

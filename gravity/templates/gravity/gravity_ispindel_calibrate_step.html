@@ -1,0 +1,130 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Configure iSpindel{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">iSpindel Guided Calibration</h1>
+
+
+    <h3>Calibration Point {{ on_step }} - Instructions:</h3>
+
+    {% if on_step == 1 %}
+        <p>
+            Let's get started! Into the empty bucket add {{ this_step_data.water_addition }} grams of room temperature
+            water{% if this_step_data.sugar_addition > 0 %} and {{ this_step_data.sugar_addition }} grams of sugar. Stir
+            the mixture well to dissolve the sugar{% endif %}. Once done, place the iSpindel in the bucket and wait for
+            it to level off.
+        </p>
+
+    {% else %}
+        <p>
+            Next, in the glass measuring cup, add {{ this_step_data.water_addition }} grams of warm
+            water{% if this_step_data.sugar_addition > 0 %} and {{ this_step_data.sugar_addition }} grams of sugar. Stir
+            the mixture well to dissolve the sugar{% endif %}. Once dissolved, pour the mixture into the bucket with the
+            iSpindel and wait for it to level off.
+        </p>
+
+    {% endif %}
+
+    <p>
+        Once the iSpindel is level & you see the angle below has updated, type the angle of the iSpindel into the form
+        and click the button to add the calibration point and move on to the next step.
+    </p>
+
+    <h3>Calibration Point {{ on_step }}:</h3>
+
+        <form action="{% url "gravity_ispindel_guided_calibration" active_device.id next_step %}" class="form-horizontal" method="post">{% csrf_token %}
+        <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
+        <input type="hidden" value="{{ ispindel_calibration_form.gravity.value }}" name="{{ ispindel_calibration_form.gravity.name }}">
+            <div class="row">
+                <div class="col-sm-2">Reported Angle</div>
+                <div class="col-sm-10" id="ispindelCalibrationAngleFeed"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-2">Angle</div>
+                <div class="col-sm-10">{{ ispindel_calibration_form.angle }}</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Gravity</div>
+                <div class="col-sm-10">{{ ispindel_calibration_form.gravity.value }}</div>
+            </div>
+
+        <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
+
+    </form>
+
+
+    <h3>Guided Calibration Overview</h3>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Water Addition</th>
+                <th>Sugar Addition</th>
+                <th>Total Water</th>
+                <th>Total Sugar</th>
+                <th>Plato</th>
+                <th>Specific Gravity</th>
+                <th>Angle (&deg;)</th>
+            </tr>
+        </thead>
+
+        {% for this_step_info in all_steps_data %}
+            <tr>
+                <td>{{ this_step_info.step }}</td>
+                <td>{{ this_step_info.water_addition }}g</td>
+                <td>{{ this_step_info.sugar_addition }}g</td>
+                <td>{{ this_step_info.cumulative_water }}g</td>
+                <td>{{ this_step_info.cumulative_sugar }}g</td>
+                <td>{{ this_step_info.plato }}&deg;P</td>
+                <td>{{ this_step_info.specific_gravity }}</td>
+                <td>{{ this_step_info.angle }}&deg;</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{# This script pulls in the "extra data" that the iSpindel transmits & populates it on the manage page #}
+<script type="text/javascript">
+    (function ispindel_worker() {
+        $.ajax({
+            type: 'GET',
+            async: true,
+            beforeSend: function (xhr) {
+                if (xhr && xhr.overrideMimeType) {
+                    xhr.overrideMimeType('application/json;charset=utf-8');
+                }
+            },
+            dataType: 'json',
+            url: '/api/gravity/ispindel/{{ active_device.id }}/',
+            success: function(data) {
+                $('#ispindelCalibrationAngleFeed').html(data.angle);
+            },
+            complete: function() {
+            // Schedule the next request when the current one's complete
+            setTimeout(ispindel_worker, 5000);
+            }
+        });
+    })();
+</script>
+
+{% endblock %}

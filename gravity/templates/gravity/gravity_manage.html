@@ -77,17 +77,24 @@
         </table>
 
         {% if ispindel_calibration_points|length >= 2 %}
-            <a href="{% url "gravity_ispindel_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        <div class="row">
+            <div class="col-xs-12">
+                <a href="{% url "gravity_ispindel_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        {% else %}
+        <div class="row">
+            <div class="col-xs-12">
+
         {% endif %}
+
 
     {% else %}
         <h5>There are no calibration points saved for this sensor</h5>
-    {% endif %}
-
-
         <div class="row">
             <div class="col-xs-12">
+    {% endif %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
+                <a href="{% url "gravity_ispindel_guided_calibration" active_device.id 0 %}" class="btn btn-primary">Perform Guided Calibration</a>
+
             </div>
         </div>
 
@@ -141,13 +148,10 @@
 
                                 <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
 
-{#                                <div class="row col-xs-12">#}
-{#                                    For more information, please read the iSpindel <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md">calibration documentation.</a>#}
-{#                                </div>#}
                             </form>
 
 
-                        </div>{# End Fridge Constant #}
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -159,6 +163,7 @@
             </div>
           </div>
         </div>
+        <!-- End Modal -->
 
 
         {# End iSpindel Configuration Section #}
