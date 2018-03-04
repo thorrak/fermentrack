@@ -456,7 +456,7 @@ def gravity_manage(request, sensor_id):
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
-        calibration_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration)
+        calibration_points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration).order_by('angle')
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form

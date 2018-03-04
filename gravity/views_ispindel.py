@@ -196,8 +196,8 @@ def gravity_ispindel_add_calibration_point(request, sensor_id):
             if sensor.ispindel_configuration.coefficients_up_to_date:
                 # If we're changing any coefficients since the calibration script was last run, clear the 'calibrated'
                 # flag so we know.
-                messages.warning(request, u"New calibration points have been added since the coefficients were last"
-                                          u"calculated - please re-run the coefficient calculation script to update"
+                messages.warning(request, u"New calibration points have been added since the coefficients were last "
+                                          u"calculated - please re-run the coefficient calculation script to update "
                                           u"the specific gravity equation.")
                 sensor.ispindel_configuration.coefficients_up_to_date = False
                 sensor.ispindel_configuration.save()
@@ -246,8 +246,8 @@ def gravity_ispindel_delete_calibration_point(request, sensor_id, point_id):
     if sensor.ispindel_configuration.coefficients_up_to_date:
         # If we're changing any coefficients since the calibration script was last run, clear the 'calibrated'
         # flag so we know.
-        messages.warning(request, u"Calibration points have been removed since the coefficients were last"
-                                  u"calculated - please re-run the coefficient calculation script to update"
+        messages.warning(request, u"Calibration points have been removed since the coefficients were last "
+                                  u"calculated - please re-run the coefficient calculation script to update "
                                   u"the specific gravity equation.")
         sensor.ispindel_configuration.coefficients_up_to_date = False
         sensor.ispindel_configuration.save()
@@ -306,15 +306,15 @@ def gravity_ispindel_calibrate(request, sensor_id):
     # Save the results out to our ispindel configuration...
     i = 0  # This is a bit hackish, but it works
     if degree == 3:
-        sensor.ispindel_configuration.third_degree_coefficient = poly_terms[i]
+        sensor.ispindel_configuration.third_degree_coefficient = decimal.Decimal(poly_terms[i])
         i += 1
     if degree >= 2:
-        sensor.ispindel_configuration.second_degree_coefficient = poly_terms[i]
+        sensor.ispindel_configuration.second_degree_coefficient = decimal.Decimal(poly_terms[i])
         i += 1
     if degree >= 1:
-        sensor.ispindel_configuration.first_degree_coefficient = poly_terms[i]
+        sensor.ispindel_configuration.first_degree_coefficient = decimal.Decimal(poly_terms[i])
         i += 1
-    sensor.ispindel_configuration.constant_term = poly_terms[i]
+    sensor.ispindel_configuration.constant_term = decimal.Decimal(poly_terms[i])
 
     sensor.ispindel_configuration.coefficients_up_to_date = True
     sensor.ispindel_configuration.save()
