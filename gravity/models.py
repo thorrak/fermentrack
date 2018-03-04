@@ -660,6 +660,8 @@ class IspindelConfiguration(models.Model):
     constant_term = models.DecimalField(default=0.0, decimal_places=10, max_digits=13,
                                         help_text="The constant term in the gravity conversion equation")
 
+    # While coefficients_up_to_date is kept accurate, at the moment it doesn't really get used anywhere.
+    # TODO - Do something useful with this
     coefficients_up_to_date = models.BooleanField(default=False, help_text="Have the calibration points changed since "
                                                                            "the coefficient calculator was run?")
 

@@ -200,7 +200,7 @@ def gravity_ispindel_add_calibration_point(request, sensor_id):
                                           u"calculated - please re-run the coefficient calculation script to update"
                                           u"the specific gravity equation.")
                 sensor.ispindel_configuration.coefficients_up_to_date = False
-                sensor.save()
+                sensor.ispindel_configuration.save()
 
         else:
             messages.error(request, u"Invalid calibration point provided")
@@ -250,7 +250,7 @@ def gravity_ispindel_delete_calibration_point(request, sensor_id, point_id):
                                   u"calculated - please re-run the coefficient calculation script to update"
                                   u"the specific gravity equation.")
         sensor.ispindel_configuration.coefficients_up_to_date = False
-        sensor.save()
+        sensor.ispindel_configuration.save()
 
     return redirect("gravity_manage", sensor_id=sensor_id)
 
@@ -294,8 +294,8 @@ def gravity_ispindel_calibrate(request, sensor_id):
 
     if degree == 1:
         # Although we can do a linear fit, it's not really a good idea. Let the user know what they're getting into.
-        messages.warning(request, u"Only 2 calibration points available. Your resulting function will be linear, and"
-                                  u"will likely not be accurate. It is highly recommended to add additional points and"
+        messages.warning(request, u"Only 2 calibration points available. Your resulting function will be linear, and "
+                                  u"will likely not be accurate. It is highly recommended to add additional points and "
                                   u"re-perform calibration.")
 
     # Now set up the x/y arrays and have numpy do the heavy lifting
@@ -317,7 +317,7 @@ def gravity_ispindel_calibrate(request, sensor_id):
     sensor.ispindel_configuration.constant_term = poly_terms[i]
 
     sensor.ispindel_configuration.coefficients_up_to_date = True
-    sensor.save()
+    sensor.ispindel_configuration.save()
 
     # ...and we're done!
     messages.success(request, u"Coefficients have been updated based on the calibration points")
