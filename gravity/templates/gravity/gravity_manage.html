@@ -82,7 +82,7 @@
 
         <div class="row">
             <div class="col-xs-12">
-                <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
             </div>
         </div>
 
@@ -115,8 +115,8 @@
 
                             <form action="{% url "gravity_ispindel_add_calibration_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
                                 <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
-                                <div class="row">{% form_generic ispindel_calibration_form.angle %}</div>
-                                <div class="row">{% form_generic ispindel_calibration_form.tilt %}</div>
+                                {% form_generic ispindel_calibration_form.angle %}
+                                {% form_generic ispindel_calibration_form.tilt %}
                                 <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
 
                                 <div class="row col-xs-12">
@@ -325,7 +325,7 @@ if ($('[data-toggle="switch"]').length) {
                 dataType: 'json',
                 url: '/api/gravity/ispindel/{{ active_device.id }}/',
                 success: function(data) {
-                    $('#ispindelCalibrationAngleFeed').html(data[0].angle);
+                    $('#ispindelCalibrationAngleFeed').html(data.angle);
                 },
                 complete: function() {
                 // Schedule the next request when the current one's complete
