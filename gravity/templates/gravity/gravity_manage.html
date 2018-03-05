@@ -98,6 +98,20 @@
             </div>
         </div>
 
+
+        <h2>Extra Data from Device</h2>
+
+        <div class="row">
+            <div class="col-sm-2">Current Angle</div>
+            <div class="col-sm-10" id="ispindelAngleFeed"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2">Current Battery</div>
+            <div class="col-sm-10" id="ispindelBatteryFeed"></div>
+        </div>
+
+
         <!-- Modal -->
         <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
           <div class="modal-dialog" role="document">
@@ -353,6 +367,8 @@ if ($('[data-toggle="switch"]').length) {
                 url: '/api/gravity/ispindel/{{ active_device.id }}/',
                 success: function(data) {
                     $('#ispindelCalibrationAngleFeed').html(data.angle);
+                    $('#ispindelAngleFeed').html(data.angle);
+                    $('#ispindelBatteryFeed').html(data.battery);
                 },
                 complete: function() {
                 // Schedule the next request when the current one's complete
