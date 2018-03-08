@@ -19,3 +19,8 @@ requests        # for loading firmware data from websites
 esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
+
+
+# Requirements to make Circus work
+pyzmq<17
+tornado<5
