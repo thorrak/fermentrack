@@ -103,7 +103,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../../config/">Configuration</a>
         
     </li>
 
@@ -117,14 +117,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -300,16 +300,16 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="the-fermentrack-architecture">The Fermentrack architecture</h1>
+                <h1 id="the-fermentrack-architecture">The Fermentrack architecture<a class="headerlink" href="#the-fermentrack-architecture" title="Permanent link">&para;</a></h1>
 <p>The Fermentrack stack is based on a front end application, a controller, and a firmware
 running on the device that handles reading temperatures, switching cooling and heating etc.
 Everything but the firmware part is running under a process manager which takes care of
 launching the front end and brewpi.py controller scripts.</p>
 <p><img alt="Fermentrack Architechture" src="../img/fermentrack.png" /></p>
 <p>See <a href="../components/">components</a> documentation for links and licenses.</p>
-<h2 id="the-webserver-nginx-and-chaussette-wsgi-server">The webserver nginx and chaussette WSGI server</h2>
+<h2 id="the-webserver-nginx-and-chaussette-wsgi-server">The webserver nginx and chaussette WSGI server<a class="headerlink" href="#the-webserver-nginx-and-chaussette-wsgi-server" title="Permanent link">&para;</a></h2>
 <p>Used to proxy http requests to chaussette over WSGI to the Fermentrack django application.</p>
-<h2 id="cron">cron</h2>
+<h2 id="cron">cron<a class="headerlink" href="#cron" title="Permanent link">&para;</a></h2>
 <p>Used to start the Fermentrack stack, it starts the Circus process manager via a @reboot job,
 it also checks the status of circus every 10 seconds, if it not running it will start it.
 All this is handled by a script: <em>updateCronCircus.sh</em></p>
@@ -332,7 +332,7 @@ brewpi-spawner: active
 circusd-stats: active
 dev-brewpi1: active
 </code></pre>
-<h2 id="the-process-manager-circus">The process manager <em>circus</em></h2>
+<h2 id="the-process-manager-circus">The process manager <em>circus</em><a class="headerlink" href="#the-process-manager-circus" title="Permanent link">&para;</a></h2>
 <p>Fermentrack is started at boot with the help of cron (see <em>cron</em>), the process manager handles
 all the different processes needed by Fermentrack.</p>
 <ul>
@@ -342,7 +342,7 @@ all the different processes needed by Fermentrack.</p>
 <li><strong>dev-brewpi1</strong> - Is a controller script spawned by brewpi-spawner, handing a controller.</li>
 </ul>
 <p>Circus documentation can be found <a href="https://circus.readthedocs.io/en/latest/">here</a>.</p>
-<h2 id="logging">Logging</h2>
+<h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Circus process manager logs:<ul>
 <li><em>/home/fermentrack/fermentrack/log/circusd.log</em></li>

@@ -471,10 +471,10 @@ class BrewPiDevice(models.Model):
                                     help_text="The internet socket to use (only used if connection_type is wifi)")
 
     # The beer that is currently active & being logged
-    active_beer = models.ForeignKey('Beer', null=True, blank=True, default=None)
+    active_beer = models.ForeignKey('Beer', null=True, blank=True, default=None, on_delete=models.SET_NULL)
 
     # The active fermentation profile (if any!)
-    active_profile = models.ForeignKey('FermentationProfile', null=True, blank=True, default=None)
+    active_profile = models.ForeignKey('FermentationProfile', null=True, blank=True, default=None, on_delete=models.SET_NULL)
 
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
@@ -1688,7 +1688,7 @@ class FermentationProfile(models.Model):
 class FermentationProfilePoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
 
-    profile = models.ForeignKey(FermentationProfile)
+    profile = models.ForeignKey(FermentationProfile, on_delete=models.CASCADE)
     ttl = models.DurationField(help_text="Time at which we should arrive at this temperature")
     temperature_setting = models.DecimalField(max_digits=5, decimal_places=2, null=True,
                                               help_text="The temperature the beer should be when TTL has passed")

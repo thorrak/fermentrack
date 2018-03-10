@@ -116,7 +116,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../../config/">Configuration</a>
         
     </li>
 
@@ -130,14 +130,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -298,10 +298,10 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="legacy-phpapache-application-support">Legacy (PHP/Apache) Application Support</h1>
+                <h1 id="legacy-phpapache-application-support">Legacy (PHP/Apache) Application Support<a class="headerlink" href="#legacy-phpapache-application-support" title="Permanent link">&para;</a></h1>
 <p>Unlike apps such as RaspberryPints and BrewPi-www which use <a href="https://www.apache.org/">Apache</a> to serve webpages, Fermentrack uses <a href="https://nginx.org/en/">nginx</a>. If you wish to run applications other than Fermentrack on the same Raspberry Pi you will need to configure nginx to serve those applications instead of Apache.</p>
 <p>Fermentrack-tools includes a script which can be used to install this support automatically. </p>
-<h2 id="understanding-legacy-support">Understanding Legacy Support</h2>
+<h2 id="understanding-legacy-support">Understanding Legacy Support<a class="headerlink" href="#understanding-legacy-support" title="Permanent link">&para;</a></h2>
 <p>To support legacy applications, the fermentrack-tools script does the following:</p>
 <ul>
 <li>Install <code>php5-common</code>, <code>php5-cli</code>, and <code>php5-fpm</code> to allow Nginx to serve php files</li>
@@ -309,12 +309,12 @@
 <li>Create a new nginx configuration file serving webpages from <code>/var/www/html</code> on port 81</li>
 </ul>
 <p><strong>Note</strong> - Due to the port change mentioned above, any apps that were previously running at <code>http://&lt;your-ip&gt;/</code> will now be running at <code>http://&lt;your-ip&gt;:81/</code></p>
-<h2 id="installation">Installation</h2>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>Although fermentrack-tools offers a script to allow for fully automated installation of support for PHP/legacy apps, support can be installed manually as well.</p>
-<h3 id="automated-installation">Automated Installation</h3>
+<h3 id="automated-installation">Automated Installation<a class="headerlink" href="#automated-installation" title="Permanent link">&para;</a></h3>
 <p>To run the fully automated installation script, simply SSH into your Raspberry Pi and execute:</p>
 <p><code>curl -L install-legacy-support.fermentrack.com | sudo bash</code></p>
-<h3 id="manual-installation">Manual Installation</h3>
+<h3 id="manual-installation">Manual Installation<a class="headerlink" href="#manual-installation" title="Permanent link">&para;</a></h3>
 <p>To manually install legacy app support, you will need to do the following as root:</p>
 <ol>
 <li>Install PHP5 support - <code>apt-get install php5-common php5-cli php5-fpm</code></li>
@@ -324,7 +324,7 @@
 <li>Restart PHP5-FPM - <code>service php5-fpm restart</code></li>
 <li>Restart Nginx - <code>service nginx restart</code></li>
 </ol>
-<h2 id="legacy-brewpi-www-installation-support">Legacy BrewPi-www Installation Support</h2>
+<h2 id="legacy-brewpi-www-installation-support">Legacy BrewPi-www Installation Support<a class="headerlink" href="#legacy-brewpi-www-installation-support" title="Permanent link">&para;</a></h2>
 <p>Although performing the above actions will allow brewpi-www to run alongside Fermentrack, doing so is not recommended. Attempting to run brewpi-www in this way can result in issues as Fermentrack and brewpi-www compete to access/manage your fermentation controller. </p>
               
             </div>
@@ -333,7 +333,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../../config/config/" class="btn btn-neutral float-right" title="Configuration">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../../config/" class="btn btn-neutral float-right" title="Configuration">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../manual/" class="btn btn-neutral" title="Manual Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -365,7 +365,7 @@
         <span><a href="../manual/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../../config/config/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../../config/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

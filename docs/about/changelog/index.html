@@ -103,7 +103,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../../config/">Configuration</a>
         
     </li>
 
@@ -117,14 +117,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -296,11 +296,11 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="changelog">Changelog</h1>
+                <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="http://keepachangelog.com/">Keep a Changelog</a> because it was the first relatively standard format to pop up when I googled "changelog formats".</p>
-<h2 id="unversioned">[Unversioned]</h2>
-<h3 id="added">Added</h3>
+<h2 id="unversioned">[Unversioned]<a class="headerlink" href="#unversioned" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Added fermentation controller "Manage Device" page</li>
 <li>Upgrades are now logged to upgrade.log</li>
@@ -309,7 +309,7 @@
 <li>Support for Arduino-based devices</li>
 <li>Support for in-app git branch switching</li>
 <li>Autodetection of serial devices</li>
-<li>Celery (delayed/scheduled task) support (currently unused)</li>
+<li>Huey (delayed/scheduled task) support (currently unused)</li>
 <li>Controllers connected via serial can now have their serial port autodetected using the udev serial number </li>
 <li>Beer profiles are now displayed in graph form</li>
 <li>Firmware can now be flashed to new Arduino &amp; ESP8266-based controllers from within the app</li>
@@ -317,8 +317,11 @@
 <li>Beer log management (deletion/downloading)</li>
 <li>Added configuration options for graph line colors</li>
 <li>Graph lines can be toggled by clicking the icon in the legend</li>
+<li>Added support for specific gravity sensors</li>
+<li>Added support for Tilt Hydrometers</li>
+<li>Added support for iSpindel specific gravity sensors</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Inversion flag for installed devices is now shown on the "configure pins/sensors" page</li>
 <li>Form errors are now displayed on "configure pins/sensors" page</li>
@@ -328,8 +331,9 @@
 <li>At end of a fermentation profile the controller will now be switched to beer constant mode</li>
 <li>All data points are now explicitly recorded in UTC</li>
 <li>Added icon to graph legend to display line color</li>
+<li>Updated to Django v1.11 (Long term support version)</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Inversion state no longer improperly defaults</li>
 <li>Minimum graph size adjusted to account for smaller displays</li>
@@ -340,8 +344,8 @@
 <li>"View Room Temp" link on Dashboard now functions</li>
 <li>Room temp now included in legend for graphs</li>
 </ul>
-<h2 id="010-2017-03-17-v1-release">[0.1.0] - 2017-03-17 - "v1 release"</h2>
-<h3 id="added_1">Added</h3>
+<h2 id="010-2017-03-17-v1-release">[0.1.0] - 2017-03-17 - "v1 release"<a class="headerlink" href="#010-2017-03-17-v1-release" title="Permanent link">&para;</a></h2>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>First release!</li>
 </ul>
