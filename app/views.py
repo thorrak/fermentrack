@@ -661,18 +661,21 @@ def device_uninstall(request, device_id):
         if 'remove_1' in request.POST and 'remove_2' in request.POST and 'remove_3' in request.POST:
             if request.POST['remove_1'] == "on" and request.POST['remove_2'] == "on" and request.POST['remove_3'] == "on":
 
-                if active_device.gravity_sensor is not None:
-                    # If there's an associated gravity sensor, let's disassociate the sensor & stop it from logging
-                    grav_sensor = active_device.gravity_sensor
-                    if grav_sensor.active_log is not None:
-                        # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
-                        grav_sensor.active_log = None
-                        messages.warning(request,
-                                         u"Gravity sensor {} was actively logging, and has now been stopped.".format(
-                                             grav_sensor))
+                try:  # Yes, there is probably a better way to do this than try/except, but this works.
+                    if active_device.gravity_sensor is not None:
+                        # If there's an associated gravity sensor, let's disassociate the sensor & stop it from logging
+                        grav_sensor = active_device.gravity_sensor
+                        if grav_sensor.active_log is not None:
+                            # The gravity sensor is currently actively logging something. This is not ideal. Lets stop it.
+                            grav_sensor.active_log = None
+                            messages.warning(request,
+                                             u"Gravity sensor {} was actively logging, and has now been stopped.".format(
+                                                 grav_sensor))
 
-                        grav_sensor.assigned_brewpi_device = None
-                        grav_sensor.save()
+                            grav_sensor.assigned_brewpi_device = None
+                            grav_sensor.save()
+                except:
+                    pass
 
                 active_device.delete()
                 messages.success(request, u"The device '{}' was successfully uninstalled.".format(active_device))
