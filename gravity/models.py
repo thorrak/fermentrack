@@ -360,7 +360,15 @@ class GravityLogPoint(models.Model):
             # Annotations are just the extra data (for now)
             retval = []
             if self.extra_data is not None:
-                retval.append({'series': 'temp', 'x': time_value, 'shortText': self.extra_data[:1],
+                if isinstance(self.extra_data, basestring):
+                    shortText = self.extra_data[:1]
+                else:
+                    # If the extra_data isn't a string (the angle that we're saving for iSpindels, for example) then
+                    # we need to manually determine the shortText.
+                    # That said, I could argue that we shouldn't be saving anything out at all (annotation wise) if
+                    # this is the case. Question for later.
+                    shortText = "f"
+                retval.append({'series': 'temp', 'x': time_value, 'shortText': shortText,
                                'text': self.extra_data})
             return retval
         else:
