@@ -11,30 +11,6 @@
 
 {% block content %}
 
-{#        <!-- Panel 3 -->#}
-{#        <div class="col-md-3 col-sm-6">#}
-{#            <div class="panel panel-green">#}
-{#                <div class="panel-heading">#}
-{#                    <div class="row">#}
-{#                        <div class="col-xs-3"><i class="fa fa-tasks fa-5x"></i></div>#}
-{#                        <div class="col-xs-9 text-right">#}
-{#                            <div class="less-huge">Beer Const</div>#}
-{#                            <div class="">Control Mode</div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <a href="#">#}
-{#                    <div class="panel-footer">#}
-{#                        <div class="pull-left">View Details</div>#}
-{#                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>#}
-{#                        <div class="clearfix"></div>#}
-{##}
-{#                    </div>#}
-{#                </a>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-
     <!-- Start Sensor Name Header -->
     <div class="row">
         <div class="col-xs-12">
@@ -94,13 +70,13 @@
         </div>
 
         <div class="col-md-4 col-xs-6">
-            <div class="dashpanel dashpanel-top bg-petermann" id="fridgeTempPanel">
+            <div class="dashpanel dashpanel-top bg-petermann" id="gravTempPanel">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
                 <div class="dashpanel-title">Temperature</div>
                 <div class="dash-data" id="dashTemp">--&deg; -</div>
                 <div class="dashpanel-divider"></div>
                 <a href="#" data-toggle="modal" data-target="#beerLogModal">
-                    <div class="dash-desc" id="fridgeTempToggle">
+                    <div class="dash-desc" id="gravTempToggle">
                         <div class="pull-left">Load Prior Log</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
@@ -602,18 +578,18 @@ function toggle_graph_visibility(el) {
         dataType: 'json',
         url: '/api/gravity/{{ active_device.id }}/',
         success: function(data) {
+            // Update the gravity reading in the dashboard as new readings are available
             if(data[0].current_gravity>0) {
                 $('#dashGravity').html(data[0].current_gravity);
             } else {
                 $('#dashGravity').html("-.---");
             }
-
-
+            // Also update the temperature
             $('#dashTemp').html(data[0].temp_string);
         },
         complete: function() {
         // Schedule the next request when the current one's complete
-        setTimeout(panel_worker, 10000);
+        setTimeout(panel_worker, 5000);
         }
     });
 })();
