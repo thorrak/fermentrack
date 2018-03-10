@@ -80,7 +80,7 @@ def ispindel_handler(request):
     ispindel_data = json.loads(request.body)
 
     try:
-        sensor = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
+        ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
     except:
         # TODO - Log This
         messages.error(request, u'Unable to load sensor with name {}'.format(ispindel_data['name']))
@@ -90,39 +90,39 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    calculated_gravity = sensor.third_degree_coefficient * ispindel_data['angle']**3
-    calculated_gravity += sensor.second_degree_coefficient * ispindel_data['angle']**2
-    calculated_gravity += sensor.first_degree_coefficient * ispindel_data['angle']
-    calculated_gravity += sensor.constant_term
+    calculated_gravity = ispindel_obj.third_degree_coefficient * ispindel_data['angle']**3
+    calculated_gravity += ispindel_obj.second_degree_coefficient * ispindel_data['angle']**2
+    calculated_gravity += ispindel_obj.first_degree_coefficient * ispindel_data['angle']
+    calculated_gravity += ispindel_obj.constant_term
 
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
         temp=ispindel_data['temperature'],
         temp_format='C',                    # iSpindel devices always report temp in celsius
         temp_is_estimate=False,
-        associated_device=sensor.sensor,
+        associated_device=ispindel_obj.sensor,
         gravity_latest=calculated_gravity,
         temp_latest=ispindel_data['temperature'],
         extra_data=ispindel_data['angle'],
     )
 
-    if sensor.sensor.active_log is not None:
-        new_point.associated_log = sensor.sensor.active_log
+    if ispindel_obj.sensor.active_log is not None:
+        new_point.associated_log = ispindel_obj.sensor.active_log
 
     new_point.save()
 
     # Set & save the 'extra' data points to redis (so we can load & use later)
     if 'angle' in ispindel_data:
-        sensor.angle = ispindel_data['angle']
+        ispindel_obj.angle = ispindel_data['angle']
     if 'ID' in ispindel_data:
-        sensor.ispindel_id = ispindel_data['ID']
+        ispindel_obj.ispindel_id = ispindel_data['ID']
     if 'battery' in ispindel_data:
-        sensor.battery = ispindel_data['battery']
+        ispindel_obj.battery = ispindel_data['battery']
     if 'gravity' in ispindel_data:
-        sensor.ispindel_gravity = ispindel_data['gravity']
+        ispindel_obj.ispindel_gravity = ispindel_data['gravity']
     if 'token' in ispindel_data:
-        sensor.token = ispindel_data['token']
-    sensor.save_extras_to_redis()
+        ispindel_obj.token = ispindel_data['token']
+    ispindel_obj.save_extras_to_redis()
 
     return JsonResponse({'status': 'ok', 'gravity': calculated_gravity}, safe=False, json_dumps_params={'indent': 4})
 
