@@ -103,7 +103,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../config/config/">Configuration</a>
+        <a class="" href="../config/">Configuration</a>
         
     </li>
 
@@ -117,14 +117,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -150,9 +150,11 @@
         
             <ul>
             
-                <li class="toctree-l3"><a href="#hardware-comparison">Hardware Comparison</a></li>
+                <li class="toctree-l3"><a href="#supported-hardware">Supported Hardware</a></li>
                 
-                    <li><a class="toctree-l4" href="#legend">Legend:</a></li>
+                    <li><a class="toctree-l4" href="#brewpi-controllers">BrewPi Controllers</a></li>
+                
+                    <li><a class="toctree-l4" href="#specific-gravity-sensors">Specific Gravity Sensors</a></li>
                 
             
             </ul>
@@ -294,76 +296,31 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="hardware-comparison">Hardware Comparison</h1>
-<p>There are four main types of hardware that currently support BrewPi firmware installations. Each have varying levels of support by Fermentrack.</p>
-<ul>
-<li><a href="ESP8266/">ESP8266</a></li>
-<li><a href="Arduino/">Arduino</a></li>
-<li><a href="Native%20Python.md">Native Python (Fuscus)</a></li>
-<li><a href="Spark/">Spark Core</a></li>
-</ul>
-<p>The following table shows which release is expected to have support for various controller types:</p>
-<table>
-<thead>
-<tr>
-<th>Release</th>
-<th>ESP8266 Serial</th>
-<th>ESP8266 WiFi</th>
-<th>Arduino</th>
-<th>Spark</th>
-<th>Fuscus (Native Python)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>v1</td>
-<td>No</td>
-<td>Yes</td>
-<td>No</td>
-<td>No</td>
-<td>No</td>
-</tr>
-<tr>
-<td>v1 (flash)</td>
-<td>No</td>
-<td>No</td>
-<td>No</td>
-<td>No</td>
-<td>No</td>
-</tr>
-<tr>
-<td>v2</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>No</td>
-<td>No</td>
-</tr>
-<tr>
-<td>v2 (flash)</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>No</td>
-<td>No</td>
-</tr>
-<tr>
-<td>v3</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Targeted</td>
-<td>Targeted</td>
-</tr>
-</tbody>
-</table>
-<h5 id="legend">Legend:</h5>
-<ul>
-<li>Yes - Support confirmed in this version</li>
-<li>Targeted - Support targeted for this version</li>
-<li>No - Unsupported in this version</li>
-<li>Blank - Unknown</li>
-</ul>
+                <h1 id="supported-hardware">Supported Hardware<a class="headerlink" href="#supported-hardware" title="Permanent link">&para;</a></h1>
+<p>Fermentrack supports both BrewPi-based temperature controllers as well as various specific gravity sensors. Support for
+each family of hardware varies, but is expanding with each release.</p>
+<h3 id="brewpi-controllers">BrewPi Controllers<a class="headerlink" href="#brewpi-controllers" title="Permanent link">&para;</a></h3>
+<h5 id="esp8266-based-controllers">ESP8266-Based Controllers<a class="headerlink" href="#esp8266-based-controllers" title="Permanent link">&para;</a></h5>
+<p>Fermentrack was explicitly built to support <a href="ESP8266/">ESP8266-based controllers</a>, including flashing, setup, and
+ongoing logging/communication. Controllers can be easily added/flashed through the Fermentrack web interface. 
+Additional information can be found <a href="ESP8266/">here</a>.</p>
+<h5 id="arduino-based-controllers">Arduino-Based Controllers<a class="headerlink" href="#arduino-based-controllers" title="Permanent link">&para;</a></h5>
+<p><a href="Arduino/">Arduino-based controllers</a> can be easily installed/managed through the web interface, including flashing,
+setup, and ongoing logging/communication. Additional information can be found <a href="Arduino/">here</a></p>
+<h5 id="native-python-fuscus">Native Python (Fuscus)<a class="headerlink" href="#native-python-fuscus" title="Permanent link">&para;</a></h5>
+<p>Fermentrack currently supports <a href="Native Python/">native python (Fuscus)</a> controllers, but requires that software 
+installation/maintenance be done manually by the user. Fuscus devices can be controlled via Fermentrack's serial
+connectivity support.</p>
+<h5 id="spark-coreoem-controllers">Spark Core/OEM Controllers<a class="headerlink" href="#spark-coreoem-controllers" title="Permanent link">&para;</a></h5>
+<p>Unfortunately, Fermentrack does NOT support <a href="Spark/">Spark-based</a>, OEM, or other "modern" BrewPi controllers at this 
+time. Support is planed for a later date, but is not currently prioritized.</p>
+<h3 id="specific-gravity-sensors">Specific Gravity Sensors<a class="headerlink" href="#specific-gravity-sensors" title="Permanent link">&para;</a></h3>
+<h5 id="tilt-hydrometer">Tilt Hydrometer<a class="headerlink" href="#tilt-hydrometer" title="Permanent link">&para;</a></h5>
+<p>Tilt Hydrometers are supported natively by Fermentrack which will assist with device setup. Tilt hydrometers are easy to
+use, and can be installed either alongside or independent of a temperature controller.</p>
+<h5 id="ispindel">iSpindel<a class="headerlink" href="#ispindel" title="Permanent link">&para;</a></h5>
+<p>iSpindel devices are directly supported by Fermentrack which can assist with device configuration &amp; calibration, as well
+as the initial flashing of the iSpindel firmware. </p>
               
             </div>
           </div>

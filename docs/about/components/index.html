@@ -103,7 +103,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../../config/">Configuration</a>
         
     </li>
 
@@ -117,14 +117,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -301,9 +301,9 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="included-components-licensing">Included Components &amp; Licensing</h1>
+                <h1 id="included-components-licensing">Included Components &amp; Licensing<a class="headerlink" href="#included-components-licensing" title="Permanent link">&para;</a></h1>
 <p>Fermentrack was built using the Django web framework in Python. As a web application, it contains a number of JavaScript, CSS, and other components to help provide additional functionality. Some of these packages include the following.</p>
-<h2 id="python-packages">Python Packages</h2>
+<h2 id="python-packages">Python Packages<a class="headerlink" href="#python-packages" title="Permanent link">&para;</a></h2>
 <p>In addition to Django, this app utilizes a number of Python packages. These packages include:</p>
 <table>
 <thead>
@@ -326,12 +326,8 @@
 <td><a href="https://github.com/pyserial/pyserial/blob/master/LICENSE.txt">BSD 3 Clause</a></td>
 </tr>
 <tr>
-<td><a href="http://www.celeryproject.org/">celery</a></td>
-<td><a href="https://github.com/celery/celery/blob/master/LICENSE">BSD 3 Clause</a></td>
-</tr>
-<tr>
-<td><a href="http://django-celery-beat.readthedocs.io/en/latest/">django-celery-beat</a></td>
-<td><a href="https://github.com/celery/django-celery-beat/blob/master/LICENSE">BSD 3 Clause</a></td>
+<td><a href="https://github.com/coleifer/huey">huey</a></td>
+<td><a href="https://github.com/coleifer/huey/blob/master/LICENSE">MIT (Expat)</a></td>
 </tr>
 <tr>
 <td><a href="https://sentry.io/">raven</a></td>
@@ -377,9 +373,13 @@
 <td><a href="https://pypi.python.org/pypi/pid/2.1.1">pid</a></td>
 <td><a href="https://github.com/trbs/pid/blob/master/LICENSE">Apache Public License v2</a></td>
 </tr>
+<tr>
+<td><a href="https://redislabs.com/lp/python-redis/">redis</a></td>
+<td><a href="https://github.com/andymccurdy/redis-py/blob/master/LICENSE">MIT (Expat)</a></td>
+</tr>
 </tbody>
 </table>
-<h2 id="javascript-packages">JavaScript Packages</h2>
+<h2 id="javascript-packages">JavaScript Packages<a class="headerlink" href="#javascript-packages" title="Permanent link">&para;</a></h2>
 <p>Fermentrack provides some of its functionality using JavaScript. Some of the third party JavaScript packages used within Fermentrack include:</p>
 <table>
 <thead>
@@ -419,7 +419,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="ui-css-fonts-etc-packages">UI (CSS, Fonts, etc.) Packages</h2>
+<h2 id="ui-css-fonts-etc-packages">UI (CSS, Fonts, etc.) Packages<a class="headerlink" href="#ui-css-fonts-etc-packages" title="Permanent link">&para;</a></h2>
 <p>In addition to Python and JavaScript packages, Fermentrack utilizes a handful of third party images, icon packs, CSS files, and fonts in rendering the user interface. Some of these include:</p>
 <table>
 <thead>
@@ -451,7 +451,7 @@
 </tr>
 </tbody>
 </table>
-<h1 id="separate-applications">Separate Applications</h1>
+<h1 id="separate-applications">Separate Applications<a class="headerlink" href="#separate-applications" title="Permanent link">&para;</a></h1>
 <p>Fermentrack is designed to help install or manage communications with certain key applications. These applications are not incorporated into Fermentrack but may be bundled with the software as a convenience.</p>
 <table>
 <thead>

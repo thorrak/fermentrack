@@ -5,7 +5,7 @@ Prior to setting up a controller with Fermentrack, please read the documentation
 * [Arduino (and compatible)](../hardware/Arduino.md)
 * [ESP8266](../hardware/ESP8266.md)
 * [Spark Core](../hardware/Spark.md)
-* [Native Python (Fuscus)](../hardware/Native%20Python.md)
+* [Native Python (Fuscus)](../hardware/Native Python.md)
 
 Controllers can be se up to connect via both WiFi and serial. When setting up a controller to connect via serial the selected "port" is incredibly important but is prone to change on reboot or as other devices are connected. Please read the "About Serial Port Autodetection" note below for information on how Fermentrack handles this issue. 
 

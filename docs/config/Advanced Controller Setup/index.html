@@ -103,7 +103,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../config/">Configuration</a>
+        <a class="" href="../">Configuration</a>
         
     </li>
 
@@ -117,14 +117,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -296,22 +296,22 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="setting-up-a-controller-using-the-advanced-manual-workflow">Setting up a controller using the Advanced (Manual) Workflow</h1>
+                <h1 id="setting-up-a-controller-using-the-advanced-manual-workflow">Setting up a controller using the Advanced (Manual) Workflow<a class="headerlink" href="#setting-up-a-controller-using-the-advanced-manual-workflow" title="Permanent link">&para;</a></h1>
 <p>Prior to setting up a controller with Fermentrack, please read the documentation specific to your controller's hardware. Supported hardware families include:</p>
 <ul>
 <li><a href="../../hardware/Arduino/">Arduino (and compatible)</a></li>
 <li><a href="../../hardware/ESP8266/">ESP8266</a></li>
 <li><a href="../../hardware/Spark/">Spark Core</a></li>
-<li><a href="../hardware/Native%20Python.md">Native Python (Fuscus)</a></li>
+<li><a href="../../hardware/Native Python/">Native Python (Fuscus)</a></li>
 </ul>
 <p>Controllers can be se up to connect via both WiFi and serial. When setting up a controller to connect via serial the selected "port" is incredibly important but is prone to change on reboot or as other devices are connected. Please read the "About Serial Port Autodetection" note below for information on how Fermentrack handles this issue. </p>
-<h2 id="setting-up-a-controller-using-advanced-workflow">Setting up a controller using Advanced Workflow</h2>
+<h2 id="setting-up-a-controller-using-advanced-workflow">Setting up a controller using Advanced Workflow<a class="headerlink" href="#setting-up-a-controller-using-advanced-workflow" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Connect the controller to the Raspberry Pi</li>
 <li>Launch guided setup and select "Add New Device (Advanced)"</li>
 <li>Enter the configuration options associated with the device.</li>
 </ol>
-<h2 id="about-serial-port-autodetection">About Serial Port Autodetection</h2>
+<h2 id="about-serial-port-autodetection">About Serial Port Autodetection<a class="headerlink" href="#about-serial-port-autodetection" title="Permanent link">&para;</a></h2>
 <p>By default, Linux assigns serial ports to devices like BrewPi controllers based on the order they are connected. If you have multiple devices connected to your Raspberry Pi this can mean that Fermentrack could potentially mistake one device for another. To prevent this, Fermentrack includes a feature which will disregard the specified serial port when connecting to the controller and will instead connect to the device with the USB serial number that matches the device you set up.</p>
 <p>If you wish to disable this feature and instead only connect to the specified serial port, uncheck the "Prefer Connecting Via Udev" option in the "Manage Device" screen.</p>
 <p>This feature only works on Linux-based operating systems (including Raspbian for Raspberry Pi), and may not work if Fermentrack is installed on a Mac or Windows-based computer.</p>
@@ -325,7 +325,7 @@
         <a href="../../hardware/" class="btn btn-neutral float-right" title="Index">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../WiFi Controller Setup/" class="btn btn-neutral" title="WiFi Controller Guided Setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../BrewPi Controller Configuration/" class="btn btn-neutral" title="BrewPi Controller Configuration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -351,7 +351,7 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../WiFi Controller Setup/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../BrewPi Controller Configuration/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="../../hardware/" style="color: #fcfcfc">Next &raquo;</a></span>

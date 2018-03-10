@@ -114,7 +114,7 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/config/">Configuration</a>
+        <a class="" href="../../config/">Configuration</a>
         
     </li>
 
@@ -128,14 +128,14 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/Serial Controller Setup/">Serial Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Setup/">BrewPi Controller Setup</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../../config/WiFi Controller Setup/">WiFi Controller Guided Setup</a>
+        <a class="" href="../../config/BrewPi Controller Configuration/">BrewPi Controller Configuration</a>
         
     </li>
 
@@ -296,10 +296,10 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="preparing-a-raspberry-pi-for-fermentrack">Preparing a Raspberry Pi for Fermentrack</h1>
+                <h1 id="preparing-a-raspberry-pi-for-fermentrack">Preparing a Raspberry Pi for Fermentrack<a class="headerlink" href="#preparing-a-raspberry-pi-for-fermentrack" title="Permanent link">&para;</a></h1>
 <p>Prior to installing Fermentrack, you need to install Raspbian and set everything up. Click the link below
 to watch a video showing how to prepare the Raspberry Pi using a Mac, or read the linked instructions below for your operating system.</p>
-<h3 id="prepare-the-raspberry-pi-video">Prepare the Raspberry Pi - <a href="https://youtu.be/TdSnJOUgS3k">[Video]</a></h3>
+<h3 id="prepare-the-raspberry-pi-video">Prepare the Raspberry Pi - <a href="https://youtu.be/TdSnJOUgS3k">[Video]</a><a class="headerlink" href="#prepare-the-raspberry-pi-video" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Download the latest version of Raspbian from <a href="https://www.raspberrypi.org/downloads/raspbian/">here</a>. I recommend the Lite version as I prefer headless installations, but the full version works as well.</li>
 <li>Burn Raspbian to your SD card using <a href="https://www.raspberrypi.org/documentation/installation/installing-images/">these instructions</a>.</li>
@@ -312,7 +312,7 @@ to watch a video showing how to prepare the Raspberry Pi using a Mac, or read th
 <li>Update the default password for the <code>pi</code> user using <code>passwd</code></li>
 <li><em>Optional</em> - <a href="https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md">Configure WiFi</a> on your Raspberry Pi (if needed)</li>
 </ol>
-<h3 id="raspberry-pi-setup-additional-info-about-install-time-wifi-configuration">Raspberry Pi Setup - Additional Info about Install-Time WiFi Configuration</h3>
+<h3 id="raspberry-pi-setup-additional-info-about-install-time-wifi-configuration">Raspberry Pi Setup - Additional Info about Install-Time WiFi Configuration<a class="headerlink" href="#raspberry-pi-setup-additional-info-about-install-time-wifi-configuration" title="Permanent link">&para;</a></h3>
 <p>In early 2016 there was <a href="https://www.raspberrypi.org/blog/another-update-raspbian/">an update</a> made to Raspbian which allows for install-time configuration of WiFi. Buried deep within a blog post, there was the following note:</p>
 <p>"If a wpa_supplicant.conf file is placed into the /boot/ directory, this will be moved to the /etc/wpa_supplicant/ directory the next time the system is booted, overwriting the network settings; this allows a Wifi configuration to be preloaded onto a card from a Windows or other machine that can only see the boot partition."</p>
 <p>While not discussed in the official documentation, this greatly simplifies headless configuration (especially for Raspberry Pi zeros).</p>

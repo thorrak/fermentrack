@@ -11,10 +11,10 @@ pages:
     - 'Manual Installation': 'install/manual.md'
     - 'Legacy (Apache/PHP) App Support': 'install/Apache and PHP Support.md'
   - Configuration:
-    - 'Configuration': 'config/config.md'
+    - 'Configuration': 'config/index.md'
     - 'Flashing a Controller': 'config/Flashing a Controller.md'
-    - 'Serial Controller Guided Setup': 'config/Serial Controller Setup.md'
-    - 'WiFi Controller Guided Setup': 'config/WiFi Controller Setup.md'
+    - 'BrewPi Controller Setup': 'config/BrewPi Controller Setup.md'
+    - 'BrewPi Controller Configuration': 'config/BrewPi Controller Configuration.md'
     - 'Advanced (Manual) Controller Setup': 'config/Advanced Controller Setup.md'
   - Hardware:
     - 'Index': 'hardware/index.md'
@@ -31,3 +31,8 @@ pages:
   - Develop:
     - 'Index': 'develop/index.md'
     - 'Models': 'develop/models.md'
+
+
+markdown_extensions:
+  - toc:
+      permalink: True
