@@ -16,10 +16,9 @@
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import os, sys
+import sys
 
-from BrewPiUtil import printStdErr
-from BrewPiUtil import logMessage
+from scriptlibs.BrewPiUtil import printStdErr, logMessage
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
@@ -31,7 +30,6 @@ import time
 import socket
 import os
 import getopt
-from pprint import pprint
 import shutil
 import traceback
 import urllib
@@ -74,12 +72,12 @@ except ImportError:
 #local imports
 import temperatureProfile
 # import programController as programmer
-import brewpiJson
-import BrewPiUtil as util
-import brewpiVersion
-import pinList
-import expandLogMessage
-from backgroundserial import BackGroundSerial
+from scriptlibs import brewpiJson
+import scriptlibs.BrewPiUtil as util
+from scriptlibs import brewpiVersion
+from scriptlibs import pinList
+from scriptlibs import expandLogMessage
+from scriptlibs.backgroundserial import BackGroundSerial
 
 
 # For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded

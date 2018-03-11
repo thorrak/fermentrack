@@ -154,13 +154,12 @@ class BackGroundSerial():
 if __name__ == '__main__':
     # some test code that requests data from serial and processes the response json
     import simplejson
-    import BrewPiUtil as util
 
 
     # TODO - Rewrite the test code below to work with the database
-    config_file = util.addSlash(sys.path[0]) + 'settings/config.cfg'
-    config = util.read_config_file_with_defaults(config_file)
-    ser = util.setupSerial(config, time_out=0)
+    config_file = BrewPiUtil.addSlash(sys.path[0]) + 'settings/config.cfg'
+    config = BrewPiUtil.read_config_file_with_defaults(config_file)
+    ser = BrewPiUtil.setupSerial(config, time_out=0)
     if not ser:
         BrewPiUtil.printStdErr("Could not open Serial Port")
         exit()

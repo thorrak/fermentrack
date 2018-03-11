@@ -1,8 +1,8 @@
 # wraps a tcp socket stream in a object that looks like a serial port
 # this allows seemless integration with exsiting brewpi-script code
-import BrewPiUtil
+from . import BrewPiUtil
 import socket
-import mdnsLocator
+from . import mdnsLocator
 import os, sys
 
 

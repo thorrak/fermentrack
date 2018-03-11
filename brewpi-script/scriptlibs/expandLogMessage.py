@@ -14,9 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
-import brewpiJson
 import simplejson as json
-import parseEnum
+from . import parseEnum
 import os
 import re
 
