@@ -19,8 +19,8 @@ import time
 import sys
 import os
 import serial
-from scriptlibs import autoSerial
-from scriptlibs import tcpSerial
+from . import autoSerial
+from . import tcpSerial
 
 try:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
