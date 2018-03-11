@@ -1,6 +1,0 @@
-# Ignore everything in this directory
-*
-# Except this file
-!.gitignore
-# Sample data is also ignored, because users can alter it and cause git conflicts.
-# We can still change the sample data by adding it with add -f

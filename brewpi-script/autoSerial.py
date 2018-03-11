@@ -2,7 +2,7 @@
 Automatically finds a compatible device (Photon, Core, Arduino), modified from Matthews work in brewpi-connector
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 from serial.tools import list_ports
 
 known_devices = [
@@ -58,7 +58,7 @@ def detect_port(bootLoader = False):
         return port
     try:
         another_port = ports.next()
-        print "Warning: detected multiple compatible serial ports, using the first."
+        print("Warning: detected multiple compatible serial ports, using the first.")
     except StopIteration:
         pass
     return port
@@ -73,14 +73,14 @@ def configure_serial_for_device(s, d):
 
 
 if __name__ == '__main__':
-    print "All ports:"
+    print("All ports:")
     for p in find_all_serial_ports():
         try:
-            print "{0}, VID:{1:04x}, PID:{2:04x}".format(str(p), (p.vid), (p.pid))
+            print("{0}, VID:{1:04x}, PID:{2:04x}".format(str(p), (p.vid), (p.pid)))
         except ValueError:
             # could not convert pid and vid to hex
-            print "{0}, VID:{1}, PID:{2}".format(str(p), (p.vid), (p.pid))
-    print "Compatible ports: "
+            print("{0}, VID:{1}, PID:{2}".format(str(p), (p.vid), (p.pid)))
+    print("Compatible ports: ")
     for p in find_compatible_serial_ports():
-        print p
-    print "Selected port: {0}".format(detect_port())
+        print(p)
+    print("Selected port: {0}".format(detect_port()))

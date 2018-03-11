@@ -1,1 +1,0 @@
-python brewpi.py --config "%~dp0settings\config.cfg"

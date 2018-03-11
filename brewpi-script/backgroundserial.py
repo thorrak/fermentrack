@@ -4,10 +4,11 @@ import threading
 import Queue
 import sys
 import time
-from BrewPiUtil import printStdErr
-from BrewPiUtil import logMessage
+
+from . import BrewPiUtil
+from . import expandLogMessage
+
 from serial import SerialException
-from expandLogMessage import filterOutLogMessages
 
 class BackGroundSerial():
     def __init__(self, serial_port):
@@ -76,14 +77,14 @@ class BackGroundSerial():
             try:
                 self.ser.write(data)
             except (IOError, OSError, SerialException) as e:
-                logMessage('Serial Error: {0})'.format(str(e)))
+                BrewPiUtil.logMessage('Serial Error: {0})'.format(str(e)))
                 self.error = True
 
 
     def exit_on_fatal_error(self):
         if self.fatal_error is not None:
             self.stop()
-            logMessage(self.fatal_error)
+            BrewPiUtil.logMessage(self.fatal_error)
             if self.ser is not None:
                 self.ser.close()
             del self.ser # this helps to fully release the port to the OS
@@ -99,7 +100,7 @@ class BackGroundSerial():
                     if in_waiting > 0:
                         new_data = self.ser.read(in_waiting)
                 except (IOError, OSError, SerialException) as e:
-                    logMessage('Serial Error: {0})'.format(str(e)))
+                    BrewPiUtil.logMessage('Serial Error: {0})'.format(str(e)))
                     self.error = True
 
             if new_data:
@@ -129,7 +130,7 @@ class BackGroundSerial():
 
     def __get_line_from_buffer(self):
         while '\n' in self.buffer:
-            stripped_buffer, messages = filterOutLogMessages(self.buffer)
+            stripped_buffer, messages = expandLogMessage.filterOutLogMessages(self.buffer)
             if len(messages) > 0:
                 for message in messages:
                     self.messages.put(message[2:]) # remove D: and add to queue
@@ -161,7 +162,7 @@ if __name__ == '__main__':
     config = util.read_config_file_with_defaults(config_file)
     ser = util.setupSerial(config, time_out=0)
     if not ser:
-        printStdErr("Could not open Serial Port")
+        BrewPiUtil.printStdErr("Could not open Serial Port")
         exit()
 
     bg_ser = BackGroundSerial(ser)
@@ -187,7 +188,7 @@ if __name__ == '__main__':
                         print("Success")
                         success += 1
                     except simplejson.JSONDecodeError:
-                        logMessage("Error: invalid JSON parameter string received: " + line)
+                        BrewPiUtil.logMessage("Error: invalid JSON parameter string received: " + line)
                         fail += 1
                 else:
                     print(line)

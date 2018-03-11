@@ -144,11 +144,11 @@ class TCPSerial(object):
         try:
             self.sock.connect((self.host, self.port))
             BrewPiUtil.logMessage("Successfully connected to controller.")
-        except socket.gaierror as e:
+        except (socket.gaierror) as e:
             BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
                                   ". Exiting.")
             sys.exit(1)
-        except socket.error as e:  # Catches "bad file descriptor" error
+        except (socket.error) as e:  # Catches "bad file descriptor" error
             BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
                                   ". Exiting.")
             sys.exit(1)

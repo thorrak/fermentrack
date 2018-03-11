@@ -73,7 +73,7 @@ except ImportError:
 
 #local imports
 import temperatureProfile
-import programController as programmer
+# import programController as programmer
 import brewpiJson
 import BrewPiUtil as util
 import brewpiVersion
@@ -200,7 +200,7 @@ for o, a in opts:
                     print("  %d: %s" % (x, d.device_name))
             print("===========================================================")
             exit()
-        except Exception, e:
+        except (Exception) as e:
             sys.exit(e)
 
     # load the configuration from the database
@@ -760,7 +760,7 @@ while run:
                         rest = original.read()
                     with file(profileDestFile, 'w') as modified:
                         modified.write(line1 + "," + value + "\n" + rest)
-                except IOError as e:  # catch all exceptions and report back an error
+                except (IOError) as e:  # catch all exceptions and report back an error
                     error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
                     conn.send(error)
                     printStdErr(error)
@@ -785,29 +785,30 @@ while run:
                     raise socket.timeout  # go to serial communication to update controller
 
         elif messageType == "programController" or messageType == "programArduino":
-            if bg_ser is not None:
-                bg_ser.stop()
-            if ser is not None:
-                if ser.isOpen():
-                    ser.close()  # close serial port before programming
-                ser = None
-            try:
-                programParameters = json.loads(value)
-                hexFile = programParameters['fileName']
-                boardType = programParameters['boardType']
-                restoreSettings = programParameters['restoreSettings']
-                restoreDevices = programParameters['restoreDevices']
-                programmer.programController(config, boardType, hexFile, None, None, False,
-                                          {'settings': restoreSettings, 'devices': restoreDevices})
-                logMessage("New program uploaded to controller, script will restart")
-            except json.JSONDecodeError:
-                logMessage("Error: cannot decode programming parameters: " + value)
-                logMessage("Restarting script without programming.")
-
-            # restart the script when done. This replaces this process with the new one
-            time.sleep(5)  # give the controller time to reboot
-            python = sys.executable
-            os.execl(python, python, *sys.argv)
+            logMessage("programController action is not supported by this modified version of brewpi-script")
+            # if bg_ser is not None:
+            #     bg_ser.stop()
+            # if ser is not None:
+            #     if ser.isOpen():
+            #         ser.close()  # close serial port before programming
+            #     ser = None
+            # try:
+            #     programParameters = json.loads(value)
+            #     hexFile = programParameters['fileName']
+            #     boardType = programParameters['boardType']
+            #     restoreSettings = programParameters['restoreSettings']
+            #     restoreDevices = programParameters['restoreDevices']
+            #     programmer.programController(config, boardType, hexFile, None, None, False,
+            #                               {'settings': restoreSettings, 'devices': restoreDevices})
+            #     logMessage("New program uploaded to controller, script will restart")
+            # except json.JSONDecodeError:
+            #     logMessage("Error: cannot decode programming parameters: " + value)
+            #     logMessage("Restarting script without programming.")
+            #
+            # # restart the script when done. This replaces this process with the new one
+            # time.sleep(5)  # give the controller time to reboot
+            # python = sys.executable
+            # os.execl(python, python, *sys.argv)
         elif messageType == "refreshDeviceList":
             if keepDeviceListUpdated is False:
                 # Don't invalidate the device list if we're always keeping it updated
@@ -991,7 +992,7 @@ while run:
                                                json.dumps(newRow['State']) + ';' +
                                                json.dumps(newRow['RoomTemp']) + '\n')
                                 csvFile.write(lineToWrite)
-                            except KeyError, e:
+                            except (KeyError) as e:
                                 logMessage("KeyError in line from controller: %s" % str(e))
 
                             csvFile.close()
@@ -1044,7 +1045,7 @@ while run:
                     else:
                         logMessage("Cannot process line from controller: " + line)
                     # end or processing a line
-                except json.decoder.JSONDecodeError, e:
+                except (json.decoder.JSONDecodeError) as e:
                     logMessage("JSON decode error: %s" % str(e))
                     logMessage("Line received was: " + line)
                 bg_ser.line_was_processed()  # Clean out the queue
@@ -1052,7 +1053,7 @@ while run:
                 try:
                     expandedMessage = expandLogMessage.expandLogMessage(message)
                     logMessage("Controller debug message: " + expandedMessage)
-                except Exception, e:  # catch all exceptions, because out of date file could cause errors
+                except (Exception) as e:  # catch all exceptions, because out of date file could cause errors
                     logMessage("Error while expanding log message '" + message + "'" + str(e))
                 bg_ser.message_was_processed()  # Clean out the queue
 
@@ -1082,7 +1083,7 @@ while run:
                     logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
                                " degrees at end of profile")
 
-    except socket.error as e:
+    except (socket.error) as e:
         logMessage("Socket error(%d): %s" % (e.errno, e.strerror))
         traceback.print_exc()
 
