@@ -2,7 +2,7 @@ import serial.tools.list_ports
 
 import pickle
 
-import udev_integration
+# from . import udev_integration
 
 DEVICE_CACHE_FILENAME = 'device.cache'
 

@@ -26,7 +26,7 @@ def stop_brewpi_device(request, device_id):
         return _JsonResponseIndent(ret)
     try:
         active_device.stop_process()
-    except CircusException, cerror:
+    except (CircusException) as cerror:
         logger.error("Error during circus call", exc_info=True)
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)
@@ -48,7 +48,7 @@ def start_brewpi_device(request, device_id):
         return _JsonResponseIndent(ret)
     try:
         active_device.start_process()
-    except CircusException, cerror:
+    except (CircusException) as cerror:
         logger.error("Error during circus call", exc_info=True)
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)
@@ -71,7 +71,7 @@ def status_brewpi_device(request, device_id):
         return _JsonResponseIndent(ret)
     try:
         status = active_device.status_process()
-    except CircusException, cerror:
+    except (CircusException) as cerror:
         logger.error("Error during circus call", exc_info=True)
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)
@@ -93,7 +93,7 @@ def remove_brewpi_device(request, device_id):
         return _JsonResponseIndent(ret)
     try:
         active_device.remove_process()
-    except CircusException, cerror:
+    except (CircusException) as cerror:
         logger.error("Error during circus call", exc_info=True)
         ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
         return _JsonResponseIndent(ret)

@@ -4,12 +4,12 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 from constance import config
 # Checks if user has completed constance configuration
-from decorators import site_is_configured
+from .decorators import site_is_configured
 from django.http import HttpResponse
 from app.models import BrewPiDevice, FermentationProfilePoint, FermentationProfile
 # Cheating on this one.
-from views import render_with_devices
-import device_forms, profile_forms
+from .views import render_with_devices  # TODO - Eliminate this
+from . import device_forms, profile_forms
 import json, time, csv, pytz
 from datetime import datetime
 from django.utils import timezone

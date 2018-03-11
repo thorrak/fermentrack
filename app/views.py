@@ -7,22 +7,22 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 from constance import config  # For the explicitly user-configurable stuff
-from decorators import site_is_configured, login_if_required_for_dashboard
+from .decorators import site_is_configured, login_if_required_for_dashboard
 
-import device_forms, profile_forms, beer_forms, setup_forms
-import setup_views
+from . import device_forms, profile_forms, beer_forms, setup_forms
+from . import setup_views
 
-import mdnsLocator
+from . import mdnsLocator
 
-import almost_json
+from . import almost_json
 from django.http import HttpResponse
 
 import json, datetime, pytz, os, random
 
-import git_integration
+from . import git_integration
 import subprocess
 
-import connection_debug, udev_integration
+from . import connection_debug, udev_integration
 
 import fermentrack_django.settings as settings
 

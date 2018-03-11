@@ -5,15 +5,17 @@ from django.conf import settings
 from app.models import BrewPiDevice
 from django.contrib import messages
 
+
 def brewpi_spawner_log(req, lines=100):
     logfile_path = os.path.join(settings.BASE_DIR, 'log', 'fermentrack-brewpi-spawner.log')
     try:
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))
         logfile_fd.close()
-    except IOError, e:
+    except (IOError) as e:
         return HttpResponse("Error opening logfile: {}".format(str(e)), status=500)
     return HttpResponse(ret, content_type="text/plain")
+
 
 def fermentrack_log(req, lines=100):
     logfile_path = os.path.join(settings.BASE_DIR, 'log', 'fermentrack-stderr.log')
@@ -21,7 +23,7 @@ def fermentrack_log(req, lines=100):
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))
         logfile_fd.close()
-    except IOError, e:
+    except (IOError) as e:
         return HttpResponse("Error opening logfile {}".format(str(e)), status=500)
     return HttpResponse(ret, content_type="text/plain")
 
@@ -46,7 +48,7 @@ def get_device_log_plain(req, logfile, device_id, lines=100):
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))
         logfile_fd.close()
-    except IOError, e:
+    except (IOError) as e:
         # Generally if we hit this the log file doesn't exist
         return HttpResponse("Error opening {} logfile: {}".format(logfile, str(e)), status=500)
     return HttpResponse(ret, content_type="text/plain")
@@ -73,7 +75,7 @@ def get_stdout_as_json(req, device_id, lines=100):
         stdout_fd = open(stdout_log)
         ret = tail(stdout_fd, int(lines))
         stdout_fd.close()
-    except IOError, e:
+    except (IOError) as e:
         # Generally if we hit this the log file doesn't exist
         return HttpResponse("Error opening logfile: {}".format(str(e)), status=500)
 
