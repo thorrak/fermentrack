@@ -12,7 +12,7 @@ from constance import config
 from fermentrack_django import settings
 import re
 
-import udev_integration
+from . import udev_integration
 
 from lib.ftcircus.client import CircusMgr, CircusException
 
@@ -1170,7 +1170,7 @@ class BeerLogPoint(models.Model):
             self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
             temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
-            if self.temp_format <> temp_format:
+            if self.temp_format != temp_format:
                 if self.temp_format == 'C' and temp_format == 'F':
                     # Convert Fahrenheit to Celsius
                     temp = (temp-32) * 5 / 9

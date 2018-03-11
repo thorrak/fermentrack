@@ -7,4 +7,4 @@ class GravityAppConfig(AppConfig):
     name = 'gravity'
 
     def ready(self):
-        import signals
+        from . import signals

@@ -4,6 +4,9 @@ import functools
 
 import os, sys
 
+# Since this is designed to replace the base TiltHydrometer classes, let's import everything from the parent file
+from TiltHydrometer import *
+
 
 # For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded
 # as false. If it turns out the user tried to launch with dblist/dbcfg, die with an error message.
@@ -21,11 +24,7 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-
 import gravity.models
-
-# Since this is designed to replace the base TiltHydrometer classes, let's import everything from the parent file
-from TiltHydrometer import *
 
 
 class TiltHydrometerFermentrack(TiltHydrometer):
@@ -89,13 +88,13 @@ class TiltHydrometerFermentrack(TiltHydrometer):
         if (len(actualValues) >= 2):
             interpolationFunction = interp1d(originalValues, actualValues, bounds_error=False, fill_value=1)
             returnFunction = functools.partial(extrapolationCalibration, extrap1d(interpolationFunction))
-            # print "TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Interpolation"
+            # print("TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Interpolation")
         # Not enough values. Likely just an offset calculation
         elif (len(actualValues) == 1):
             offset = actualValues[0] - originalValues[0]
             returnFunction = functools.partial(offsetCalibration, offset)
-            # print "TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Offset (" + str(
-            #     offset) + ")"
+            # print("TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Offset (" + str(
+            #     offset) + ")")
         return returnFunction
 
 

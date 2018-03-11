@@ -675,7 +675,7 @@ while run:
                 bg_ser.writeln("j" + json.dumps(decoded))
                 if 'tempFormat' in decoded:
                     changeWwwSetting('tempFormat', decoded['tempFormat'])  # change in web interface settings too.
-                    if decoded['tempFormat'] <> config.get('temp_format', 'C') and dbConfig is not None:
+                    if decoded['tempFormat'] != config.get('temp_format', 'C') and dbConfig is not None:
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
                     if dbConfig is not None:

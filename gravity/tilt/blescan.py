@@ -15,6 +15,7 @@ DEBUG = False
 # NOTE: Python's struct.pack() will add padding bytes unless you make the endianness explicit. Little endian
 # should be used for BLE. Always start a struct.pack() format string with "<"
 
+from __future__ import print_function
 import os
 import sys
 import struct
@@ -135,7 +136,7 @@ def parse_events(sock, loop_count=100):
     for i in range(0, loop_count):
         pkt = sock.recv(255)
         ptype, event, plen = struct.unpack("BBB", pkt[:3])
-        # print "--------------"
+        # print("--------------")
         if event == bluez.EVT_INQUIRY_RESULT_WITH_RSSI:
             i = 0
         elif event == bluez.EVT_NUM_COMP_PKTS:
@@ -148,25 +149,25 @@ def parse_events(sock, loop_count=100):
             if subevent == EVT_LE_CONN_COMPLETE:
                 le_handle_connection_complete(pkt)
             elif subevent == EVT_LE_ADVERTISING_REPORT:
-                # print "advertising report"
+                # print("advertising report")
                 num_reports = struct.unpack("B", pkt[0])[0]
                 report_pkt_offset = 0
                 for i in range(0, num_reports):
 
                     if (DEBUG == True):
-                        print "-------------"
-                        # print "\tfullpacket: ", printpacket(pkt)
-                        print "\tUDID: ", printpacket(pkt[report_pkt_offset - 22: report_pkt_offset - 6])
-                        print "\tMAJOR: ", printpacket(pkt[report_pkt_offset - 6: report_pkt_offset - 4])
-                        print "\tMINOR: ", printpacket(pkt[report_pkt_offset - 4: report_pkt_offset - 2])
-                        print "\tMAC address: ", packed_bdaddr_to_string(
-                            pkt[report_pkt_offset + 3:report_pkt_offset + 9])
+                        print("-------------")
+                        # print("\tfullpacket: ", printpacket(pkt))
+                        print("\tUDID: ", printpacket(pkt[report_pkt_offset - 22: report_pkt_offset - 6]))
+                        print("\tMAJOR: ", printpacket(pkt[report_pkt_offset - 6: report_pkt_offset - 4]))
+                        print("\tMINOR: ", printpacket(pkt[report_pkt_offset - 4: report_pkt_offset - 2]))
+                        print("\tMAC address: ", packed_bdaddr_to_string(
+                            pkt[report_pkt_offset + 3:report_pkt_offset + 9]))
                         # commented out - don't know what this byte is.  It's NOT TXPower
                         txpower, = struct.unpack("b", pkt[report_pkt_offset - 2])
-                        print "\t(Unknown):", txpower
+                        print("\t(Unknown):", txpower)
 
                         rssi, = struct.unpack("b", pkt[report_pkt_offset - 1])
-                        print "\tRSSI:", rssi
+                        print("\tRSSI:", rssi)
                     # build the return string
                     Adstring = packed_bdaddr_to_string(pkt[report_pkt_offset + 3:report_pkt_offset + 9])
                     Adstring += ","
@@ -180,7 +181,7 @@ def parse_events(sock, loop_count=100):
                     Adstring += ","
                     Adstring += "%i" % struct.unpack("b", pkt[report_pkt_offset - 1])
 
-                    # print "\tAdstring=", Adstring
+                    # print("\tAdstring=", Adstring)
                     myFullList.append(Adstring)
                 done = True
     sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, old_filter)
