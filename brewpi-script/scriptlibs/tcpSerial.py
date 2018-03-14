@@ -69,7 +69,7 @@ class TCPSerial(object):
             if self.retryCount > 0:
                 logMessage("Successfully reconnected to controller on read.")
                 self.retryCount = 0
-        return bytes
+        return bytes.decode(encoding="ascii")
 
     
     def readline(self,size=None, eol='\n'):
@@ -90,14 +90,14 @@ class TCPSerial(object):
         #     In case a write timeout is configured for the port and the time is exceeded.
         #Write the string data to the port.
         try:
-            bytes=self.sock.sendall(data)
+            bytes=self.sock.sendall(data.encode(encoding="ascii"))
         except socket.timeout: # A write timeout is probably a connection issue
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
                 logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
-                bytes=self.write(data)
+                bytes=self.write(data.encode(encoding="ascii"))
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write. Exiting.")
@@ -109,7 +109,7 @@ class TCPSerial(object):
                 self.retryCount=self.retryCount+1
                 self.sock.close()
                 self.open()
-                bytes=self.write(data)
+                bytes=self.write(data.encode(encoding="ascii"))
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write, with socket.error. Exiting.")

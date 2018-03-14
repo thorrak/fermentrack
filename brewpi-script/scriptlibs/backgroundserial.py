@@ -1,7 +1,12 @@
 from __future__ import print_function
 
 import threading
-import Queue
+try:
+    # Python 2
+    import Queue
+except:
+    # Python 3
+    import queue as Queue
 import sys
 import time
 

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function, absolute_import
+
 import simplejson as json
 from . import parseEnum
 import os
@@ -55,7 +57,7 @@ def getVersion():
         if 'BREWPI_LOG_MESSAGES_VERSION ' in line:
             splitLine = line.split('BREWPI_LOG_MESSAGES_VERSION')
             return int(splitLine[1])  # return version number
-    print "ERROR: could not find version number in log messages header file"
+    print("ERROR: could not find version number in log messages header file")
     return 0
 
 

@@ -32,7 +32,10 @@ import os
 import getopt
 import shutil
 import traceback
-import urllib
+try:
+    import urllib
+except:
+    import urllib.parse as urllib
 from distutils.version import LooseVersion
 
 # load non standard packages, exit when they are not installed
