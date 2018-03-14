@@ -33,9 +33,9 @@ import getopt
 import shutil
 import traceback
 try:
-    import urllib
-except:
     import urllib.parse as urllib
+except:
+    import urllib
 from distutils.version import LooseVersion
 
 # load non standard packages, exit when they are not installed

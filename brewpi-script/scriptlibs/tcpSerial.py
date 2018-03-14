@@ -97,7 +97,7 @@ class TCPSerial(object):
                 logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
-                bytes=self.write(data.encode(encoding="ascii"))
+                bytes=self.write(data)
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write. Exiting.")
@@ -109,17 +109,17 @@ class TCPSerial(object):
                 self.retryCount=self.retryCount+1
                 self.sock.close()
                 self.open()
-                bytes=self.write(data.encode(encoding="ascii"))
+                bytes=self.write(data)
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write, with socket.error. Exiting.")
                 sys.exit(1)
                 # return -1
-        if bytes>=0:
-            if self.retryCount > 0:
-                logMessage("Successfully reconnected to controller on write.")
-                self.retryCount = 0
-        return bytes
+
+        if self.retryCount > 0:
+            logMessage("Successfully reconnected to controller on write.")
+            self.retryCount = 0
+        return len(data)
     
     def inWaiting(self):
         #Return the number of chars in the receive buffer.
