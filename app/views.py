@@ -56,16 +56,22 @@ def siteroot(request):
         # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
         now_time = timezone.now()
-        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-            try:
-                if git_integration.app_is_current():
-                    config.LAST_GIT_CHECK = now_time
-                else:
-                    messages.info(request, "This app is not at the latest version! " +
-                                  '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
-            except:
-                # If we can't check for the latest version info, skip and move on
-                pass
+        try:
+            if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+                try:
+                    if git_integration.app_is_current():
+                        config.LAST_GIT_CHECK = now_time
+                    else:
+                        messages.info(request, "This app is not at the latest version! " +
+                                      '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+                except:
+                    # If we can't check for the latest version info, skip and move on
+                    pass
+        except:
+            # So here's the deal. On Python3 conversion, any datetime.datetime objects stored in Constance end up
+            # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
+            # overwrite it. Git check can happen on next refresh.
+            config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:

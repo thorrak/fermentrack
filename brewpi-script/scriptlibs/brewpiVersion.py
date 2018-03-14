@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import  print_function
+
 import simplejson as json
 import sys
 import time
@@ -27,7 +29,7 @@ def getVersionFromSerial(ser):
     oldTimeOut = ser.timeout
     startTime = time.time()
     if not ser.isOpen():
-        print "Cannot get version from serial port that is not open."
+        print("Cannot get version from serial port that is not open.")
 
     ser.timeout = 1
     ser.write('n')  # request version info
@@ -38,7 +40,7 @@ def getVersionFromSerial(ser):
             line = None
             try:
                 line = ser.readline()
-            except SerialException as e:
+            except (SerialException) as e:
                 pass
             if line:
                 line = asciiToUnicode(line)
@@ -135,15 +137,15 @@ class AvrInfo:
         j = None
         try:
             j = json.loads(s)
-        except json.decoder.JSONDecodeError, e:
-            print >> sys.stderr, "JSON decode error: %s" % str(e)
-            print >> sys.stderr, "Could not parse version number: " + s
-        except UnicodeDecodeError, e:
-            print >> sys.stderr, "Unicode decode error: %s" % str(e)
-            print >> sys.stderr, "Could not parse version number: " + s
-        except TypeError, e:
-            print >> sys.stderr, "TypeError: %s" % str(e)
-            print >> sys.stderr, "Could not parse version number: " + s
+        except (json.decoder.JSONDecodeError) as e:
+            print("JSON decode error: %s" % str(e), file=sys.stderr)
+            print("Could not parse version number: " + s, file=sys.stderr)
+        except (UnicodeDecodeError) as e:
+            print("Unicode decode error: %s" % str(e), file=sys.stderr)
+            print("Could not parse version number: " + s, file=sys.stderr)
+        except (TypeError) as e:
+            print("TypeError: %s" % str(e), file=sys.stderr)
+            print("Could not parse version number: " + s, file=sys.stderr)
 
         self.family = None
         self.board_name = None

@@ -20,6 +20,7 @@ esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
 
+# pybluez         # for gravity sensor support
 
 # Requirements to make Circus work
 pyzmq<17

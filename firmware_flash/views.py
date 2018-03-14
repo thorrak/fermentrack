@@ -7,7 +7,7 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-import forms
+from . import forms
 
 from app.models import BrewPiDevice
 from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version

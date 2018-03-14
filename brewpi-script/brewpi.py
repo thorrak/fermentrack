@@ -325,10 +325,10 @@ def setFiles():
 
         if not os.path.exists(dataPath):
             os.makedirs(dataPath)
-            os.chmod(dataPath, 0775)  # give group all permissions
+            os.chmod(dataPath, 0o0775)  # give group all permissions
         if not os.path.exists(wwwDataPath):
             os.makedirs(wwwDataPath)
-            os.chmod(wwwDataPath, 0775)  # give group all permissions
+            os.chmod(wwwDataPath, 0o0775)  # give group all permissions
 
         # Keep track of day and make new data file for each day
         day = time.strftime("%Y-%m-%d")
@@ -506,7 +506,7 @@ else:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(socketFile)  # Bind BEERSOCKET
     # set all permissions for socket
-    os.chmod(socketFile, 0777)
+    os.chmod(socketFile, 0o0777)
 
 serialCheckInterval = 0.5
 s.setblocking(1)  # set socket functions to be blocking

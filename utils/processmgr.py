@@ -5,6 +5,7 @@
 
 # This is the new new version of the BrewPi-script log manager which isn't fully in use.
 
+from __future__ import print_function
 
 import os, sys
 import time
@@ -41,7 +42,7 @@ def BrewPiDevice_query_db(self):
         return app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE)
     except self.model.DoesNotExist:
         self.log.info("No active {}".format(self.device_type))
-    except Exception, e:
+    except (Exception) as e:
         self.log.critical("Could not query database for active devices", exc_info=self.debug)
     return []
 
@@ -55,7 +56,7 @@ def TiltConfiguration_query_db(self):
         return gravity.models.TiltConfiguration.objects.filter(sensor__status=gravity.models.GravitySensor.STATUS_ACTIVE)
     except self.model.DoesNotExist:
         self.log.info("No active {}".format(self.device_type))
-    except Exception, e:
+    except (Exception) as e:
         self.log.critical("Could not query database for active devices", exc_info=self.debug)
     return []
 
