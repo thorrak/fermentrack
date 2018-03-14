@@ -153,8 +153,7 @@ class BackGroundSerial():
 
     # remove extended ascii characters from string, because they can raise UnicodeDecodeError later
     def __asciiToUnicode(self, s):
-        s = s.replace(chr(0xB0), '&deg')
-        return unicode(s, 'ascii', 'ignore')
+        return BrewPiUtil.asciiToUnicode(s)
 
 if __name__ == '__main__':
     # some test code that requests data from serial and processes the response json
