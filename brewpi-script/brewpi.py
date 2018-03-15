@@ -584,32 +584,33 @@ while run:
         conn.setblocking(1)
         # blocking receive, times out in serialCheckInterval
         message = conn.recv(4096)
+        message = message.decode(encoding="ascii")
         if "=" in message:
             messageType, value = message.split("=", 1)
         else:
             messageType = message
             value = ""
         if messageType == "ack":  # acknowledge request
-            conn.send('ack')
+            conn.send(b'ack')
         elif messageType == "lcd":  # lcd contents requested
-            conn.send(json.dumps(lcdText))
+            conn.send(json.dumps(lcdText).encode(encoding="ascii"))
         elif messageType == "getMode":  # echo cs['mode'] setting
-            conn.send(cs['mode'])
+            conn.send(cs['mode'].encode(encoding="ascii"))
         elif messageType == "getFridge":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['fridgeSet']))
+            conn.send(json.dumps(cs['fridgeSet']).encode(encoding="ascii"))
         elif messageType == "getBeer":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['beerSet']))
+            conn.send(json.dumps(cs['beerSet']).encode(encoding="ascii"))
         elif messageType == "getControlConstants":
-            conn.send(json.dumps(cc))
+            conn.send(json.dumps(cc).encode(encoding="ascii"))
         elif messageType == "getControlSettings":
             if cs['mode'] == "p":
                 profileFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
                 with file(profileFile, 'r') as prof:
                     cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
             cs['dataLogging'] = config['dataLogging']
-            conn.send(json.dumps(cs))
+            conn.send(json.dumps(cs).encode(encoding="ascii"))
         elif messageType == "getControlVariables":
-            conn.send(cv)
+            conn.send(cv.encode(encoding="ascii"))
         elif messageType == "refreshControlConstants":
             bg_ser.writeln("c")
             raise socket.timeout
@@ -724,16 +725,16 @@ while run:
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="ascii"))
         elif messageType == "pauseLogging":
             result = pauseLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="ascii"))
         elif messageType == "stopLogging":
             result = stopLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="ascii"))
         elif messageType == "resumeLogging":
             result = resumeLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="ascii"))
         elif messageType == "dateTimeFormatDisplay":
             if configFile is not None:
                 config = util.configSet(configFile, dbConfig, 'dateTimeFormatDisplay', value)
@@ -763,10 +764,10 @@ while run:
                         modified.write(line1 + "," + value + "\n" + rest)
                 except (IOError) as e:  # catch all exceptions and report back an error
                     error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
-                    conn.send(error)
+                    conn.send(error.encode(encoding="ascii"))
                     printStdErr(error)
                 else:
-                    conn.send("Profile successfully updated")
+                    conn.send(b"Profile successfully updated")
                     if cs['mode'] is not 'p':
                         cs['mode'] = 'p'
                         bg_ser.writeln("j{mode:p}")
@@ -776,7 +777,7 @@ while run:
             elif dbConfig is not None:
                 # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
                 logMessage("Setting controller to beer profile mode using database-configured profile")
-                conn.send("Profile successfully updated")
+                conn.send(b"Profile successfully updated")
                 if dbConfig is not None:
                     dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
                 if cs['mode'] is not 'p':
@@ -830,11 +831,11 @@ while run:
                                 shield=hwVersion.shield,
                                 deviceList=deviceList,
                                 pinList=pinList.getPinList(hwVersion.board, hwVersion.shield))
-                conn.send(json.dumps(response))
+                conn.send(json.dumps(response).encode(encoding="ascii"))
             else:
                 if keepDeviceListUpdated:
                     time.sleep(5)  # We'll give the controller 5 seconds to respond, even though we won't see it this cycle
-                conn.send("device-list-not-up-to-date")
+                conn.send(b"device-list-not-up-to-date")
                 raise socket.timeout
         elif messageType == "getDashInfo":
             # This is a new messageType
@@ -848,7 +849,7 @@ while run:
                         "FridgeSet": prevTempJson['FridgeSet'],
                         "LogInterval": config['interval'],
                         "Mode": cs['mode']}
-            conn.send(json.dumps(response))
+            conn.send(json.dumps(response).encode(encoding="ascii"))
         elif messageType == "applyDevice":
             # applyDevice is used to apply settings to an existing device (pin/OneWire assignment, etc.)
             try:
@@ -892,7 +893,7 @@ while run:
             else:
                 response = {}
             response_str = json.dumps(response)
-            conn.send(response_str)
+            conn.send(response_str.encode(encoding="ascii"))
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             bg_ser.writeln("E")
