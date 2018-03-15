@@ -1041,7 +1041,7 @@ while run:
                         deviceList['installed'] = json.loads(line[2:])
                         oldListState = deviceList['listState']
                         deviceList['listState'] = oldListState.strip('d') + "d"
-                        logMessage("Installed devices received: " + json.dumps(deviceList['installed']).encode('utf-8'))
+                        logMessage("Installed devices received: " + json.dumps(deviceList['installed']))
                     elif line[0] == 'U':
                         logMessage("Device updated to: " + line[2:])
                     else:
