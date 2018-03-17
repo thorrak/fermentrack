@@ -579,7 +579,14 @@ class BrewPiDevice(models.Model):
             lcd_text = json.loads(self.send_message("lcd", read_response=True))
         except:
             lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
-        return lcd_text
+
+
+        # Due to the various codepage swaps, we're now receiving the raw degree symbol (0xB0) back when we poll the
+        # LCD under Python 3. Let's replace it with "&deg;" for display in HTML
+        deg_symbol = bytes([0xB0]).decode(encoding="cp437")
+        sanitized_text = [n.replace(deg_symbol, "&deg;") for n in lcd_text]
+
+        return sanitized_text
 
     def is_connected(self):
         # Tests if we're connected to the device via BrewPi-Script
