@@ -14,8 +14,7 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
             log_filename = 'dev-{}-{}.log'.format(device.device_name.lower(), logfile)
         except:
             # Unable to load the device
-            # TODO - Convert to raise a proper error
-            return HttpResponse("No brewpi device with id {}".format(device_id), status=500)
+            raise ValueError("No brewpi device with id {}".format(device_id))
 
     elif device_type == "gravity":
         try:
@@ -23,8 +22,7 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
             log_filename = '{}-{}.log'.format(device.daemon_log_prefix, logfile)
         except:
             # Unable to load the device
-            # TODO - Convert to raise a proper error
-            return HttpResponse("No gravity device with id {}".format(device_id), status=500)
+            raise ValueError("No gravity device with id {}".format(device_id))
 
     elif device_type == "spawner":
         log_filename = 'fermentrack-processmgr.log'
