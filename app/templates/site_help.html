@@ -17,32 +17,65 @@
 
 <h3 class="page-header">Logs for troubleshooting</h3>
 
-<h4>Controller logs</h4>
 
-<table class="table">
-  <thead class="thead-inverse">
-    <tr>
-      <th>#</th>
-      <th>Device Name</th>
-      <th>Stdout Log</th>
-      <th>Stderr Log</th>
-      <th>Status</th>
-      <td>Board Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for this_device in all_devices %}
-            <tr>
-                <th scope="row">{{ this_device.id }}</th>
-                <td>{{ this_device.device_name }}</td>
-                <td><a href="/api/log/stderr/{{ this_device.id }}/">log/dev-brewpi{{ this_device.id }}-stderr.log</a></td>
-                <td><a href="/api/log/stdout/{{ this_device.id }}/">log/dev-brewpi{{ this_device.id }}-stdout.log</a></td>
-                <td>{{ this_device.status }}</td>
-                <td>{{ this_device.board_type }}</td>
-            </tr>
-{% endfor %}
-  </tbody>
-</table>
+{% if config.TEMP_CONTROL_SUPPORT_ENABLED %}
+    <h4>Controller Logs</h4>
+
+    <table class="table">
+      <thead class="thead-inverse">
+        <tr>
+          <th>#</th>
+          <th>Device Name</th>
+          <th>Stdout Log</th>
+          <th>Stderr Log</th>
+          <th>Status</th>
+          <th>Board Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for this_device in all_devices %}
+                <tr>
+                    <th scope="row">{{ this_device.id }}</th>
+                    <td>{{ this_device.device_name }}</td>
+                    <td><a href="{% url "get_device_log" "text" "brewpi" "stdout" this_device.id %}">{% log_file_path "brewpi" "stdout" this_device.id %}</a></td>
+                    <td><a href="{% url "get_device_log" "text" "brewpi" "stderr" this_device.id %}">{% log_file_path "brewpi" "stderr" this_device.id %}</a></td>
+                    <td>{{ this_device.status }}</td>
+                    <td>{{ this_device.board_type }}</td>
+                </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endif %}
+
+{% if config.GRAVITY_SUPPORT_ENABLED %}
+    <h4>Gravity Sensor Logs</h4>
+
+    <table class="table">
+      <thead class="thead-inverse">
+        <tr>
+          <th>#</th>
+          <th>Device Name</th>
+          <th>Stdout Log</th>
+          <th>Stderr Log</th>
+          <th>Status</th>
+          <th>Sensor Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for this_device in all_gravity_sensors %}
+                <tr>
+                    <th scope="row">{{ this_device.id }}</th>
+                    <td>{{ this_device.device_name }}</td>
+                    <td>{% if this_device.has_daemon_log %}<a href="{% url "get_device_log" "text" "gravity" "stdout" this_device.id %}">{% log_file_path "gravity" "stdout" this_device.id %}</a>{% else %}N/A{% endif %}</td>
+                    <td>{% if this_device.has_daemon_log %}<a href="{% url "get_device_log" "text" "gravity" "stderr" this_device.id %}">{% log_file_path "gravity" "stderr" this_device.id %}</a>{% else %}N/A{% endif %}</td>
+                    <td>{{ this_device.status }}</td>
+                    <td>{{ this_device.sensor_type }}</td>
+                </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endif %}
+
 
 <h4>Other logs</h4>
 
@@ -56,11 +89,11 @@
   <tbody>
     <tr>
       <th scope="row">Fermentrack (Web Application)</th>
-      <td><a href="/api/log/fermentrack/">log/fermentrack-stderr.log</a></td>
+      <td><a href="{% url "get_app_log" "text" "fermentrack" "stderr" %}">{% log_file_path "fermentrack" "stderr" %}</a></td>
     </tr>
     <tr>
-      <th scope="row">Brewpi Spawner</th>
-      <td><a href="/api/log/brewpi_spawner/">log/fermentrack-brewpi-spawner.log</a></td>
+      <th scope="row">Process Spawner (BrewPi-Script, Tilt Daemon, etc.)</th>
+      <td><a href="{% url "get_app_log" "text" "spawner" "stderr" %}">{% log_file_path "spawner" "stderr" %}</a></td>
     </tr>
   </tbody>
 </table>
