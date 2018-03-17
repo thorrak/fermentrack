@@ -348,6 +348,6 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 def asciiToUnicode(s):
     s = s.replace(chr(0xB0), '&deg')
     try:
-        return unicode(s, 'ascii', 'ignore')
+        return unicode(s, 'cp437', 'ignore')
     except:
         return s
