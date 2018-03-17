@@ -59,7 +59,7 @@ def firmware_select_family(request):
 
     # Test if avrdude is available. If not, the user will need to install it.
     try:
-        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"]).decode(encoding='cp437')
         install_check = rettext.find("installed")
 
         if install_check == -1:
