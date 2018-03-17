@@ -172,10 +172,10 @@ class GravitySensor(models.Model):
             return True
 
     def daemon_log_prefix(self):
-        if self.sensor_type != self.SENSOR_TILT:
+        if self.sensor_type == self.SENSOR_TILT:
             return self.tilt_configuration
         else:
-            return True
+            return None
 
 
 
