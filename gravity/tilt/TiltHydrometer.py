@@ -34,7 +34,12 @@ from scipy.interpolate import interp1d
 from scipy import arange, array, exp
 import csv
 import functools
-import ConfigParser
+try:
+    # Python 3
+    import configparser as ConfigParser
+except:
+    # Python 2
+    import ConfigParser
 
 TILTHYDROMETER_COLOURS = ['Red', 'Green', 'Black', 'Purple', 'Orange', 'Blue', 'Yellow', 'Pink']
 
