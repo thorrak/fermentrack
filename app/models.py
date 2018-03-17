@@ -546,7 +546,9 @@ class BrewPiDevice(models.Model):
     @staticmethod
     def write_to_socket(this_socket, message):
         try:
-            this_socket.sendall(message)
+            # Python 3 readiness
+            encoded_message=message.encode(encoding="cp437")
+            this_socket.sendall(encoded_message)
             return True
         except:
             return False
@@ -554,7 +556,8 @@ class BrewPiDevice(models.Model):
     @staticmethod
     def read_from_socket(this_socket):
         try:
-            return this_socket.recv(65536)
+            encoded_message = this_socket.recv(65536)
+            return encoded_message.decode(encoding="cp437")
         except:
             return None
 
