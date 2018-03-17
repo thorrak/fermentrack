@@ -1,6 +1,9 @@
 from django import template
 from app.models import BrewPiDevice, FermentationProfile, FermentationProfilePoint
 from django.utils import timezone
+from app.api.clog import get_filepath_to_log
+from django.conf import settings
+
 
 register = template.Library()
 
@@ -28,3 +31,7 @@ def temp_control_label(this_device, control_status):
 def durfromnow(td):
     """Take a timedelta and return now + timedelta as a date"""
     return timezone.now() + td
+
+@register.simple_tag
+def log_file_path(device_type, logfile, device_id=None):
+    return get_filepath_to_log(device_type, logfile, device_id)[len(settings.BASE_DIR):]
