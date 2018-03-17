@@ -65,7 +65,7 @@
         {% for this_device in all_gravity_sensors %}
                 <tr>
                     <th scope="row">{{ this_device.id }}</th>
-                    <td>{{ this_device.device_name }}</td>
+                    <td>{{ this_device.name }}</td>
                     <td>{% if this_device.has_daemon_log %}<a href="{% url "get_device_log" "text" "gravity" "stdout" this_device.id %}">{% log_file_path "gravity" "stdout" this_device.id %}</a>{% else %}N/A{% endif %}</td>
                     <td>{% if this_device.has_daemon_log %}<a href="{% url "get_device_log" "text" "gravity" "stderr" this_device.id %}">{% log_file_path "gravity" "stderr" this_device.id %}</a>{% else %}N/A{% endif %}</td>
                     <td>{{ this_device.status }}</td>
