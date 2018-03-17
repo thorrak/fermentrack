@@ -1525,7 +1525,7 @@ class FermentationProfile(models.Model):
 
         def pad_to_width(string, width):
             if len(string) < width:
-                for i in xrange(len(string), width):
+                for i in range(len(string), width):
                     string += " "
             return string
 
@@ -1535,7 +1535,7 @@ class FermentationProfile(models.Model):
                 separator_width = width + len(self.EXPORT_LEFT_WALL) + len(self.EXPORT_RIGHT_WALL)
             else:
                 separator_width = width
-            for i in xrange(separator_width):
+            for i in range(separator_width):
                 ret_string += self.EXPORT_ROW_SEPARATOR
             return ret_string + "\r\n"
 
