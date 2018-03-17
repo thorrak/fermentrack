@@ -98,7 +98,6 @@ def add_device(request):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-
     if request.POST:
         form = device_forms.DeviceForm(request.POST)
         if form.is_valid():
