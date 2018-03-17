@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 from circus.client import CircusClient
 from circus.exc import CallError
@@ -23,7 +25,7 @@ class CircusMgr(object):
         message = {"command": command, "properties": props or {}}
         try:
             res = self._client.call(message)
-        except CallError, callerr:
+        except (CallError) as callerr:
             LOG.debug("Error from circus", exc_info=True)
             raise CircusException("Could send message to circus: {}".format(callerr))
         if res['status'] == u'error':
@@ -136,13 +138,13 @@ class CircusMgr(object):
 if __name__ == '__main__':
     import time
     fc = CircusMgr()
-    #print fc.get_applications()
-    print fc.stop("fermentrack")
-    print fc.application_status("fermentrack")
+    #print(fc.get_applications())
+    print(fc.stop("fermentrack"))
+    print(fc.application_status("fermentrack"))
     time.sleep(2)
-    print fc.get_applications()
-    print fc.application_status("fermentrack")
-    print fc.start("fermentrack")
-    print fc.application_status("fermentrack")
-    print fc.application_status("fermentrack1111")
-    # print fc.quit_circus()
+    print(fc.get_applications())
+    print(fc.application_status("fermentrack"))
+    print(fc.start("fermentrack"))
+    print(fc.application_status("fermentrack"))
+    print(fc.application_status("fermentrack1111"))
+    # print(fc.quit_circus())

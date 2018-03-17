@@ -7,7 +7,7 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-import forms
+from . import forms
 
 from app.models import BrewPiDevice
 from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version
@@ -59,7 +59,7 @@ def firmware_select_family(request):
 
     # Test if avrdude is available. If not, the user will need to install it.
     try:
-        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+        rettext = subprocess.check_output(["dpkg", "-s", "avrdude"]).decode(encoding='cp437')
         install_check = rettext.find("installed")
 
         if install_check == -1:
@@ -304,6 +304,7 @@ def firmware_flash_flash_firmware(request, board_id):
                                    context={'board_id': board_id})
 
     # Alright. Now we need to flash the firmware. First, download the selected firmware file
+    # TODO - Move all this to a call to Huey
     device_flashed = False
     firmware_path = firmware_to_flash.download_to_file()
     if firmware_path is None:
@@ -365,19 +366,3 @@ def firmware_flash_flash_firmware(request, board_id):
                                context={'flash_family': flash_family, 'firmware': firmware_to_flash,
                                         'flash_cmd': flash_cmd, 'device_flashed': device_flashed,
                                         'board': board_obj})
-
-
-
-
-# TODO - Delete this view
-# @login_required
-# @site_is_configured
-# def firmware_flash_test_select_firmware(request):
-#     try:
-#         flash_family = DeviceFamily.objects.get(name="ESP8266")
-#     except:
-#         messages.error(request, "Invalid flash_family specified")
-#         return redirect('firmware_flash_select_family')
-#
-#     return render_with_devices(request, template_name='firmware_flash/test_select_firmware.html',
-#                                context={'flash_family_id': flash_family.id})

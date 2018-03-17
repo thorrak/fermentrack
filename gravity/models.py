@@ -172,10 +172,10 @@ class GravitySensor(models.Model):
             return True
 
     def daemon_log_prefix(self):
-        if self.sensor_type != self.SENSOR_TILT:
-            return self.tilt_configuration
+        if self.sensor_type == self.SENSOR_TILT:
+            return self.tilt_configuration.daemon_log_prefix()
         else:
-            return True
+            return None
 
 
 
@@ -649,14 +649,13 @@ class TiltConfiguration(models.Model):
 
     def daemon_log_prefix(self):
         # This must match the log prefix used in utils/processmgr.py
-        return "tilt-" + self.color
+        return "tilt-" + self.color.lower()
 
 
 
 ### iSpindel specific models
 class IspindelGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('IspindelConfiguration')
-    # TODO - Change angle definition to 10/7 (angles don't exist outside +/- 360)
     angle = models.DecimalField(max_digits=10, decimal_places=7, verbose_name="Angle (Measured by Device)")
     gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of

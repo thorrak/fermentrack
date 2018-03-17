@@ -91,7 +91,7 @@ for o, a in opts:
                     print("  %d: %s" % (x, d.color))
             print("============================================================")
             exit()
-        except Exception, e:
+        except (Exception) as e:
             sys.exit(e)
 
 

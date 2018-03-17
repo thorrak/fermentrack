@@ -5,10 +5,6 @@ import fermentrack_django.settings as settings
 
 from django.forms import ModelForm
 
-import re
-import datetime
-import pytz
-
 
 # For the actual fermentation profile points, we're going to do something more complex. For the overriding
 # FermentationProfile object, however, let's just use a model form.

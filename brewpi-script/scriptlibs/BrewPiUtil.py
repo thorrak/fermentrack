@@ -19,8 +19,8 @@ import time
 import sys
 import os
 import serial
-import autoSerial
-import tcpSerial
+from . import autoSerial
+from . import tcpSerial
 
 try:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -100,7 +100,7 @@ def read_config_from_database_without_defaults(db_config_object):
     # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
     # config['scriptPath'] = db_config_object.script_path
     config['port'] = db_config_object.serial_port
-    # if db_config_object.serial_alt_port <> 'None':
+    # if db_config_object.serial_alt_port != 'None':
     config['altport'] = db_config_object.serial_alt_port
     config['boardType'] = db_config_object.board_type
     config['beerName'] = db_config_object.get_active_beer_name()
@@ -346,5 +346,8 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 
 # remove extended ascii characters from string, because they can raise UnicodeDecodeError later
 def asciiToUnicode(s):
-    s = s.replace(chr(0xB0), '&deg')
-    return unicode(s, 'ascii', 'ignore')
+    try:
+        s_u = unicode(s, 'cp437', 'ignore')
+        return s_u.replace(chr(0xB0), '&deg')
+    except:
+        return s

@@ -7,22 +7,22 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 from constance import config  # For the explicitly user-configurable stuff
-from decorators import site_is_configured, login_if_required_for_dashboard
+from .decorators import site_is_configured, login_if_required_for_dashboard
 
-import device_forms, profile_forms, beer_forms, setup_forms
-import setup_views
+from . import device_forms, profile_forms, beer_forms, setup_forms
+from . import setup_views
 
-import mdnsLocator
+from . import mdnsLocator
 
-import almost_json
+from . import almost_json
 from django.http import HttpResponse
 
-import json, datetime, pytz, os, random
+import json, datetime, pytz, os, random, sys
 
-import git_integration
+from . import git_integration
 import subprocess
 
-import connection_debug, udev_integration
+from . import connection_debug, udev_integration
 
 import fermentrack_django.settings as settings
 
@@ -56,16 +56,29 @@ def siteroot(request):
         # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
         now_time = timezone.now()
-        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-            try:
-                if git_integration.app_is_current():
-                    config.LAST_GIT_CHECK = now_time
-                else:
-                    messages.info(request, "This app is not at the latest version! " +
-                                  '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
-            except:
-                # If we can't check for the latest version info, skip and move on
-                pass
+        try:
+            if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+
+                # TODO - Remove this check after April 2018
+                if sys.version_info[0] < 3:
+                    messages.warning(request, "This app is currently running on Python 2 which will no longer be " +
+                                              "supported after April 2018. To upgrade to Python 3, simply follow the " +
+                                              'instructions <a href="http://www.fermentrack.com/help/python3/">at ' +
+                                              'this link.</a>')
+                try:
+                    if git_integration.app_is_current():
+                        config.LAST_GIT_CHECK = now_time
+                    else:
+                        messages.info(request, "This app is not at the latest version! " +
+                                      '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+                except:
+                    # If we can't check for the latest version info, skip and move on
+                    pass
+        except:
+            # So here's the deal. On Python3 conversion, any datetime.datetime objects stored in Constance end up
+            # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
+            # overwrite it. Git check can happen on next refresh.
+            config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
@@ -84,7 +97,6 @@ def add_device(request):
     # if not request.user.has_perm('app.add_device'):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
-
 
     if request.POST:
         form = device_forms.DeviceForm(request.POST)

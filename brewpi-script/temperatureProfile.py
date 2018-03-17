@@ -17,7 +17,7 @@
 import time
 import csv
 import sys
-import BrewPiUtil as util
+import scriptlibs.BrewPiUtil as util
 
 
 # also defined in brewpi.py. TODO: move to shared import

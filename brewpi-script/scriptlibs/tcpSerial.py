@@ -1,11 +1,21 @@
 # wraps a tcp socket stream in a object that looks like a serial port
 # this allows seemless integration with exsiting brewpi-script code
-import BrewPiUtil
+from __future__ import print_function
+
 import socket
-import mdnsLocator
-import os, sys
+from . import mdnsLocator
+import os, sys, time
 
 
+# Copying this in from BrewPiUtil to prevent chained imports
+def printStdErr(*objs):
+    print("", *objs, file=sys.stderr)
+
+def logMessage(message):
+    """
+    Prints a timestamped message to stderr
+    """
+    printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
 
 class TCPSerial(object):
     def __init__(self, host=None, port=None, hostname=None):
@@ -16,9 +26,9 @@ class TCPSerial(object):
         self.retries=10 # max reconnect attempts to try when doing a read or write operation
         self.retryCount=0 # count of reconnect attempts performed
         if hostname:
-            BrewPiUtil.logMessage("Connecting to BrewPi " + hostname + " (via " + host + ") on port " + str(port))
+            logMessage("Connecting to BrewPi " + hostname + " (via " + host + ") on port " + str(port))
         else:
-            BrewPiUtil.logMessage("Connecting to BrewPi " + host + " on port " + str(port))
+            logMessage("Connecting to BrewPi " + host + " on port " + str(port))
         self.open()
         self.setTimeout(0.5)
         # self.timeout=self.sock.gettimeout()
@@ -46,20 +56,20 @@ class TCPSerial(object):
         except socket.error: # other socket errors probably mean we lost our connection.  try to recover it.
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
-                BrewPiUtil.logMessage("Lost connection to controller on read. Attempting to reconnect.")
+                logMessage("Lost connection to controller on read. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
                 bytes=self.read(size)
             else:
                 self.sock.close()
-                BrewPiUtil.logMessage("Lost connection to controller on read. Exiting.")
+                logMessage("Lost connection to controller on read. Exiting.")
                 sys.exit(1)
                 # return None
         if bytes is not None:
             if self.retryCount > 0:
-                BrewPiUtil.logMessage("Successfully reconnected to controller on read.")
+                logMessage("Successfully reconnected to controller on read.")
                 self.retryCount = 0
-        return bytes
+        return bytes.decode(encoding="cp437")
 
     
     def readline(self,size=None, eol='\n'):
@@ -80,36 +90,36 @@ class TCPSerial(object):
         #     In case a write timeout is configured for the port and the time is exceeded.
         #Write the string data to the port.
         try:
-            bytes=self.sock.sendall(data)
+            bytes=self.sock.sendall(data.encode(encoding="cp437"))
         except socket.timeout: # A write timeout is probably a connection issue
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
-                BrewPiUtil.logMessage("Lost connection to controller on write. Attempting to reconnect.")
+                logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
                 bytes=self.write(data)
             else:
                 self.sock.close()
-                BrewPiUtil.logMessage("Lost connection to controller on write. Exiting.")
+                logMessage("Lost connection to controller on write. Exiting.")
                 sys.exit(1)
                 # return -1
         except socket.error: # general errors are most likely to be a timeout disconnect from BrewPi, so try to recover.
             if self.retryCount < self.retries:
-                BrewPiUtil.logMessage("Lost connection to controller on write. Attempting to reconnect.")
+                logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.retryCount=self.retryCount+1
                 self.sock.close()
                 self.open()
                 bytes=self.write(data)
             else:
                 self.sock.close()
-                BrewPiUtil.logMessage("Lost connection to controller on write, with socket.error. Exiting.")
+                logMessage("Lost connection to controller on write, with socket.error. Exiting.")
                 sys.exit(1)
                 # return -1
-        if bytes>=0:
-            if self.retryCount > 0:
-                BrewPiUtil.logMessage("Successfully reconnected to controller on write.")
-                self.retryCount = 0
-        return bytes
+
+        if self.retryCount > 0:
+            logMessage("Successfully reconnected to controller on write.")
+            self.retryCount = 0
+        return len(data)
     
     def inWaiting(self):
         #Return the number of chars in the receive buffer.
@@ -143,13 +153,12 @@ class TCPSerial(object):
         mdnsLocator.locate_brewpi_services()  # This causes all the BrewPi devices to resend their mDNS info
         try:
             self.sock.connect((self.host, self.port))
-            BrewPiUtil.logMessage("Successfully connected to controller.")
-        except socket.gaierror as e:
-            BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
+            logMessage("Successfully connected to controller.")
+        except (socket.gaierror) as e:
+            logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
                                   ". Exiting.")
             sys.exit(1)
-        except socket.error as e:  # Catches "bad file descriptor" error
-            BrewPiUtil.logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
-                                  ". Exiting.")
+        except (socket.error) as e:  # Catches "bad file descriptor" error
+            logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) + ". Exiting.")
             sys.exit(1)
 

@@ -1,5 +1,6 @@
 # This is the same exact file as brewpi-script/mdnsLocator.py
 
+from __future__ import print_function
 import zeroconf
 from time import sleep
 try:
@@ -46,10 +47,10 @@ def find_mdns_devices():
 
     for this_service in services:
         found_device['mDNSname'] = services[this_service].server[:-1]
-        found_device['board'] = services[this_service].properties['board']
-        found_device['branch'] = services[this_service].properties['branch']
-        found_device['revision'] = services[this_service].properties['revision']
-        found_device['version'] = services[this_service].properties['version']
+        found_device['board'] = services[this_service].properties[b'board'].decode(encoding='cp437')
+        found_device['branch'] = services[this_service].properties[b'branch'].decode(encoding='cp437')
+        found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding='cp437')
+        found_device['version'] = services[this_service].properties[b'version'].decode(encoding='cp437')
 
         if djangoLoaded:  # Breaking this out so that we can have this be a direct clone for brewpi-script
             try:
@@ -71,15 +72,15 @@ if __name__ == '__main__':
     # listener = zeroconfListener()
     # browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
 
-    print "Scanning for available mDNS devices"
+    print("Scanning for available mDNS devices")
     _, available_devices = find_mdns_devices()
 
     for this_device in available_devices:
-        print "Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],
+        print("Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],
                                                                              this_device['board'],
                                                                              this_device['branch'],
-                                                                             this_device['revision'])
-    print "All found devices listed. Exiting."
+                                                                             this_device['revision']))
+    print("All found devices listed. Exiting.")
     # try:
     #     input("Press enter to exit...\n\n")
     # finally:

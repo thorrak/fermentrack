@@ -12,7 +12,7 @@ from constance import config
 from fermentrack_django import settings
 import re
 
-import udev_integration
+from . import udev_integration
 
 from lib.ftcircus.client import CircusMgr, CircusException
 
@@ -546,7 +546,9 @@ class BrewPiDevice(models.Model):
     @staticmethod
     def write_to_socket(this_socket, message):
         try:
-            this_socket.sendall(message)
+            # Python 3 readiness
+            encoded_message=message.encode(encoding="cp437")
+            this_socket.sendall(encoded_message)
             return True
         except:
             return False
@@ -554,7 +556,8 @@ class BrewPiDevice(models.Model):
     @staticmethod
     def read_from_socket(this_socket):
         try:
-            return this_socket.recv(65536)
+            encoded_message = this_socket.recv(65536)
+            return encoded_message.decode(encoding="cp437")
         except:
             return None
 
@@ -576,7 +579,14 @@ class BrewPiDevice(models.Model):
             lcd_text = json.loads(self.send_message("lcd", read_response=True))
         except:
             lcd_text = ["Cannot receive", "LCD text from", "Controller/Script"]
-        return lcd_text
+
+
+        # Due to the various codepage swaps, we're now receiving the raw degree symbol (0xB0) back when we poll the
+        # LCD under Python 3. Let's replace it with "&deg;" for display in HTML
+        deg_symbol = bytes([0xB0]).decode(encoding="cp437")
+        sanitized_text = [n.replace(deg_symbol, "&deg;") for n in lcd_text]
+
+        return sanitized_text
 
     def is_connected(self):
         # Tests if we're connected to the device via BrewPi-Script
@@ -1170,7 +1180,7 @@ class BeerLogPoint(models.Model):
             self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
             temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
-            if self.temp_format <> temp_format:
+            if self.temp_format != temp_format:
                 if self.temp_format == 'C' and temp_format == 'F':
                     # Convert Fahrenheit to Celsius
                     temp = (temp-32) * 5 / 9
@@ -1515,7 +1525,7 @@ class FermentationProfile(models.Model):
 
         def pad_to_width(string, width):
             if len(string) < width:
-                for i in xrange(len(string), width):
+                for i in range(len(string), width):
                     string += " "
             return string
 
@@ -1525,7 +1535,7 @@ class FermentationProfile(models.Model):
                 separator_width = width + len(self.EXPORT_LEFT_WALL) + len(self.EXPORT_RIGHT_WALL)
             else:
                 separator_width = width
-            for i in xrange(separator_width):
+            for i in range(separator_width):
                 ret_string += self.EXPORT_ROW_SEPARATOR
             return ret_string + "\r\n"
 

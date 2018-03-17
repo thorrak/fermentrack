@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import simplejson as json
 
 
@@ -137,7 +138,7 @@ def getPinList(boardType, shieldType):
                    {'val': 12, 'text': 'D6 (OneWire)', 'type': 'onewire'},
                    {'val': 0, 'text': 'D3 (Buzzer)', 'type': 'beep'},]
     else:
-        print 'Unknown controller or board type'
+        print('Unknown controller or board type')
         pinList = {}
     return pinList
 
@@ -147,18 +148,18 @@ def getPinListJson(boardType, shieldType):
         pinList = getPinList(boardType, shieldType)
         return json.dumps(pinList)
     except json.JSONDecodeError:
-        print "Cannot process pin list JSON"
+        print("Cannot process pin list JSON")
         return 0
 
 def pinListTest():
-    print getPinListJson("leonardo", "revC")
-    print getPinListJson("uno", "revC")
-    print getPinListJson("leonardo", "revA")
-    print getPinListJson("uno", "revA")
-    print getPinListJson("core", "V1")
-    print getPinListJson("core", "V2")
-    print getPinListJson("photon", "V1")
-    print getPinListJson("photon", "V2")
+    print(getPinListJson("leonardo", "revC"))
+    print(getPinListJson("uno", "revC"))
+    print(getPinListJson("leonardo", "revA"))
+    print(getPinListJson("uno", "revA"))
+    print(getPinListJson("core", "V1"))
+    print(getPinListJson("core", "V2"))
+    print(getPinListJson("photon", "V1"))
+    print(getPinListJson("photon", "V2"))
 
 if __name__ == "__main__":
     pinListTest()

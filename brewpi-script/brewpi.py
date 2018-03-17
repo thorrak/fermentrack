@@ -16,10 +16,9 @@
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import os, sys
+import sys
 
-from BrewPiUtil import printStdErr
-from BrewPiUtil import logMessage
+from scriptlibs.BrewPiUtil import printStdErr, logMessage
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
@@ -31,10 +30,12 @@ import time
 import socket
 import os
 import getopt
-from pprint import pprint
 import shutil
 import traceback
-import urllib
+try:
+    import urllib.parse as urllib
+except:
+    import urllib
 from distutils.version import LooseVersion
 
 # load non standard packages, exit when they are not installed
@@ -73,13 +74,13 @@ except ImportError:
 
 #local imports
 import temperatureProfile
-import programController as programmer
-import brewpiJson
-import BrewPiUtil as util
-import brewpiVersion
-import pinList
-import expandLogMessage
-from backgroundserial import BackGroundSerial
+# import programController as programmer
+from scriptlibs import brewpiJson
+import scriptlibs.BrewPiUtil as util
+from scriptlibs import brewpiVersion
+from scriptlibs import pinList
+from scriptlibs import expandLogMessage
+from scriptlibs.backgroundserial import BackGroundSerial
 
 
 # For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded
@@ -200,7 +201,7 @@ for o, a in opts:
                     print("  %d: %s" % (x, d.device_name))
             print("===========================================================")
             exit()
-        except Exception, e:
+        except (Exception) as e:
             sys.exit(e)
 
     # load the configuration from the database
@@ -327,10 +328,10 @@ def setFiles():
 
         if not os.path.exists(dataPath):
             os.makedirs(dataPath)
-            os.chmod(dataPath, 0775)  # give group all permissions
+            os.chmod(dataPath, 0o0775)  # give group all permissions
         if not os.path.exists(wwwDataPath):
             os.makedirs(wwwDataPath)
-            os.chmod(wwwDataPath, 0775)  # give group all permissions
+            os.chmod(wwwDataPath, 0o0775)  # give group all permissions
 
         # Keep track of day and make new data file for each day
         day = time.strftime("%Y-%m-%d")
@@ -508,7 +509,7 @@ else:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(socketFile)  # Bind BEERSOCKET
     # set all permissions for socket
-    os.chmod(socketFile, 0777)
+    os.chmod(socketFile, 0o0777)
 
 serialCheckInterval = 0.5
 s.setblocking(1)  # set socket functions to be blocking
@@ -583,32 +584,33 @@ while run:
         conn.setblocking(1)
         # blocking receive, times out in serialCheckInterval
         message = conn.recv(4096)
+        message = message.decode(encoding="cp437")
         if "=" in message:
             messageType, value = message.split("=", 1)
         else:
             messageType = message
             value = ""
         if messageType == "ack":  # acknowledge request
-            conn.send('ack')
+            conn.send(b'ack')
         elif messageType == "lcd":  # lcd contents requested
-            conn.send(json.dumps(lcdText))
+            conn.send(json.dumps(lcdText).encode(encoding="cp437"))
         elif messageType == "getMode":  # echo cs['mode'] setting
-            conn.send(cs['mode'])
+            conn.send(cs['mode'].encode(encoding="cp437"))
         elif messageType == "getFridge":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['fridgeSet']))
+            conn.send(json.dumps(cs['fridgeSet']).encode(encoding="cp437"))
         elif messageType == "getBeer":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['beerSet']))
+            conn.send(json.dumps(cs['beerSet']).encode(encoding="cp437"))
         elif messageType == "getControlConstants":
-            conn.send(json.dumps(cc))
+            conn.send(json.dumps(cc).encode(encoding="cp437"))
         elif messageType == "getControlSettings":
             if cs['mode'] == "p":
                 profileFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
                 with file(profileFile, 'r') as prof:
                     cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
             cs['dataLogging'] = config['dataLogging']
-            conn.send(json.dumps(cs))
+            conn.send(json.dumps(cs).encode(encoding="cp437"))
         elif messageType == "getControlVariables":
-            conn.send(cv)
+            conn.send(cv.encode(encoding="cp437"))
         elif messageType == "refreshControlConstants":
             bg_ser.writeln("c")
             raise socket.timeout
@@ -675,7 +677,7 @@ while run:
                 bg_ser.writeln("j" + json.dumps(decoded))
                 if 'tempFormat' in decoded:
                     changeWwwSetting('tempFormat', decoded['tempFormat'])  # change in web interface settings too.
-                    if decoded['tempFormat'] <> config.get('temp_format', 'C') and dbConfig is not None:
+                    if decoded['tempFormat'] != config.get('temp_format', 'C') and dbConfig is not None:
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
                     if dbConfig is not None:
@@ -723,16 +725,16 @@ while run:
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "pauseLogging":
             result = pauseLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "stopLogging":
             result = stopLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "resumeLogging":
             result = resumeLogging()
-            conn.send(json.dumps(result))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "dateTimeFormatDisplay":
             if configFile is not None:
                 config = util.configSet(configFile, dbConfig, 'dateTimeFormatDisplay', value)
@@ -760,12 +762,12 @@ while run:
                         rest = original.read()
                     with file(profileDestFile, 'w') as modified:
                         modified.write(line1 + "," + value + "\n" + rest)
-                except IOError as e:  # catch all exceptions and report back an error
+                except (IOError) as e:  # catch all exceptions and report back an error
                     error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
-                    conn.send(error)
+                    conn.send(error.encode(encoding="cp437"))
                     printStdErr(error)
                 else:
-                    conn.send("Profile successfully updated")
+                    conn.send(b"Profile successfully updated")
                     if cs['mode'] is not 'p':
                         cs['mode'] = 'p'
                         bg_ser.writeln("j{mode:p}")
@@ -775,7 +777,7 @@ while run:
             elif dbConfig is not None:
                 # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
                 logMessage("Setting controller to beer profile mode using database-configured profile")
-                conn.send("Profile successfully updated")
+                conn.send(b"Profile successfully updated")
                 if dbConfig is not None:
                     dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
                 if cs['mode'] is not 'p':
@@ -785,29 +787,30 @@ while run:
                     raise socket.timeout  # go to serial communication to update controller
 
         elif messageType == "programController" or messageType == "programArduino":
-            if bg_ser is not None:
-                bg_ser.stop()
-            if ser is not None:
-                if ser.isOpen():
-                    ser.close()  # close serial port before programming
-                ser = None
-            try:
-                programParameters = json.loads(value)
-                hexFile = programParameters['fileName']
-                boardType = programParameters['boardType']
-                restoreSettings = programParameters['restoreSettings']
-                restoreDevices = programParameters['restoreDevices']
-                programmer.programController(config, boardType, hexFile, None, None, False,
-                                          {'settings': restoreSettings, 'devices': restoreDevices})
-                logMessage("New program uploaded to controller, script will restart")
-            except json.JSONDecodeError:
-                logMessage("Error: cannot decode programming parameters: " + value)
-                logMessage("Restarting script without programming.")
-
-            # restart the script when done. This replaces this process with the new one
-            time.sleep(5)  # give the controller time to reboot
-            python = sys.executable
-            os.execl(python, python, *sys.argv)
+            logMessage("programController action is not supported by this modified version of brewpi-script")
+            # if bg_ser is not None:
+            #     bg_ser.stop()
+            # if ser is not None:
+            #     if ser.isOpen():
+            #         ser.close()  # close serial port before programming
+            #     ser = None
+            # try:
+            #     programParameters = json.loads(value)
+            #     hexFile = programParameters['fileName']
+            #     boardType = programParameters['boardType']
+            #     restoreSettings = programParameters['restoreSettings']
+            #     restoreDevices = programParameters['restoreDevices']
+            #     programmer.programController(config, boardType, hexFile, None, None, False,
+            #                               {'settings': restoreSettings, 'devices': restoreDevices})
+            #     logMessage("New program uploaded to controller, script will restart")
+            # except json.JSONDecodeError:
+            #     logMessage("Error: cannot decode programming parameters: " + value)
+            #     logMessage("Restarting script without programming.")
+            #
+            # # restart the script when done. This replaces this process with the new one
+            # time.sleep(5)  # give the controller time to reboot
+            # python = sys.executable
+            # os.execl(python, python, *sys.argv)
         elif messageType == "refreshDeviceList":
             if keepDeviceListUpdated is False:
                 # Don't invalidate the device list if we're always keeping it updated
@@ -828,11 +831,11 @@ while run:
                                 shield=hwVersion.shield,
                                 deviceList=deviceList,
                                 pinList=pinList.getPinList(hwVersion.board, hwVersion.shield))
-                conn.send(json.dumps(response))
+                conn.send(json.dumps(response).encode(encoding="cp437"))
             else:
                 if keepDeviceListUpdated:
                     time.sleep(5)  # We'll give the controller 5 seconds to respond, even though we won't see it this cycle
-                conn.send("device-list-not-up-to-date")
+                conn.send(b"device-list-not-up-to-date")
                 raise socket.timeout
         elif messageType == "getDashInfo":
             # This is a new messageType
@@ -846,7 +849,7 @@ while run:
                         "FridgeSet": prevTempJson['FridgeSet'],
                         "LogInterval": config['interval'],
                         "Mode": cs['mode']}
-            conn.send(json.dumps(response))
+            conn.send(json.dumps(response).encode(encoding="cp437"))
         elif messageType == "applyDevice":
             # applyDevice is used to apply settings to an existing device (pin/OneWire assignment, etc.)
             try:
@@ -890,7 +893,7 @@ while run:
             else:
                 response = {}
             response_str = json.dumps(response)
-            conn.send(response_str)
+            conn.send(response_str.encode(encoding="cp437"))
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             bg_ser.writeln("E")
@@ -991,7 +994,7 @@ while run:
                                                json.dumps(newRow['State']) + ';' +
                                                json.dumps(newRow['RoomTemp']) + '\n')
                                 csvFile.write(lineToWrite)
-                            except KeyError, e:
+                            except (KeyError) as e:
                                 logMessage("KeyError in line from controller: %s" % str(e))
 
                             csvFile.close()
@@ -1038,13 +1041,13 @@ while run:
                         deviceList['installed'] = json.loads(line[2:])
                         oldListState = deviceList['listState']
                         deviceList['listState'] = oldListState.strip('d') + "d"
-                        logMessage("Installed devices received: " + json.dumps(deviceList['installed']).encode('utf-8'))
+                        logMessage("Installed devices received: " + json.dumps(deviceList['installed']))
                     elif line[0] == 'U':
                         logMessage("Device updated to: " + line[2:])
                     else:
                         logMessage("Cannot process line from controller: " + line)
                     # end or processing a line
-                except json.decoder.JSONDecodeError, e:
+                except (json.decoder.JSONDecodeError) as e:
                     logMessage("JSON decode error: %s" % str(e))
                     logMessage("Line received was: " + line)
                 bg_ser.line_was_processed()  # Clean out the queue
@@ -1052,7 +1055,7 @@ while run:
                 try:
                     expandedMessage = expandLogMessage.expandLogMessage(message)
                     logMessage("Controller debug message: " + expandedMessage)
-                except Exception, e:  # catch all exceptions, because out of date file could cause errors
+                except (Exception) as e:  # catch all exceptions, because out of date file could cause errors
                     logMessage("Error while expanding log message '" + message + "'" + str(e))
                 bg_ser.message_was_processed()  # Clean out the queue
 
@@ -1082,7 +1085,7 @@ while run:
                     logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
                                " degrees at end of profile")
 
-    except socket.error as e:
+    except (socket.error) as e:
         logMessage("Socket error(%d): %s" % (e.errno, e.strerror))
         traceback.print_exc()
 

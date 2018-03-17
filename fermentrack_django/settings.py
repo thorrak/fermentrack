@@ -14,7 +14,7 @@ import os
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz
 
-from secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
+from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -385,7 +385,7 @@ def gravity_ispindel_guided_calibration(request, sensor_id, step):
     # Now let's translate that into data, organized by step (Note - step number is one-off from the 'step' parameter)
 
     step_data = []
-    for i in xrange(len(water_additions_by_step)):
+    for i in range(len(water_additions_by_step)):
         this_step = {'step': (i+1)}
         this_step['water_addition'] = water_additions_by_step[i]
         this_step['sugar_addition'] = sugar_additions_by_step[i]

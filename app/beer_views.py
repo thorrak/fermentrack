@@ -4,9 +4,9 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 
 from constance import config  # For the explicitly user-configurable stuff
-from decorators import site_is_configured  # Checks if user has completed constance configuration
+from .decorators import site_is_configured  # Checks if user has completed constance configuration
 
-import beer_forms
+from . import beer_forms
 
 
 from app.models import BrewPiDevice, Beer

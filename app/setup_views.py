@@ -7,12 +7,12 @@ from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-import setup_forms, device_forms
-import mdnsLocator, serial_integration
+from . import setup_forms, device_forms
+from . import mdnsLocator, serial_integration
 
 from app.models import BrewPiDevice
 
-from decorators import site_is_configured  # Checks if user has completed constance configuration
+from .decorators import site_is_configured  # Checks if user has completed constance configuration
 import random
 
 

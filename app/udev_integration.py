@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 
 try:
     import pyudev
@@ -56,9 +58,9 @@ def get_node_from_serial(device_serial):
 
 # The following was used for testing during development
 if __name__ == "__main__":
-    print get_platform()
+    print(get_platform())
     context = pyudev.Context()
     serial_from_node = get_serial_from_node("/dev/ttyUSB0")
     node_from_serial = get_node_from_serial(serial_from_node)
 
-    print (u'{} ({})'.format(serial_from_node, node_from_serial))
+    print(u'{} ({})'.format(serial_from_node, node_from_serial))

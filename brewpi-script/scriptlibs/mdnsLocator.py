@@ -1,5 +1,6 @@
 # This is the same exact file as brewpi-script/mdnsLocator.py
 
+from __future__ import print_function
 import zeroconf
 from time import sleep
 try:
@@ -71,15 +72,15 @@ if __name__ == '__main__':
     # listener = zeroconfListener()
     # browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
 
-    print "Scanning for available mDNS devices"
+    print("Scanning for available mDNS devices")
     _, available_devices = find_mdns_devices()
 
     for this_device in available_devices:
-        print "Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],
+        print("Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],
                                                                              this_device['board'],
                                                                              this_device['branch'],
-                                                                             this_device['revision'])
-    print "All found devices listed. Exiting."
+                                                                             this_device['revision']))
+    print("All found devices listed. Exiting.")
     # try:
     #     input("Press enter to exit...\n\n")
     # finally:

@@ -8,7 +8,7 @@ import os.path
 import requests
 import logging
 
-import fhash
+from . import fhash
 
 from constance import config
 

@@ -3,7 +3,7 @@ from django import forms
 from constance import config
 #from constance.admin import ConstanceForm
 from django.conf import settings
-from models import DeviceFamily, Firmware, Board
+from .models import DeviceFamily, Firmware, Board
 
 
 ###################################################################################################################
