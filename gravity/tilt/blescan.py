@@ -134,7 +134,8 @@ def parse_events(sock, loop_count=100):
     results = []
     myFullList = []
     for i in range(0, loop_count):
-        pkt = sock.recv(255)
+        pkt_b = sock.recv(255)
+        pkt = pkt_b.decode(encoding="cp437")
         ptype, event, plen = struct.unpack("BBB", pkt[:3])
         # print("--------------")
         if event == bluez.EVT_INQUIRY_RESULT_WITH_RSSI:
