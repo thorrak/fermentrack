@@ -159,7 +159,6 @@ class TCPSerial(object):
                                   ". Exiting.")
             sys.exit(1)
         except (socket.error) as e:  # Catches "bad file descriptor" error
-            logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
-                                  ". Exiting.")
+            logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) + ". Exiting.")
             sys.exit(1)
 
