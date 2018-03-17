@@ -122,9 +122,9 @@ def parse_events(sock, loop_count=100):
                     Adstring += ','
                     Adstring += returnstringpacket(pkt[report_pkt_offset -22: report_pkt_offset - 6])
                     Adstring += ','
-                    Adstring += returnnumberpacket(pkt[report_pkt_offset -6: report_pkt_offset - 4])
+                    Adstring += "{:d}".format(returnnumberpacket(pkt[report_pkt_offset -6: report_pkt_offset - 4]))
                     Adstring += ','
-                    Adstring += returnnumberpacket(pkt[report_pkt_offset -4: report_pkt_offset - 2])
+                    Adstring += "{:d}".format(returnnumberpacket(pkt[report_pkt_offset -4: report_pkt_offset - 2]))
                     try:
                         #Adstring += ',' + "%i" % struct.unpack("b", pkt[report_pkt_offset -2:report_pkt_offset -1])
                         Adstring += ',' + returnstringpacket(pkt[report_pkt_offset -2:report_pkt_offset -1])
