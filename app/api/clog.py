@@ -2,6 +2,7 @@ import os
 from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
+from gravity.models import GravitySensor
 
 
 def get_filepath_to_log(device_type, logfile, device_id=None):
@@ -18,7 +19,7 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
 
     elif device_type == "gravity":
         try:
-            device = BrewPiDevice.objects.get(id=device_id)
+            device = GravitySensor.objects.get(id=device_id)
             log_filename = '{}-{}.log'.format(device.daemon_log_prefix, logfile)
         except:
             # Unable to load the device
