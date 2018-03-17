@@ -36,13 +36,13 @@ EVT_LE_ADVERTISING_REPORT=0x02
 def getBLESocket(devID):
     return bluez.hci_open_dev(devID)
 
-#def returnnumberpacket(pkt):
-#    myInteger = 0
-#    multiple = 256
-#    for i in range(len(pkt)):
-#        myInteger += struct.unpack("B",pkt[i:i+1])[0] * multiple
-#        multiple = 1
-#    return myInteger
+def returnnumberpacket(pkt):
+   myInteger = 0
+   multiple = 256
+   for i in range(len(pkt)):
+       myInteger += struct.unpack("B",pkt[i:i+1])[0] * multiple
+       multiple = 1
+   return myInteger
 
 
 def returnstringpacket(pkt):
@@ -119,11 +119,12 @@ def parse_events(sock, loop_count=100):
                 for i in range(0, num_reports):
                     # build the return string
                     Adstring = packed_bdaddr_to_string(pkt[report_pkt_offset + 3:report_pkt_offset + 9])
-                    Adstring += ',' + returnstringpacket(pkt[report_pkt_offset -22: report_pkt_offset - 6])
-                    #Adstring += ',' + "%i" % returnnumberpacket(pkt[report_pkt_offset -6: report_pkt_offset - 4])
-                    Adstring += ',' + returnstringpacket(pkt[report_pkt_offset -6: report_pkt_offset - 4])
-                    #Adstring += ',' + "%i" % returnnumberpacket(pkt[report_pkt_offset -4: report_pkt_offset - 2])
-                    Adstring += ',' + returnstringpacket(pkt[report_pkt_offset -4: report_pkt_offset - 2])
+                    Adstring += ','
+                    Adstring += returnstringpacket(pkt[report_pkt_offset -22: report_pkt_offset - 6])
+                    Adstring += ','
+                    Adstring += returnnumberpacket(pkt[report_pkt_offset -6: report_pkt_offset - 4])
+                    Adstring += ','
+                    Adstring += returnnumberpacket(pkt[report_pkt_offset -4: report_pkt_offset - 2])
                     try:
                         #Adstring += ',' + "%i" % struct.unpack("b", pkt[report_pkt_offset -2:report_pkt_offset -1])
                         Adstring += ',' + returnstringpacket(pkt[report_pkt_offset -2:report_pkt_offset -1])
