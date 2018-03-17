@@ -346,8 +346,8 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 
 # remove extended ascii characters from string, because they can raise UnicodeDecodeError later
 def asciiToUnicode(s):
-    s = s.replace(chr(0xB0), '&deg')
     try:
-        return unicode(s, 'cp437', 'ignore')
+        s_u = unicode(s, 'cp437', 'ignore')
+        return s_u.replace(chr(0xB0), '&deg')
     except:
         return s
