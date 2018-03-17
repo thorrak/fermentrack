@@ -584,7 +584,7 @@ while run:
         conn.setblocking(1)
         # blocking receive, times out in serialCheckInterval
         message = conn.recv(4096)
-        message = message.decode(encoding="utf-8")
+        message = message.decode(encoding="cp437")
         if "=" in message:
             messageType, value = message.split("=", 1)
         else:
@@ -593,24 +593,24 @@ while run:
         if messageType == "ack":  # acknowledge request
             conn.send(b'ack')
         elif messageType == "lcd":  # lcd contents requested
-            conn.send(json.dumps(lcdText).encode(encoding="utf-8"))
+            conn.send(json.dumps(lcdText).encode(encoding="cp437"))
         elif messageType == "getMode":  # echo cs['mode'] setting
-            conn.send(cs['mode'].encode(encoding="utf-8"))
+            conn.send(cs['mode'].encode(encoding="cp437"))
         elif messageType == "getFridge":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['fridgeSet']).encode(encoding="utf-8"))
+            conn.send(json.dumps(cs['fridgeSet']).encode(encoding="cp437"))
         elif messageType == "getBeer":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['beerSet']).encode(encoding="utf-8"))
+            conn.send(json.dumps(cs['beerSet']).encode(encoding="cp437"))
         elif messageType == "getControlConstants":
-            conn.send(json.dumps(cc).encode(encoding="utf-8"))
+            conn.send(json.dumps(cc).encode(encoding="cp437"))
         elif messageType == "getControlSettings":
             if cs['mode'] == "p":
                 profileFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
                 with file(profileFile, 'r') as prof:
                     cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
             cs['dataLogging'] = config['dataLogging']
-            conn.send(json.dumps(cs).encode(encoding="utf-8"))
+            conn.send(json.dumps(cs).encode(encoding="cp437"))
         elif messageType == "getControlVariables":
-            conn.send(cv.encode(encoding="utf-8"))
+            conn.send(cv.encode(encoding="cp437"))
         elif messageType == "refreshControlConstants":
             bg_ser.writeln("c")
             raise socket.timeout
@@ -725,16 +725,16 @@ while run:
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)
-            conn.send(json.dumps(result).encode(encoding="utf-8"))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "pauseLogging":
             result = pauseLogging()
-            conn.send(json.dumps(result).encode(encoding="utf-8"))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "stopLogging":
             result = stopLogging()
-            conn.send(json.dumps(result).encode(encoding="utf-8"))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "resumeLogging":
             result = resumeLogging()
-            conn.send(json.dumps(result).encode(encoding="utf-8"))
+            conn.send(json.dumps(result).encode(encoding="cp437"))
         elif messageType == "dateTimeFormatDisplay":
             if configFile is not None:
                 config = util.configSet(configFile, dbConfig, 'dateTimeFormatDisplay', value)
@@ -764,7 +764,7 @@ while run:
                         modified.write(line1 + "," + value + "\n" + rest)
                 except (IOError) as e:  # catch all exceptions and report back an error
                     error = "I/O Error(%d) updating profile: %s " % (e.errno, e.strerror)
-                    conn.send(error.encode(encoding="utf-8"))
+                    conn.send(error.encode(encoding="cp437"))
                     printStdErr(error)
                 else:
                     conn.send(b"Profile successfully updated")
@@ -831,7 +831,7 @@ while run:
                                 shield=hwVersion.shield,
                                 deviceList=deviceList,
                                 pinList=pinList.getPinList(hwVersion.board, hwVersion.shield))
-                conn.send(json.dumps(response).encode(encoding="utf-8"))
+                conn.send(json.dumps(response).encode(encoding="cp437"))
             else:
                 if keepDeviceListUpdated:
                     time.sleep(5)  # We'll give the controller 5 seconds to respond, even though we won't see it this cycle
@@ -849,7 +849,7 @@ while run:
                         "FridgeSet": prevTempJson['FridgeSet'],
                         "LogInterval": config['interval'],
                         "Mode": cs['mode']}
-            conn.send(json.dumps(response).encode(encoding="utf-8"))
+            conn.send(json.dumps(response).encode(encoding="cp437"))
         elif messageType == "applyDevice":
             # applyDevice is used to apply settings to an existing device (pin/OneWire assignment, etc.)
             try:
@@ -893,7 +893,7 @@ while run:
             else:
                 response = {}
             response_str = json.dumps(response)
-            conn.send(response_str.encode(encoding="utf-8"))
+            conn.send(response_str.encode(encoding="cp437"))
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             bg_ser.writeln("E")
