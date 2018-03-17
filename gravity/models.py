@@ -165,6 +165,18 @@ class GravitySensor(models.Model):
         self.active_log = new_log
         self.save()
 
+    def has_daemon_log(self):
+        if self.sensor_type != self.SENSOR_TILT:
+            return False
+        else:
+            return True
+
+    def daemon_log_prefix(self):
+        if self.sensor_type != self.SENSOR_TILT:
+            return self.tilt_configuration
+        else:
+            return True
+
 
 
 
@@ -634,6 +646,11 @@ class TiltConfiguration(models.Model):
             return False
         else:
             return True
+
+    def daemon_log_prefix(self):
+        # This must match the log prefix used in utils/processmgr.py
+        return "tilt-" + self.color
+
 
 
 ### iSpindel specific models

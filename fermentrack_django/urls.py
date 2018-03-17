@@ -100,14 +100,11 @@ urlpatterns = [
     url(r'^api/lcd/$', app.api.lcd.getLCDs, name="getLCDs"),  # For all devices/LCDs
     url(r'^api/panel/(?P<device_id>\d{1,20})/$', app.api.lcd.getPanel, name="getPanel"),  # For a single device
     # Read controller log files
-    url(r'^api/log/(?P<logfile>stdout|stderr)/(?P<device_id>\d{1,20})/$', app.api.clog.get_device_log_plain, name="get_device_log_plain"),
-    url(r'^api/log/(?P<logfile>stdout|stderr)/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_plain, name="get_device_log_plain"),
-    # Stdout JSON output (cleaned)
-    url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
-    url(r'^api/log/json/stdout/(?P<device_id>\d{1,20})/(?P<lines>\d{1,20})/$', app.api.clog.get_stdout_as_json, name="get_stdout_as_json"),
-    # Other logs
-    url(r'^api/log/brewpi_spawner/$', app.api.clog.brewpi_spawner_log, name="brewpi_spawner_log"),
-    url(r'^api/log/fermentrack/$', app.api.clog.fermentrack_log, name="fermentrack_log"),
+    # for the /api/log endpoint, converting to /api/log/<returntype>/<devicetype>/<logtype>/d<device_id>/l<lines>/
+    url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/d(?P<device_id>\d{1,20})/$', app.api.clog.get_device_log_combined, name="get_device_log"),
+    url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/d(?P<device_id>\d{1,20})/l(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_combined, name="get_device_log_lines"),
+    url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/$', app.api.clog.get_device_log_combined, name="get_app_log"),
+    url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/l(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_combined, name="get_app_log_lines"),
     # api/gravity views are located in the gravity app
 
 

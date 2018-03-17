@@ -95,7 +95,7 @@ def run():
     )
 
     tilt_process_spawner = ProcessManager(
-        prefix="tilt-",
+        prefix="tilt-",  # Must match gravity.models.TiltConfiguration.daemon_log_prefix
         device_type="Tilt",
         command_tmpl=TILT_SCRIPT_CMD_TEMPLATE,
         circus_endpoint=DEFAULT_ENDPOINT_DEALER,
@@ -112,7 +112,6 @@ def run():
         tilt_process_spawner.startstop_once()
         time.sleep(SLEEP_INTERVAL)
 
+
 if __name__ == '__main__':
     run()
-
-
