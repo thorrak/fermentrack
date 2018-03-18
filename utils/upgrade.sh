@@ -83,7 +83,7 @@ sleep 2s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-circusctl stop &>> upgrade.log
+circusctl --timeout 10 stop &>> upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
@@ -117,6 +117,6 @@ python manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
-circusctl reloadconfig &>> upgrade.log
-circusctl start &>> upgrade.log
+circusctl --timeout 10 reloadconfig &>> upgrade.log
+circusctl --timeout 10 start &>> upgrade.log
 printinfo "Complete!"
