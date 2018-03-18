@@ -104,7 +104,7 @@ fi
 git pull &>> upgrade.log
 
 # Install everything from requirements.txt
-printinfo "Updating requirements via pip..."
+printinfo "Updating requirements via pip3..."
 pip3 install -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database

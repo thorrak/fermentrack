@@ -44,14 +44,14 @@ try:
     if LooseVersion(serial.VERSION) < LooseVersion("3.0"):
         printStdErr("BrewPi requires pyserial 3.0, you have version {0} installed.\n".format(serial.VERSION) +
                              "Please upgrade pyserial via pip, by running:\n" +
-                             "  sudo pip install pyserial --upgrade\n" +
+                             "  sudo pip3 install pyserial --upgrade\n" +
                              "If you do not have pip installed, install it with:\n" +
                              "  sudo apt-get install build-essential python-dev python-pip\n")
         sys.exit(1)
     from serial import SerialException
 except ImportError:
     printStdErr("BrewPi requires PySerial to run, please install it via pip, by running:\n" +
-                             "  sudo pip install pyserial --upgrade\n" +
+                             "  sudo pip3 install pyserial --upgrade\n" +
                              "If you do not have pip installed, install it with:\n" +
                              "  sudo apt-get install build-essential python-dev python-pip\n")
     sys.exit(1)
