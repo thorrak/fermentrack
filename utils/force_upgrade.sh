@@ -118,6 +118,7 @@ python manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
+~/fermentrack/utils/updateCronCircus.sh startifstopped
 $CIRCUSCTL reloadconfig &>> upgrade.log
 $CIRCUSCTL start &>> upgrade.log
 printinfo "Complete!"
