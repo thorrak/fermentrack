@@ -377,5 +377,5 @@ def firmware_flash_flash_firmware(request, board_id):
 
     return render_with_devices(request, template_name='firmware_flash/flash_firmware.html',
                                context={'flash_family': flash_family, 'firmware': firmware_to_flash,
-                                        'flash_cmd': flash_cmd, 'device_flashed': device_flashed,
+                                        'flash_cmd': "", 'device_flashed': "",
                                         'board': board_obj})
