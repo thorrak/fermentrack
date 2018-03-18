@@ -90,14 +90,19 @@ class TCPSerial(object):
         #     In case a write timeout is configured for the port and the time is exceeded.
         #Write the string data to the port.
         try:
-            bytes=self.sock.sendall(data.encode(encoding="cp437"))
+            if hasattr(data, 'encode'):
+                # This feels so wrong...
+                bytes_data = data.encode(encoding="cp437")
+            else:
+                bytes_data = data
+            bytes_returned=self.sock.sendall(bytes_data)
         except socket.timeout: # A write timeout is probably a connection issue
             if self.retryCount < self.retries:
                 self.retryCount=self.retryCount+1
                 logMessage("Lost connection to controller on write. Attempting to reconnect.")
                 self.sock.close()
                 self.open()
-                bytes=self.write(data)
+                bytes_returned=self.write(data)
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write. Exiting.")
@@ -109,7 +114,7 @@ class TCPSerial(object):
                 self.retryCount=self.retryCount+1
                 self.sock.close()
                 self.open()
-                bytes=self.write(data)
+                bytes_returned=self.write(data)
             else:
                 self.sock.close()
                 logMessage("Lost connection to controller on write, with socket.error. Exiting.")

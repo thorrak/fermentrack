@@ -18,7 +18,7 @@
 from __future__ import print_function
 import sys
 
-from scriptlibs.BrewPiUtil import printStdErr, logMessage
+from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
@@ -1017,7 +1017,7 @@ while run:
                     elif line[0] == 'L':
                         # lcd content received
                         prevLcdUpdate = time.time()
-                        lcdText = json.loads(line[2:])
+                        lcdText = json.loads(asciiToUnicode(line[2:]))
                     elif line[0] == 'C':
                         # Control constants received
                         cc = json.loads(line[2:])
