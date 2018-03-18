@@ -9,7 +9,7 @@ import json
 
 
 
-@db_task
+@db_task()
 def flash_firmware(flash_request_id):
     flash_request = models.FlashRequest.objects.get(id=flash_request_id)
 
