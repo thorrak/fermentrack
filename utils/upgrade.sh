@@ -4,7 +4,7 @@
 BRANCH="master"
 SILENT=0
 TAG=""
-CIRCUSCTL="/usr/local/virtualenv/bin/python -m circus.circusctl --timeout 10"
+CIRCUSCTL="python -m circus.circusctl --timeout 10"
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
