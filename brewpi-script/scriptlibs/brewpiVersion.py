@@ -32,7 +32,12 @@ def getVersionFromSerial(ser):
         print("Cannot get version from serial port that is not open.")
 
     ser.timeout = 1
-    ser.write('n')  # request version info
+    try:
+        # TODO - Fix this hack
+        ser.write('n')  # request version info
+    except TypeError:
+        ser.write(b'n')  # request version info
+
     while retries < 10:
         retry = True
         while 1: # read all lines from serial
@@ -59,7 +64,10 @@ def getVersionFromSerial(ser):
                 break
 
         if retry:
-            ser.write('n')  # request version info
+            try:
+                ser.write('n')  # request version info
+            except TypeError:
+                ser.write(b'n')
             # time.sleep(1) delay not needed because of blocking (timeout) readline
             retries += 1
         else:
