@@ -315,7 +315,7 @@ class FlashRequest(models.Model):
     result_text = models.CharField(max_length=255, default=None, blank=True, null=True,
                                    help_text="String explaining the result status")
     flash_output = models.TextField(null=True, blank=True, default=None, help_text="Output from the flash tool")
-    added = models.DateTimeField(help_text="The date this flash request was created", auto_now_add=True)
+    created = models.DateTimeField(help_text="The date this flash request was created", auto_now_add=True)
 
     def fail(self, result_text, flash_output=""):
         """ FlashRequest.fail is just a fast way to set the status & result text and save the object """
