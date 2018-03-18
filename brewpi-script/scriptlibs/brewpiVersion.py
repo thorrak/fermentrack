@@ -41,7 +41,8 @@ def getVersionFromSerial(ser):
             line = None
             try:
                 line = ser.readline()
-                line = line.decode(encoding="ascii")
+                if hasattr(line, 'decode'):
+                    line = line.decode(encoding="ascii")
             except (SerialException) as e:
                 pass
             if line:
