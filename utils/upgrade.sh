@@ -4,6 +4,7 @@
 BRANCH="master"
 SILENT=0
 TAG=""
+CIRCUSCTL="/usr/local/virtualenv/bin/python -m circus.circusctl --timeout 10"
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -83,7 +84,7 @@ sleep 2s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-circusctl --timeout 10 stop &>> upgrade.log
+$CIRCUSCTL stop &>> upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
@@ -117,6 +118,6 @@ python manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
-circusctl --timeout 10 reloadconfig &>> upgrade.log
-circusctl --timeout 10 start &>> upgrade.log
+$CIRCUSCTL reloadconfig &>> upgrade.log
+$CIRCUSCTL start &>> upgrade.log
 printinfo "Complete!"

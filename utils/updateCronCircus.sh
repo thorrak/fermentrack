@@ -13,7 +13,7 @@ CONFIG=~/fermentrack/circus.ini
 
 # Config
 CIRCUSD=~/venv/bin/circusd
-CIRCUSCTL=~/venv/bin/circusctl
+CIRCUSCTL="/usr/local/virtualenv/bin/python -m circus.circusctl --timeout 10"
 NAME="Fermentrack supervisor: circusd: "
 # Cron Regexp
 REBOOT_ENTRY="^@reboot.*updateCronCircus.sh start$"
