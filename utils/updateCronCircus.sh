@@ -33,6 +33,7 @@ source ~/venv/bin/activate
 
 start() {
     echo -n "Starting $NAME"
+    export PYTHONPATH=$PYTHONPATH:/home/fermentrack/fermentrack
     $CIRCUSD --daemon $CONFIG
     RETVAL=$?
     if [ $RETVAL -eq 0 ]; then
