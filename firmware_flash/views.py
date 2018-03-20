@@ -54,8 +54,13 @@ def firmware_select_family(request):
     preferred_tz = pytz.timezone(config.PREFERRED_TIMEZONE)
 
     # If the firmware data is more than 24 hours old, attempt to refresh it
-    if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
-        refresh_firmware()
+    try:
+        #PYTHON 2 to 3 UPGRADE BUG
+        if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
+            refresh_firmware()
+    except:
+        config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
+
 
     # Test if avrdude is available. If not, the user will need to install it.
     try:
