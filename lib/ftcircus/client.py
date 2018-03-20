@@ -85,13 +85,13 @@ class CircusMgr(object):
             cmd=cmd,
             name=name,
             start=True,
-            env={
-                "PYTHONPATH": "/home/fermentrack/fermentrack",
-                "VIRTUAL_ENV": "/home/fermentrack/venv",
+            # env={
+            #     "PYTHONPATH": "/home/fermentrack/fermentrack",
+            #     "VIRTUAL_ENV": "/home/fermentrack/venv",
                 # "PATH": "/home/fermentrack/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games",
-            },
+            # },
             options={
-                "copy_env": False,
+                "copy_env": True,
                 "stdout_stream": {
                     "class": "FileStream",
                     "filename": u"%s/%s-stdout.log" % (logpath, name),
