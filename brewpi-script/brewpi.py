@@ -18,7 +18,7 @@
 from __future__ import print_function
 import sys
 
-sys.path.append("..")
+sys.path.append("..")  # It's a hack, but it works. TODO - Fix this
 
 from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
