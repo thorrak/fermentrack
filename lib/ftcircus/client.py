@@ -89,7 +89,7 @@ class CircusMgr(object):
                 "PYTHONPATH": "/home/fermentrack/fermentrack",
             },
             options={
-                "copy_env": True,
+                "copy_env": False,
                 "stdout_stream": {
                     "class": "FileStream",
                     "filename": u"%s/%s-stdout.log" % (logpath, name),
