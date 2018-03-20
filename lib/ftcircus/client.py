@@ -85,6 +85,9 @@ class CircusMgr(object):
             cmd=cmd,
             name=name,
             start=True,
+            env={
+                "PYTHONPATH": "/home/fermentrack/fermentrack",
+            },
             options={
                 "copy_env": True,
                 "stdout_stream": {
