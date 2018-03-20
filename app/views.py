@@ -79,6 +79,7 @@ def siteroot(request):
             # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
             # overwrite it. Git check can happen on next refresh.
             config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
+            config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
