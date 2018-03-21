@@ -15,7 +15,8 @@
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import simplejson as json
+# import simplejson as json
+import json
 
 
 def getPinList(boardType, shieldType):

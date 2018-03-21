@@ -17,7 +17,8 @@
 import msvcrt
 import sys
 import os
-import simplejson as json
+# import simplejson as json
+import json
 
 # append parent directory to be able to import files
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")

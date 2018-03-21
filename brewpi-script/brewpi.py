@@ -58,7 +58,8 @@ except ImportError:
                              "  sudo apt-get install build-essential python-dev python-pip\n")
     sys.exit(1)
 try:
-    import simplejson as json
+    # import simplejson as json
+    import json
 except ImportError:
     printStdErr("BrewPi requires simplejson to run, please install it with 'sudo apt-get install python-simplejson")
     sys.exit(1)

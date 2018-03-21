@@ -1,6 +1,7 @@
 import unittest
 import BrewPiUtil as util
-import simplejson
+# import simplejson as json
+import json
 
 class BrewPiUtilsTestCase(unittest.TestCase):
     # test that characters from extended ascii are removed (except degree symbol)
@@ -20,4 +21,4 @@ class BrewPiUtilsTestCase(unittest.TestCase):
         # without next line, error will be:
         # UnicodeDecodeError: 'utf8' codec can't decode byte 0xb0 in position 2: invalid start byte
         s = util.asciiToUnicode(s)
-        simplejson.loads(s)
+        json.loads(s)
