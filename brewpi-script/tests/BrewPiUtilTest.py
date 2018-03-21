@@ -1,6 +1,5 @@
 import unittest
 import BrewPiUtil as util
-# import simplejson as json
 import json
 
 class BrewPiUtilsTestCase(unittest.TestCase):

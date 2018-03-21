@@ -165,7 +165,6 @@ class BackGroundSerial():
 
 if __name__ == '__main__':
     # some test code that requests data from serial and processes the response json
-    # import simplejson as json
     import json
 
 

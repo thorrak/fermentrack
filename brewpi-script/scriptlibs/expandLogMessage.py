@@ -16,7 +16,6 @@
 
 from __future__ import print_function, absolute_import
 
-# import simplejson as json
 import json
 from . import parseEnum
 import os
