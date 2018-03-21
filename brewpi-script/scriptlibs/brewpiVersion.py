@@ -16,7 +16,7 @@
 
 from __future__ import  print_function
 
-import simplejson as json
+import json
 import sys
 import time
 from distutils.version import LooseVersion

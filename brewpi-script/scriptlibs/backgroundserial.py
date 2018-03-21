@@ -165,7 +165,7 @@ class BackGroundSerial():
 
 if __name__ == '__main__':
     # some test code that requests data from serial and processes the response json
-    import simplejson
+    import json
 
 
     # TODO - Rewrite the test code below to work with the database
@@ -195,10 +195,10 @@ if __name__ == '__main__':
             if line:
                 if line[0] == 'V':
                     try:
-                        decoded = simplejson.loads(line[2:])
+                        decoded = json.loads(line[2:])
                         print("Success")
                         success += 1
-                    except simplejson.JSONDecodeError:
+                    except json.JSONDecodeError:
                         BrewPiUtil.logMessage("Error: invalid JSON parameter string received: " + line)
                         fail += 1
                 else:

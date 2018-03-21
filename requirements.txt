@@ -1,6 +1,6 @@
 Django>=1.11,<1.12
 configobj       # required by brewpi.py
-simplejson      # required by brewpi.py
+
 pytz            # required by manage.py migrate
 #raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
