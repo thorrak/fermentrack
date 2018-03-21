@@ -59,7 +59,8 @@ def firmware_select_family(request):
         if config.FIRMWARE_LIST_LAST_REFRESHED < timezone.now() - datetime.timedelta(hours=24):
             refresh_firmware()
     except:
-        config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
+        config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now() - datetime.timedelta(hours=72)
+        refresh_firmware()
 
 
     # Test if avrdude is available. If not, the user will need to install it.
