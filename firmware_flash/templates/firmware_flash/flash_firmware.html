@@ -7,15 +7,24 @@
 
 <h1 class="page-header">Flash Firmware to Controller</h1>
 
-{#<h3>Now Flashing Firmware</h3>#}
+<h3>Flash Request Queued</h3>
+
+<p>
+    The request to flash the firmware to the device connected on {{ serial_port }} has been queued, and will be
+    completed in the background. The status of pending flash requests (including the results from past requests) can be
+    seen on the <a href="{% url 'firmware_flash_select_family' %}">main firmware flash</a> page.
+</p>
 
 
-The request to flash the firmware to the device connected on {{ serial_port }} has been submitted.
+<p>
+    WARNING - Please do not shut down your Raspberry Pi or disconnect the device being flashed until the process is
+    complete. Doing so can result in damage to or destruction of your Raspberry Pi or the device being flashed.
+</p>
 
-
-Check the status page to see the status of this request.
 
 {% endblock %}
+
+
 {% block scripts %}
 <script>
 

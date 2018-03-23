@@ -1,0 +1,29 @@
+{# This contains code to list out FlashRequest objects #}
+{# It is broken out here so we can easily reuse it if we decide to #}
+{% load custom_tags %}
+
+{% if flash_requests|length > 0 %}
+    {# Only display something if we have flash requests to show #}
+    <h3>Firmware Flash Status</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Flash Requested</th>
+                <th>Device</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        {% for this_request in flash_requests %}
+            <tr>
+                <td>{{ this_request.created }}</td>
+                <td>{{ this_request.serial_port }}</td>
+                <td>{{ this_request.status }}</td>
+                {# TODO - Make these icons do something #}
+                <td><i class="fas fa-info-circle"></i><i class="fas fa-times-circle"></i></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

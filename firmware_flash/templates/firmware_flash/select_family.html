@@ -10,6 +10,9 @@
     <p>Note - Firmware flashing is a beta feature, and may not work as intended.
         Please be careful and report any issues you encounter.</p>
 
+
+{% include 'firmware_flash/list_flash_status.html' %}
+
 <h4>First, choose the family of the device you would like to set up:</h4>
 <div id="form_container">
     <form action="{% url "firmware_flash_select_family" %}" class="form-horizontal" method="post">{% csrf_token %}

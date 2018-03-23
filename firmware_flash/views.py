@@ -74,6 +74,8 @@ def firmware_select_family(request):
     except:
         messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
 
+    flash_requests = FlashRequest.objects.all().order_by("-created")
+
 
     if request.POST:
         form = forms.FirmwareFamilyForm(request.POST)
@@ -83,12 +85,12 @@ def firmware_select_family(request):
         else:
             return render_with_devices(request, template_name='firmware_flash/select_family.html',
                                        context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
-                                                'preferred_tz': preferred_tz})
+                                                'preferred_tz': preferred_tz, 'flash_requests': flash_requests})
     else:
         form = forms.FirmwareFamilyForm()
         return render_with_devices(request, template_name='firmware_flash/select_family.html',
                                    context={'form': form, 'last_checked': config.FIRMWARE_LIST_LAST_REFRESHED,
-                                            'preferred_tz': preferred_tz})
+                                            'preferred_tz': preferred_tz, 'flash_requests': flash_requests})
 
 
 @login_required
