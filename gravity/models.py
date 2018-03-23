@@ -372,7 +372,12 @@ class GravityLogPoint(models.Model):
             # Annotations are just the extra data (for now)
             retval = []
             if self.extra_data is not None:
-                # TODO - Fix this
+                # TODO - This is a hack to retain Python 2 support. Delete once this is no longer necessary
+                try:
+                    basestring
+                except NameError:
+                    basestring = str
+
                 try:
                     if isinstance(self.extra_data, basestring):
                         shortText = self.extra_data[:1]
