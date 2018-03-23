@@ -80,7 +80,11 @@ class BackGroundSerial():
         # prevent writing to a port in error state. This will leave unclosed handles to serial on the system
         if not self.error:
             try:
-                self.ser.write(data)
+                if hasattr(data, 'encode'):
+                    # TODO - Refactor brewpi.py to encode as needed, rather than relying on the class to do so
+                    self.ser.write(data.encode(encoding='cp437'))
+                else:
+                    self.ser.write(data)
             except (IOError, OSError, SerialException) as e:
                 BrewPiUtil.logMessage('Serial Error: {0})'.format(str(e)))
                 self.error = True
@@ -109,7 +113,11 @@ class BackGroundSerial():
                     self.error = True
 
             if new_data:
-                self.buffer = self.buffer + new_data
+                if hasattr(new_data, 'decode'):
+                    self.buffer = self.buffer + new_data.decode(encoding="cp437")
+                else:
+                    self.buffer = self.buffer + new_data
+
                 while True:
                     line = self.__get_line_from_buffer()
                     if line:
@@ -157,7 +165,7 @@ class BackGroundSerial():
 
 if __name__ == '__main__':
     # some test code that requests data from serial and processes the response json
-    import simplejson
+    import json
 
 
     # TODO - Rewrite the test code below to work with the database
@@ -187,10 +195,10 @@ if __name__ == '__main__':
             if line:
                 if line[0] == 'V':
                     try:
-                        decoded = simplejson.loads(line[2:])
+                        decoded = json.loads(line[2:])
                         print("Success")
                         success += 1
-                    except simplejson.JSONDecodeError:
+                    except json.JSONDecodeError:
                         BrewPiUtil.logMessage("Error: invalid JSON parameter string received: " + line)
                         fail += 1
                 else:

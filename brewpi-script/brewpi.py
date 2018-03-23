@@ -18,7 +18,9 @@
 from __future__ import print_function
 import sys
 
-from scriptlibs.BrewPiUtil import printStdErr, logMessage
+sys.path.append("..")  # It's a hack, but it works. TODO - Fix this
+
+from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
@@ -44,22 +46,20 @@ try:
     if LooseVersion(serial.VERSION) < LooseVersion("3.0"):
         printStdErr("BrewPi requires pyserial 3.0, you have version {0} installed.\n".format(serial.VERSION) +
                              "Please upgrade pyserial via pip, by running:\n" +
-                             "  sudo pip install pyserial --upgrade\n" +
+                             "  sudo pip3 install pyserial --upgrade\n" +
                              "If you do not have pip installed, install it with:\n" +
                              "  sudo apt-get install build-essential python-dev python-pip\n")
         sys.exit(1)
     from serial import SerialException
 except ImportError:
     printStdErr("BrewPi requires PySerial to run, please install it via pip, by running:\n" +
-                             "  sudo pip install pyserial --upgrade\n" +
+                             "  sudo pip3 install pyserial --upgrade\n" +
                              "If you do not have pip installed, install it with:\n" +
                              "  sudo apt-get install build-essential python-dev python-pip\n")
     sys.exit(1)
-try:
-    import simplejson as json
-except ImportError:
-    printStdErr("BrewPi requires simplejson to run, please install it with 'sudo apt-get install python-simplejson")
-    sys.exit(1)
+
+import json
+
 try:
     from configobj import ConfigObj
 except ImportError:
@@ -1017,7 +1017,7 @@ while run:
                     elif line[0] == 'L':
                         # lcd content received
                         prevLcdUpdate = time.time()
-                        lcdText = json.loads(line[2:])
+                        lcdText = json.loads(asciiToUnicode(line[2:]))
                     elif line[0] == 'C':
                         # Control constants received
                         cc = json.loads(line[2:])

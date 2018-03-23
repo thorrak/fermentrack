@@ -79,6 +79,7 @@ def siteroot(request):
             # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
             # overwrite it. Git check can happen on next refresh.
             config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
+            config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
@@ -404,15 +405,31 @@ def github_trigger_upgrade(request, variant=""):
         else:
             cmds = {}
             if variant == "":
-                cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
-                messages.success(request, "Triggered an upgrade from GitHub")
+                if sys.version_info[0] < 3:
+                    # TODO - After April 2018, delete the Python 2 option here
+                    cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                    cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+                    cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    messages.success(request, "Triggered an upgrade from GitHub")
+                else:
+                    cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                    cmds['no_branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(commit_info['local_branch'])
+                    cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    messages.success(request, "Triggered an upgrade from GitHub")
+
             elif variant == "force":
-                cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
-                messages.success(request, "Triggered an upgrade from GitHub")
+                if sys.version_info[0] < 3:
+                    # TODO - After April 2018, delete the Python 2 option here
+                    cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                    cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
+                    cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    messages.success(request, "Triggered an upgrade from GitHub")
+                else:
+                    cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                    cmds['no_branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(commit_info['local_branch'])
+                    cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    messages.success(request, "Triggered an upgrade from GitHub")
+
             else:
                 cmds['tag'] = ""
                 cmds['no_branch'] = ""

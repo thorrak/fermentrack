@@ -4,7 +4,7 @@
 BRANCH="master"
 SILENT=0
 TAG=""
-CIRCUSCTL="python -m circus.circusctl --timeout 10"
+CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -70,10 +70,10 @@ done
 shift $((OPTIND-1))
 
 
-exec > >(tee -ai upgrade.log)
+exec > >(tee -i upgrade.log)
 
 
-printinfo "Forcing upgrade & reset to upstream branch ${BRANCH}"
+printinfo "Triggering upgrade from branch ${BRANCH}"
 # First, launch the virtualenv
 source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
 
@@ -89,8 +89,8 @@ $CIRCUSCTL stop &>> upgrade.log
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
-git fetch --all &>> upgrade.log
-git reset --hard @{u} &>> upgrade.log
+git fetch --prune &>> upgrade.log
+git reset --hard &>> upgrade.log
 
 # If we have a tag set, use it
 if [ "${TAG}" = "" ]
@@ -105,20 +105,19 @@ git pull &>> upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip..."
-pip install -r requirements.txt --upgrade &>> upgrade.log
+pip3 install -U -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."
-python manage.py migrate &>> upgrade.log
+python3 manage.py migrate &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py collectstatic..."
-python manage.py collectstatic --noinput >> /dev/null
+python3 manage.py collectstatic --noinput >> /dev/null
 
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
-~/fermentrack/utils/updateCronCircus.sh startifstopped
 $CIRCUSCTL reloadconfig &>> upgrade.log
 $CIRCUSCTL start &>> upgrade.log
 printinfo "Complete!"
