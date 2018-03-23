@@ -77,7 +77,7 @@ def ispindel_handler(request):
     #  u'temperature': 24.75,
     #  u'token': u'tokengoeshere'}
 
-    ispindel_data = json.loads(request.body)
+    ispindel_data = json.loads(request.body.decode('utf-8'))
 
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
