@@ -5,6 +5,7 @@ BRANCH="master"
 SILENT=0
 TAG=""
 CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
+FORCE_UPGRADE=0
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -15,7 +16,10 @@ reset=$(tput sgr0)
 
 # Help text
 function usage() {
-    echo "Usage: $0 [-h] [-s] [-b <branch name>] [-t <tag name>]" 1>&2
+    echo "Usage: $0 [-h] [-s] [-f] [-b <branch name>] [-t <tag name>]" 1>&2
+    echo "-h: Help - Displays this text" 1>&2
+    echo "-s: Silent - (currently unused)" 1>&2
+    echo "-f: Force GitHub Update - Performs a hard reset when updating" 1>&2
     exit 1
 }
 
@@ -43,7 +47,7 @@ printerror() {
 }
 
 
-while getopts ":b:t:sh" opt; do
+while getopts ":b:t:fsh" opt; do
   case ${opt} in
     b)
       BRANCH=${OPTARG}
@@ -54,6 +58,10 @@ while getopts ":b:t:sh" opt; do
     s)
       SILENT=1  # Currently unused
       usage
+      ;;
+    f)
+    # For when the two scripts are combined
+      FORCE_UPGRADE=1
       ;;
     h)
       usage
@@ -104,7 +112,7 @@ fi
 git pull &>> upgrade.log
 
 # Install everything from requirements.txt
-printinfo "Updating requirements via pip..."
+printinfo "Updating requirements via pip3..."
 pip3 install -U -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database

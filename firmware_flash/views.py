@@ -321,7 +321,7 @@ def firmware_flash_flash_firmware(request, board_id):
 @site_is_configured
 def firmware_flash_flash_status(request, flash_request_id):
     try:
-        flash_request = FlashRequest.objects.get(flash_request_id)
+        flash_request = FlashRequest.objects.get(id=flash_request_id)
     except:
         messages.error(request, "Unable to load flash request with ID {}".format(flash_request_id))
         return redirect('firmware_flash_select_family')
