@@ -32,6 +32,7 @@ To utilize this, prior to the initial boot on a newly flashed Raspbian installat
 
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+country=US
 network={
     ssid="YOUR_SSID"
     psk="YOUR_PASSWORD"
@@ -40,3 +41,7 @@ network={
 ```
 
 Note - In the above, `ssid` is the name of your wireless network, `psk` is the password for your wireless network (if applicable), and `key_mgmt` is the password management protocol (which, for most home networks these days is WPA-PSK)
+You will also need to select the appropriate [2 letter country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) for where you plan on using the Raspberry Pi.
+
+##### Raspberry Pi 3 B+ WiFi Note
+There is a race condition on the Raspberry Pi B+ where the WiFi is disabled at first boot if the above `wpa_supplicant.conf` file does not exist with a valid country code. Unfortunately, this process also can run simultaneously with the process that actually *copies* the `wpa_supplicant.conf` file to where it needs to be. This can result in the file being copied after the WiFi is disabled, permanently preventing headless configuration. If your Raspberry Pi 3 B+ doesn't appear on your network, reflash the SD card and try again. 
