@@ -8,30 +8,21 @@
 
 <h1 class="page-header">Flash Attempt Status</h1>
 <h2>Flash Status</h2>
-<b>Status: </b>
+<p><b>Flashed:</b> {{ flash_request.created|timezone:preferred_tz }}</p>
+<p><b>Status:</b> {{ flash_request.status }}</p>
+<p><b>Firmware Flashed:</b> {{ flash_request.firmware_to_flash }}</p>
+<p><b>Board Type Selected:</b> {{ flash_request.board_type }}</p>
+<p><b>Serial Port Used:</b> {{ flash_request.serial_port }}</p>
+<p><b>Result Text:</b> {{ flash_request.result_text }}</p>
 
 
-    <p>Note - Firmware flashing is a beta feature, and may not work as intended.
-        Please be careful and report any issues you encounter.</p>
+<h2>Flash Output</h2>
+<code>
+{{ flash_request.flash_output }}
+</code>
 
 
-{% include 'firmware_flash/flash_status_list_component.html' %}
-
-<h4>First, choose the family of the device you would like to set up:</h4>
-<div id="form_container">
-    <form action="{% url "firmware_flash_select_family" %}" class="form-horizontal" method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Submit" class="btn btn-primary" />
-    </form>
-</div>
-
-<div id="update_container">
-
-    <h3>Update List of Available Firmware</h3>
-    <p>Last Updated: {{ last_checked|timezone:preferred_tz }}</p>
-    <a href="{% url 'firmware_flash_refresh_list' %}" class="btn btn-primary">Refresh Firmware List from Fermentrack.com</a>
-
-</div>
+<a href="{% url 'firmware_flash_select_family' %}" class="btn btn-primary">Return to Flash Tool</a>
 {% endblock %}
 
 {% block scripts %}

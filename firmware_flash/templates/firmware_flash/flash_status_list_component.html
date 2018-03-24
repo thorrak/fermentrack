@@ -23,7 +23,7 @@
                 <td>{{ this_request.serial_port }}</td>
                 <td>{{ this_request.status }}</td>
                 {# TODO - Make these icons do something #}
-                <td><i class="fa fa-info-circle"></i><i class="fa fa-times-circle"></i></td>
+                <td><a href="{% url 'firmware_flash_flash_status' this_request.id %}"><i class="fa fa-info-circle"></i></a><i class="fa fa-times-circle"></i></td>
             </tr>
         {% endfor %}
     </table>

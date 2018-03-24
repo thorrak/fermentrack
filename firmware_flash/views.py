@@ -324,7 +324,7 @@ def firmware_flash_flash_status(request, flash_request_id):
         flash_request = FlashRequest.objects.get(flash_request_id)
     except:
         messages.error(request, "Unable to load flash request with ID {}".format(flash_request_id))
-        redirect('firmware_flash_select_family')
+        return redirect('firmware_flash_select_family')
 
-
+    return render(request, template_name='firmware_flash/flash_status.html', context={'flash_request': flash_request,})
 
