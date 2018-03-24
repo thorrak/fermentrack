@@ -31,17 +31,6 @@ from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, P
 from django.contrib.auth.models import User
 
 
-def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
-    #TODO - Remove all references to "render_with_devices" in favor of the context processor
-    all_devices = BrewPiDevice.objects.all()
-
-    if context:  # Append to the context dict if it exists, otherwise create the context dict to add
-        context['all_devices'] = all_devices
-    else:
-        context={'all_devices': all_devices}
-
-    return render(request, template_name, context, content_type, status, using)
-
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
@@ -137,7 +126,7 @@ def add_device(request):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='setup/device_add.html', context={'form': form})
+            return render(request, template_name='setup/device_add.html', context={'form': form})
     else:
         # We don't want two devices to have the same port, and the port number doesn't really matter. Just
         # randomize it.
@@ -145,7 +134,7 @@ def add_device(request):
         initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
 
         form = device_forms.DeviceForm(initial=initial_values)
-        return render_with_devices(request, template_name='setup/device_add.html', context={'form': form})
+        return render(request, template_name='setup/device_add.html', context={'form': form})
 
 
 @site_is_configured
@@ -153,7 +142,7 @@ def add_device(request):
 def device_lcd_list(request):
     # This handles generating the list of LCD screens for each device.
     # Loading the actual data for the LCD screens is handled by Vue.js which loads the data via calls to api/lcd.py
-    return render_with_devices(request, template_name="device_lcd_list.html")
+    return render(request, template_name="device_lcd_list.html")
 
 
 @login_required
@@ -175,7 +164,7 @@ def device_control_constants_legacy(request, device_id, control_constants):
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
             if not new_control_constants.save_all_to_controller(active_device):
-                return render_with_devices(request, template_name='device_control_constants_old.html',
+                return render(request, template_name='device_control_constants_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
@@ -185,11 +174,11 @@ def device_control_constants_legacy(request, device_id, control_constants):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='device_control_constants_old.html',
+            return render(request, template_name='device_control_constants_old.html',
                                        context={'form': form, 'active_device': active_device})
     else:
         form = device_forms.OldCCModelForm(instance=control_constants)
-        return render_with_devices(request, template_name='device_control_constants_old.html',
+        return render(request, template_name='device_control_constants_old.html',
                                    context={'form': form, 'active_device': active_device})
 
 
@@ -243,7 +232,7 @@ def sensor_list(request, device_id):
         # (we can't display it directly from load_sensors_from_device() because we aren't passing request)
         messages.error(request, active_device.error_message)
 
-    return render_with_devices(request, template_name="pin_list.html",
+    return render(request, template_name="pin_list.html",
                                context={'available_devices': active_device.available_devices, 'active_device': active_device,
                                         'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
@@ -323,7 +312,7 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         column_headers = beer_obj.column_headers_to_graph_string('base_csv')
 
-    return render_with_devices(request, template_name="device_dashboard.html",
+    return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
                                         'column_headers': column_headers,
@@ -460,7 +449,7 @@ def github_trigger_upgrade(request, variant=""):
         if app_is_current:
             messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
-    return render_with_devices(request, template_name="github_trigger_upgrade.html",
+    return render(request, template_name="github_trigger_upgrade.html",
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching})
@@ -534,12 +523,12 @@ def site_settings(request):
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
-            return render_with_devices(request, template_name='site_config.html',
+            return render(request, template_name='site_config.html',
                                        context={'form': form,
                                                 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
     else:
         form = setup_forms.GuidedSetupConfigForm()
-        return render_with_devices(request, template_name='site_config.html',
+        return render(request, template_name='site_config.html',
                                    context={'form': form,
                                             'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 
@@ -565,7 +554,7 @@ def device_control_constants_legacy(request, device_id, control_constants):
             # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
             # TODO - Modify the below to only send constants that have changed to the controller
             if not new_control_constants.save_all_to_controller(active_device):
-                return render_with_devices(request, template_name='device_control_constants_old.html',
+                return render(request, template_name='device_control_constants_old.html',
                                            context={'form': form, 'active_device': active_device})
 
             # TODO - Make it so if we added a preset name we save the new preset
@@ -575,11 +564,11 @@ def device_control_constants_legacy(request, device_id, control_constants):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='device_control_constants_old.html',
+            return render(request, template_name='device_control_constants_old.html',
                                        context={'form': form, 'active_device': active_device})
     else:
         form = device_forms.OldCCModelForm(instance=control_constants)
-        return render_with_devices(request, template_name='device_control_constants_old.html',
+        return render(request, template_name='device_control_constants_old.html',
                                    context={'form': form, 'active_device': active_device})
 
 
@@ -605,7 +594,7 @@ def device_eeprom_reset(request, device_id):
         return redirect("device_control_constants", device_id=device_id)
 
 def site_help(request):
-    return render_with_devices(request, template_name='site_help.html', context={})
+    return render(request, template_name='site_help.html', context={})
 
 
 @login_required
@@ -649,11 +638,11 @@ def device_manage(request, device_id):
 
             active_device.restart_process()
 
-            return render_with_devices(request, template_name='device_manage.html',
+            return render(request, template_name='device_manage.html',
                                        context={'form': form, 'active_device': active_device})
 
         else:
-            return render_with_devices(request, template_name='device_manage.html',
+            return render(request, template_name='device_manage.html',
                                        context={'form': form, 'active_device': active_device})
     else:
         # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
@@ -675,7 +664,7 @@ def device_manage(request, device_id):
         }
 
         form = device_forms.DeviceForm(initial=initial_values)
-        return render_with_devices(request, template_name='device_manage.html',
+        return render(request, template_name='device_manage.html',
                                    context={'form': form, 'active_device': active_device})
 
 
@@ -913,7 +902,7 @@ def debug_connection(request, device_id):
             tests.append(test_result)
 
 
-    return render_with_devices(request, template_name='device_debug_connection.html',
+    return render(request, template_name='device_debug_connection.html',
                                context={'tests': tests, 'active_device': active_device})
 
 

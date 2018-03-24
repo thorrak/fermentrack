@@ -19,20 +19,6 @@ import os, subprocess, datetime, pytz
 import gravity.forms as forms
 
 
-def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
-    all_devices = BrewPiDevice.objects.all()
-
-    if context:  # Append to the context dict if it exists, otherwise create the context dict to add
-        context['all_devices'] = all_devices
-    else:
-        context={'all_devices': all_devices}
-
-    return render(request, template_name, context, content_type, status, using)
-
-
-
-
-
 @login_required
 @site_is_configured
 @gravity_support_enabled
@@ -97,7 +83,7 @@ def gravity_add_board(request):
         messages.error(request, 'Error adding sensor')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render_with_devices(request, template_name='gravity/gravity_family.html',
+    return render(request, template_name='gravity/gravity_family.html',
                                context={'manual_form': manual_form, 'tilt_form': tilt_form,
                                         'ispindel_form': ispindel_form})
 
@@ -108,7 +94,7 @@ def gravity_add_board(request):
 def gravity_list(request):
     # This handles generating the list of grav sensors
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
-    return render_with_devices(request, template_name="gravity/gravity_list.html")
+    return render(request, template_name="gravity/gravity_list.html")
 
 @login_required
 @site_is_configured
@@ -148,7 +134,7 @@ def gravity_add_point(request, manual_sensor_id):
         messages.error(request, 'Unable to add new manual log point')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render_with_devices(request, template_name='gravity/gravity_add_point.html',
+    return render(request, template_name='gravity/gravity_add_point.html',
                                context={'form': form, 'sensor': sensor})
 
 
@@ -183,7 +169,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     else:
         log_file_url = active_log.data_file_url('base_csv')
 
-    return render_with_devices(request, template_name="gravity/gravity_dashboard.html",
+    return render(request, template_name="gravity/gravity_dashboard.html",
                                context={'active_device': active_device, 'log_create_form': log_create_form,
                                         'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
                                         'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
@@ -272,7 +258,7 @@ def gravity_log_list(request):
 
     all_logs = GravityLog.objects.all().order_by('device').order_by('name')
 
-    return render_with_devices(request, template_name='gravity/gravity_log_list.html', context={'all_logs': all_logs})
+    return render(request, template_name='gravity/gravity_log_list.html', context={'all_logs': all_logs})
 
 
 @login_required
