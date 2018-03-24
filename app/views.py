@@ -81,10 +81,13 @@ def siteroot(request):
             config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
             config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
-    if os.path.isfile("/var/run/sshwarn"):
-        messages.warning(request, "You have SSH enabled on the Raspberry Pi, but the default (pi) user's password is "
-                                  "unchanged! Please SSH in and change the password. Otherwise, we'll keep annoying "
-                                  "you until you do.")
+    # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
+    # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
+    # TODO - Readd this check
+    # if os.path.isfile("/var/run/sshwarn"):
+    #     messages.warning(request, "You have SSH enabled on the Raspberry Pi, but the default (pi) user's password is "
+    #                               "unchanged! This is potentially a major security issue. Please SSH in and change the "
+    #                               "password. Otherwise, we'll keep annoying you until you do.")
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
         # If things aren't configured, redirect to the guided setup workflow

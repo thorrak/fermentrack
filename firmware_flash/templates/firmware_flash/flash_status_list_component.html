@@ -1,6 +1,7 @@
 {# This contains code to list out FlashRequest objects #}
 {# It is broken out here so we can easily reuse it if we decide to #}
 {% load custom_tags %}
+{% load tz %}
 
 {% if flash_requests|length > 0 %}
     {# Only display something if we have flash requests to show #}
@@ -18,11 +19,11 @@
 
         {% for this_request in flash_requests %}
             <tr>
-                <td>{{ this_request.created }}</td>
+                <td>{{ this_request.created|timezone:preferred_tz }}</td>
                 <td>{{ this_request.serial_port }}</td>
                 <td>{{ this_request.status }}</td>
                 {# TODO - Make these icons do something #}
-                <td><i class="fas fa-info-circle"></i><i class="fas fa-times-circle"></i></td>
+                <td><i class="fa fa-info-circle"></i><i class="fa fa-times-circle"></i></td>
             </tr>
         {% endfor %}
     </table>
