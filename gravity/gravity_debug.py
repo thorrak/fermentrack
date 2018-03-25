@@ -29,8 +29,8 @@ def try_redis(host,port,password):
     key_value = str(uuid.uuid4())
 
     # Now, set it, read it back, and test that they're equal
-    r.set('test_key', key_value)
-    returned_value = r.get('test_key')
+    r.set('test_key', key_value.encode(encoding="utf-8"))
+    returned_value = r.get('test_key').decode(encoding="utf-8")
     if returned_value == key_value:
         return True, True, True
     else:
