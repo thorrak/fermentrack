@@ -22,10 +22,9 @@
                 <td>{{ this_request.created|timezone:preferred_tz }}</td>
                 <td>{{ this_request.serial_port }}</td>
                 <td>{{ this_request.status }}</td>
-                {# TODO - Make these icons do something #}
                 <td><a href="{% url 'firmware_flash_flash_status' this_request.id %}"><i class="fa fa-2x fa-info-circle"></i></a></td>
-
-                <td>{# <i class="fa fa-times-circle"></i> #}</td>
+                {# TODO - Add delete support #}
+                {#<td> <i class="fa fa-times-circle"></i> </td>#}
             </tr>
         {% endfor %}
     </table>
