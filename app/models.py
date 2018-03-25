@@ -795,29 +795,31 @@ class BrewPiDevice(models.Model):
                 self.reset_profile()
                 self.send_message("setBeer", str(set_temp))
             else:
-                logger.error("Device {} set to beer_constant without a setpoint".format(self.device_name))
-                return False
+                error_message = "Device {} set to beer_constant without a setpoint".format(self.device_name)
+                logger.error(error_message)
+                raise ValueError(error_message)
         elif method == "fridge_constant":
             if set_temp is not None:
                 self.reset_profile()
                 self.send_message("setFridge", str(set_temp))
             else:
-                logger.error("Device {} set to fridge_constant without a setpoint".format(self.device_name))
-                return False
+                error_message = "Device {} set to fridge_constant without a setpoint".format(self.device_name)
+                logger.error(error_message)
+                raise ValueError(error_message)
         elif method == "beer_profile":
             try:
                 ferm_profile = FermentationProfile.objects.get(id=profile)
             except:
-                logger.error("Device {} set to beer_profile {} but the profile could not be located".format(
-                    self.device_name, profile
-                ))
-                return False
+                error_message ="Device {} set to beer_profile {} but the profile could not be located".format(
+                    self.device_name, profile)
+                logger.error(error_message)
+                raise ValueError(error_message)
 
             if not ferm_profile.is_assignable():
-                logger.error("Device {} set to beer_profile {} but the profile isn't assignable".format(
-                    self.device_name, profile
-                ))
-                return False
+                error_message = "Device {} set to beer_profile {} but the profile isn't assignable".format(
+                    self.device_name, profile)
+                logger.error(error_message)
+                raise ValueError(error_message)
 
             if profile_startat is not None:
                 start_at = profile_startat

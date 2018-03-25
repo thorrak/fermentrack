@@ -338,21 +338,30 @@ def device_temp_control(request, device_id):
         form = device_forms.TempControlForm(request.POST)
         if form.is_valid():
             if form.cleaned_data['temp_control'] == 'off':
-                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'])
+                try:
+                    success = active_device.set_temp_control(method=form.cleaned_data['temp_control'])
+                except ValueError as e:
+                    messages.error(request, str(e))
+                    return redirect('siteroot')
             elif form.cleaned_data['temp_control'] == 'beer_constant' or form.cleaned_data['temp_control'] == 'fridge_constant':
                 try:
                     success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
                                                              set_temp=float(form.cleaned_data['temperature_setting']))
-                except:
-                    success = False
+                except ValueError as e:
+                    messages.error(request, str(e))
+                    return redirect('siteroot')
             elif form.cleaned_data['temp_control'] == 'beer_profile':
                 if 'start_at' in form.cleaned_data:
                     start_at = form.cleaned_data['start_at']
                 else:
                     start_at = None
+                try:
+                    success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
+                                                             profile=form.cleaned_data['profile'], profile_startat=start_at)
+                except ValueError as e:
+                    messages.error(request, str(e))
+                    return redirect('siteroot')
 
-                success = active_device.set_temp_control(method=form.cleaned_data['temp_control'],
-                                                         profile=form.cleaned_data['profile'], profile_startat=start_at)
             else:
                 messages.error(request, "Invalid temperature control function specified.")
                 return redirect('siteroot')
