@@ -714,24 +714,24 @@ class IspindelConfiguration(models.Model):
 
     def load_extras_from_redis(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        try:
-            redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
-            extras = json.loads(redis_response)
+        # try:
+        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+        extras = json.loads(redis_response)
 
-            if 'ispindel_id' in extras:
-                self.ispindel_id = extras['ispindel_id']
-            if 'angle' in extras:
-                self.angle = extras['angle']
-            if 'battery' in extras:
-                self.battery = extras['battery']
-            if 'ispindel_gravity' in extras:
-                self.ispindel_gravity = extras['ispindel_gravity']
-            if 'token' in extras:
-                self.token = extras['token']
+        if 'ispindel_id' in extras:
+            self.ispindel_id = extras['ispindel_id']
+        if 'angle' in extras:
+            self.angle = extras['angle']
+        if 'battery' in extras:
+            self.battery = extras['battery']
+        if 'ispindel_gravity' in extras:
+            self.ispindel_gravity = extras['ispindel_gravity']
+        if 'token' in extras:
+            self.token = extras['token']
 
-            return extras
-        except:
-            return None
+        return extras
+        # except:
+        #     return None
 
 
 
