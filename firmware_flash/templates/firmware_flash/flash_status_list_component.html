@@ -1,0 +1,31 @@
+{# This contains code to list out FlashRequest objects #}
+{# It is broken out here so we can easily reuse it if we decide to #}
+{% load custom_tags %}
+{% load tz %}
+
+{% if flash_requests|length > 0 %}
+    {# Only display something if we have flash requests to show #}
+    <h3>Firmware Flash Status</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Flash Requested</th>
+                <th>Device</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        {% for this_request in flash_requests %}
+            <tr>
+                <td>{{ this_request.created|timezone:preferred_tz }}</td>
+                <td>{{ this_request.serial_port }}</td>
+                <td>{{ this_request.status }}</td>
+                <td><a href="{% url 'firmware_flash_flash_status' this_request.id %}"><i class="fa fa-2x fa-info-circle"></i></a></td>
+                {# TODO - Add delete support #}
+                {#<td> <i class="fa fa-times-circle"></i> </td>#}
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

@@ -293,3 +293,42 @@ class Board(models.Model):
             return True  # Board table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
 
+
+class FlashRequest(models.Model):
+    STATUS_QUEUED = 'queued'
+    STATUS_RUNNING = 'running'
+    STATUS_FINISHED = 'finished'
+    STATUS_FAILED = 'failed'
+
+    STATUS_CHOICES = (
+        (STATUS_QUEUED, 'Queued'),
+        (STATUS_RUNNING, 'Running'),
+        (STATUS_FINISHED, 'Finished'),
+        (STATUS_FAILED, 'Failed'),
+    )
+
+    # huey_task_id = models.CharField(max_length=64, help_text="Task ID used within Huey for tracking status")
+    status = models.CharField(max_length=32, default=STATUS_QUEUED)
+    firmware_to_flash = models.ForeignKey('Firmware', on_delete=models.CASCADE, help_text="Firmware to flash")
+    board_type = models.ForeignKey('Board', on_delete=models.CASCADE, help_text="Board type being flashed")
+    serial_port = models.CharField(max_length=255, help_text="Path to the serial device used with the flash tool")
+    result_text = models.CharField(max_length=255, default=None, blank=True, null=True,
+                                   help_text="String explaining the result status")
+    flash_output = models.TextField(null=True, blank=True, default=None, help_text="Output from the flash tool")
+    created = models.DateTimeField(help_text="The date this flash request was created", auto_now_add=True)
+
+    def fail(self, result_text, flash_output=""):
+        """ FlashRequest.fail is just a fast way to set the status & result text and save the object """
+        self.result_text = result_text
+        self.flash_output = flash_output
+        self.status = self.STATUS_FAILED
+        self.save()
+        return True
+
+    def succeed(self, result_text, flash_output=""):
+        """ FlashRequest.succeed is just a fast way to set the status & result text and save the object """
+        self.result_text = result_text
+        self.flash_output = flash_output
+        self.status = self.STATUS_FINISHED
+        self.save()
+        return True

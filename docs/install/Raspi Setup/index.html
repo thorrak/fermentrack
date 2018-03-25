@@ -318,6 +318,7 @@ to watch a video showing how to prepare the Raspberry Pi using a Mac, or read th
 <p>While not discussed in the official documentation, this greatly simplifies headless configuration (especially for Raspberry Pi zeros).</p>
 <p>To utilize this, prior to the initial boot on a newly flashed Raspbian installation, create a <code>wpa_supplicant.conf</code> file in the <code>/boot</code> directory of the SD card with the following contents (adjusting to match your network configuration):</p>
 <pre><code>ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+country=US
 network={
     ssid=&quot;YOUR_SSID&quot;
     psk=&quot;YOUR_PASSWORD&quot;
@@ -325,7 +326,10 @@ network={
 }
 </code></pre>
 
-<p>Note - In the above, <code>ssid</code> is the name of your wireless network, <code>psk</code> is the password for your wireless network (if applicable), and <code>key_mgmt</code> is the password management protocol (which, for most home networks these days is WPA-PSK)</p>
+<p>Note - In the above, <code>ssid</code> is the name of your wireless network, <code>psk</code> is the password for your wireless network (if applicable), and <code>key_mgmt</code> is the password management protocol (which, for most home networks these days is WPA-PSK)
+You will also need to select the appropriate <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">2 letter country code</a> for where you plan on using the Raspberry Pi.</p>
+<h5 id="raspberry-pi-3-b-wifi-note">Raspberry Pi 3 B+ WiFi Note<a class="headerlink" href="#raspberry-pi-3-b-wifi-note" title="Permanent link">&para;</a></h5>
+<p>There is a race condition on the Raspberry Pi B+ where the WiFi is disabled at first boot if the above <code>wpa_supplicant.conf</code> file does not exist with a valid country code. Unfortunately, this process also can run simultaneously with the process that actually <em>copies</em> the <code>wpa_supplicant.conf</code> file to where it needs to be. This can result in the file being copied after the WiFi is disabled, permanently preventing headless configuration. If your Raspberry Pi 3 B+ doesn't appear on your network, reflash the SD card and try again. </p>
               
             </div>
           </div>

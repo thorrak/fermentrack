@@ -16,17 +16,6 @@ from .decorators import site_is_configured  # Checks if user has completed const
 import random
 
 
-def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
-    all_devices = BrewPiDevice.objects.all()
-
-    if context:  # Append to the context dict if it exists, otherwise create the context dict to add
-        context['all_devices'] = all_devices
-    else:
-        context={'all_devices': all_devices}
-
-    return render(request, template_name, context, content_type, status, using)
-
-
 ###################################################################################################################
 # Initial Setup Views
 ###################################################################################################################
@@ -80,12 +69,12 @@ def setup_config(request):
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
-            return render_with_devices(request, template_name='setup/setup_config.html',
+            return render(request, template_name='setup/setup_config.html',
                                        context={'form': form,
                                                 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
     else:
         form = setup_forms.GuidedSetupConfigForm()
-        return render_with_devices(request, template_name='setup/setup_config.html',
+        return render(request, template_name='setup/setup_config.html',
                                    context={'form': form,
                                             'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 
@@ -93,7 +82,7 @@ def setup_config(request):
 def setup_splash(request):
     # Send the number of users we got in the system as a way to know if this is the first run or not.
     context={'num_users': User.objects.all().count(), 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION}
-    return render_with_devices(request, template_name="setup/setup_unconfigured_splash.html", context=context)
+    return render(request, template_name="setup/setup_unconfigured_splash.html", context=context)
 
 
 ###################################################################################################################
@@ -138,10 +127,10 @@ def device_guided_select_device(request):
         if form.is_valid():
             return redirect('device_guided_flash_prompt', device_family=form.cleaned_data['device_family'])
         else:
-            return render_with_devices(request, template_name='setup/device_guided_select_device.html', context={'form': form})
+            return render(request, template_name='setup/device_guided_select_device.html', context={'form': form})
     else:
         form = setup_forms.GuidedDeviceSelectForm()
-        return render_with_devices(request, template_name='setup/device_guided_select_device.html', context={'form': form})
+        return render(request, template_name='setup/device_guided_select_device.html', context={'form': form})
 
 
 @login_required
@@ -169,12 +158,12 @@ def device_guided_flash_prompt(request, device_family):
                 # I don't think this really will ever get called...
                 return redirect('device_guided_flash_prompt', device_family=form.cleaned_data['device_family'])
         else:
-            return render_with_devices(request, template_name='setup/device_guided_flash_prompt.html',
+            return render(request, template_name='setup/device_guided_flash_prompt.html',
                                        context={'form': form, 'device_family': device_family,
                                                 'can_flash_family': can_flash_family})
     else:
         form = setup_forms.GuidedDeviceFlashForm()
-        return render_with_devices(request, template_name='setup/device_guided_flash_prompt.html',
+        return render(request, template_name='setup/device_guided_flash_prompt.html',
                                    context={'form': form, 'device_family': device_family,
                                             'can_flash_family': can_flash_family})
 
@@ -187,7 +176,7 @@ def device_guided_serial_wifi(request, device_family):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-    return render_with_devices(request, template_name='setup/device_guided_serial_wifi.html',
+    return render(request, template_name='setup/device_guided_serial_wifi.html',
                                context={'device_family': device_family})
 
 
@@ -196,7 +185,7 @@ def device_guided_serial_wifi(request, device_family):
 def device_guided_find_mdns(request):
     installed_devices, available_devices = mdnsLocator.find_mdns_devices()
 
-    return render_with_devices(request, template_name="setup/device_guided_mdns_locate.html",
+    return render(request, template_name="setup/device_guided_mdns_locate.html",
                                context={'installed_devices': installed_devices,
                                         'available_devices': available_devices})
 
@@ -249,7 +238,7 @@ def device_guided_add_mdns(request, mdns_id):
             return redirect("/")
 
         else:
-            return render_with_devices(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
+            return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
     else:
         random_port = random.randint(2000,3000)
         # If we were just passed to the form, provide the initial values
@@ -257,7 +246,7 @@ def device_guided_add_mdns(request, mdns_id):
                           'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
 
         form = device_forms.DeviceForm(initial=initial_values)
-        return render_with_devices(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
+        return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
 
 
 
@@ -274,24 +263,24 @@ def device_guided_serial_autodetect(request, device_family):
 
     if not request.POST:
         # If we haven't had something posted to us, provide the instructions page. (Step 1)
-        return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html', context={'device_family': device_family})
+        return render(request, template_name='setup/device_guided_serial_autodetect_1.html', context={'device_family': device_family})
 
     else:
         # Something was posted - figure out what step we're on by looking at the "step" field
         if 'step' not in request.POST:
             # We received a form, but not the right form. Redirect to the start of the autodetection flow.
-            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
+            return render(request, template_name='setup/device_guided_serial_autodetect_1.html',
                                        context={'device_family': device_family})
         elif request.POST['step'] == "2":
             # Step 2 - Cache the current devices & present the next set of instructions to the user
             current_devices = serial_integration.cache_current_devices()
-            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_2.html',
+            return render(request, template_name='setup/device_guided_serial_autodetect_2.html',
                                        context={'device_family': device_family, 'current_devices': current_devices})
         elif request.POST['step'] == "3":
             # Step 3 - Detect newly-connected devices & prompt the user to select the one that corresponds to the
             # device they want to configure.
             _, _, _, new_devices_enriched = serial_integration.compare_current_devices_against_cache(device_family)
-            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_3.html',
+            return render(request, template_name='setup/device_guided_serial_autodetect_3.html',
                                        context={'device_family': device_family, 'new_devices': new_devices_enriched})
         elif request.POST['step'] == "4":
             # Step 4 - MAGIC.
@@ -325,7 +314,7 @@ def device_guided_serial_autodetect(request, device_family):
                     return redirect("/")
 
                 else:
-                    return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
+                    return render(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
                                                context={'form': form, 'device_family': device_family})
             else:
                 random_port = random.randint(2000,3000)
@@ -344,14 +333,14 @@ def device_guided_serial_autodetect(request, device_family):
                                   'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
 
                 form = device_forms.DeviceForm(initial=initial_values)
-                return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
+                return render(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
                                            context={'form': form, 'device_family': device_family})
 
         elif request.POST['step'] == "5":
             pass
         else:
             # The step number we received was invalid. Redirect to the start of the autodetection flow.
-            return render_with_devices(request, template_name='setup/device_guided_serial_autodetect_1.html',
+            return render(request, template_name='setup/device_guided_serial_autodetect_1.html',
                                        context={'device_family': device_family})
 
 

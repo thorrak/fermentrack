@@ -1,0 +1,37 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load tz %}
+
+{% block title %}Flash Status{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Flash Attempt Status</h1>
+<h2>Flash Status</h2>
+<p><b>Flashed:</b> {{ flash_request.created|timezone:preferred_tz }}</p>
+<p><b>Status:</b> {{ flash_request.status }}</p>
+<p><b>Firmware Flashed:</b> {{ flash_request.firmware_to_flash }}</p>
+<p><b>Board Type Selected:</b> {{ flash_request.board_type }}</p>
+<p><b>Serial Port Used:</b> {{ flash_request.serial_port }}</p>
+<p><b>Result Text:</b> {{ flash_request.result_text }}</p>
+
+
+<h2>Flash Output</h2>
+<pre>
+{{ flash_request.flash_output }}
+</pre>
+
+
+<a href="{% url 'firmware_flash_select_family' %}" class="btn btn-primary">Return to Flash Tool</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

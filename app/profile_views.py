@@ -7,8 +7,6 @@ from constance import config
 from .decorators import site_is_configured
 from django.http import HttpResponse
 from app.models import BrewPiDevice, FermentationProfilePoint, FermentationProfile
-# Cheating on this one.
-from .views import render_with_devices  # TODO - Eliminate this
 from . import device_forms, profile_forms
 import json, time, csv, pytz
 from datetime import datetime
@@ -31,10 +29,10 @@ def profile_new(request):
             return redirect('profile_edit', profile_id=new_fermentation_profile.id)
 
         else:
-            return render_with_devices(request, template_name='profile/profile_new.html', context={'form': form})
+            return render(request, template_name='profile/profile_new.html', context={'form': form})
     else:
         form = profile_forms.FermentationProfileForm()
-        return render_with_devices(request, template_name='profile/profile_new.html', context={'form': form})
+        return render(request, template_name='profile/profile_new.html', context={'form': form})
 
 
 @login_required
@@ -71,15 +69,14 @@ def profile_edit(request, profile_id):
             ).order_by('ttl')
             # Regardless of whether we were successful or not - rerender the
             # existing edit page
-        return render_with_devices(request, template_name='profile/profile_edit.html',
-                                   context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
-                                            'this_profile_points': this_profile_points})
+        return render(request, template_name='profile/profile_edit.html',
+                      context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
+                               'this_profile_points': this_profile_points})
     else:
         form = profile_forms.FermentationProfilePointForm()
-        return render_with_devices(
-            request, template_name='profile/profile_edit.html',
-            context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
-                     'this_profile_points': this_profile_points})
+        return render(request, template_name='profile/profile_edit.html',
+                      context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
+                               'this_profile_points': this_profile_points})
 
 
 @login_required
@@ -89,8 +86,7 @@ def profile_list(request):
     # deletion...
     FermentationProfile.cleanup_pending_delete()
     all_profiles = FermentationProfile.objects.all()
-    return render_with_devices(request, template_name='profile/profile_list.html',
-                               context={'all_profiles': all_profiles})
+    return render(request, template_name='profile/profile_list.html', context={'all_profiles': all_profiles})
 
 
 @login_required
@@ -141,20 +137,11 @@ def profile_delete(request, profile_id):
         # currently in use.
         this_profile.status = FermentationProfile.STATUS_PENDING_DELETE
         this_profile.save()
-        messages.info(
-            request,
-            'Profile \'{}\' is currently in use but has been queued for deletion.'.format(
-                this_profile.name
-            )
-        )
+        messages.info(request,
+                      'Profile \'{}\' is currently in use but has been queued for deletion.'.format(this_profile.name))
     else:
         this_profile.delete()
-        messages.success(
-            request,
-            'Profile \'{}\' was not in use, and has been deleted.'.format(
-                this_profile.name
-            )
-        )
+        messages.success(request, 'Profile \'{}\' was not in use, and has been deleted.'.format(this_profile.name))
 
     return redirect('profile_list')
 
@@ -177,19 +164,10 @@ def profile_undelete(request, profile_id):
     if this_profile.status == FermentationProfile.STATUS_PENDING_DELETE:
         this_profile.status = FermentationProfile.STATUS_ACTIVE
         this_profile.save()
-        messages.success(
-            request,
-            'Profile \'{}\' has been removed from the queue for deletion.'.format(
-                this_profile.name
-            )
-        )
+        messages.success(request,
+                         'Profile \'{}\' has been removed from the queue for deletion.'.format(this_profile.name))
     else:
-        messages.info(
-            request,
-            'Profile \'{}\' was not previously queued for deletion and has not been updated.'.format(
-                this_profile.name
-            )
-        )
+        messages.info(request, 'Profile \'{}\' was not previously queued for deletion and has not been updated.'.format(this_profile.name))
 
     return redirect('profile_list')
 
@@ -236,13 +214,13 @@ def profile_import(request):
 
             except ValueError as err:
                 messages.error(request, u"Import Error: " + err.message)
-                return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+                return render(request, template_name='profile/profile_import.html', context={'form': form})
 
         else:
-            return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+            return render(request, template_name='profile/profile_import.html', context={'form': form})
     else:
         form = profile_forms.FermentationProfileImportForm()
-        return render_with_devices(request, template_name='profile/profile_import.html', context={'form': form})
+        return render(request, template_name='profile/profile_import.html', context={'form': form})
 
 
 
@@ -271,16 +249,16 @@ def profile_copy(request, profile_id):
 
             except ValueError as err:
                 messages.error(request, u"Copy Error: " + err.message)
-                return render_with_devices(request, template_name='profile/profile_copy.html',
-                                           context={'form': form, 'this_profile': this_profile})
+                return render(request, template_name='profile/profile_copy.html',
+                              context={'form': form, 'this_profile': this_profile})
 
         else:
-            return render_with_devices(request, template_name='profile/profile_copy.html',
-                                       context={'form': form, 'this_profile': this_profile})
+            return render(request, template_name='profile/profile_copy.html',
+                          context={'form': form, 'this_profile': this_profile})
     else:
         form = profile_forms.FermentationProfileCopyForm()
-        return render_with_devices(request, template_name='profile/profile_copy.html',
-                                   context={'form': form, 'this_profile': this_profile})
+        return render(request, template_name='profile/profile_copy.html',
+                      context={'form': form, 'this_profile': this_profile})
 
 
 @login_required

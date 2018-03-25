@@ -407,7 +407,7 @@ class TiltHydrometerManager:
                     if (reloaded):
                         break
             except (Exception) as e:
-                print("ERROR: Accessing bluetooth device whilst scanning: " + e.message)
+                print("ERROR: Accessing bluetooth device whilst scanning")
                 print("Resetting Bluetooth device")
 
     # Processes Tilt BLE data from open socket.

@@ -15,7 +15,10 @@ reset=$(tput sgr0)
 
 # Help text
 function usage() {
-    echo "Usage: $0 [-h] [-s] [-b <branch name>] [-t <tag name>]" 1>&2
+    echo "Usage: $0 [-h] [-s] [-f] [-b <branch name>] [-t <tag name>]" 1>&2
+    echo "-h: Help - Displays this text" 1>&2
+    echo "-s: Silent - (currently unused)" 1>&2
+    echo "-f: Force GitHub Update - Performs a hard reset when updating" 1>&2
     exit 1
 }
 
@@ -105,7 +108,7 @@ git pull &>> upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip3..."
-pip3 install -r requirements.txt --upgrade &>> upgrade.log
+pip3 install -U -r requirements.txt --upgrade &>> upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."

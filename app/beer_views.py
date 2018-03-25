@@ -11,15 +11,6 @@ from . import beer_forms
 
 from app.models import BrewPiDevice, Beer
 
-def render_with_devices(request, template_name, context=None, content_type=None, status=None, using=None):
-    all_devices = BrewPiDevice.objects.all()
-
-    if context:  # Append to the context dict if it exists, otherwise create the context dict to add
-        context['all_devices'] = all_devices
-    else:
-        context={'all_devices': all_devices}
-
-    return render(request, template_name, context, content_type, status, using)
 
 
 @login_required
@@ -124,8 +115,7 @@ def beer_list(request):
 
     all_beers = Beer.objects.all().order_by('device').order_by('name')
 
-    return render_with_devices(request, template_name='beer/beer_list.html',
-                               context={'all_beers': all_beers})
+    return render(request, template_name='beer/beer_list.html', context={'all_beers': all_beers})
 
 @login_required
 @site_is_configured

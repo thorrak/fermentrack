@@ -70,7 +70,7 @@ done
 shift $((OPTIND-1))
 
 
-exec > >(tee -i upgrade.log)
+exec > >(tee -ai upgrade.log)
 
 
 printinfo "Forcing upgrade & reset to upstream branch ${BRANCH}"
