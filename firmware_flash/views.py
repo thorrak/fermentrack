@@ -61,8 +61,15 @@ def firmware_select_family(request):
     except:
         messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
 
-    flash_requests = FlashRequest.objects.all().order_by("-created")
+    # Let's delete any requests that are more than 7 days old
+    # TODO - Decide if we want to keep things working this way
+    requests_to_delete = FlashRequest.objects.filter(created__lt=(timezone.now() - datetime.timedelta(days=7)))
 
+    for this_request in requests_to_delete:
+        this_request.delete()
+
+    # Then load the remaining flash requests
+    flash_requests = FlashRequest.objects.all().order_by("-created")
 
     if request.POST:
         form = forms.FirmwareFamilyForm(request.POST)
