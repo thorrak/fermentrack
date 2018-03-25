@@ -471,20 +471,21 @@ class GravityLogPoint(models.Model):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         if device_id is None:
             if self.associated_log is not None:
-                r.set('grav_{}_full'.format(self.associated_log.device_id), serializers.serialize('json', [self, ]))
+                r.set('grav_{}_full'.format(self.associated_log.device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
             elif self.associated_device is not None:
-                r.set('grav_{}_full'.format(self.associated_device_id), serializers.serialize('json', [self, ]))
+                r.set('grav_{}_full'.format(self.associated_device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
             else:
                 raise ReferenceError  # Not sure if this is the right error type, but running with it
         else:
-            r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]))
+            r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
 
 
     @classmethod
     def load_from_redis(cls, sensor_id):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         try:
-            redis_response = r.get('grav_{}_full'.format(sensor_id))
+            # TODO - Redo this to remove overly greedy except
+            redis_response = r.get('grav_{}_full'.format(sensor_id)).decode(encoding="utf-8")
             serializer = serializers.deserialize('json', redis_response)
             for obj2 in serializer:
                 obj = obj2.object
@@ -709,29 +710,29 @@ class IspindelConfiguration(models.Model):
         extras = {'ispindel_id': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
                   'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
 
-        r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras))
+        r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
 
     def load_extras_from_redis(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        try:
-            redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
-            extras = json.loads(redis_response)
+        # try:
+        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id)).decode(encoding="utf-8")
+        extras = json.loads(redis_response)
 
-            if 'ispindel_id' in extras:
-                self.ispindel_id = extras['ispindel_id']
-            if 'angle' in extras:
-                self.angle = extras['angle']
-            if 'battery' in extras:
-                self.battery = extras['battery']
-            if 'ispindel_gravity' in extras:
-                self.ispindel_gravity = extras['ispindel_gravity']
-            if 'token' in extras:
-                self.token = extras['token']
+        if 'ispindel_id' in extras:
+            self.ispindel_id = extras['ispindel_id']
+        if 'angle' in extras:
+            self.angle = extras['angle']
+        if 'battery' in extras:
+            self.battery = extras['battery']
+        if 'ispindel_gravity' in extras:
+            self.ispindel_gravity = extras['ispindel_gravity']
+        if 'token' in extras:
+            self.token = extras['token']
 
-            return extras
-        except:
-            return None
+        return extras
+        # except:
+        #     return None
 
 
 
