@@ -92,6 +92,16 @@ A full table of controllers/expected hardware availability is available [in the 
 
 
 
+Introduction/About
+Getting Started
+Using Fermentrack
+
+
+
+
+
+
+
 
 .. Indices and tables
 .. ==================
@@ -108,17 +118,18 @@ Documentation Table of Contents
 -----------------------------------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
+    :caption: Contents:
 
-   about
-   architecture
-   changelog
-   components
-   contribute
-   license
-   faq
-   install/index
+    about
+    architecture
+    changelog
+    components
+    contribute
+    license
+    faq
+    install/index
+    hardware/index
 
 
 

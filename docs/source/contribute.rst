@@ -1,3 +1,5 @@
+.. include:: global.rst
+
 Contributing to Fermentrack
 ==============================
 
@@ -23,6 +25,7 @@ project, and all help is welcome.
 Fermentrack is a Python-based application which uses the Django framework. It is open source and is managed on GitHub.
 To help you get started, take a look at the `Developer Documentation`_. After reading, if you have questions don't hesitate to reach out.
 
+.. todo:: Update the "Developer Documentation" link above
 
 ### Documenting Fermentrack
 
@@ -31,6 +34,5 @@ A project like Fermentrack is only as good as its documentation. Documentation f
 If you are familiar with GitHub, pull requests that include documentation fixes are always welcome. If not, reach out on GitHub or the HomeBrewTalk forums and we'll be happy to help get things updated.
 
 
-.. _GitHub: https://github.com/thorrak/fermentrack/issues
 .. _Developer Documentation: http://www.fermentrack.com
 .. todo:: Fix This
