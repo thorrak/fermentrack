@@ -639,12 +639,6 @@ class BrewPiDevice(models.Model):
     # We don't persist the "sensor" (onewire/pin) list in the database, so we always have to load it from the
     # controller
     def load_sensors_from_device(self):
-        try:
-            if self.devices_are_loaded:
-                return True
-        except:
-            self.devices_are_loaded = False
-
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
         loop_number = 1
         device_response = self.send_message("getDeviceList", read_response=True)
@@ -655,34 +649,29 @@ class BrewPiDevice(models.Model):
             self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
 
         # This can take a few seconds. Periodically poll brewpi-script to try to get a response.
-        while device_response == "device-list-not-up-to-date" and loop_number <= 10:
-            time.sleep(4)
+        while device_response == "device-list-not-up-to-date" and loop_number <= 4:
+            time.sleep(5)
             device_response = self.send_message("getDeviceList", read_response=True)
             loop_number += 1
 
-        if not device_response:
-            # We weren't able to reach brewpi-script
+        if not device_response or device_response == "device-list-not-up-to-date":
             self.all_pins = None
             self.available_devices = None
             self.installed_devices = None
-            self.devices_are_loaded = False
-            self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
-            return self.devices_are_loaded  # False
-        elif device_response == "device-list-not-up-to-date":
-            # We were able to reach brewpi-script, but it wasn't able to reach the controller
-            self.all_pins = None
-            self.available_devices = None
-            self.installed_devices = None
-            self.devices_are_loaded = False
-            self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
-            self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
-            return self.devices_are_loaded  # False
+            if not device_response:
+                # We weren't able to reach brewpi-script
+                self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
+            else:
+                # We were able to reach brewpi-script, but it wasn't able to reach the controller
+                self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
+                self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
+            return False  # False
 
+        # Devices loaded
         devices = json.loads(device_response)
         self.all_pins = PinDevice.load_all_from_pinlist(devices['pinList'])
         self.available_devices = SensorDevice.load_all_from_devicelist(devices['deviceList']['available'], self.all_pins, self)
         self.installed_devices = SensorDevice.load_all_from_devicelist(devices['deviceList']['installed'], self.all_pins, self)
-        self.devices_are_loaded = True
 
         # Loop through the installed devices to set up the special links to the key ones
         for this_device in self.installed_devices:
@@ -699,7 +688,7 @@ class BrewPiDevice(models.Model):
             elif this_device.device_function == SensorDevice.DEVICE_FUNCTION_BEER_TEMP:  # (9, 'BEER_TEMP'),
                 self.beer_sensor = this_device
 
-        return self.devices_are_loaded  # True
+        return True
 
     # TODO - Determine if we care about controlSettings
     # # Retrieve the control settings from the controller
