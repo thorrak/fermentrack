@@ -19,6 +19,7 @@ Fermentrack
     develop/index
     develop/components
     hardware
+    faq
 
 
 
@@ -53,12 +54,13 @@ Included with Fermentrack
 
 Other components used in or bundled with Fermentrack may have their own licensing requirements. These components can be referenced [here](about/components.md).
 
-New Features
--------------
+
+Why Use Fermentrack? (New Features)
+-------------------------------------------
 
 One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
 
-* [Single Command Installation](install/index.md)
+* Single Command Installation
 * Native multi-chamber support
 * Cleaner, more intuitive controller setup
 * Integrated support for ESP8266-based controllers
