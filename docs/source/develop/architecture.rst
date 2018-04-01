@@ -1,7 +1,7 @@
 Fermentrack Architecture
 =============================
 
-.. todo:: Rewrite/fix this page
+.. todo:: Rewrite/fix architecture.rst to match the mkdocs/markdown version
 
 The Fermentrack stack is based on a front end application, a controller, and a firmware
 running on the device that handles reading temperatures, switching cooling and heating etc.

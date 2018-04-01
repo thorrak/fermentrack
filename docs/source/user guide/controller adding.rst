@@ -73,5 +73,5 @@ Setting up a controller using Advanced Workflow
 2. Launch guided setup and select "Add New Device (Advanced)"
 3. Enter the configuration options associated with the device.
 
-.. todo:: Rewrite this section
+.. todo:: Rewrite the Manual Workflow section to document the available options, etc.
 

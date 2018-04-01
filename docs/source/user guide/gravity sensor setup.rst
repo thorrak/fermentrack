@@ -3,7 +3,7 @@
 Gravity Sensor Setup
 ==========================
 
-.. todo:: Write this page
+.. todo:: Write the Gravity Sensor Setup page
 
 Tilt Hydrometer
 -----------------

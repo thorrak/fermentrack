@@ -44,7 +44,7 @@ Unfortunately, the manual installation instructions haven't been fully written y
 to happen. The steps below need to be run in order - from top to bottom. The command to run is in the right column, with a
 brief description of what the command seeks to accomplish in the left.
 
-.. todo:: Add callout for version number here
+.. todo:: Add callout for version number here (once the next version of Fermentrack is released)
 
 
 .. list-table::
@@ -97,6 +97,13 @@ brief description of what the command seeks to accomplish in the left.
 Enabling Python to Interact with Bluetooth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. todo:: Rewrite the Enabling Python to Interact with Bluetooth Section
+
+.. note:: The below is the code from the automated install shell script. You will need to do something similar, manually for bluetooth integration to work.
+    This section will be rewritten at some point in the future to provide actual instructions.
+
+::
+
   PYTHON3_INTERPRETER="$(readlink -e $installPath/venv/bin/python)"
   if [ -a ${PYTHON3_INTERPRETER} ]; then
     sudo setcap cap_net_raw+eip "$PYTHON3_INTERPRETER"
@@ -107,11 +114,10 @@ Setting Up Nginx
 
 Although Fermentrack may be installed, without Nginx being configured, the app will not be accessible via a web browser.
 
-
 The default-fermentrack configuration file can be found at: `fermentrack-tools/nginx-configs/default-fermentrack <https://raw.githubusercontent.com/thorrak/fermentrack-tools/master/nginx-configs/default-fermentrack) as an example>`__.
 You will need to find and replace all instances of "brewpiuser" with "fermentrack".
 
-.. todo:: Rewrite this section
+.. todo:: Rewrite the Setting Up Nginx section
 
 ::
 

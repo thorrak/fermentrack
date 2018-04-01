@@ -13,7 +13,7 @@ Python Packages
 
 In addition to Django, this app utilizes a number of Python packages. These packages include:
 
-.. todo:: Fix this table
+.. todo:: Fix the "Python Packages" table to match the format of "Javascript Packages" (and the rest)
 
 +-------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 | Package                                                                     	| License                                                                                   |
