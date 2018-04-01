@@ -22,23 +22,9 @@ For more information on ESP8266-based firmware, please refer to one of the follo
 * `BrewPi-ESP8266 GitHub`_
 * `BrewPi-ESP8266 HomeBrewTalk Thread`_
 
-
 If connecting an ESP8266-based controller via serial, please note that by default Fermentrack will detect the USB serial
-number associated with your Arduino when initially configured, and will use that - instead of the specified serial port -
-to connect. For more information, read the "About Serial Port Autodetection" note in the
-["Guided Setup" instructions](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller).
-
-
-## Setting Up an ESP8266-based Controller in Fermentrack
-
-There are two options for setting up a controller in Fermentrack - Guided Setup and Advanced (Manual) Setup.
-
-[**Guided Setup - WiFi**](../config/BrewPi Controller Setup.md#setting-up-a-wifi-connected-controller) - Instructions are available [here](../config/BrewPi Controller Setup.md#setting-up-a-wifi-connected-controller). When choosing the board type, select "ESP8266" from the dropdown.
-
-[**Guided Setup - Serial**](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller) - Instructions are available [here](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller). When choosing the board type, select "ESP8266" from the dropdown.
-
-[**Manual Setup**](../config/Advanced Controller Setup.md) - Instructions are available [here](../config/Advanced Controller Setup.md).
-
+number associated with your ESP8266 when initially configured, and will use that *instead of the specified serial port*
+to connect. For more information, read :ref:`serial_port_autodetection`.
 
 
 
@@ -48,20 +34,9 @@ Arduino-Based Controllers
 Fermentrack currently has native support for Arduino-based controllers connected via Serial (USB).
 
 By default, Fermentrack will detect the USB serial number associated with your Arduino when initially configured, and
-will use that - instead of the specified serial port - to connect. For more information, read the "About Serial Port
-Autodetection" note in the ["Guided Setup" instructions](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller).
+will use that - instead of the specified serial port - to connect. For more information, read
+:ref:`serial_port_autodetection`.
 
-.. todo:: Update the link above
-
-
-Setting Up an Arduino-based Controller in Fermentrack
-********************************************************
-
-There are two options for setting up a controller in Fermentrack - Guided Setup and Advanced (Manual) Setup.
-
-[**Guided Setup**](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller) - Instructions are available [here](../config/BrewPi Controller Setup.md#setting-up-a-serial-connected-controller). When choosing the board type, select "Arduino (and compatible)" from the dropdown.
-
-[**Manual Setup**](../config/Advanced Controller Setup.md) - Instructions are available [here](../config/Advanced Controller Setup.md).
 
 
 Bluetooth Support
@@ -71,8 +46,6 @@ There is a third party project which looks to add bluetooth support for Arduino 
 While this project is not natively supported from within Fermentrack, at the end the project presents the BrewPi
 controller as a device connected via serial which allows it to be set up within Fermentrack via the Manual Setup
 workflow.
-
-
 
 
 
@@ -87,23 +60,14 @@ As of now, serial connections are supported by Fermentrack, and therefore it is 
 Fermentrack compatible. Fuscus support *has not been tested* and should be considered experimental.
 
 Due to the nature of the serial ports used by Fuscus, the serial autodetection process cannot be used to set up a
-Fuscus-based controller. Connections to Fuscus can be set up using the
-["advanced" workflow](../config/Advanced Controller Setup.md) and manually specifying the Fuscus serial port.
+Fuscus-based controller. To set up, please follow the instructions in :ref:`manual_workflow`.
 
-Installation Notes
----------------------
+.. note:: When setting up a Fuscus-based controller in the manual workflow, make sure to set "prefer_connecting_via_udev"
+ to False. If it is set to true, BrewPi-Script may either not connect or connect to the wrong device.
 
-**NOTE** - If setting up a Fuscus-installation manually, make sure to set "prefer_connecting_via_udev" to False. If
-this is true, BrewPi-Script may either not connect or connect to the wrong device.
-
-.. todo:: Convert the above to a callout
 
 Further down the development path are other features involving Fuscus such as direct installation and configuration
 management - though these are expected in v3 and beyond.
-
-
-
-
 
 
 

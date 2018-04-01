@@ -1,4 +1,4 @@
-.. include:: global.rst
+.. include:: ../global.rst
 
 Contributing to Fermentrack
 ==============================

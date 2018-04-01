@@ -10,16 +10,10 @@ Fermentrack
 ========================================
 
 
-
-
-
-
-
 .. toctree::
     :maxdepth: 2
     :caption: Contents:
 
-    about
     getting started/index
     user guide/index
     develop/index
@@ -88,39 +82,31 @@ Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support.
 Getting Started with Fermentrack
 ---------------------------------
 
-[Getting started](install/index.md) with Fermentrack is incredibly easy! All you need to do is
+Getting started with Fermentrack is incredibly easy! All you need to do is:
 
-1. [Install Raspbian](install/Raspi Setup.md) on your Raspberry Pi
-2. [Install Fermentrack](install/index.md) (one command!)
-3. [Configure Fermentrack](config/index.md#fully-automated)
-4. Connect your [BrewPi temperature controllers](config/BrewPi Controller Setup.md) or specific gravity sensors
-5. Configure your [BrewPi temperature controllers](config/BrewPi Controller Configuration.md) or specific gravity sensors
+#. Install Raspbian on your Raspberry Pi
+#. Install Fermentrack (one command!)
+#. Configure Fermentrack
+#. Connect your BrewPi temperature controllers or specific gravity sensors
+#. Configure your BrewPi Temperature Controllers or specific gravity sensors
 
-It can be done from start to finish in a bit under an hour, assuming all your hardware is assembled & ready to go.
+It can be done from start to finish in a bit under an hour, assuming all your hardware is assembled & ready to go. To
+learn how, read :doc:`getting started/index`.
 
 
 Other Notes
 -------------
 
-Fermentrack is currently designed for "legacy" brewpi firmware running on ESP8266 and Arduino hardware, and does not support "modern" firmware such as that included with official BrewPi controllers.
+Fermentrack is currently designed for "legacy" brewpi firmware running on ESP8266 and Arduino hardware, and does not
+support "modern" firmware such as that included with official BrewPi controllers.
 
-A full table of controllers/expected hardware availability is available [in the documentation](hardware/index.md).
-
-
-**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.
+A full table of controllers/expected hardware availability is available in :doc:`hardware`.
 
 
-
-
-Introduction/About
-Getting Started
-Using Fermentrack
-Developing, Changelog,
-License Information
-
-
-
-
+.. warning:: Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not**
+    intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.
+    If you intend to use Fermentrack alongside an installation of Raspberry Pints or another PHP-based application,
+    read :doc:`getting started/Apache and PHP Support`.
 
 
 

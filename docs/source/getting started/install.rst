@@ -10,14 +10,17 @@ There are three main ways to install Fermentrack:
 Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working
 copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi Setup`
 
-Fully Automated - `[Video] <https://youtu.be/9hRH1dNygnk>`__
---------------------------------------------------------------
+Fully Automated
+-----------------
 
-The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this method, simply SSH into your Raspberry Pi and execute:
+The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this
+method, simply SSH into your Raspberry Pi and execute:
 
 ``curl -L install.fermentrack.com | sudo bash``
 
 Follow the prompts as needed, and once the script completes, you're done!
+
+You can also watch a video of this process on YouTube at: https://youtu.be/9hRH1dNygnk
 
 
 Semi-Automated
@@ -92,7 +95,7 @@ brief description of what the command seeks to accomplish in the left.
 
 
 Enabling Python to Interact with Bluetooth
------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   PYTHON3_INTERPRETER="$(readlink -e $installPath/venv/bin/python)"
   if [ -a ${PYTHON3_INTERPRETER} ]; then
@@ -100,7 +103,7 @@ Enabling Python to Interact with Bluetooth
 
 
 Setting Up Nginx
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Although Fermentrack may be installed, without Nginx being configured, the app will not be accessible via a web browser.
 

@@ -1,4 +1,4 @@
-.. include:: global.rst
+.. include:: ../global.rst
 
 
 Changelog, Licensing, and Development
@@ -14,6 +14,7 @@ Changelog, Licensing, and Development
     architecture
     changelog
     components
+    contribute
     license
 
 

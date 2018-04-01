@@ -1,5 +1,7 @@
-Legacy (PHP/Apache) Application Support
-==========================================
+.. include:: ../global.rst
+
+Legacy (PHP/Apache) Application Support (Optional)
+====================================================
 
 Unlike apps such as RaspberryPints and BrewPi-www which use `Apache <https://www.apache.org/>`_ to serve webpages,
 Fermentrack uses `nginx <https://nginx.org/en/>`_. If you wish to run applications other than Fermentrack on the same

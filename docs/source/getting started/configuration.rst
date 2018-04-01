@@ -1,10 +1,13 @@
+.. include:: ../global.rst
+
 Configuring Fermentrack
 ==================================
 
 Once you have finished installing Fermentrack, you are ready to configure it. You will be guided through the
 configuration process when you first connect to Fermentrack. An overview of this configuration procedure is below.
 
-## User Setup
+User Setup
+----------------
 
 When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will
 enable you to configure devices, configure the Fermentrack application, and view brew logs.
@@ -21,7 +24,8 @@ Setting up the user account is extremely straightforward:
 
 You're now ready to move on to configuring the site settings.
 
-## Site Settings
+Site Settings
+----------------
 
 After configuring a user account, the next step is to configure Fermentrack. The following are the available
 configuration options:
@@ -36,20 +40,30 @@ configuration options:
 All of these can be updated at any time by clicking on the "gear" icon in the upper right of any Fermentrack page.
 
 
-## Notes for Advanced Users
+Notes for Advanced Users
+--------------------------------
 
-#### User Accounts
+User Accounts
+~~~~~~~~~~~~~~~~~~~~~
 
-Currently, Fermentrack has limited access control implemented, and is not yet designed for multiple user installations. This feature is planned for a later release - once it becomes available, different levels of access will be able to be specified on a per-user basis.
+Currently, Fermentrack has limited access control implemented, and is not yet designed for multiple user installations.
+This feature is planned for a later release - once it becomes available, different levels of access will be able to be
+specified on a per-user basis.
 
-In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible via the "gear" icon). Each account will need "superuser" access to be able to use the full functionality of Fermentrack. Again - please keep in mind - multiple user access is not officially supported. When access control functionality is implemented, any users created previously through this method will retain full access/control of Fermentrack.
+In the mean time if you need multiple user accounts they can be configured using the Django admin interface (accessible
+via the "gear" icon). Each account will need "superuser" access to be able to use the full functionality of Fermentrack.
+Again - please keep in mind - multiple user access is not officially supported. When access control functionality is
+implemented, any users created previously through this method will retain full access/control of Fermentrack.
 
-#### Advanced Site Settings
 
-There are a handful of additional site settings which are intended for advanced users and developers only. These settings can only be accessed via the Django admin. These settings include:
+Advanced Site Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are a handful of additional site settings which are intended for advanced users and developers only. These
+settings can only be accessed via the Django admin. These settings include:
 
 * **Allow Git Branch Switching** - Allows switching to a different git branch from within Fermentrack
-* **User Has Completed Configuration** - Determines if the user has completed the initial configuration workflow, or should be prompted to set Fermentrack up on next login
+* **User Has Completed Configuration** - Determines if the user has completed the initial configuration workflow, or should be prompted to set Fermentrack up on next login.
 
 Additionally, graph colors can be configured via the Django admin. The graph color options include:
 
@@ -58,6 +72,6 @@ Additionally, graph colors can be configured via the Django admin. The graph col
 * **Graph Fridge Set Color** - The color of the "Fridge Setting" line
 * **Graph Fridge Temp Color** - The color of the "Fridge Temp" line
 * **Graph Room Temp Color** - The color of the "Room Temp" line
-* **Graph Gravity Color** - (Currently unused) - For future specific gravity sensor support
-*
+* **Graph Gravity Color** - The color of the "Specific Gravity" line
+
 
