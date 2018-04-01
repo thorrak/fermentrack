@@ -323,12 +323,14 @@
     </div>
 </div>
 
+{% endfor %}
+
+
 <div class="row">
     <div class="col-xs-12">
         <a href="{% url 'sensor_refresh' active_device.id %}" class="btn btn-lg btn-primary">Refresh Sensor Temp Readings</a>
     </div>
 </div>
-{% endfor %}
 
 {% else %}
 
