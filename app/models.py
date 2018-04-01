@@ -177,6 +177,7 @@ class SensorDevice(models.Model):
     calibrate_adjust = models.FloatField(default=0.0)
     pio = models.IntegerField(null=True, default=None)
     invert = models.IntegerField(default=1, choices=INVERT_CHOICES)
+    sensor_value = models.FloatField(default=0.0)
 
     # For the two ForeignKey fields, due to the fact that managed=False, we don't want Django attempting to enforce
     # referential integrity when a controller/PinDevice is deleted as there is no database table to enforce upon.
@@ -251,6 +252,9 @@ class SensorDevice(models.Model):
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
             new_device.invert = device_dict['x']
+
+        if 'v' in device_dict:  # Temperature value (if we read values when we queried devices from the controller)
+            new_device.sensor_value = device_dict['v']
 
         if pinlist_dict:
             for this_pin in pinlist_dict:
@@ -636,6 +640,10 @@ class BrewPiDevice(models.Model):
             return control_constants, self.is_legacy(version=version)
         return None, None
 
+    def request_device_refresh(self):
+        self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
+        time.sleep(0.1)
+
     # We don't persist the "sensor" (onewire/pin) list in the database, so we always have to load it from the
     # controller
     def load_sensors_from_device(self):
@@ -645,8 +653,7 @@ class BrewPiDevice(models.Model):
 
         # If the cache wasn't up to date, request that brewpi-script refresh it
         if device_response == "device-list-not-up-to-date":
-            time.sleep(1)
-            self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
+            self.request_device_refresh()
 
         # This can take a few seconds. Periodically poll brewpi-script to try to get a response.
         while device_response == "device-list-not-up-to-date" and loop_number <= 4:

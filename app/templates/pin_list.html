@@ -297,6 +297,11 @@
             <div class="row col-sm-12">
                 Address {{ this_sensor.address }}
             </div>
+            {% if this_sensor.sensor_value != 0 %}
+                <div class="row col-sm-12">
+                    Temp Value: {{ this_sensor.sensor_value }}
+                </div>
+            {% endif %}
         {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
             OneWire 2413 {# TODO - Add support for OneWire actuators #}
         {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
@@ -315,6 +320,12 @@
             </form>
 
 
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <a href="{% url 'sensor_refresh' active_device.id %}" class="btn btn-lg btn-primary">Refresh Sensor Temp Readings</a>
     </div>
 </div>
 {% endfor %}

@@ -277,6 +277,20 @@ def sensor_config(request, device_id):
     return redirect('sensor_list', device_id=device_id)
 
 
+
+@login_required
+@site_is_configured
+def sensor_refresh(request, device_id):
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    active_device.request_device_refresh()
+    return redirect('sensor_list', device_id=device_id)
+
+
 @site_is_configured
 @login_if_required_for_dashboard
 def device_dashboard(request, device_id, beer_id=None):
