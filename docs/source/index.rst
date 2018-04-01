@@ -9,6 +9,26 @@
 Fermentrack
 ========================================
 
+
+
+
+
+
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    about
+    getting started/index
+    user guide/index
+    develop/index
+    develop/components
+    hardware
+
+
+
+
 What is Fermentrack?
 ---------------------
 
@@ -111,22 +131,4 @@ License Information
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
-
-
-
-
-
-Documentation Table of Contents
------------------------------------
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-    about
-    getting started/index
-    user guide/index
-    develop/index
-    develop/components
-    hardware
 

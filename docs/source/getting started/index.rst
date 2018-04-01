@@ -12,7 +12,7 @@ You can get started with Fermentrack in 3 steps:
 Additionally, once Fermentrack is installed, optional support for other applications can be installed as well.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Contents:
 
     Raspi Setup
