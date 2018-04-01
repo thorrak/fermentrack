@@ -58,9 +58,9 @@
                     </div>
                 </a>
                 {% else %}
-                <a href="#" data-toggle="modal" data-target="#manualPointModal">
+                <a href="{% url 'gravity_manage' active_device.id %}" data-toggle="modal">
                     <div class="dash-desc">
-                        <div class="pull-left">Add Data Point</div>
+                        <div class="pull-left">Manage Sensor</div>
                         <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
                         <div class="clearfix"></div>
                     </div>

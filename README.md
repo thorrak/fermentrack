@@ -1,5 +1,7 @@
 # Fermentrack
 
+[![Documentation Status](https://readthedocs.org/projects/fermentrack/badge/?version=master)](http://fermentrack.readthedocs.io/en/master/?badge=master)
+                
 #### A replacement web interface for BrewPi
 
 Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It is designed to be used alongside a rewritten BrewPi-Script as well as ESP8266-based BrewPi controllers. Support for other BrewPi controllers (Arduino, Spark, and Fuscus) will be forthcoming. 
