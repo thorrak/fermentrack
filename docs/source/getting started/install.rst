@@ -1,7 +1,42 @@
-Manual Installation
-======================
+Installing Fermentrack
+========================
 
-Unfortunately, these instructions haven't been fully written yet. That said, below is a general overview of what needs
+There are three main ways to install Fermentrack:
+* One-line fully automated
+* Semi-automated
+* Manual
+
+Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working
+copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi Setup`
+
+Fully Automated - `[Video] <https://youtu.be/9hRH1dNygnk>`__
+--------------------------------------------------------------
+
+The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this method, simply SSH into your Raspberry Pi and execute:
+
+``curl -L install.fermentrack.com | sudo bash``
+
+Follow the prompts as needed, and once the script completes, you're done!
+
+
+Semi-Automated
+-----------------
+
+If you prefer a slightly less automatic installation method, you can download the fermentrack-tools repo from git and use the install script contained therein. To install using this script, do the following:
+
+1. Log into your Raspberry Pi
+2. install ``git`` (Type ``sudo apt-install git-core``)
+3. Clone the repo (``git clone https://github.com/thorrak/fermentrack-tools.git``)
+4. Run the install script (``sudo fermentrack-tools/install.sh``)
+5. Follow the prompts on screen. Relaunch the install script if prompted.
+6. Once installation completes, open a web browser and connect to Fermentrack to complete the installation process.
+
+
+
+Manual
+-------
+
+Unfortunately, the manual installation instructions haven't been fully written yet. That said, below is a general overview of what needs
 to happen. The steps below need to be run in order - from top to bottom. The command to run is in the right column, with a
 brief description of what the command seeks to accomplish in the left.
 

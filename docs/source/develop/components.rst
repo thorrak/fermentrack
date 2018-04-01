@@ -1,7 +1,10 @@
 Included Components & Licensing
 ===================================
 
-Fermentrack was built using the Django web framework in Python. As a web application, it contains a number of JavaScript, CSS, and other components to help provide additional functionality. Some of these packages include the following.
+Fermentrack is licensed under the MIT License, the terms of which can be read here: :doc:`license`
+
+Fermentrack contains a number of JavaScript, Python packages, CSS, and other components to help provide additional
+functionality which are provided under their own licenses. Some of these packages are listed below.
 
 
 
@@ -101,5 +104,7 @@ Fermentrack is designed to help install or manage communications with certain ke
       - GPL v3 (and potentially others)
     * - Avrdude
       - GPL v2
+    * - Fuscus
+      - GPL v3
 
 

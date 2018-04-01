@@ -95,6 +95,8 @@ A full table of controllers/expected hardware availability is available [in the 
 Introduction/About
 Getting Started
 Using Fermentrack
+Developing, Changelog,
+License Information
 
 
 
@@ -122,48 +124,9 @@ Documentation Table of Contents
     :caption: Contents:
 
     about
-    architecture
-    changelog
-    components
-    contribute
-    license
-    faq
-    install/index
-    hardware/index
-
-
-
-site_name: Fermentrack
-repo_url: https://github.com/thorrak/fermentrack
-repo_name: fermentrack
-theme: readthedocs
-pages:
-  - Home: 'index.md'
-  - FAQ: 'faq.md'
-  - Install:
-    - 'Index': 'install/index.md'
-    - 'Raspberry Pi Setup': 'install/Raspi Setup.md'
-    - 'Manual Installation': 'install/manual.md'
-    - 'Legacy (Apache/PHP) App Support': 'install/Apache and PHP Support.md'
-  - Configuration:
-    - 'Configuration': 'config/index.md'
-    - 'Flashing a Controller': 'config/Flashing a Controller.md'
-    - 'BrewPi Controller Setup': 'config/BrewPi Controller Setup.md'
-    - 'BrewPi Controller Configuration': 'config/BrewPi Controller Configuration.md'
-    - 'Advanced (Manual) Controller Setup': 'config/Advanced Controller Setup.md'
-  - Hardware:
-    - 'Index': 'hardware/index.md'
-    - 'ESP8266': 'hardware/ESP8266.md'
-    - 'Arduino': 'hardware/Arduino.md'
-    - 'Native Python (Fuscus)': 'hardware/Native Python.md'
-    - 'Spark Core': 'hardware/Spark.md'
-  - About:
-    - 'Architecture': 'about/architecture.md'
-    - 'Contribute': 'about/contribute.md'
-    - 'Changelog': 'about/changelog.md'
-    - 'License': 'about/license.md'
-    - 'Included Components': 'about/components.md'
-  - Develop:
-    - 'Index': 'develop/index.md'
-    - 'Models': 'develop/models.md'
+    getting started/index
+    user guide/index
+    develop/index
+    develop/components
+    hardware
 
