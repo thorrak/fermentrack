@@ -856,7 +856,9 @@ while run:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             logMessage("Received applyDevice request, updating to: {}".format(value))
-            bg_ser.writeln("U" + json.dumps(configStringJson))
+            # bg_ser.writeln("U" + json.dumps(configStringJson))
+            # No need to reencode to JSON if we received valid JSON in the first place.
+            bg_ser.writeln("U" + value)
 
             if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list
                 # TODO - Determine if it is a smart move to not invalidate listState first
