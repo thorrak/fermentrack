@@ -629,20 +629,18 @@ while run:
         elif messageType == "setBeer":  # new constant beer temperature received
             try:
                 newTemp = float(value)
+                cs['beerSet'] = round(newTemp, 2)
             except ValueError:
                 logMessage("Cannot convert temperature '" + value + "' to float")
                 continue
 
             cs['mode'] = 'b'
             # round to 2 dec, python will otherwise produce 6.999999999
-            cs['beerSet'] = round(newTemp, 2)
-            bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
+            bg_ser.writeln("j{{mode:b, beerSet:{}}}".format(cs['beerSet']))
             if dbConfig is not None:
                 # Reload dbConfig from the database (in case we were using profiles)
                 dbConfig = models.BrewPiDevice.objects.get(device_name=a)
-            logMessage("Notification: Beer temperature set to " +
-                       str(cs['beerSet']) +
-                       " degrees in web interface")
+            logMessage("Notification: Beer temperature set to {} degrees in web interface".format(cs['beerSet']))
             raise socket.timeout  # go to serial communication to update controller
 
         elif messageType == "setFridge":  # new constant fridge temperature received
@@ -858,7 +856,9 @@ while run:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             logMessage("Received applyDevice request, updating to: {}".format(value))
-            bg_ser.writeln("U" + json.dumps(configStringJson))
+            # bg_ser.writeln("U" + json.dumps(configStringJson))
+            # No need to reencode to JSON if we received valid JSON in the first place.
+            bg_ser.writeln("U" + value)
 
             if keepDeviceListUpdated:  # If we have this set, immediately request a refresh of the device list
                 # TODO - Determine if it is a smart move to not invalidate listState first
@@ -1072,7 +1072,12 @@ while run:
                 logMessage("Notification: Error in profile mode - turning off temp control")
                 # raise socket.timeout  # go to serial communication to update controller
             elif newTemp != cs['beerSet']:
-                cs['beerSet'] = newTemp
+                try:
+                    newTemp = float(newTemp)
+                    cs['beerSet'] = round(newTemp, 2)
+                except ValueError:
+                    logMessage("Cannot convert temperature '" + newTemp + "' to float")
+                    continue
                 # if temperature has to be updated send settings to controller
                 bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
             elif dbConfig is not None:  # Could technically break this out, but why?
