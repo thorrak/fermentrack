@@ -2,6 +2,7 @@ Installing Fermentrack
 ========================
 
 There are three main ways to install Fermentrack:
+
 * One-line fully automated
 * Semi-automated
 * Manual
