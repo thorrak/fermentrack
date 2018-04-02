@@ -275,7 +275,11 @@ ser = util.setupSerial(config, time_out=0)
 if not ser:
     exit(1)
 
-logMessage("Notification: Script started for beer '" + urllib.unquote(config['beerName']) + "'")
+if len(urllib.unquote(config['beerName'])) > 1:
+    logMessage("Notification: Script started for beer '" + urllib.unquote(config['beerName']) + "'")
+else:
+    logMessage("Notification: Script started, with no active beer being logged")
+
 # wait for 10 seconds to allow an Uno to reboot (in case an Uno is being used)
 time.sleep(float(config.get('startupDelay', 10)))
 
