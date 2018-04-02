@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ESPToolDir="$HOME/venv/bin/esptool"
+ESPToolDir="$HOME/venv/bin"
 FirmwareDir="."
 
 cd "$FirmwareDir"
