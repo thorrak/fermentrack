@@ -296,6 +296,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 
                 if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
                     # We're going to use the wifiIPAddress
+                    # TODO - Ensure hostname lookup
                     connect_to = config.get('wifiIPAddress', config['wifiHost'])
                     port = int(config['wifiPort'])
                     ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=config['wifiHost'])

@@ -44,35 +44,30 @@ class TCPSerial(object):
         # this has no meaning to tcp
         return
 
-    
     def read(self, size=1):
         #Returns:    Bytes read from the port.
-        #Read size bytes from the serial port. If a timeout is set it may return less characters as requested. With no timeout it will block until the requested number of bytes is read.
-        bytes=None
+        #Read size bytes_read from the serial port. If a timeout is set it may return less characters as requested. With no timeout it will block until the requested number of bytes_read is read.
+        bytes_read=None
         try: 
-            bytes=self.sock.recv(size)
+            bytes_read=self.sock.recv(size)
         except socket.timeout: # timeout on receive just means there is nothing in the buffer.  This is not an error
             return None
         except socket.error: # other socket errors probably mean we lost our connection.  try to recover it.
-            if self.retryCount < self.retries:
-                self.retryCount=self.retryCount+1
-                logMessage("Lost connection to controller on read. Attempting to reconnect.")
-                self.sock.close()
-                self.open()
-                bytes=self.read(size)
-            else:
-                self.sock.close()
-                logMessage("Lost connection to controller on read. Exiting.")
-                sys.exit(1)
-                # return None
-        if bytes is not None:
-            if self.retryCount > 0:
-                logMessage("Successfully reconnected to controller on read.")
-                self.retryCount = 0
-        return bytes.decode(encoding="cp437")
+            bytes_read = b''
+        # Because an empty buffer returns socket.timeout, bytes_read being none or a blank bytestring means that we're
+        # disconnected. Print a message & attempt to reconnect
+        if bytes_read is None or bytes_read == b'':
+            logMessage("Lost connection to controller on read. Attempting to reconnect.")
+            self.close()
+            self.open()
+            # TODO - add another "read" here
 
-    
-    def readline(self,size=None, eol='\n'):
+        if hasattr(bytes_read, 'decode'):
+            return bytes_read.decode(encoding="cp437")
+        else:
+            return bytes_read
+
+    def readline(self, size=None, eol='\n'):
         #Parameters:    
         #Read a line which is terminated with end-of-line (eol) character (\n by default) or until timeout.
         buf=self.read(1)
@@ -97,33 +92,16 @@ class TCPSerial(object):
                 bytes_data = data
             bytes_returned=self.sock.sendall(bytes_data)
         except socket.timeout: # A write timeout is probably a connection issue
-            if self.retryCount < self.retries:
-                self.retryCount=self.retryCount+1
-                logMessage("Lost connection to controller on write. Attempting to reconnect.")
-                self.sock.close()
-                self.open()
-                bytes_returned=self.write(data)
-            else:
-                self.sock.close()
-                logMessage("Lost connection to controller on write. Exiting.")
-                sys.exit(1)
-                # return -1
+            logMessage("Lost connection to controller on write. Attempting to reconnect.")
+            self.close()
+            self.open()
+            bytes_returned=self.write(data)
         except socket.error: # general errors are most likely to be a timeout disconnect from BrewPi, so try to recover.
-            if self.retryCount < self.retries:
-                logMessage("Lost connection to controller on write. Attempting to reconnect.")
-                self.retryCount=self.retryCount+1
-                self.sock.close()
-                self.open()
-                bytes_returned=self.write(data)
-            else:
-                self.sock.close()
-                logMessage("Lost connection to controller on write, with socket.error. Exiting.")
-                sys.exit(1)
-                # return -1
+            logMessage("Lost connection to controller on write. Attempting to reconnect.")
+            self.close()
+            self.open()
+            bytes_returned=self.write(data)
 
-        if self.retryCount > 0:
-            logMessage("Successfully reconnected to controller on write.")
-            self.retryCount = 0
         return len(data)
     
     def inWaiting(self):
@@ -139,13 +117,13 @@ class TCPSerial(object):
         return self.sock.gettimeout()
     
     def flush(self):
-        #Flush of file like objects. In this case, wait until all data is written.
-        # this has no meaning to tcp
+        # Flush of file like objects. In this case, wait until all data is written.
+        # This has no meaning for TCP
         return
 
-    
     def close(self):
-        #close port immediately
+        # Shutdown, then close port
+        self.sock.shutdown(socket.SHUT_RDWR)
         return self.sock.close()
 
     def isOpen(self):
@@ -156,14 +134,27 @@ class TCPSerial(object):
 
     def open(self):
         mdnsLocator.locate_brewpi_services()  # This causes all the BrewPi devices to resend their mDNS info
-        try:
-            self.sock.connect((self.host, self.port))
+
+        connected = False
+
+        # TODO - Debug this. Currently, reconnection doesn't actually work.
+        while self.retryCount < self.retries:
+            try:
+                self.sock.connect((self.host, self.port))
+                connected = True
+                break
+            except (socket.gaierror) as e:
+                self.retryCount += 1
+                # time.sleep(1)
+            except (socket.error) as e:  # Catches "bad file descriptor" error
+                self.retryCount += 1
+                # time.sleep(1)
+
+        if connected:
             logMessage("Successfully connected to controller.")
-        except (socket.gaierror) as e:
-            logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) +
-                                  ". Exiting.")
-            sys.exit(1)
-        except (socket.error) as e:  # Catches "bad file descriptor" error
+            self.retryCount = 0
+        else:
             logMessage("Unable to connect to BrewPi " + self.host + " on port " + str(self.port) + ". Exiting.")
             sys.exit(1)
+
 
