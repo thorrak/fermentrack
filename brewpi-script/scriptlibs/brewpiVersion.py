@@ -32,7 +32,11 @@ def getVersionFromSerial(ser):
         print("Cannot get version from serial port that is not open.")
 
     ser.timeout = 1
-    ser.write(b'n')  # request version info
+    # TODO - Rewrite once Python3 is a given
+    try:
+        ser.write('n')  # request version info
+    except TypeError:
+        ser.write(b'n')
 
     while retries < 10:
         retry = True
@@ -42,7 +46,7 @@ def getVersionFromSerial(ser):
             try:
                 line = ser.readline()
                 if hasattr(line, 'decode'):
-                    line = line.decode(encoding="ascii")
+                    line = line.decode(encoding="cp437")
             except (SerialException) as e:
                 pass
             if line:
@@ -62,6 +66,7 @@ def getVersionFromSerial(ser):
                 break
 
         if retry:
+            # TODO - Rewrite once Python3 is a given
             try:
                 ser.write('n')  # request version info
             except TypeError:

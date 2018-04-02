@@ -95,10 +95,13 @@ def ispindel_handler(request):
     calculated_gravity += ispindel_obj.first_degree_coefficient * ispindel_data['angle']
     calculated_gravity += ispindel_obj.constant_term
 
+    # iSpindel devices always report temp in celsius. Convert to the user's preferred temp format
+    converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(ispindel_data['temperature'], 'C')
+
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
-        temp=ispindel_data['temperature'],
-        temp_format='C',                    # iSpindel devices always report temp in celsius
+        temp=converted_temp,
+        temp_format=temp_format,
         temp_is_estimate=False,
         associated_device=ispindel_obj.sensor,
         gravity_latest=calculated_gravity,

@@ -68,6 +68,7 @@ urlpatterns = [
 
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/$', app.views.sensor_list, name='sensor_list'),
     url(r'^devices/(?P<device_id>\d{1,20})/sensors/config/$', app.views.sensor_config, name='sensor_config'),
+    url(r'^devices/(?P<device_id>\d{1,20})/sensors/refresh/$', app.views.sensor_refresh, name='sensor_refresh'),
 
     url(r'^devices/(?P<device_id>\d{1,20})/debug_connection/$', app.views.debug_connection, name='device_debug_connection'),
 

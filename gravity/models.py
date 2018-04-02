@@ -177,6 +177,15 @@ class GravitySensor(models.Model):
         else:
             return None
 
+    def convert_temp_to_sensor_format(self, temp, temp_format):
+        if self.temp_format == temp_format:
+            return temp, self.temp_format
+        elif self.temp_format == 'F' and temp_format == 'C':
+            return (temp*9/5) + 32, self.temp_format
+        elif self.temp_format == 'C' and temp_format == 'F':
+            return (temp-32) * 5 / 9, self.temp_format
+        else:
+            raise ValueError
 
 
 
@@ -733,6 +742,4 @@ class IspindelConfiguration(models.Model):
         return extras
         # except:
         #     return None
-
-
 

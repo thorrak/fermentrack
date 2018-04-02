@@ -177,6 +177,7 @@ class SensorDevice(models.Model):
     calibrate_adjust = models.FloatField(default=0.0)
     pio = models.IntegerField(null=True, default=None)
     invert = models.IntegerField(default=1, choices=INVERT_CHOICES)
+    sensor_value = models.FloatField(default=0.0)
 
     # For the two ForeignKey fields, due to the fact that managed=False, we don't want Django attempting to enforce
     # referential integrity when a controller/PinDevice is deleted as there is no database table to enforce upon.
@@ -251,6 +252,9 @@ class SensorDevice(models.Model):
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
             new_device.invert = device_dict['x']
+
+        if 'v' in device_dict:  # Temperature value (if we read values when we queried devices from the controller)
+            new_device.sensor_value = device_dict['v']
 
         if pinlist_dict:
             for this_pin in pinlist_dict:
@@ -350,12 +354,17 @@ class SensorDevice(models.Model):
             for this_device in device_list:
                 if this_device.address == address:
                     return this_device
+            # We weren't able to find a device with that address
+            raise ValueError('Unable to find address {} in device_list'.format(address))
         elif pin is not None:
             for this_device in device_list:
                 if this_device.pin == pin:
                     return this_device
-
-        return None  # Either we weren't passed address or pin, or we weren't able to locate a valid device
+            # We weren't able to find a device with that pin number
+            raise ValueError('Unable to find address {} in device_list'.format(address))
+        else:
+            # We weren't passed an address or pin number
+            raise ValueError('Neither address nor pin passed to function')
 
 
 
@@ -631,53 +640,45 @@ class BrewPiDevice(models.Model):
             return control_constants, self.is_legacy(version=version)
         return None, None
 
+    def request_device_refresh(self):
+        self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
+        time.sleep(0.1)
+
     # We don't persist the "sensor" (onewire/pin) list in the database, so we always have to load it from the
     # controller
     def load_sensors_from_device(self):
-        try:
-            if self.devices_are_loaded:
-                return True
-        except:
-            self.devices_are_loaded = False
-
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
         loop_number = 1
         device_response = self.send_message("getDeviceList", read_response=True)
 
         # If the cache wasn't up to date, request that brewpi-script refresh it
         if device_response == "device-list-not-up-to-date":
-            time.sleep(1)
-            self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
+            self.request_device_refresh()
 
         # This can take a few seconds. Periodically poll brewpi-script to try to get a response.
-        while device_response == "device-list-not-up-to-date" and loop_number <= 10:
-            time.sleep(4)
+        while device_response == "device-list-not-up-to-date" and loop_number <= 4:
+            time.sleep(5)
             device_response = self.send_message("getDeviceList", read_response=True)
             loop_number += 1
 
-        if not device_response:
-            # We weren't able to reach brewpi-script
+        if not device_response or device_response == "device-list-not-up-to-date":
             self.all_pins = None
             self.available_devices = None
             self.installed_devices = None
-            self.devices_are_loaded = False
-            self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
-            return self.devices_are_loaded  # False
-        elif device_response == "device-list-not-up-to-date":
-            # We were able to reach brewpi-script, but it wasn't able to reach the controller
-            self.all_pins = None
-            self.available_devices = None
-            self.installed_devices = None
-            self.devices_are_loaded = False
-            self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
-            self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
-            return self.devices_are_loaded  # False
+            if not device_response:
+                # We weren't able to reach brewpi-script
+                self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
+            else:
+                # We were able to reach brewpi-script, but it wasn't able to reach the controller
+                self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
+                self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
+            return False  # False
 
+        # Devices loaded
         devices = json.loads(device_response)
         self.all_pins = PinDevice.load_all_from_pinlist(devices['pinList'])
         self.available_devices = SensorDevice.load_all_from_devicelist(devices['deviceList']['available'], self.all_pins, self)
         self.installed_devices = SensorDevice.load_all_from_devicelist(devices['deviceList']['installed'], self.all_pins, self)
-        self.devices_are_loaded = True
 
         # Loop through the installed devices to set up the special links to the key ones
         for this_device in self.installed_devices:
@@ -694,7 +695,7 @@ class BrewPiDevice(models.Model):
             elif this_device.device_function == SensorDevice.DEVICE_FUNCTION_BEER_TEMP:  # (9, 'BEER_TEMP'),
                 self.beer_sensor = this_device
 
-        return self.devices_are_loaded  # True
+        return True
 
     # TODO - Determine if we care about controlSettings
     # # Retrieve the control settings from the controller

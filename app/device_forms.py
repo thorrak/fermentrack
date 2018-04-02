@@ -4,6 +4,7 @@ from django.core import validators
 import fermentrack_django.settings as settings
 
 from django.forms import ModelForm
+from . import udev_integration
 
 import re
 import datetime
@@ -86,6 +87,41 @@ class DeviceForm(forms.Form):
             elif len(cleaned_data['serial_alt_port']) < 2:
                 raise forms.ValidationError("Must specify a valid alt serial port (or None) when using connection " +
                                             "type 'serial'")
+
+            if 'prefer_connecting_via_udev' in cleaned_data and cleaned_data['prefer_connecting_via_udev']:
+                # The user clicked "prefer_connecting_via_udev". Check if there is another device that already exists
+                # with the same udev serial number, and if there is, raise an error.
+                udev = udev_integration.get_serial_from_node(cleaned_data['serial_port'])
+                devices_with_udev = BrewPiDevice.objects.filter(udev_serial_number=udev)
+
+                if len(devices_with_udev) != 0:
+                    raise forms.ValidationError("Prefer connecting via udev is set, but another device "
+                                                "is set up with a similar udev serial number. To proceed, uncheck "
+                                                "this option or remove the other device.")
+            else:
+                # The user didn't click "prefer_connecting_via_udev". Check two things:
+                # First, check that there isn't a device that exists already with the same serial_port or serial_alt_port
+
+                devices_with_port = BrewPiDevice.objects.filter(serial_port=cleaned_data['serial_port'])
+                devices_with_port_alt = BrewPiDevice.objects.filter(serial_alt_port=cleaned_data['serial_port'])
+                devices_with_alt = BrewPiDevice.objects.filter(serial_port=cleaned_data['serial_alt_port'])
+                devices_with_alt_alt = BrewPiDevice.objects.filter(serial_alt_port=cleaned_data['serial_alt_port'])
+
+                if len(devices_with_port) != 0 or len(devices_with_port_alt) != 0 or len(devices_with_alt) != 0 or len(devices_with_alt_alt) != 0:
+                    raise forms.ValidationError("A device is already set up with that serial port or alternate serial "
+                                                "port. To proceed, change ports, or remove the other device.")
+
+                udev = udev_integration.get_serial_from_node(cleaned_data['serial_port'])
+                devices_with_udev = BrewPiDevice.objects.filter(udev_serial_number=udev)
+
+                for this_device in devices_with_udev:
+                    if this_device.prefer_connecting_via_udev:
+                        raise forms.ValidationError("The device {} has a ".format(this_device) +
+                                                    "conflicting udev serial number to the one you are currently"
+                                                    "attempting to set up, and has 'prefer connecting via udev' turned"
+                                                    "on. This can cause unexpected behavior. Please disable this option"
+                                                    "on the other device (or delete it entirely) to proceed with adding"
+                                                    "this one.")
 
         elif cleaned_data['connection_type'] == 'wifi':
             cleaned_data['serial_port'] = 'auto'
