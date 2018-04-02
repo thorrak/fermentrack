@@ -4,7 +4,7 @@ from __future__ import print_function
 import zeroconf
 from time import sleep
 try:
-    from models import BrewPiDevice
+    from app.models import BrewPiDevice
     djangoLoaded = True
 except:
     djangoLoaded = False

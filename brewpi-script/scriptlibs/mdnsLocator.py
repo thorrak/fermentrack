@@ -4,7 +4,7 @@ from __future__ import print_function
 import zeroconf
 from time import sleep
 try:
-    from models import BrewPiDevice
+    from app.models import BrewPiDevice
     djangoLoaded = True
 except:
     djangoLoaded = False
@@ -47,10 +47,10 @@ def find_mdns_devices():
 
     for this_service in services:
         found_device['mDNSname'] = services[this_service].server[:-1]
-        found_device['board'] = services[this_service].properties[b'board'].decode(encoding="cp437")
-        found_device['branch'] = services[this_service].properties[b'branch'].decode(encoding="cp437")
-        found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding="cp437")
-        found_device['version'] = services[this_service].properties[b'version'].decode(encoding="cp437")
+        found_device['board'] = services[this_service].properties[b'board'].decode(encoding='cp437')
+        found_device['branch'] = services[this_service].properties[b'branch'].decode(encoding='cp437')
+        found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding='cp437')
+        found_device['version'] = services[this_service].properties[b'version'].decode(encoding='cp437')
 
         if djangoLoaded:  # Breaking this out so that we can have this be a direct clone for brewpi-script
             try:
