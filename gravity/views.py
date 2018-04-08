@@ -455,7 +455,8 @@ def gravity_manage(request, sensor_id):
 def almost_json_view(request, sensor_id, log_id):
     json_close = "\r\n]"
 
-    gravity_log = GravityLog.objects.get(id=log_id, device_id=sensor_id)
+    # gravity_log = GravityLog.objects.get(id=log_id, device_id=sensor_id)
+    gravity_log = GravityLog.objects.get(id=log_id)
 
     filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, gravity_log.full_filename("annotation_json"))
 

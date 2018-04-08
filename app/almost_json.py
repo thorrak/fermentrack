@@ -1,6 +1,7 @@
 
 # Slightly rewritten version of wsgiref.util.FileWrapper
 
+
 class AlmostJsonWrapper:
     """Wrapper to convert file-like objects to iterables"""
 
@@ -24,7 +25,7 @@ class AlmostJsonWrapper:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         data = self.filelike.read(self.blksize)
         if data:
             return data
@@ -32,3 +33,7 @@ class AlmostJsonWrapper:
             self.sent_close = True
             return self.closing_string
         raise StopIteration
+
+    # Not sure if this is actually needed, including just in case
+    def next(self):
+        return self.__next__()

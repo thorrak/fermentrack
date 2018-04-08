@@ -733,7 +733,8 @@ def device_uninstall(request, device_id):
 def almost_json_view(request, device_id, beer_id):
     json_close = "\r\n]"
 
-    beer_obj = Beer.objects.get(id=beer_id, device_id=device_id)
+    # beer_obj = Beer.objects.get(id=beer_id, device_id=device_id)
+    beer_obj = Beer.objects.get(id=beer_id)
 
     filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
 
