@@ -28,6 +28,8 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
         log_filename = 'fermentrack-processmgr.log'
     elif device_type == "fermentrack":
         log_filename = 'fermentrack-stderr.log'
+    elif device_type == "ispindel":
+        log_filename = 'ispindel_raw_output.log'
     else:
         return None
 

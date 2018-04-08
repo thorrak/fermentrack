@@ -95,6 +95,10 @@
       <th scope="row">Process Spawner (BrewPi-Script, Tilt Daemon, etc.)</th>
       <td><a href="{% url "get_app_log" "text" "spawner" "stderr" %}">{% log_file_path "spawner" "stderr" %}</a></td>
     </tr>
+    <tr> {# TODO - Delete this once debugging is complete #}
+      <th scope="row">iSpindel Raw Output</th>
+      <td><a href="{% url "get_app_log" "text" "ispindel" "stderr" %}">{% log_file_path "ispindel" "stderr" %}</a></td>
+    </tr>
   </tbody>
 </table>
 

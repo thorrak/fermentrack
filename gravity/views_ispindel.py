@@ -21,6 +21,8 @@ import gravity.forms as forms
 
 logger = logging.getLogger(__name__)
 
+import fermentrack_django.settings as settings
+
 
 @login_required
 @site_is_configured
@@ -65,9 +67,9 @@ def ispindel_handler(request):
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    # import pprint
-    # with open('ispindel_json_output.txt', 'w') as logFile:
-    #     pprint.pprint(ispindel_data, logFile)
+    import pprint
+    with open(os.path.join(settings.BASE_DIR, "log", 'ispindel_raw_output.log'), 'w') as logFile:
+        pprint.pprint(request.body.decode('utf-8'), logFile)
 
     # As of the iSpindel firmware version 5.6.1, the json posted contains the following fields:
     # {u'ID': 3003098,
@@ -79,6 +81,8 @@ def ispindel_handler(request):
     #  u'token': u'tokengoeshere'}
 
     ispindel_data = json.loads(request.body.decode('utf-8'))
+    with open(os.path.join(settings.BASE_DIR, "log", 'ispindel_json_output.log'), 'w') as logFile:
+        pprint.pprint(ispindel_data, logFile)
 
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
