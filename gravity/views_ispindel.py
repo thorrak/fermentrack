@@ -97,7 +97,6 @@ def ispindel_handler(request):
     calculated_gravity += ispindel_obj.first_degree_coefficient * angle
     calculated_gravity += ispindel_obj.constant_term
 
-    # iSpindel devices always report temp in celsius. Convert to the user's preferred temp format
     converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']), 'C')
 
     new_point = GravityLogPoint(
