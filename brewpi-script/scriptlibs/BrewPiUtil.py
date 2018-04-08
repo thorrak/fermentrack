@@ -295,9 +295,9 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                 error = ""
 
                 try:
-                    port = int(config(['wifiPort']))
+                    port = int(config['wifiPort'])
                 except TypeError:
-                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config(['wifiPort'])))
+                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config['wifiPort']))
                     logMessage("Exiting.")
                     port=0  # to make PyCharm happy
                     exit(1)
