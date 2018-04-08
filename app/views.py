@@ -3,31 +3,21 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
-from . import setup_views
+from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
-from . import mdnsLocator
-
-from . import almost_json
-from django.http import HttpResponse
-
-import json, datetime, pytz, os, random, sys
-
-from . import git_integration
-import subprocess
-
-from . import connection_debug, udev_integration
+import json, datetime, pytz, os, random, sys, subprocess
 
 import fermentrack_django.settings as settings
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
 from django.contrib.auth.models import User
 
 
@@ -747,8 +737,9 @@ def almost_json_view(request, device_id, beer_id):
 
     filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
 
-    if os.path.isfile(filename):  # If there are no annotations, return an empty
-        wrapper = almost_json.AlmostJsonWrapper(file(filename), closing_string=json_close)
+    if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
+        f = open(filename, 'r')
+        wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
         response = HttpResponse(wrapper, content_type="application/json")
         response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response

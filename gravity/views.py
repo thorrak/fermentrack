@@ -1,15 +1,14 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
-from django.contrib.auth import login
-from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+import app.almost_json as almost_json
 
-from app.models import BrewPiDevice
+
+import fermentrack_django.settings as settings
 from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
@@ -448,3 +447,24 @@ def gravity_manage(request, sensor_id):
         context['ispindel_calibration_form'] = ispindel_calibration_form
 
     return render(request, template_name='gravity/gravity_manage.html', context=context)
+
+
+# So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to
+# then interpret them using JavaScript, however, we MUST have fully formed, valid json. To acheive that, we're going to
+# wrap the json file and append the closing bracket after dumping its contents to the browser.
+def almost_json_view(request, sensor_id, log_id):
+    json_close = "\r\n]"
+
+    gravity_log = GravityLog.objects.get(id=log_id, device_id=sensor_id)
+
+    filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, gravity_log.full_filename("annotation_json"))
+
+    if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
+        f = open(filename, 'r')
+        wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
+        response = HttpResponse(wrapper, content_type="application/json")
+        response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+        return response
+    else:
+        empty_array = []
+        return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})

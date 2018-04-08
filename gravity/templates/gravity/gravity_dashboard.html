@@ -531,7 +531,7 @@ function pull_and_update_annotations() {
             }
         },
         dataType: 'json',
-        url: '{% if active_log %}{% url 'almost_json_view' active_device.id active_log.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
+        url: '{% if active_log %}{% url 'gravity_almost_json_view' active_device.id active_log.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
         success: function(data) {
             g2.setAnnotations(data);
         },

@@ -294,18 +294,25 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
             while tries < 10:
                 error = ""
 
-                if not(config['wifiHost'] == None or config['wifiPort'] == None or config['wifiHost'] == 'None' or config['wifiPort'] == 'None' or config['wifiHost'] == 'none' or config['wifiPort'] == 'none'):
+                try:
+                    port = int(config(['wifiPort']))
+                except TypeError:
+                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config(['wifiPort'])))
+                    logMessage("Exiting.")
+                    port=0  # to make PyCharm happy
+                    exit(1)
+
+                if not(config['wifiHost'] == None or  config['wifiHost'] == 'None' or config['wifiHost'] == 'none'):
                     # We're going to use the wifiIPAddress
                     # TODO - Ensure hostname lookup
                     connect_to = config.get('wifiIPAddress', config['wifiHost'])
-                    port = int(config['wifiPort'])
                     ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=config['wifiHost'])
                 else:
                     logMessage("Invalid WiFi configuration:")
                     logMessage("  wifiHost: {}".format(config['wifiHost']))
                     logMessage("  wifiPort: {}".format(config['wifiPort']))
                     logMessage("Exiting.")
-                    exit(0)
+                    exit(1)
 
                 if ser:
                     break
@@ -313,7 +320,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                 time.sleep(1)
         if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
             logMessage("Unable to connect via WiFi. Exiting.")
-            exit(0)
+            exit(1)
 
 
     if ser:
