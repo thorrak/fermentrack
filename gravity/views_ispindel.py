@@ -15,10 +15,11 @@ import numpy
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
-import os, subprocess, datetime, pytz
+import os, datetime, pytz, logging
 
 import gravity.forms as forms
 
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -60,7 +61,7 @@ def gravity_ispindel_setup(request, sensor_id):
 @csrf_exempt
 def ispindel_handler(request):
     if request.body is None:
-        # TODO - Log this
+        logger.error("No data in iSpindel request body")
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
@@ -82,21 +83,21 @@ def ispindel_handler(request):
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
     except:
-        # TODO - Log This
-        messages.error(request, u'Unable to load sensor with name {}'.format(ispindel_data['name']))
+        logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
         return JsonResponse({'status': 'failed', 'message': "Unable to load sensor with that name"}, safe=False,
                             json_dumps_params={'indent': 4})
 
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    calculated_gravity = ispindel_obj.third_degree_coefficient * ispindel_data['angle']**3
-    calculated_gravity += ispindel_obj.second_degree_coefficient * ispindel_data['angle']**2
-    calculated_gravity += ispindel_obj.first_degree_coefficient * ispindel_data['angle']
+    angle=float(ispindel_data['angle'])
+
+    calculated_gravity = ispindel_obj.third_degree_coefficient * angle**3
+    calculated_gravity += ispindel_obj.second_degree_coefficient * angle**2
+    calculated_gravity += ispindel_obj.first_degree_coefficient * angle
     calculated_gravity += ispindel_obj.constant_term
 
-    # iSpindel devices always report temp in celsius. Convert to the user's preferred temp format
-    converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(ispindel_data['temperature'], 'C')
+    converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']), 'C')
 
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
@@ -105,8 +106,8 @@ def ispindel_handler(request):
         temp_is_estimate=False,
         associated_device=ispindel_obj.sensor,
         gravity_latest=calculated_gravity,
-        temp_latest=ispindel_data['temperature'],
-        extra_data=ispindel_data['angle'],
+        temp_latest=converted_temp,
+        extra_data=angle,
     )
 
     if ispindel_obj.sensor.active_log is not None:
@@ -115,8 +116,7 @@ def ispindel_handler(request):
     new_point.save()
 
     # Set & save the 'extra' data points to redis (so we can load & use later)
-    if 'angle' in ispindel_data:
-        ispindel_obj.angle = ispindel_data['angle']
+    ispindel_obj.angle = angle
     if 'ID' in ispindel_data:
         ispindel_obj.ispindel_id = ispindel_data['ID']
     if 'battery' in ispindel_data:

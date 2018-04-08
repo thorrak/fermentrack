@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz
+# from constance import config
 
 from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
     'constance',
     'constance.backends.database',
     'huey.contrib.djhuey',
-    # 'raven.contrib.django.raven_compat',
+    'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE = [
@@ -194,6 +195,7 @@ CONSTANCE_CONFIG = {
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
+    'RAVEN_ENABLED': (False, 'Has the user opted in to report errors via raven?', bool),
 
 }
 
@@ -207,7 +209,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
 
     'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION'),
 
-    'Advanced Options': ('ALLOW_GIT_BRANCH_SWITCHING','GIT_UPDATE_TYPE')
+    'Advanced Options': ('ALLOW_GIT_BRANCH_SWITCHING','GIT_UPDATE_TYPE', 'RAVEN_ENABLED')
 }
 
 
@@ -247,4 +249,15 @@ HUEY = {
         'read_timeout': 1,
         'max_errors': 100,
     }
+}
+
+
+# if config.RAVEN_ENABLED:
+import raven
+
+RAVEN_CONFIG = {
+    'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
 }
