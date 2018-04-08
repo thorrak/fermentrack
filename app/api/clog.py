@@ -52,8 +52,9 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # gravity - A specific gravity sensor object
     # spawner - the circus spawner
     # fermentrack - Fermentrack itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack']
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel']
     if device_type not in valid_device_types:
+        # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)
 
     # Load the full path to the logfile, then open it and load the file itself
