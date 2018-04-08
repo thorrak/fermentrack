@@ -2,7 +2,7 @@ Django>=1.11,<1.12
 configobj       # required by brewpi.py
 
 pytz            # required by manage.py migrate
-#raven           # OPTIONAL - used for debugging
+raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf<0.20   # for locating ESP8266 devices - Versions over 0.20 are Python 3 only
