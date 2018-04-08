@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz
-from constance import config
+# from constance import config
 
 from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
@@ -262,6 +262,4 @@ RAVEN_CONFIG = {
     'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
 }
 
-INSTALLED_APPS += (
-    'raven.contrib.django.raven_compat',
-)
+INSTALLED_APPS += ['raven.contrib.django.raven_compat']
