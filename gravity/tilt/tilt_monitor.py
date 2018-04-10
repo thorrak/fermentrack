@@ -14,12 +14,11 @@ application = get_wsgi_application()
 
 
 import time
-import redis
 import getopt
 import pid
 
 import gravity.models
-from . import TiltHydrometerFermentrack
+from gravity.tilt import TiltHydrometerFermentrack
 
 import django.core.exceptions
 

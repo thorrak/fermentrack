@@ -1,11 +1,5 @@
-import threading
-import functools
-
-
-import os, sys
-
 # Since this is designed to replace the base TiltHydrometer classes, let's import everything from the parent file
-from TiltHydrometer import *
+from gravity.tilt.TiltHydrometer import *
 
 
 # For Fermentrack compatibility, try to load the Django includes. If we fail, keep running, just set djangoLoaded
