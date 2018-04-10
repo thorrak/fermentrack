@@ -19,7 +19,7 @@ import getopt
 import pid
 
 import gravity.models
-import TiltHydrometerFermentrack
+from . import TiltHydrometerFermentrack
 
 import django.core.exceptions
 

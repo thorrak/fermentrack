@@ -17,6 +17,14 @@ import os, subprocess, datetime, pytz
 
 import gravity.forms as forms
 
+try:
+    # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
+    # pop up an error message.
+    import bluetooth._bluetooth as bluez
+    bluetooth_loaded = True
+except ImportError:
+    bluetooth_loaded = False
+
 
 @login_required
 @site_is_configured
@@ -93,7 +101,13 @@ def gravity_add_board(request):
 def gravity_list(request):
     # This handles generating the list of grav sensors
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
-    return render(request, template_name="gravity/gravity_list.html")
+
+    if not bluetooth_loaded:
+        messages.warning(request, 'Bluetooth packages for python have not been installed. Tilt support will not work. '
+                                  'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
+                                  'to resolve this issue.')
+
+    return render(request, template_name="gravity/gravity_list.html",)
 
 @login_required
 @site_is_configured

@@ -22,7 +22,15 @@
 import os
 import sys
 import struct
-import bluetooth._bluetooth as bluez
+
+def print_to_stderr(*objs):
+    print("", *objs, file=sys.stderr)
+
+try:
+    import bluetooth._bluetooth as bluez
+except ImportError:
+    print_to_stderr("Unable to load bluetooth Python module. Exiting.")
+    exit(1)
 
 LE_META_EVENT = 0x3e
 OGF_LE_CTL=0x08
@@ -136,6 +144,7 @@ def parse_events(sock, loop_count=100):
                     if Adstring not in myFullList: myFullList.append(Adstring)
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     return myFullList
+
 
 if __name__ == '__main__':
     dev_id = 0
