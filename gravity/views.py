@@ -161,6 +161,13 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         messages.error(request, u"Unable to load gravity sensor with ID {}".format(sensor_id))
         return redirect('gravity_list')
 
+    if active_device.sensor_type == GravitySensor.SENSOR_TILT:
+        if not bluetooth_loaded:
+            messages.warning(request,
+                             'Bluetooth packages for python have not been installed. Tilt support will not work. '
+                             'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
+                             'to resolve this issue.')
+
     log_create_form = forms.GravityLogCreateForm()
     manual_add_form = forms.ManualPointForm()
 
