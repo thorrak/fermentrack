@@ -724,8 +724,13 @@ class IspindelConfiguration(models.Model):
 
     def load_extras_from_redis(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        # try:
-        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id)).decode(encoding="utf-8")
+        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+
+        if redis_response is None:
+            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+            return None
+
+        redis_response = redis_response.decode(encoding="utf-8")
         extras = json.loads(redis_response)
 
         if 'ispindel_id' in extras:
@@ -740,6 +745,3 @@ class IspindelConfiguration(models.Model):
             self.token = extras['token']
 
         return extras
-        # except:
-        #     return None
-

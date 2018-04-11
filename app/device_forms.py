@@ -284,3 +284,13 @@ class TempControlForm(forms.Form):
             return None
 
         return FermentationProfilePoint.string_to_ttl(ttl_text)
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+
+        if 'profile' not in cleaned_data and 'temperature_setting' not in cleaned_data:
+            raise forms.ValidationError("Either a profile or the new temperature setting must be provided to update"
+                                        "the temperature control settings on the controller")
+
+        return cleaned_data
+
