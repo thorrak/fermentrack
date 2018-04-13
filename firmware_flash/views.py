@@ -57,9 +57,9 @@ def firmware_select_family(request):
 
         if install_check == -1:
             # The package status isn't installed
-            messages.warning(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
+            messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
     except:
-        messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
+        messages.warning(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
 
     # Let's delete any requests that are more than 7 days old
     # TODO - Decide if we want to keep things working this way
@@ -106,7 +106,7 @@ def firmware_select_board(request, flash_family_id):
     # Test if avrdude is available. If not, the user will need to install it for flashing AVR-based devices.
     if flash_family.flash_method == DeviceFamily.FLASH_ARDUINO:
         try:
-            rettext = subprocess.check_output(["dpkg", "-s", "avrdude"])
+            rettext = subprocess.check_output(["dpkg", "-s", "avrdude"]).decode(encoding='cp437')
             install_check = rettext.find("installed")
 
             if install_check == -1:
