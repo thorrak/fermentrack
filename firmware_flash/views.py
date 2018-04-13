@@ -114,7 +114,7 @@ def firmware_select_board(request, flash_family_id):
                 messages.error(request, "Warning - Package 'avrdude' not installed. Arduino installations will fail! Click <a href=\"http://www.fermentrack.com/help/avrdude/\">here</a> to learn how to resolve this issue.")
                 return redirect('firmware_flash_select_family')
         except:
-            messages.error(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
+            messages.warning(request, "Unable to check for installed 'avrdude' package - Arduino installations may fail!")
             # Not redirecting here - up to the user to figure out why flashing fails if they keep going.
             # return redirect('firmware_flash_select_family')
 
@@ -140,7 +140,7 @@ def refresh_firmware(request=None):
     if get_model_version() != check_model_version():
         if request is not None:
             messages.error(request, "The firmware information available at fermentrack.com isn't something this " +
-                                    "version of Fermentrack can interpret. Please update and try again.")
+                                    "version of Fermentrack can interpret. Please update Fermentrack and try again.")
         return False
 
     # First, load the device family list
