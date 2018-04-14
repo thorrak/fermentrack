@@ -11,8 +11,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']  # This is bad practice, but is the best that we're going to get given our deployment strategy
 
+
+# Check if Sentry is enabled (read in the config filepath)
+CONFIG_INI_FILEPATH = os.path.join(BASE_DIR, 'fermentrack_django', 'config.ini')
 config = configparser.ConfigParser()
-config.read(os.path.join(BASE_DIR, 'fermentrack_django', 'config.ini'))
+config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
 

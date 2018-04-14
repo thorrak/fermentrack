@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.conf import settings
 
 from . import setup_forms, device_forms
 from . import mdnsLocator, serial_integration
@@ -13,7 +14,7 @@ from . import mdnsLocator, serial_integration
 from app.models import BrewPiDevice
 
 from .decorators import site_is_configured  # Checks if user has completed constance configuration
-import random
+import random, configparser
 
 
 ###################################################################################################################
@@ -53,6 +54,20 @@ def setup_add_user(request):
         return render(request, template_name='setup/setup_add_user.html', context={'form': form})
 
 
+def set_sentry_status(enabled=True):
+    config = configparser.ConfigParser()
+    config.read(settings.CONFIG_INI_FILEPATH)
+    config['sentry'] = {}
+
+    if enabled:
+        config['sentry']['enable_sentry'] = 'yes'
+    else:
+        config['sentry']['enable_sentry'] = 'no'
+
+    with open(settings.CONFIG_INI_FILEPATH, 'w') as configfile:
+        config.write(configfile)
+
+
 @login_required
 def setup_config(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
@@ -66,6 +81,16 @@ def setup_config(request):
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
+
+            if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
+                messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take"
+                                          "effect.")
+
+            if f['enable_sentry_support']:
+                set_sentry_status(enabled=True)
+            else:
+                set_sentry_status(enabled=False)
+
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
