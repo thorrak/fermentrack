@@ -89,10 +89,11 @@ def setup_config(request):
                 messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take "
                                           "effect.")
 
-                if f['enable_sentry_support']:
-                    set_sentry_status(enabled=True)
-                else:
-                    set_sentry_status(enabled=False)
+            # This sits outside the if check above in case the user updates the setting before Fermentrack was restarted
+            if f['enable_sentry_support']:
+                set_sentry_status(enabled=True)
+            else:
+                set_sentry_status(enabled=False)
 
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
