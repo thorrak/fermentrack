@@ -108,6 +108,18 @@ class GuidedSetupConfigForm(forms.Form):
             except:
                 pass
 
+    def clean_enable_sentry_support(self):
+        enabled = self.cleaned_data.get('enable_sentry_support')
+
+        if enabled == 'True':
+            return True
+        elif enabled == 'False':
+            return False
+        else:
+            raise forms.ValidationError("Must be either True or False (Yes or No)")
+
+
+
 
 ###################################################################################################################
 # Guided Setup Forms

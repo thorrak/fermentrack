@@ -535,13 +535,16 @@ def site_settings(request):
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
-                messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take"
+                # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
+                # restarts.
+                # TODO - Queue a request to Huey to restart fermentrack
+                messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take "
                                           "effect.")
 
-            if f['enable_sentry_support']:
-                setup_views.set_sentry_status(enabled=True)
-            else:
-                setup_views.set_sentry_status(enabled=False)
+                if f['enable_sentry_support']:
+                    setup_views.set_sentry_status(enabled=True)
+                else:
+                    setup_views.set_sentry_status(enabled=False)
 
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')

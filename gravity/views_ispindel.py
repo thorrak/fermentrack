@@ -11,7 +11,12 @@ import json, socket, decimal
 from django.http import JsonResponse
 
 from gravity.models import GravitySensor, GravityLog, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
-import numpy
+try:
+    import numpy
+    NUMPY_ENABLED = True
+except ModuleNotFoundError:
+    NUMPY_ENABLED = False
+
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
@@ -281,6 +286,10 @@ def gravity_ispindel_calibrate(request, sensor_id):
 
     if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
         messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        return redirect('gravity_log_list')
+
+    if not NUMPY_ENABLED:
+        messages.error(request, u'The "numpy" python package is not available which is required for calibration')
         return redirect('gravity_log_list')
 
     points = IspindelGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration)
