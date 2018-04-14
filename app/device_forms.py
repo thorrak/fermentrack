@@ -291,6 +291,10 @@ class TempControlForm(forms.Form):
         if 'profile' not in cleaned_data and 'temperature_setting' not in cleaned_data:
             raise forms.ValidationError("Either a profile or the new temperature setting must be provided to update"
                                         "the temperature control settings on the controller")
+        elif 'temperature_setting' in cleaned_data and cleaned_data['temperature_setting'] is None:
+            raise forms.ValidationError("Either a profile or the new temperature setting must be provided to update"
+                                        "the temperature control settings on the controller")
+
 
         return cleaned_data
 

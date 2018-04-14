@@ -533,6 +533,20 @@ def site_settings(request):
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
+
+            if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
+                # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
+                # restarts.
+                # TODO - Queue a request to Huey to restart fermentrack
+                messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take "
+                                          "effect.")
+
+            # This sits outside the if check above in case the user updates the setting before Fermentrack was restarted
+            if f['enable_sentry_support']:
+                setup_views.set_sentry_status(enabled=True)
+            else:
+                setup_views.set_sentry_status(enabled=False)
+
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:

@@ -938,6 +938,7 @@ class BrewPiDevice(models.Model):
                     self.save()
                 return resolved_address
             except:
+                # TODO - Add an error message here
                 if len(self.wifi_host_ip) > 6:
                     # We weren't able to resolve the hostname (self.wifi_host) but we DID have a cached IP address.
                     # Return that.

@@ -79,6 +79,13 @@ class GuidedSetupConfigForm(forms.Form):
         # widget=forms.RadioSelect(),
         )
 
+    enable_sentry_support = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+        choices=true_false,
+        help_text="Enable automatic error reporting to Fermentrack developers",
+        # widget=forms.RadioSelect(),
+        )
+
+
     def __init__(self, *args, **kwargs):
         super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
@@ -91,6 +98,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
         self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
+        self.fields['enable_sentry_support'].initial = settings.ENABLE_SENTRY
 
         # This is super-hackish, but whatever. If it works, it works
         for this_field in self.fields:
@@ -99,6 +107,18 @@ class GuidedSetupConfigForm(forms.Form):
                 self.fields[this_field].help_text = help_text
             except:
                 pass
+
+    def clean_enable_sentry_support(self):
+        enabled = self.cleaned_data.get('enable_sentry_support')
+
+        if enabled == 'True':
+            return True
+        elif enabled == 'False':
+            return False
+        else:
+            raise forms.ValidationError("Must be either True or False (Yes or No)")
+
+
 
 
 ###################################################################################################################

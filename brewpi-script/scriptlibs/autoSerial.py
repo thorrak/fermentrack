@@ -53,11 +53,11 @@ def detect_port(bootLoader = False):
     port = (None, None)
     ports = find_compatible_serial_ports(bootLoader=bootLoader)
     try:
-        port = ports.next()
+        port = next(ports)
     except StopIteration:
         return port
     try:
-        another_port = ports.next()
+        another_port = next(ports)
         print("Warning: detected multiple compatible serial ports, using the first.")
     except StopIteration:
         pass
