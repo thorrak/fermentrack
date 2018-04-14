@@ -1,10 +1,12 @@
 import serial.tools.list_ports
+import fermentrack_django.settings
+import os
 
 import pickle
 
 # from . import udev_integration
 
-DEVICE_CACHE_FILENAME = 'device.cache'
+DEVICE_CACHE_FILENAME = os.path.join(fermentrack_django.settings.BASE_DIR, 'device.cache')
 
 known_devices = {
     'arduino': [
