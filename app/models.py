@@ -925,7 +925,6 @@ class BrewPiDevice(models.Model):
         # 3. Returns the found IP address (if step 1 was successful), the cached (self.wifi_host_ip) address if it
         #    wasn't, or 'None' if we don't have a cached address and we weren't able to resolve the hostname
         if len(self.wifi_host) > 4:
-            try:
                 ip_list = []
                 ais = socket.getaddrinfo(self.wifi_host, 0, 0, 0, 0)
                 for result in ais:
@@ -937,13 +936,13 @@ class BrewPiDevice(models.Model):
                     self.wifi_host_ip = resolved_address
                     self.save()
                 return resolved_address
-            except:
-                if len(self.wifi_host_ip) > 6:
-                    # We weren't able to resolve the hostname (self.wifi_host) but we DID have a cached IP address.
-                    # Return that.
-                    return self.wifi_host_ip
-                else:
-                    return None
+            # except:
+            #     if len(self.wifi_host_ip) > 6:
+            #         # We weren't able to resolve the hostname (self.wifi_host) but we DID have a cached IP address.
+            #         # Return that.
+            #         return self.wifi_host_ip
+            #     else:
+            #         return None
         # In case of error (or we have no wifi_host)
         return None
 
