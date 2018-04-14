@@ -172,6 +172,8 @@ upgrade.log
 # Also ignore the serial device cache (used for autodetection)
 device.cache
 
+# ...and also ignore any load-time user-configured options in config.ini
+config.ini
 
 # Ignore downloaded firmware files
 *.bin
