@@ -14,7 +14,7 @@ from gravity.models import GravitySensor, GravityLog, IspindelConfiguration, Gra
 try:
     import numpy
     NUMPY_ENABLED = True
-except ModuleNotFoundError:
+except:
     NUMPY_ENABLED = False
 
 
