@@ -47,6 +47,9 @@ import json
 from configobj import ConfigObj
 import pid
 
+# TODO - Delete once testing is done
+import pprint
+
 
 #local imports
 from scriptlibs import brewpiJson
@@ -749,8 +752,10 @@ while run:
                         lcdText = json.loads(asciiToUnicode(line[2:]))
                     elif line[0] == 'C':
                         # Control constants received
+                        # TODO - Delete this
                         logMessage("Control constants received, updating to: {}".format(line[2:]))
                         cc = json.loads(line[2:])
+                        logMessage(pprint.pprint(cc))
                         syncTempFormat(control_constants=cc)  # Check the temp format just in case
                     elif line[0] == 'S':
                         # Control settings received
