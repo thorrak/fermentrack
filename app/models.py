@@ -637,11 +637,10 @@ class BrewPiDevice(models.Model):
         return True
 
     def retrieve_version(self):
-        # TODO - Determine if removing this greedy try/except is smart
-        # try:
-        version_data = json.loads(self.send_message("getVersion", read_response=True))
-        # except:
-        #     return None
+        try:
+            version_data = json.loads(self.send_message("getVersion", read_response=True))
+        except:
+            return None
         return version_data
 
     def is_legacy(self, version=None):
