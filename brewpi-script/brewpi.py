@@ -411,7 +411,7 @@ def renameTempKey(key):
 def syncTempFormat(control_constants):
     db_temp_format = dbConfig.temp_format
 
-    if cc['tempFormat'] != db_temp_format:
+    if control_constants['tempFormat'] != db_temp_format:
         # j{"tempFormat": "C"}
         settings_dict = {'tempFormat': dbConfig.temp_format}
         bg_ser.writeln("j" + json.dumps(settings_dict))
