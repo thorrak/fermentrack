@@ -253,8 +253,16 @@ def sensor_config(request, device_id):
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
             sensor_to_adjust.invert = form.cleaned_data['invert']
 
-            if sensor_to_adjust.write_config_to_controller():
-                messages.success(request, 'Device definition saved for device {}'.format(device_id))
+            if form.cleaned_data['perform_uninstall']:
+                write_succeeded = sensor_to_adjust.uninstall()
+            else:
+                write_succeeded = sensor_to_adjust.write_config_to_controller()
+
+            if write_succeeded:
+                if form.cleaned_data['perform_uninstall']:
+                    messages.success(request, 'Device {} was uninstalled'.format(device_id))
+                else:
+                    messages.success(request, 'Device definition saved for device {}'.format(device_id))
                 return redirect('sensor_list', device_id=device_id)
             else:
                 # We failed to write the configuration to the controller. Show an error.
