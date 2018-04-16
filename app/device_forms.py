@@ -226,6 +226,7 @@ class SensorFormRevised(forms.Form):
         cleaned_data['device_function'] = int(device_function)
         cleaned_data['installed'] = installed
         cleaned_data['pin'] = pin  # To handle the int conversion
+        cleaned_data['perform_uninstall'] = perform_uninstall
 
         return cleaned_data
 

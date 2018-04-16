@@ -209,6 +209,8 @@ def logMessage(message):
     """
     Prints a timestamped message to stderr
     """
+    if message is None:
+        message = "<None>"
     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
 
 

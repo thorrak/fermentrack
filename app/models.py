@@ -231,9 +231,9 @@ class SensorDevice(models.Model):
         if 'i' in device_dict:  # const char DEVICE_ATTRIB_INDEX = 'i';
             new_device.device_index = device_dict['i']
 
-        #  TODO - Determine if I should error out if we don't receive 'h' back in the dict, or should allow defaulting
-        if 'h' in device_dict:  # const char DEVICE_ATTRIB_HARDWARE = 'h';
-            new_device.hardware = device_dict['h']
+        # Not allowing defaulting of new_device.hardware
+        # if 'h' in device_dict:  # const char DEVICE_ATTRIB_HARDWARE = 'h';
+        new_device.hardware = device_dict['h']
 
         if 'j' in device_dict:  # const char DEVICE_ATTRIB_CALIBRATEADJUST = 'j';	// value to add to temp sensors to bring to correct temperature
             new_device.calibrate_adjust = device_dict['j']
@@ -251,7 +251,7 @@ class SensorDevice(models.Model):
             new_device.pio = device_dict['n']
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
-            new_device.invert = device_dict['x']
+            new_device.invert = int(device_dict['x'])
 
         if 'v' in device_dict:  # Temperature value (if we read values when we queried devices from the controller)
             new_device.sensor_value = device_dict['v']
@@ -316,7 +316,7 @@ class SensorDevice(models.Model):
 
     # This uses the "updateDevice" message. There is also a "writeDevice" message which is used to -create- devices.
     # (Used for "manual" actuators, aka buttons)
-    def write_config_to_controller(self):
+    def write_config_to_controller(self, uninstall=False):
         self.set_defaults_for_device_function()  # Bring the configuration to a consistent state
 
         # U:{"i":"0","c":"1","b":"0","f":"5","h":"2","p":"12","a":"28FF93A7A4150307"}
@@ -337,7 +337,38 @@ class SensorDevice(models.Model):
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
 
-        return self.controller.send_message("applyDevice", json.dumps(config_dict))
+
+        sent_message = self.controller.send_message("applyDevice", json.dumps(config_dict))
+        time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
+
+        self.controller.load_sensors_from_device()
+        try:
+            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+        except ValueError:
+            if uninstall:
+                # If we were -trying- to uninstall the device, it's a good thing it doesn't show up in installed_devices
+                return True
+            else:
+                return False
+
+        if updated_device.device_index != self.device_index:
+            return False
+        elif updated_device.chamber != self.chamber:
+            return False
+        elif updated_device.beer != self.beer:
+            return False
+        elif updated_device.device_function != self.device_function:
+            return False
+        elif updated_device.hardware != self.hardware:
+            return False
+        elif updated_device.pin != self.pin:
+            return False
+        elif self.hardware == 1 and updated_device.invert != int(self.invert):
+            return False
+        elif self.hardware == 2 and updated_device.address != self.address:
+            return False
+        else:
+            return True
 
     # Uninstall basically just sets device_function to 0
     def uninstall(self):
@@ -346,7 +377,7 @@ class SensorDevice(models.Model):
         self.chamber = 0
         self.beer = 0
 
-        return self.write_config_to_controller()
+        return self.write_config_to_controller(uninstall=True)
 
     @staticmethod
     def find_device_from_address_or_pin(device_list, address=None, pin=None):
@@ -361,7 +392,7 @@ class SensorDevice(models.Model):
                 if this_device.pin == pin:
                     return this_device
             # We weren't able to find a device with that pin number
-            raise ValueError('Unable to find address {} in device_list'.format(address))
+            raise ValueError('Unable to find pin {} in device_list'.format(pin))
         else:
             # We weren't passed an address or pin number
             raise ValueError('Neither address nor pin passed to function')
@@ -619,7 +650,7 @@ class BrewPiDevice(models.Model):
                 # If we weren't passed a version & can't load from the device itself, return None
                 return None  # There's probably a better way of doing this.
 
-        if version['version'] == "0.2.4":
+        if version['version'][:3] == "0.2":
             return True
         return False
 
@@ -1174,7 +1205,10 @@ class BeerLogPoint(models.Model):
 
     def has_gravity_enabled(self):
         # Just punting this upstream
-        return self.associated_beer.gravity_enabled
+        if self.associated_beer_id is not None:
+            return self.associated_beer.gravity_enabled
+        else:
+            return False
 
 
     def enrich_gravity_data(self):
@@ -1304,25 +1338,26 @@ class BeerLogPoint(models.Model):
                 self.associated_beer.device.manage_logging(status='stop')
                 return False
 
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
+        if self.associated_beer_id is not None:
+            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
 
-        base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
-        full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
-        annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
+            full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
+            annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
 
-        # Write out headers (if the files don't exist)
-        check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
-        check_and_write_headers(full_csv_file, self.associated_beer.column_headers('full_csv'))
+            # Write out headers (if the files don't exist)
+            check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
+            check_and_write_headers(full_csv_file, self.associated_beer.column_headers('full_csv'))
 
-        # And then write out the data
-        write_data(base_csv_file, self.data_point('base_csv'))
-        write_data(full_csv_file, self.data_point('full_csv'))
+            # And then write out the data
+            write_data(base_csv_file, self.data_point('base_csv'))
+            write_data(full_csv_file, self.data_point('full_csv'))
 
-        # Next, do the json file
-        annotation_data = self.data_point('annotation_json')
-        if len(annotation_data) > 0:  # Not all log points come with annotation data
-            json_existed = check_and_write_annotation_json_head(annotation_json)
-            write_annotation_json(annotation_json, annotation_data, json_existed)
+            # Next, do the json file
+            annotation_data = self.data_point('annotation_json')
+            if len(annotation_data) > 0:  # Not all log points come with annotation data
+                json_existed = check_and_write_annotation_json_head(annotation_json)
+                write_annotation_json(annotation_json, annotation_data, json_existed)
 
         # super(BeerLogPoint, self).save(*args, **kwargs)
 
@@ -1967,16 +2002,16 @@ class OldControlConstants(models.Model):
         :type controller: BrewPiDevice
         :return: boolean
         """
-        try:
-            # Load the control constants dict from the controller
-            cc = controller.get_control_constants()
+        # try:
+        # Load the control constants dict from the controller
+        cc = controller.get_control_constants()
 
-            for this_field in self.firmware_field_list:
-                setattr(self, this_field, cc[this_field])
-            return True
+        for this_field in self.firmware_field_list:
+            setattr(self, this_field, cc[this_field])
+        return True
 
-        except:
-            return False
+        # except:
+        #     return False
 
     def save_to_controller(self, controller, attribute):
         """

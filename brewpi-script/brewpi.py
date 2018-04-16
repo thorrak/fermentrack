@@ -411,7 +411,7 @@ def renameTempKey(key):
 def syncTempFormat(control_constants):
     db_temp_format = dbConfig.temp_format
 
-    if cc['tempFormat'] != db_temp_format:
+    if control_constants['tempFormat'] != db_temp_format:
         # j{"tempFormat": "C"}
         settings_dict = {'tempFormat': dbConfig.temp_format}
         bg_ser.writeln("j" + json.dumps(settings_dict))
@@ -431,7 +431,7 @@ def trigger_refresh(read_values=False):
         bg_ser.writeln("d{}")  # request installed devices
         bg_ser.writeln("h{u:-1}")  # request available, but not installed devices
     # Now, force a refresh of the device list (to keep it updated)
-    time.sleep(5)  # We'll give the controller 5 seconds to respond
+    time.sleep(2.5)  # We'll give the controller 5 seconds to respond
     raise socket.timeout
 
 
