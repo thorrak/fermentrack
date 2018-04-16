@@ -342,7 +342,10 @@ class SensorDevice(models.Model):
         time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
 
         self.controller.load_sensors_from_device()
-        updated_device =  SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+        try:
+            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+        except ValueError:
+            return False
 
         if updated_device.device_index != self.device_index:
             return False
@@ -385,7 +388,7 @@ class SensorDevice(models.Model):
                 if this_device.pin == pin:
                     return this_device
             # We weren't able to find a device with that pin number
-            raise ValueError('Unable to find address {} in device_list'.format(address))
+            raise ValueError('Unable to find pin {} in device_list'.format(pin))
         else:
             # We weren't passed an address or pin number
             raise ValueError('Neither address nor pin passed to function')
