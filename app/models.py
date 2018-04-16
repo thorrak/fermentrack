@@ -906,17 +906,17 @@ class BrewPiDevice(models.Model):
         return synced
 
     def get_control_constants(self):
-        {"tempFormat": "F", "tempSetMin": 33.8, "tempSetMax": 86.0, "pidMax": 18.000, "Kp": 5.000, "Ki": 0.250,
-         "Kd": -1.500, "iMaxErr": 0.900, "idleRangeH": 1.801, "idleRangeL": -1.801, "heatTargetH": 0.541,
-         "heatTargetL": -0.359, "coolTargetH": 0.359, "coolTargetL": -0.541, "maxHeatTimeForEst": 600,
-         "maxCoolTimeForEst": 1200, "fridgeFastFilt": 1, "fridgeSlowFilt": 4, "fridgeSlopeFilt": 3, "beerFastFilt": 3,
-         "beerSlowFilt": 4, "beerSlopeFilt": 4, "lah": 0, "hs": 0}
-
-        {"tempFormat": "F", "tempSetMin": 33.8, "tempSetMax": 87.0, "pidMax": 18.000, "Kp": 5.000, "Ki": 0.250,
-         "Kd": -1.500, "iMaxErr": 0.898, "idleRangeH": 1.799, "idleRangeL": -1.799, "heatTargetH": 0.537,
-         "heatTargetL": -0.357, "coolTargetH": 0.357, "coolTargetL": -0.537, "maxHeatTimeForEst": 600,
-         "maxCoolTimeForEst": 1200, "fridgeFastFilt": 1, "fridgeSlowFilt": 4, "fridgeSlopeFilt": 3, "beerFastFilt": 3,
-         "beerSlowFilt": 4, "beerSlopeFilt": 4, "lah": 0, "hs": 0}
+        # {"tempFormat": "F", "tempSetMin": 33.8, "tempSetMax": 86.0, "pidMax": 18.000, "Kp": 5.000, "Ki": 0.250,
+        #  "Kd": -1.500, "iMaxErr": 0.900, "idleRangeH": 1.801, "idleRangeL": -1.801, "heatTargetH": 0.541,
+        #  "heatTargetL": -0.359, "coolTargetH": 0.359, "coolTargetL": -0.541, "maxHeatTimeForEst": 600,
+        #  "maxCoolTimeForEst": 1200, "fridgeFastFilt": 1, "fridgeSlowFilt": 4, "fridgeSlopeFilt": 3, "beerFastFilt": 3,
+        #  "beerSlowFilt": 4, "beerSlopeFilt": 4, "lah": 0, "hs": 0}
+        #
+        # {"tempFormat": "F", "tempSetMin": 33.8, "tempSetMax": 87.0, "pidMax": 18.000, "Kp": 5.000, "Ki": 0.250,
+        #  "Kd": -1.500, "iMaxErr": 0.898, "idleRangeH": 1.799, "idleRangeL": -1.799, "heatTargetH": 0.537,
+        #  "heatTargetL": -0.357, "coolTargetH": 0.357, "coolTargetL": -0.537, "maxHeatTimeForEst": 600,
+        #  "maxCoolTimeForEst": 1200, "fridgeFastFilt": 1, "fridgeSlowFilt": 4, "fridgeSlopeFilt": 3, "beerFastFilt": 3,
+        #  "beerSlowFilt": 4, "beerSlopeFilt": 4, "lah": 0, "hs": 0}
         return json.loads(self.send_message("getControlConstants", read_response=True))
 
     def set_parameters(self, parameters):
