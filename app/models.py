@@ -337,7 +337,31 @@ class SensorDevice(models.Model):
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
 
-        return self.controller.send_message("applyDevice", json.dumps(config_dict))
+
+        sent_message = self.controller.send_message("applyDevice", json.dumps(config_dict))
+        time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
+
+        self.controller.load_sensors_from_device()
+        updated_device =  SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+
+        if updated_device.device_index != self.device_index:
+            return False
+        elif updated_device.chamber != self.chamber:
+            return False
+        elif updated_device.beer != self.beer:
+            return False
+        elif updated_device.device_function != self.device_function:
+            return False
+        elif updated_device.hardware != self.hardware:
+            return False
+        elif updated_device.pin != self.pin:
+            return False
+        elif self.hardware == 1 and updated_device.invert != self.invert:
+            return False
+        elif self.hardware == 2 and updated_device.address != self.address:
+            return False
+        else:
+            return True
 
     # Uninstall basically just sets device_function to 0
     def uninstall(self):

@@ -258,7 +258,9 @@ def sensor_config(request, device_id):
                 return redirect('sensor_list', device_id=device_id)
             else:
                 # We failed to write the configuration to the controller. Show an error.
-                messages.error(request, "Failed to write the configuration to the controller.")
+                # TODO - Expand this error message to include instructions on resetting the EEPROM.
+                messages.error(request, "Failed to write the configuration to the controller. If this continues, try "
+                                        "resetting the EEPROM on the controller.")
                 return redirect('sensor_list', device_id=device_id)
         else:
             messages.error(request, "There was an error processing the form. Please review and resubmit.")
