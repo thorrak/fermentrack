@@ -22,15 +22,7 @@ from django.contrib.auth.models import User
 
 
 
-# Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
-def siteroot(request):
-
-    # In addition to requiring the site to be configured, we require that there be a user account. Due to the
-    # setup workflow, the user will generally be created before constance configuration takes place, but if
-    # the user account gets deleted (for example, in the admin) we want the user to go through that portion
-    # of account setup.
-    num_users=User.objects.all().count()
-
+def error_notifications(request):
     if config.GIT_UPDATE_TYPE != "none":
         # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
@@ -59,14 +51,39 @@ def siteroot(request):
             # overwrite it. Git check can happen on next refresh.
             config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
             config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
+        if not config.ALLOW_GIT_BRANCH_SWITCHING:
+            # Ths user is using one of the two "default" branches (dev or master). Make sure that the branch he/she is
+            # actually using is the same as the one that he/she wanted.
+
+            # Don't check if the user has custom branch switching though, as they should be allowed to pick whatever
+            # branch he/she wants.
+            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE:
+                messages.warning(request, "You selected to update from the {} code ".format(config.GIT_UPDATE_TYPE) +
+                                 "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
+                                 'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
     # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
     # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
     # TODO - Readd this check
     # if os.path.isfile("/var/run/sshwarn"):
     #     messages.warning(request, "You have SSH enabled on the Raspberry Pi, but the default (pi) user's password is "
-    #                               "unchanged! This is potentially a major security issue. Please SSH in and change the "
-    #                               "password. Otherwise, we'll keep annoying you until you do.")
+    #                               "unchanged! This is potentially a major security issue. Please SSH in, change the "
+    #                               "password, and SSH in one more time to test that it worked. Otherwise, we'll keep "
+    #                               "annoying you until you do.")
+
+
+
+# Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
+def siteroot(request):
+
+    # In addition to requiring the site to be configured, we require that there be a user account. Due to the
+    # setup workflow, the user will generally be created before constance configuration takes place, but if
+    # the user account gets deleted (for example, in the admin) we want the user to go through that portion
+    # of account setup.
+    num_users=User.objects.all().count()
+
+    # Notify the user of things like git being out of date, issues with SSH, etc.
+    error_notifications(request)
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
         # If things aren't configured, redirect to the guided setup workflow
@@ -423,45 +440,52 @@ def github_trigger_upgrade(request, variant=""):
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
         else:
             cmds = {}
+
+            if not allow_git_branch_switching:
+                # I'm not doing "if git_update_type == config.GIT_UPDATE_TYPE" so users who have update set to 'none'
+                # can still update from the "master" branch.
+                if git_update_type == "dev":
+                    branch_to_use = "dev"
+                else:
+                    # Assume if they have anything other than "dev" they want master
+                    branch_to_use = "master"
+            elif 'new_branch' not in request.POST:
+                # Branch switching is enabled, but we weren't provided with a branch. Use the current branch.
+                branch_to_use = commit_info['local_branch']
+            else:
+                # Branch switching is enabled & the user provided a branch. Use it.
+                branch_to_use = request.POST.get('new_branch', "master")
+
             if variant == "":
                 if sys.version_info[0] < 3:
                     # TODO - After April 2018, delete the Python 2 option here
                     cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['no_branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                    cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(branch_to_use)
                     messages.success(request, "Triggered an upgrade from GitHub")
                 else:
                     cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['no_branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(commit_info['local_branch'])
-                    cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
                     messages.success(request, "Triggered an upgrade from GitHub")
 
             elif variant == "force":
                 if sys.version_info[0] < 3:
                     # TODO - After April 2018, delete the Python 2 option here
                     cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['no_branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(commit_info['local_branch'])
-                    cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(branch_to_use)
                     messages.success(request, "Triggered an upgrade from GitHub")
                 else:
                     cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['no_branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(commit_info['local_branch'])
-                    cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(request.POST.get('new_branch', "master"))
+                    cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
                     messages.success(request, "Triggered an upgrade from GitHub")
 
             else:
                 cmds['tag'] = ""
-                cmds['no_branch'] = ""
                 cmds['branch'] = ""
                 messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
 
             if 'tag' in request.POST:
                 # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
                 cmd = cmds['tag']
-            elif not allow_git_branch_switching or 'new_branch' not in request.POST:
-                # We'll use the branch name from the current commit if we either aren't allowed to directly switch branches
-                # or haven't been passed a branch name
-                cmd = cmds['no_branch']
             else:
                 cmd = cmds['branch']
 

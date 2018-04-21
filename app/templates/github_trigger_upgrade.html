@@ -10,6 +10,7 @@
 
 
 {% if git_update_type == "tagged" %}
+    {#  This functionality no longer exists, but I'm leaving the code here in case we decide to reenable it later #}
 
 <h3>Update to Latest Tagged Commit</h3>
 <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}

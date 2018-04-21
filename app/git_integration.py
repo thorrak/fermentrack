@@ -1,30 +1,28 @@
-
 from git import Repo
 import fermentrack_django.settings as settings
 from constance import config  # For the explicitly user-configurable stuff
 
 
-# TODO - Refactor the following function (if not refactor it entirely into app_is_current)
-def local_and_remote_are_at_same_commit(repo, remote, tagged_commits_only=False):
-    local_commit = repo.commit()
+def app_is_current(tagged_commits_only=False, branch_to_check=None):
+    local_repo = Repo(path=settings.BASE_DIR)
+    remote_repo = local_repo.remote()
+    local_commit = local_repo.commit()
+
+    if not config.ALLOW_GIT_BRANCH_SWITCHING and settings.GIT_BRANCH != config.GIT_UPDATE_TYPE:
+        # The branch is set to "master" and update type is "dev" or vice-versa
+        return False
 
     if tagged_commits_only:
+        # Functionality no longer exists, but leaving the code in case we reenable it later. This should generally never
+        # be reached.
         tags = get_tag_info()
         return tags['latest_tag']['committed_datetime'] <= local_commit.committed_datetime
     else:
         # We don't want to upgrade if the local commit is newer than the remote commit (IE - we're doing development
         # on the local copy)
-        remote_fetch = remote.fetch()
+        remote_fetch = remote_repo.fetch()
         remote_commit = remote_fetch[0].commit
         return remote_commit.committed_datetime <= local_commit.committed_datetime
-        # return local_commit.hexsha == remote_commit.hexsha
-
-
-def app_is_current(tagged_commits_only=False):
-    local_repo = Repo(path=settings.BASE_DIR)
-    remote_repo = local_repo.remote()
-
-    return local_and_remote_are_at_same_commit(local_repo, remote_repo, tagged_commits_only)
 
 
 def get_local_remote_commit_info():

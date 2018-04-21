@@ -1,6 +1,7 @@
 import os
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
+from git import Repo
 
 from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
@@ -17,6 +18,10 @@ CONFIG_INI_FILEPATH = os.path.join(BASE_DIR, 'fermentrack_django', 'config.ini')
 config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
+
+local_repo = Repo(path=BASE_DIR)
+GIT_BRANCH = local_repo.active_branch.name
+
 
 
 # Application definition
@@ -149,8 +154,8 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     'git_update_type_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"),
-                    ("any", "Prompt to upgrade on all commits/updates"),
-                    ("tagged", "Prompt to upgrade on tagged (official, numbered) releases"),
+                    ("dev", "Upgrade whenever possible, including 'beta' code"),
+                    ("master", "Only upgrade when updates are officially released"),
                     ("none", "Do not automatically check/prompt for updates"))
     }],
     'timezone_select': ['django.forms.fields.ChoiceField', {
@@ -172,7 +177,7 @@ CONSTANCE_CONFIG = {
     'GRAVITY_SUPPORT_ENABLED': (True, 'Has the user enabled support for specific gravity sensors?', bool),
     'LAST_GIT_CHECK': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now()),
                        'When was the last time we checked GitHub for upgrades?', datetime.datetime),
-    'GIT_UPDATE_TYPE': ('any', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
+    'GIT_UPDATE_TYPE': ('dev', 'What Fermentrack upgrades would you like to download?', 'git_update_type_select'),
     'ALLOW_GIT_BRANCH_SWITCHING': (False, 'Should the user be allowed to switch Git branches from within the app?',
                                    bool),
     'FIRMWARE_LIST_LAST_REFRESHED': (pytz.timezone(TIME_ZONE).localize(datetime.datetime.now())+datetime.timedelta(hours=-25), 'When was the firmware list last refreshed from fermentrack.com?',
@@ -186,7 +191,6 @@ CONSTANCE_CONFIG = {
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
-    'RAVEN_ENABLED': (False, 'Has the user opted in to report errors via raven?', bool),
 
 }
 
@@ -249,4 +253,7 @@ if ENABLE_SENTRY:
         # If you are using git, you can also automatically configure the
         # release based on the git info.
         'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
+        'tags': {
+            'branch': GIT_BRANCH
+        },
     }
