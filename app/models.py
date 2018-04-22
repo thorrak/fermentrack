@@ -2007,7 +2007,11 @@ class OldControlConstants(models.Model):
         cc = controller.get_control_constants()
 
         for this_field in self.firmware_field_list:
-            setattr(self, this_field, cc[this_field])
+            try:
+                # In case we don't get every field back
+                setattr(self, this_field, cc[this_field])
+            except:
+                pass
         return True
 
         # except:
