@@ -54,6 +54,8 @@ class GuidedSetupConfigForm(forms.Form):
         (False, 'No')
     ]
 
+    update_options = settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices'][1:]
+
     # Fields for our form, the initial value taken from configuration.
 
     # There appears to be a bug with constance where if you use config in a form setup it will die if the constance
@@ -78,6 +80,13 @@ class GuidedSetupConfigForm(forms.Form):
         choices=true_false,
         # widget=forms.RadioSelect(),
         )
+
+    update_preference = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+        choices=update_options,
+        help_text="What type of updates would you like to receive for Fermentrack?"
+        # widget=forms.RadioSelect(),
+        )
+
 
     enable_sentry_support = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
         choices=true_false,
