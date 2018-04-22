@@ -289,13 +289,24 @@ class TempControlForm(forms.Form):
     def clean(self):
         cleaned_data = self.cleaned_data
 
-        if 'profile' not in cleaned_data and 'temperature_setting' not in cleaned_data:
-            raise forms.ValidationError("Either a profile or the new temperature setting must be provided to update"
-                                        "the temperature control settings on the controller")
-        elif 'temperature_setting' in cleaned_data and cleaned_data['temperature_setting'] is None:
-            raise forms.ValidationError("Either a profile or the new temperature setting must be provided to update"
-                                        "the temperature control settings on the controller")
-
-
-        return cleaned_data
+        if 'temp_control' in cleaned_data:
+            if cleaned_data['temp_control'] == 'off':
+                # If temp control is off, we don't need a profile or setting
+                return cleaned_data
+            elif cleaned_data['temp_control'] == 'beer_constant' or cleaned_data['temp_control'] == 'fridge_constant':
+                # For constant modes, we must have a temperature setting
+                if 'temperature_setting' in cleaned_data:
+                    return cleaned_data
+                else:
+                    raise forms.ValidationError("A temperature setting must be provided for 'constant' modes")
+            elif cleaned_data['temp_control'] == 'beer_profile':
+                # and for profile modes, we must have a profile
+                if 'profile' in cleaned_data:
+                    return cleaned_data
+                else:
+                    raise forms.ValidationError("A temperature profile must be provided for 'profile' modes")
+            else:
+                raise forms.ValidationError("Invalid temperature control mode specified!")
+        else:
+            raise forms.ValidationError("Temperature control mode must be specified!")
 
