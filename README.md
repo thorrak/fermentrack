@@ -1,5 +1,7 @@
 # Fermentrack
 
+![Fermentrack Logo](http://www.fermentrack.com/static/img/fermentrack_logo.png "Fermentrack")
+
 [![Documentation Status](https://readthedocs.org/projects/fermentrack/badge/?version=master)](http://fermentrack.readthedocs.io/en/master/?badge=master)
                 
 #### A replacement web interface for BrewPi
