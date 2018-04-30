@@ -44,11 +44,23 @@ logger = logging.getLogger(__name__)
 # In addition to these 5 fields, we track when the data point was saved (but this isn't expected to be passed in)
 
 
-# Due to the fact that - unlike temp controllers - we aren't assuming a single manufacturer/type of specific gravity
-# sensor, we use the GravitySensor model to tie together the fields that don't require differentiation between sensor
-# types
 
 class GravitySensor(models.Model):
+    """GravitySensor is the base class for specific gravity sensors of all types
+
+    Fermentrack supports a handful of types of specific gravity sensors, including Tilt Hydrometers, iSpindel devices,
+    and manually entered readings. While each sensor type has its own specific class for sensor-specific configuration,
+    the GravitySensor class is what Fermentrack itself interacts with, and contains all the data common to each
+    controller type.
+
+    Attributes:
+        name: The name of the specific gravity sensor
+        temp_format: The sensor's preferred temperature format
+        sensor_type: The type of specific gravity sensor (for determining additional configuration information)
+        status: The status for any daemon managing the device (Currently only used for Tilt hydrometers)
+        active_log: (optional) The current log file (if any) to which readings are being recorded
+        assigned_brewpi_device: (optional) The BrewPi temperature controller to which the gravity sensor is assigned
+    """
     class Meta:
         verbose_name = "Gravity Sensor"
         verbose_name_plural = "Gravity Sensors"
@@ -68,7 +80,6 @@ class GravitySensor(models.Model):
         (TEMP_NEVER_ESTIMATE, 'Temp is never estimate'),
     )
 
-
     SENSOR_TILT = 'tilt'
     SENSOR_MANUAL = 'manual'
     SENSOR_ISPINDEL = 'ispindel'
@@ -77,7 +88,6 @@ class GravitySensor(models.Model):
         (SENSOR_ISPINDEL, 'iSpindel'),
         (SENSOR_MANUAL, 'Manual'),
     )
-
 
     STATUS_ACTIVE = 'active'
     STATUS_UNMANAGED = 'unmanaged'
@@ -119,6 +129,14 @@ class GravitySensor(models.Model):
         return self.name
 
     def is_gravity_sensor(self):  # This is a hack used in the site template so we can display relevant functionality
+        """Indicates that the object being examined is a gravity sensor
+
+        This is a hack used in the site template so we can display relevant functionality. It currently has no purpose
+        other than to return 'True' (whereas objects of other types - presumaby BrewPiDevices - would not return True).
+
+        Returns:
+            True
+        """
         return True
 
     # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
@@ -218,6 +236,7 @@ class GravityLog(models.Model):
 
     @staticmethod
     def column_headers(which='base_csv', human_readable=False):
+
         if which == 'base_csv':
             if human_readable:
                 return ['Log Time', 'Specific Gravity', 'Temp']
@@ -381,14 +400,8 @@ class GravityLogPoint(models.Model):
             # Annotations are just the extra data (for now)
             retval = []
             if self.extra_data is not None:
-                # TODO - This is a hack to retain Python 2 support. Delete once this is no longer necessary
                 try:
-                    basestring
-                except NameError:
-                    basestring = str
-
-                try:
-                    if isinstance(self.extra_data, basestring):
+                    if isinstance(self.extra_data, str):
                         shortText = self.extra_data[:1]
                     else:
                         # If the extra_data isn't a string (the angle that we're saving for iSpindels, for example) then
@@ -583,6 +596,13 @@ class TiltConfiguration(models.Model):
         (COLOR_PINK, 'Pink'),
     )
 
+    CONNECTION_BRIDGE = "Bridge"
+    CONNECTION_BLUETOOTH = "Bluetooth"
+
+    CONNECTION_CHOICES = (
+        (CONNECTION_BLUETOOTH, 'Bluetooth'),
+        (CONNECTION_BRIDGE, 'TiltBridge'),
+    )
 
     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
                                   related_name="tilt_configuration")
@@ -612,6 +632,12 @@ class TiltConfiguration(models.Model):
 
     # This is almost always 0, but adding it here in case someone needs to configure it later on
     bluetooth_device_id = models.IntegerField(default=0, help_text="Almost always 0 - Change if you have Bluetooth issues")
+
+    connection_type = models.CharField(max_length=32, choices=CONNECTION_CHOICES, default=CONNECTION_BLUETOOTH,
+                                       help_text="How should Fermentrack connect to this Tilt?")
+
+    tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, default=None,
+                                   help_text="TiltBridge device to use (if any)")
 
     def tiltHydrometerName(self, uuid):
         return {
@@ -670,6 +696,25 @@ class TiltConfiguration(models.Model):
         # This must match the log prefix used in utils/processmgr.py
         return "tilt-" + self.color.lower()
 
+
+
+class TiltBridge(models.Model):
+    """TiltBridge objects allow a single TiltBridge device to manage multiple individual Tilt hydrometers
+
+    TiltBridge (http://www.tiltbridge.com/) is a project by one of the creators of Fermentrack to allow monitoring
+    of Tilt Hydrometers using ESP32-based controllers. The TiltBridge controller then forwards the reading to an
+    external web service (such as Fermentrack).
+
+    TiltBridge controllers provide raw (unadjusted) temperature & gravity readings from the Tilt as well as the Tilt's
+    color and a user-provided 'api key' identifying the TiltBridge itself.
+
+    Attributes:
+        api_key: A token which is provided by the TiltBridge to identify the device
+    """
+    name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
+    api_key = models.CharField(max_length=64, primary_key=True,
+                               help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
+                                         "itself when it connects to the Raspberry Pi")
 
 
 ### iSpindel specific models

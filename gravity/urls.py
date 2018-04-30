@@ -40,6 +40,7 @@ gravity_urlpatterns = [
     url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getGravitySensors, name="getSensor"),  # For a single device
     url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors
     url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getIspindelExtras, name="getIspindelExtras"),  # Specific to iSpindel devices, allows for easy calibration
+    url(r'^tiltbridge/?$', gravity.views.tiltbridge_handler, name="gravity_tiltbridge"),  # Handler for tiltbridge gravity readings
 
     # iSpindel-specific Views
     url(r'^ispindel/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings

@@ -19,7 +19,11 @@ def handle_gravitysensor_post_save(sender, **kwargs):
     if hasattr(sensor, 'tilt_configuration'):
         # Every time we update a GravitySensor we want to trigger a reload of the Tilt configuration in case logging
         # is enabled/disabled. Otherwise, no data will get logged (or data will erroneously continue to be logged)
-        sensor.tilt_configuration.set_redis_reload_flag()
+        try:
+            sensor.tilt_configuration.set_redis_reload_flag()
+        except:
+            # If we can't connect to Redis, it's all good
+            pass
 
 
 @receiver(post_save, sender=TiltConfiguration)
@@ -29,7 +33,10 @@ def handle_tiltconfiguration_post_save(sender, **kwargs):
     """
 
     tilt = kwargs.get('instance')
-    tilt.set_redis_reload_flag()
+    try:
+        tilt.set_redis_reload_flag()
+    except:
+        pass
 
 
 @receiver(post_save, sender=TiltGravityCalibrationPoint)
@@ -39,7 +46,10 @@ def handle_TiltGravityCalibrationPoint_post_save(sender, **kwargs):
     """
 
     calibration_point = kwargs.get('instance')
-    calibration_point.sensor.set_redis_reload_flag()
+    try:
+        calibration_point.sensor.set_redis_reload_flag()
+    except:
+        pass
 
 
 @receiver(post_save, sender=TiltTempCalibrationPoint)
@@ -49,6 +59,9 @@ def handle_TiltTempCalibrationPoint_post_save(sender, **kwargs):
     """
 
     calibration_point = kwargs.get('instance')
-    calibration_point.sensor.set_redis_reload_flag()
+    try:
+        calibration_point.sensor.set_redis_reload_flag()
+    except:
+        pass
 
 # TODO - Add a pre_delete signal to trigger cessation of the relevant tilt_manager process

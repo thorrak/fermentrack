@@ -51,9 +51,10 @@ def BrewPiDevice_query_db(self):
 TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor.py") + ' --color "%s"'
 
 def TiltConfiguration_query_db(self):
-    """Query django database for active BrewPiDevices, returns an empty iterable if error"""
+    """Query django database for active Tilt Hydrometers connected via Bluetooth, returns an empty iterable if error"""
     try:
-        return gravity.models.TiltConfiguration.objects.filter(sensor__status=gravity.models.GravitySensor.STATUS_ACTIVE)
+        return gravity.models.TiltConfiguration.objects.filter(sensor__status=gravity.models.GravitySensor.STATUS_ACTIVE,
+                                                               connection_type=gravity.models.TiltConfiguration.CONNECTION_BLUETOOTH)
     except self.model.DoesNotExist:
         self.log.info("No active {}".format(self.device_type))
     except (Exception) as e:

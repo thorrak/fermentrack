@@ -97,6 +97,14 @@
                         <div class="row col-xs-12">{% form_generic tilt_form.name %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.temp_format %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.color %}</div>
+                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
+
+                        {# TODO - Make these fields hidden if connection type isn't tiltbridge #}
+                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
+                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
+                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
+
+
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
                     </form>
