@@ -886,7 +886,7 @@ def debug_connection(request, device_id):
         # Start with the mDNS hostname (if mdns_lookup was successful)
         if mdns_lookup is not None:
             hostname = active_device.wifi_host
-            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname, active_device.wifi_port)
 
             if connection_check:
                 # We were able to telnet into the hostname
@@ -911,7 +911,7 @@ def debug_connection(request, device_id):
 
         if len(active_device.wifi_host_ip) > 7:
             hostname = active_device.wifi_host_ip
-            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname, active_device.wifi_port)
 
             test_result = {'name': 'Cached IP Test', 'parameter': hostname, 'status': PASSED,
                            'result': 'Available'}
