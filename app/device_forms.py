@@ -159,6 +159,17 @@ class OldCCModelForm(ModelForm):
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
 
+class NewCCModelForm(ModelForm):
+    class Meta:
+        model = NewControlConstants
+        fields = NewControlConstants.firmware_field_list
+
+    def __init__(self, *args, **kwargs):
+        super(NewCCModelForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
 class SensorForm(ModelForm):
     class Meta:
         model = SensorDevice

@@ -194,6 +194,44 @@ def device_control_constants_legacy(request, device_id, control_constants):
                                    context={'form': form, 'active_device': active_device})
 
 
+
+@login_required
+@site_is_configured
+def device_control_constants_modern(request, device_id, control_constants):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    active_device = BrewPiDevice.objects.get(id=device_id)
+
+    if request.POST:
+        form = device_forms.NewCCModelForm(request.POST)
+        if form.is_valid():
+            # Generate the new_control_constants object from the form data
+            new_control_constants = form.save(commit=False)
+
+            # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
+            # TODO - Modify the below to only send constants that have changed to the controller
+            if not new_control_constants.save_all_to_controller(active_device):
+                return render(request, template_name='device_control_constants_new.html',
+                                           context={'form': form, 'active_device': active_device})
+
+            # TODO - Make it so if we added a preset name we save the new preset
+            # new_device.save()
+
+            messages.success(request, u'Control constants updated for device {}'.format(active_device))
+            return redirect("/")
+
+        else:
+            return render(request, template_name='device_control_constants_new.html',
+                                       context={'form': form, 'active_device': active_device})
+    else:
+        form = device_forms.OldCCModelForm(instance=control_constants)
+        return render(request, template_name='device_control_constants_new.html',
+                                   context={'form': form, 'active_device': active_device})
+
+
 @login_required
 @site_is_configured
 def device_control_constants(request, device_id):
@@ -213,8 +251,7 @@ def device_control_constants(request, device_id):
     elif is_legacy:
         return device_control_constants_legacy(request, device_id, control_constants)
     else:
-        # TODO - Replace this with device_control_constants_modern or whatever it ends up getting called
-        return device_control_constants_legacy(request, device_id, control_constants)
+        return device_control_constants_modern(request, device_id, control_constants)
 
 
 @login_required
