@@ -395,6 +395,7 @@ prevTempJson = {
 
 def renameTempKey(key):
     rename = {
+        "Log1Temp": "RoomTemp", # Added for convenience, allows a configured OEM BrewPi to log room temp with Log1Temp
         "bt": "BeerTemp",
         "bs": "BeerSet",
         "ba": "BeerAnn",
