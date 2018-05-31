@@ -274,6 +274,7 @@ def sensor_config(request, device_id):
                                                                                 address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
             sensor_to_adjust.invert = form.cleaned_data['invert']
+            sensor_to_adjust.calibrate_adjust = form.cleaned_data['calibration']
 
             if form.cleaned_data['perform_uninstall']:
                 write_succeeded = sensor_to_adjust.uninstall()
