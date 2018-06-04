@@ -516,7 +516,7 @@ def almost_json_view(request, sensor_id, log_id):
 @csrf_exempt
 def tiltbridge_handler(request):
     if request.body is None:
-        logger.error("No data in iSpindel request body")
+        logger.error("No data in TiltBridge request body")
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
@@ -524,57 +524,28 @@ def tiltbridge_handler(request):
     with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
         pprint.pprint(request.body.decode('utf-8'), logFile)
 
-    # As of the iSpindel firmware version 5.6.1, the json posted contains the following fields:
-    # {u'ID': 3003098,
-    #  u'angle': 77.4576,
-    #  u'battery': 4.171011,
-    #  u'gravity': 27.22998,
-    #  u'name': u'iSpindel123',
-    #  u'temperature': 24.75,
-    #  u'token': u'tokengoeshere'}
+    # This should look like this (while testing only):
+    # {
+    #   'api_key': 'Key Goes Here',
+    #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
+    #            {'color': 'Orange', 'temp': 66, 'gravity': 1.001}
+    # }
 
-    ispindel_data = json.loads(request.body.decode('utf-8'))
+    tiltbridge_data = json.loads(request.body.decode('utf-8'))
     with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
-        pprint.pprint(ispindel_data, logFile)
+        pprint.pprint(tiltbridge_data, logFile)
 
     try:
-        ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
+        tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
     except:
-        logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
-        return JsonResponse({'status': 'failed', 'message': "Unable to load sensor with that name"}, safe=False,
+        logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
+        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-
-    # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
-    # reconfigure on the fly.
-    angle=float(ispindel_data['angle'])
-
-    # new_point = GravityLogPoint(
-    #     gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
-    #     temp=converted_temp,
-    #     temp_format=temp_format,
-    #     temp_is_estimate=False,
-    #     associated_device=ispindel_obj.sensor,
-    #     gravity_latest=calculated_gravity,
-    #     temp_latest=converted_temp,
-    #     extra_data=angle,
-    # )
-    #
-    # if ispindel_obj.sensor.active_log is not None:
-    #     new_point.associated_log = ispindel_obj.sensor.active_log
-    #
-    # new_point.save()
-    #
-    # # Set & save the 'extra' data points to redis (so we can load & use later)
-    # ispindel_obj.angle = angle
-    # if 'ID' in ispindel_data:
-    #     ispindel_obj.ispindel_id = ispindel_data['ID']
-    # if 'battery' in ispindel_data:
-    #     ispindel_obj.battery = ispindel_data['battery']
-    # if 'gravity' in ispindel_data:
-    #     ispindel_obj.ispindel_gravity = ispindel_data['gravity']
-    # if 'token' in ispindel_data:
-    #     ispindel_obj.token = ispindel_data['token']
-    # ispindel_obj.save_extras_to_redis()
-    #
-    # return JsonResponse({'status': 'ok', 'gravity': calculated_gravity}, safe=False, json_dumps_params={'indent': 4})
+    for this_tilt in tiltbridge_data['tilts']:
+        try:
+            tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
+                                                     tiltbridge_id=tiltbridge_obj.id, color__iexact=this_tilt['color'])
+        except:
+            # We received data for an invalid tilt from TiltBridge
+            pass

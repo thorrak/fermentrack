@@ -618,9 +618,11 @@ class TiltConfiguration(models.Model):
     average_period_secs = models.IntegerField(default=2*60, help_text="Number of seconds over which to average readings")
 
     # Use a median filter over the average period. The window will be applied multiple times.
-    # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with aset of 360-380 values.
+    # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with a
+    # set of 360-380 values.
     # Setting the window to < 360, will then give you a moving average like function.
-    # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes in temp/gravity will take ~2.5 mins to be observed.
+    # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes
+    # in temp/gravity will take ~2.5 mins to be observed.
     median_window_vals = models.IntegerField(default=10000,
                                              help_text="Number of readings to include in the average window. If set to "
                                                        "less than ~1.3*average_period_secs, you will get a moving "
@@ -695,7 +697,6 @@ class TiltConfiguration(models.Model):
     def daemon_log_prefix(self):
         # This must match the log prefix used in utils/processmgr.py
         return "tilt-" + self.color.lower()
-
 
 
 class TiltBridge(models.Model):
