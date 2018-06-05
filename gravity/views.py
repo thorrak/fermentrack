@@ -111,8 +111,7 @@ def gravity_add_board(request):
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render(request, template_name='gravity/gravity_add_sensor.html',
-                  context={'manual_form': manual_form, 'tilt_form': tilt_form,
-                                        'ispindel_form': ispindel_form})
+                  context={'manual_form': manual_form, 'tilt_form': tilt_form, 'ispindel_form': ispindel_form})
 
 
 @site_is_configured
@@ -123,11 +122,13 @@ def gravity_list(request):
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
 
     if not bluetooth_loaded:
+        # TODO - Only display this error message when Bluetooth Tilts are present
         messages.warning(request, 'Bluetooth packages for python have not been installed. Tilt support will not work. '
                                   'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
                                   'to resolve this issue.')
 
     return render(request, template_name="gravity/gravity_list.html",)
+
 
 @login_required
 @site_is_configured
@@ -167,8 +168,7 @@ def gravity_add_point(request, manual_sensor_id):
         messages.error(request, 'Unable to add new manual log point')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render(request, template_name='gravity/gravity_add_point.html',
-                               context={'form': form, 'sensor': sensor})
+    return render(request, template_name='gravity/gravity_add_point.html', context={'form': form, 'sensor': sensor})
 
 
 @site_is_configured
@@ -210,12 +210,11 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         log_file_url = active_log.data_file_url('base_csv')
 
     return render(request, template_name="gravity/gravity_dashboard.html",
-                               context={'active_device': active_device, 'log_create_form': log_create_form,
-                                        'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
-                                        'log_file_url': log_file_url, 'available_logs': available_logs,
-                                        'selected_log_id': log_id, 'manual_add_form': manual_add_form})
-
+                  context={'active_device': active_device, 'log_create_form': log_create_form,
+                           'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                           'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
+                           'log_file_url': log_file_url, 'available_logs': available_logs,
+                           'selected_log_id': log_id, 'manual_add_form': manual_add_form})
 
 
 @login_required
@@ -380,9 +379,7 @@ def gravity_attach(request, sensor_id):
             # else:
         #     messages.error(request, "Invalid " % form.errors['__all__'])
 
-
     return render(request, template_name='gravity/gravity_attach.html', context={'selected_sensor': sensor, 'form': form})
-
 
 
 @login_required
@@ -454,8 +451,6 @@ def gravity_uninstall(request, sensor_id):
         return redirect("gravity_manage", sensor_id=sensor_id)
 
 
-
-
 @login_required
 @site_is_configured
 def gravity_manage(request, sensor_id):
@@ -512,7 +507,6 @@ def almost_json_view(request, sensor_id, log_id):
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
 
-
 @csrf_exempt
 def tiltbridge_handler(request):
     if request.body is None:
@@ -546,6 +540,25 @@ def tiltbridge_handler(request):
         try:
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
                                                      tiltbridge_id=tiltbridge_obj.id, color__iexact=this_tilt['color'])
+
+            converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(
+                float(tiltbridge_data['temp']), 'F')
+
+            new_point = GravityLogPoint(
+                gravity=tiltbridge_data['gravity'],  # We're using the gravity we calc within Fermentrack
+                temp=converted_temp,
+                temp_format=temp_format,
+                temp_is_estimate=False,
+                associated_device=tilt_obj.sensor,
+                gravity_latest=tiltbridge_data['gravity'],
+                temp_latest=converted_temp,
+            )
+
+            if tilt_obj.sensor.active_log is not None:
+                new_point.associated_log = tilt_obj.sensor.active_log
+
+            new_point.save()
+
         except:
             # We received data for an invalid tilt from TiltBridge
             pass

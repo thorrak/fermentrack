@@ -88,7 +88,8 @@
                             Use this to set Fermentrack up to interact with <a href="https://tilthydrometer.com/">Tilt Hydrometers</a>.
                             Tilt Hydrometers are an automatic, wireless specific gravity sensor and will provide a
                             continuous stream of specific gravity data to Fermentrack allowing you to graph the progress
-                            as your beer ferments.
+                            as your beer ferments. Fermentrack also supports the use of the
+                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.
                         </div>
                     </div>
                     <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
