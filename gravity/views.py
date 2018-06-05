@@ -439,7 +439,21 @@ def gravity_uninstall(request, sensor_id):
                         # The temperature sensor is currently actively logging something. Let's stop it.
                         sensor.assigned_brewpi_device.manage_logging('stop')
 
+                if 'tilt_configuration' in sensor and 'tiltbridge' in sensor.tilt_configuration:
+                    # TODO - Test this code to make sure it works
+                    # Sensor has an attached tiltbridge - cache it so we can delete it if this is the only device that
+                    # is connected to it
+                    tiltbridge_device = sensor.tilt_configuration.tiltbridge
+                else:
+                    tiltbridge_device = None
+
                 sensor.delete()
+
+                if tiltbridge_device is not None:
+                    if tiltbridge_device.tiltconfiguration_set.count() == 0:
+                        # Sure enough, the tiltbridge no longer has any attached devices. Delete it.
+                        tiltbridge_device.delete()
+
                 messages.success(request, u"The device '{}' was successfully uninstalled.".format(sensor))
                 return redirect("siteroot")
 
