@@ -11,6 +11,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 Added
 ---------------------
+- Support for "TiltBridge" Tilt-to-WiFi bridge
+- DS18b20 sensors can now have temperature offsets added to each reading to correct for calibration errors
+
+
+
+[2018-04-27] - "v1.0 release"
+~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
 
 - Added fermentation controller "Manage Device" page
 - Upgrades are now logged to upgrade.log
@@ -59,7 +69,7 @@ Fixed
 
 
 
-[0.1.0] - 2017-03-17 - "v1 release"
+[2017-03-17] - "v0.1 release"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
