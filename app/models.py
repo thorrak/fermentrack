@@ -908,6 +908,12 @@ class BrewPiDevice(models.Model):
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
 
+    def reset_wifi(self):
+        response = self.send_message("resetWiFi") # Reset the controller WiFi settings
+        time.sleep(1)                                   # Give it 1 second to complete
+        synced = self.sync_temp_format()                # ...then resync the temp format
+        return synced
+
     def get_control_constants(self):
         return json.loads(self.send_message("getControlConstants", read_response=True))
 
