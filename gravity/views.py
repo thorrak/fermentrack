@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 import app.almost_json as almost_json
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 
 import fermentrack_django.settings as settings
@@ -483,11 +484,12 @@ def gravity_manage(request, sensor_id):
 
     if sensor.sensor_type == 'ispindel':
         # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {'a': sensor.ispindel_configuration.third_degree_coefficient,
-                   'b': sensor.ispindel_configuration.second_degree_coefficient,
-                   'c': sensor.ispindel_configuration.first_degree_coefficient,
-                   'd': sensor.ispindel_configuration.constant_term,
-                   }
+        initial = {
+            'a': sensor.ispindel_configuration.third_degree_coefficient,
+            'b': sensor.ispindel_configuration.second_degree_coefficient,
+            'c': sensor.ispindel_configuration.first_degree_coefficient,
+            'd': sensor.ispindel_configuration.constant_term,
+        }
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
@@ -573,6 +575,6 @@ def tiltbridge_handler(request):
 
             new_point.save()
 
-        except:
+        except ObjectDoesNotExist:
             # We received data for an invalid tilt from TiltBridge
             pass

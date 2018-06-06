@@ -39,8 +39,7 @@ gravity_urlpatterns = [
     # TODO - rename views below to prepend 'gravity'
     url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getGravitySensors, name="getSensor"),  # For a single device
     url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors
-    url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getIspindelExtras, name="getIspindelExtras"),  # Specific to iSpindel devices, allows for easy calibration
-    url(r'^tiltbridge/?$', gravity.views.tiltbridge_handler, name="gravity_tiltbridge"),  # Handler for tiltbridge gravity readings
+    url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_ispindel_extras, name="get_ispindel_extras"),  # Specific to iSpindel devices, allows for easy calibration
 
     # iSpindel-specific Views
     url(r'^ispindel/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
@@ -50,5 +49,8 @@ gravity_urlpatterns = [
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/delete/(?P<point_id>[A-Za-z0-9]{1,20})/$', gravity.views_ispindel.gravity_ispindel_delete_calibration_point, name='gravity_ispindel_delete_calibration_point'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/calibrate/$', gravity.views_ispindel.gravity_ispindel_calibrate, name='gravity_ispindel_calibrate'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/guided/(?P<step>[A-Za-z0-9]{1,20})$', gravity.views_ispindel.gravity_ispindel_guided_calibration, name='gravity_ispindel_guided_calibration'),
+
+    # Other Device Specific Views
+    url(r'^[tT]{1}ilt[bB]{1}ridge/?$', gravity.views.tiltbridge_handler, name="gravity_tiltbridge"), # Handler for tiltbridge gravity readings
 
 ]
