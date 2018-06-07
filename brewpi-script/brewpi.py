@@ -666,6 +666,11 @@ while run:
             bg_ser.writeln('v')  # request control variables cv
 
             trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
+        elif messageType == "resetWiFi":
+            logMessage("Resetting controller WiFi settings")
+            bg_ser.writeln("w")
+            # TODO - Determine if we should sleep & exit here
+            trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 

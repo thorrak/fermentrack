@@ -381,18 +381,21 @@ class SensorDevice(models.Model):
 
     @staticmethod
     def find_device_from_address_or_pin(device_list, address=None, pin=None):
+        if device_list is None:
+            raise ValueError('No sensors/pins are available for this device')
+
         if address is not None and len(address) > 0:
             for this_device in device_list:
                 if this_device.address == address:
                     return this_device
             # We weren't able to find a device with that address
-            raise ValueError('Unable to find address {} in device_list'.format(address))
+            raise ValueError('Unable to find address in device_list')
         elif pin is not None:
             for this_device in device_list:
                 if this_device.pin == pin:
                     return this_device
             # We weren't able to find a device with that pin number
-            raise ValueError('Unable to find pin {} in device_list'.format(pin))
+            raise ValueError('Unable to find pin in device_list')
         else:
             # We weren't passed an address or pin number
             raise ValueError('Neither address nor pin passed to function')
@@ -901,6 +904,12 @@ class BrewPiDevice(models.Model):
 
     def reset_eeprom(self):
         response = self.send_message("resetController") # Reset the controller
+        time.sleep(1)                                   # Give it 1 second to complete
+        synced = self.sync_temp_format()                # ...then resync the temp format
+        return synced
+
+    def reset_wifi(self):
+        response = self.send_message("resetWiFi") # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced

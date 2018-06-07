@@ -774,7 +774,7 @@ class IspindelConfiguration(models.Model):
 
         if redis_response is None:
             # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
-            return None
+            return {}
 
         redis_response = redis_response.decode(encoding="utf-8")
         extras = json.loads(redis_response)

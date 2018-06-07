@@ -42,7 +42,7 @@ gravity_urlpatterns = [
     url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_ispindel_extras, name="get_ispindel_extras"),  # Specific to iSpindel devices, allows for easy calibration
 
     # iSpindel-specific Views
-    url(r'^ispindel/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
+    url(r'^i[sS]{1}pind[el]{2}/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/setup/$', gravity.views_ispindel.gravity_ispindel_setup, name='gravity_ispindel_setup'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/coefficients/$', gravity.views_ispindel.gravity_ispindel_coefficients, name='gravity_ispindel_coefficients'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/add/$', gravity.views_ispindel.gravity_ispindel_add_calibration_point, name='gravity_ispindel_add_calibration_point'),

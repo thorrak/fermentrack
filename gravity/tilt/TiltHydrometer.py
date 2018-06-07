@@ -28,10 +28,15 @@ except:
     # Python 2
     import thread
 
-import numpy
+try:
+    # If we can't import numpy for any reason, exit
+    import numpy
 
-from scipy.interpolate import interp1d
-from scipy import arange, array, exp
+    from scipy.interpolate import interp1d
+    from scipy import arange, array, exp
+except:
+    exit(1)
+
 import csv
 import functools
 try:
