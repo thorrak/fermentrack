@@ -15,6 +15,7 @@ Added
 - Support for "TiltBridge" Tilt-to-WiFi bridge
 - DS18b20 sensors can now have temperature offsets added to each reading to correct for calibration errors
 - ESP8266 controllers can now have their WiFi settings reset via the "manage sensor" web interface
+- Control constants form now supports both "new" (OEM BrewPi) and "old" ("Legacy" branch) control constants
 
 
 Changed
@@ -22,6 +23,10 @@ Changed
 
 - The iSpindel endpoint can now be accessed at either /ispindel or /ispindle
 
+Fixed
+---------------------
+
+- Removed constant LCD polling for "modern" controllers
 
 
 
