@@ -2107,11 +2107,11 @@ class NewControlConstants(models.Model):
     # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
     # To make it easy to iterate over those fields, going to list them out here
     firmware_field_list = ['tempFormat', 'heater1_kp', 'heater1_ti', 'heater1_td', 'heater1_infilt', 'heater1_dfilt',
-                           'iMaxErr', 'idleRangeH',
-                           'idleRangeL', 'heatTargetH', 'heatTargetL', 'coolTargetH', 'coolTargetL',
-                           'maxHeatTimeForEst', 'maxCoolTimeForEst', 'beerFastFilt', 'beerSlowFilt', 'beerSlopeFilt',
-                           'fridgeFastFilt', 'fridgeSlowFilt', 'fridgeSlopeFilt', 'lah', 'hs',]
-    # TODO - Update the above
+                           'heater2_kp', 'heater2_ti', 'heater2_td', 'heater2_infilt', 'heater2_dfilt',
+                           'cooler_kp', 'cooler_ti', 'cooler_td', 'cooler_infilt', 'cooler_dfilt',
+                           'beer2fridge_kp', 'beer2fridge_ti', 'beer2fridge_td', 'beer2fridge_infilt',
+                           'beer2fridge_dfilt', 'beer2fridge_pidMax', 'minCoolTime', 'minCoolIdleTime',
+                           'heater1PwmPeriod', 'heater2PwmPeriod', 'coolerPwmPeriod', 'mutexDeadTime',]
 
 
     def load_from_controller(self, controller):
