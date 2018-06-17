@@ -206,8 +206,6 @@ class GravitySensor(models.Model):
             raise ValueError
 
 
-
-
 class GravityLog(models.Model):
     # Gravity logs are unique based on the combination of their name & the original device
     name = models.CharField(max_length=255, db_index=True)
@@ -356,7 +354,6 @@ class GravityLogPoint(models.Model):
     # Associated device is so we can save to redis even without an associated log
     associated_device = models.ForeignKey(GravitySensor, db_index=True, on_delete=models.DO_NOTHING, null=True)
 
-
     def temp_to_f(self):
         if self.temp_format == 'F':
             return self.temp
@@ -368,7 +365,6 @@ class GravityLogPoint(models.Model):
             return self.temp
         else:
             return (self.temp-32) * 5 / 9
-
 
     def data_point(self, data_format='base_csv', set_defaults=True):
         # Everything gets stored in UTC and then converted back on the fly
@@ -500,7 +496,6 @@ class GravityLogPoint(models.Model):
                 raise ReferenceError  # Not sure if this is the right error type, but running with it
         else:
             r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
-
 
     @classmethod
     def load_from_redis(cls, sensor_id):
