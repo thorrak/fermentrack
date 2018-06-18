@@ -564,16 +564,16 @@ def tiltbridge_handler(request):
                                                      tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
 
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(
-                float(tiltbridge_data['tilts']['this_tilt']['temp']), 'F')
+                float(tiltbridge_data['tilts'][this_tilt]['temp']), 'F')
 
             # TODO - Use the calibration function to recalculate gravity
             new_point = GravityLogPoint(
-                gravity=tiltbridge_data['tilts']['this_tilt']['gravity'],
+                gravity=tiltbridge_data['tilts'][this_tilt]['gravity'],
                 temp=converted_temp,
                 temp_format=temp_format,
                 temp_is_estimate=False,
                 associated_device=tilt_obj.sensor,
-                gravity_latest=tiltbridge_data['tilts']['this_tilt']['gravity'],
+                gravity_latest=tiltbridge_data['tilts'][this_tilt]['gravity'],
                 temp_latest=converted_temp,
             )
 
@@ -582,8 +582,7 @@ def tiltbridge_handler(request):
 
             new_point.save()
 
-        # except ObjectDoesNotExist:
-        except NotImplementedError:
+        except ObjectDoesNotExist:
             # We received data for an invalid tilt from TiltBridge
             pass
 
