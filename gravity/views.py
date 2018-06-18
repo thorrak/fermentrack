@@ -561,18 +561,19 @@ def tiltbridge_handler(request):
     for this_tilt in tiltbridge_data['tilts']:
         try:
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
-                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt['color'])
+                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
 
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(
-                float(tiltbridge_data['temp']), 'F')
+                float(tiltbridge_data['tilts']['this_tilt']['temp']), 'F')
 
+            # TODO - Use the calibration function to recalculate gravity
             new_point = GravityLogPoint(
-                gravity=tiltbridge_data['gravity'],  # We're using the gravity we calc within Fermentrack
+                gravity=tiltbridge_data['tilts']['this_tilt']['gravity'],
                 temp=converted_temp,
                 temp_format=temp_format,
                 temp_is_estimate=False,
                 associated_device=tilt_obj.sensor,
-                gravity_latest=tiltbridge_data['gravity'],
+                gravity_latest=tiltbridge_data['tilts']['this_tilt']['gravity'],
                 temp_latest=converted_temp,
             )
 
