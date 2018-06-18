@@ -582,6 +582,10 @@ def tiltbridge_handler(request):
 
             new_point.save()
 
-        except ObjectDoesNotExist:
+        # except ObjectDoesNotExist:
+        except NotImplementedError:
             # We received data for an invalid tilt from TiltBridge
             pass
+
+    return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
+                        json_dumps_params={'indent': 4})
