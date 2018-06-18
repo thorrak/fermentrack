@@ -722,6 +722,12 @@ class TiltBridge(models.Model):
                                help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
                                          "itself when it connects to the Raspberry Pi")
 
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.name
+
 
 ### iSpindel specific models
 class IspindelGravityCalibrationPoint(models.Model):
