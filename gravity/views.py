@@ -142,7 +142,7 @@ def gravity_add_point(request, manual_sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=manual_sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(manual_sensor_id))
         return redirect('gravity_list')
 
@@ -178,7 +178,7 @@ def gravity_add_point(request, manual_sensor_id):
 def gravity_dashboard(request, sensor_id, log_id=None):
     try:
         active_device = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u"Unable to load gravity sensor with ID {}".format(sensor_id))
         return redirect('gravity_list')
 
@@ -198,7 +198,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     else:
         try:
             active_log = GravityLog.objects.get(id=log_id, device_id=active_device.id)
-        except:
+        except ObjectDoesNotExist:
             # If we are given an invalid log ID, let's return an error & drop back to the (valid) dashboard
             messages.error(request, u'Unable to load log with ID {}'.format(log_id))
             return redirect('gravity_dashboard', sensor_id=sensor_id)
@@ -267,7 +267,7 @@ def gravity_log_stop(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -322,6 +322,7 @@ def gravity_log_delete(request, log_id):
         log_obj.delete()
         messages.success(request, u'Log "{}" was deleted'.format(log_obj.name))
     except:
+        # TODO - Rewrite this to make it more specific (ObjectDoesNotExist error, for example)
         messages.error(request, u'Unable to delete log with ID {}'.format(log_id))
     return redirect('gravity_log_list')
 
@@ -337,7 +338,7 @@ def gravity_attach(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -394,7 +395,7 @@ def gravity_detach(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -427,7 +428,7 @@ def gravity_uninstall(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -476,7 +477,7 @@ def gravity_manage(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -546,8 +547,13 @@ def tiltbridge_handler(request):
         pprint.pprint(tiltbridge_data, logFile)
 
     try:
-        tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
-    except:
+        if 'api_key' in tiltbridge_data:
+            tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
+        else:
+            logger.error(u"Malformed TiltBridge JSON - No key provided!")
+            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No api_key provided!"}, safe=False,
+                                json_dumps_params={'indent': 4})
+    except ObjectDoesNotExist:
         logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
         return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
                             json_dumps_params={'indent': 4})
