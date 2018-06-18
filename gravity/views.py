@@ -568,12 +568,12 @@ def tiltbridge_handler(request):
 
             # TODO - Use the calibration function to recalculate gravity
             new_point = GravityLogPoint(
-                gravity=tiltbridge_data['tilts'][this_tilt]['gravity'],
+                gravity=tiltbridge_data['tilts'][this_tilt]['gravity']/1000,
                 temp=converted_temp,
                 temp_format=temp_format,
                 temp_is_estimate=False,
                 associated_device=tilt_obj.sensor,
-                gravity_latest=tiltbridge_data['tilts'][this_tilt]['gravity'],
+                gravity_latest=tiltbridge_data['tilts'][this_tilt]['gravity']/1000,
                 temp_latest=converted_temp,
             )
 
