@@ -561,7 +561,7 @@ def tiltbridge_handler(request):
     for this_tilt in tiltbridge_data['tilts']:
         try:
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
-                                                     tiltbridge_id=tiltbridge_obj.id, color__iexact=this_tilt['color'])
+                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt['color'])
 
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(
                 float(tiltbridge_data['temp']), 'F')

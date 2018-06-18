@@ -712,6 +712,11 @@ class TiltBridge(models.Model):
     Attributes:
         api_key: A token which is provided by the TiltBridge to identify the device
     """
+
+    class Meta:
+        verbose_name = "TiltBridge"
+        verbose_name_plural = "TiltBridges"
+
     name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
     api_key = models.CharField(max_length=64, primary_key=True,
                                help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
