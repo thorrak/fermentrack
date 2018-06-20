@@ -101,9 +101,11 @@
                         <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
 
                         {# TODO - Make these fields hidden if connection type isn't tiltbridge #}
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
+                        <div id="tiltBridgeHidden" style="display: block">
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
+                        </div>
 
 
 
@@ -174,6 +176,22 @@
 
 {% block scripts %}
 <script>
+
+function TiltBridgeHide() {
+    if(document.getElementById('id_connection_type').value != "Bridge") {
+         document.getElementById('tiltBridgeHidden').style.display = 'none';
+    } else {
+         document.getElementById('tiltBridgeHidden').style.display = '';
+    }
+}
+
+window.onload = function() {
+    document.getElementById('id_connection_type').onchange = TiltBridgeHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    TiltBridgeHide();
+};
+
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()

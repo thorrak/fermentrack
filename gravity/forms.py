@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django import forms
 from constance import config
 from django.conf import settings
@@ -24,6 +23,7 @@ class ManualForm(ModelForm):
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
+
 # Manual sensors don't have special configuration.
 class ManualPointForm(ModelForm):
     class Meta:
@@ -34,9 +34,6 @@ class ManualPointForm(ModelForm):
         super(ManualPointForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
-
-
-
 
 
 class GravityLogCreateForm(forms.Form):
@@ -143,9 +140,7 @@ class SensorAttachForm(forms.Form):
         return cleaned_data
 
 
-
 class TiltCreateForm(forms.Form):
-
     key_validator = RegexValidator(r"[0-9A-Za-z_-]+", "Key can only consist of 0-9, A-Z, a-z, dashes, and underscores.")
 
     name = forms.CharField(max_length=255, min_length=1, required=True, )
@@ -159,8 +154,9 @@ class TiltCreateForm(forms.Form):
     # The following three options allow a user who has selected the TiltBridge connection type to configure a new (or
     # select an existing) TiltBridge.
     tiltbridge = forms.ChoiceField(required=False, help_text="Select a TiltBridge for this Tilt to connect through")
-    tiltbridge_name = forms.CharField(max_length=64, help_text="Human-readable name for the new TiltBridge")
-    tiltbridge_api_key = forms.CharField(max_length=64, validators=[key_validator],
+    tiltbridge_name = forms.CharField(max_length=64, required=False,
+                                      help_text="Human-readable name for the new TiltBridge")
+    tiltbridge_api_key = forms.CharField(max_length=64, validators=[key_validator], required=False,
                                          help_text="API key (also known as a 'token') that the TiltBridge will use to "
                                                    "identify itself. Can only consist of letters, numbers, dashes, and "
                                                    "underscores.")
