@@ -1056,7 +1056,10 @@ class Beer(models.Model):
     # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
     # converter could then be written moving between each iteration of model_version that could then be sequentially
     # applied to bring a beer log in line with what the model then expects.
-    model_version = models.IntegerField(default=1, help_text='Version # used for the logged file format')
+
+    # Version 1: Original version
+    # Version 2: Adds 'state' to 'base_csv' for state plotting
+    model_version = models.IntegerField(default=2, help_text='Version # used for the logged file format')
 
     gravity_enabled = models.BooleanField(default=False, help_text='Is gravity logging enabled for this beer log?')
 
@@ -1093,7 +1096,30 @@ class Beer(models.Model):
                 headers.append('gravity')
                 headers.append('grav_temp')
 
+        if which == 'base_csv' and self.model_version > 1:
+            # For model versions 2 and greater, we are appending "state" to the base CSV.
+            if human_readable:
+                headers.append('State')  # I don't think this gets used anywhere...
+            else:
+                headers.append('state')
+
         return headers
+
+    def base_column_visibility(self):
+        # TODO - Determine if we want to take some kind of user setting into account (auto-hide room temp, for example)
+        # headers = [x, 'beer_temp', 'beer_set', 'fridge_temp', 'fridge_set', 'room_temp']
+        visibility = "[true, true, true, true, true"
+
+        # This works because we're appending the gravity data to both logs
+        if self.gravity_enabled:
+            visibility += ", true"
+
+        if self.model_version > 1:
+            visibility += ", false"  # Literally the whole point of this code block is to hide "state"
+
+        visibility += "]"
+
+        return visibility
 
     def column_headers_to_graph_string(self, which='base_csv'):
         col_headers = self.column_headers(which, True)
@@ -1107,7 +1133,6 @@ class Beer(models.Model):
             return graph_string[:-2]
         else:
             return ""
-
 
     @staticmethod
     def name_is_valid(proposed_name):
@@ -1274,12 +1299,19 @@ class BeerLogPoint(models.Model):
         else:
             combined_annotation = ""
 
-
         if data_format == 'base_csv':
             if self.has_gravity_enabled() == False:
-                return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
+                if self.associated_beer.model_version > 1:
+                    return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, self.state]
+                else:
+                    return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp]
+
             else:
-                return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, gravity_log, gravity_temp]
+                if self.associated_beer.model_version > 1:
+                    return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, gravity_log, gravity_temp,
+                            self.state]
+                else:
+                    return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, gravity_log, gravity_temp]
 
         elif data_format == 'full_csv':
             if self.has_gravity_enabled() == False:
@@ -1301,8 +1333,6 @@ class BeerLogPoint(models.Model):
         else:
             # Should never hit this
             logger.warning("Invalid data format '{}' provided to BeerLogPoint.data_point".format(data_format))
-
-
 
     def save(self, *args, **kwargs):
         # Don't repeat yourself
