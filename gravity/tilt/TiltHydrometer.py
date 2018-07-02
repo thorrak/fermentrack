@@ -21,12 +21,10 @@ import os
 
 import bluetooth._bluetooth as bluez
 import threading
-try:
-    # Python 3 (Though arguably, we could swap for functions from threading instead)
-    import _thread as thread
-except:
-    # Python 2
-    import thread
+
+# Python 3 (Though arguably, we could swap for functions from threading instead)
+import _thread as thread
+
 
 try:
     # If we can't import numpy for any reason, exit
@@ -39,12 +37,10 @@ except:
 
 import csv
 import functools
-try:
-    # Python 3
-    import configparser as ConfigParser
-except:
-    # Python 2
-    import ConfigParser
+
+# Python 3
+import configparser as ConfigParser
+
 
 TILTHYDROMETER_COLOURS = ['Red', 'Green', 'Black', 'Purple', 'Orange', 'Blue', 'Yellow', 'Pink']
 
