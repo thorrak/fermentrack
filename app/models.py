@@ -1300,7 +1300,7 @@ class BeerLogPoint(models.Model):
             combined_annotation = ""
 
         if data_format == 'base_csv':
-            if self.has_gravity_enabled() == False:
+            if not self.has_gravity_enabled():
                 if self.associated_beer.model_version > 1:
                     return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, self.state]
                 else:
@@ -1314,7 +1314,7 @@ class BeerLogPoint(models.Model):
                     return [time_value, beerTemp, beerSet, fridgeTemp, fridgeSet, roomTemp, gravity_log, gravity_temp]
 
         elif data_format == 'full_csv':
-            if self.has_gravity_enabled() == False:
+            if not self.has_gravity_enabled():
                 return [time_value, beerTemp, beerSet, self.beer_ann, fridgeTemp, fridgeSet, self.fridge_ann,
                         roomTemp, self.state, self.temp_format, self.associated_beer_id]
             else:

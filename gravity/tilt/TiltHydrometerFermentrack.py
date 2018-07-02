@@ -91,7 +91,24 @@ class TiltHydrometerFermentrack(TiltHydrometer):
             #     offset) + ")")
         return returnFunction
 
+    def setValues(self, temperature, gravity):
+        """Set/add the latest temperature & gravity readings to the store. These values will be calibrated before storing if calibration is enabled"""
+        with self.lock:
+            self.cleanValues()
+            self.calibrate()
 
+            # For temperature, use the old-style "calibration function" (even though this isn't supported in Fermentrack)
+            # For gravity, use apply_gravity_calibration from the TiltConfiguration object
+            calibratedTemperature = temperature
+            calibratedGravity = self.tilt_manager.obj.apply_gravity_calibration(gravity)
+
+            try:
+                calibratedTemperature = self.tempCalibrationFunction(temperature)
+            except (Exception) as e:
+                print("ERROR: TiltHydrometer (" + self.colour + "): Unable to calibrate temperature: " + str(
+                    temperature) + " - " + e.message)
+
+            self.values.append(TiltHydrometerValue(calibratedTemperature, calibratedGravity))
 
 
 class TiltHydrometerManagerFermentrack(TiltHydrometerManager):

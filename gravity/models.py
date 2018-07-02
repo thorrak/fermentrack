@@ -376,7 +376,6 @@ class GravityLogPoint(models.Model):
         utc_tz = pytz.timezone("UTC")
         time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
 
-
         if set_defaults:
             temp = self.temp or 0
             temp_format = self.temp_format or ''
@@ -389,7 +388,6 @@ class GravityLogPoint(models.Model):
             extra_data = self.extra_data or None
             gravity_latest = self.gravity_latest or None
             temp_latest = self.temp_latest or None
-
 
         if data_format == 'base_csv':
             return [time_value, self.gravity, temp]
@@ -633,13 +631,25 @@ class TiltConfiguration(models.Model):
                                                                   "temp/gravity reading from the sensor")
 
     # This is almost always 0, but adding it here in case someone needs to configure it later on
-    bluetooth_device_id = models.IntegerField(default=0, help_text="Almost always 0 - Change if you have Bluetooth issues")
+    bluetooth_device_id = models.IntegerField(default=0, help_text="Almost always 0 - Change if you have Bluetooth "
+                                                                   "issues")
 
     connection_type = models.CharField(max_length=32, choices=CONNECTION_CHOICES, default=CONNECTION_BLUETOOTH,
                                        help_text="How should Fermentrack connect to this Tilt?")
 
     tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, default=None,
                                    help_text="TiltBridge device to use (if any)")
+
+    # Switching calibration to use the same equation-based approach as used on iSpindel. For now, going to start out
+    # fairly basic - can revisit as things become more complex. The first degree coefficient defaults to 1 as we're
+    # doing a gravity-to-gravity conversion. The default state should be to just keep whatever gravity was read off the
+    # Tilt.
+    grav_second_degree_coefficient = models.FloatField(default=0.0, help_text="The second degree coefficient in the "
+                                                                              "gravity calibration equation")
+    grav_first_degree_coefficient = models.FloatField(default=1.0, help_text="The first degree coefficient in the "
+                                                                             "gravity calibration equation")
+    grav_constant_term = models.FloatField(default=0.0, help_text="The constant term in the gravity calibration "
+                                                                  "equation")
 
     def tiltHydrometerName(self, uuid):
         return {
@@ -697,6 +707,12 @@ class TiltConfiguration(models.Model):
     def daemon_log_prefix(self):
         # This must match the log prefix used in utils/processmgr.py
         return "tilt-" + self.color.lower()
+
+    def apply_gravity_calibration(self, uncalibrated_gravity):
+        calibrated_gravity = self.grav_second_degree_coefficient * uncalibrated_gravity ** 2
+        calibrated_gravity += self.grav_first_degree_coefficient * uncalibrated_gravity ** 1
+        calibrated_gravity += self.grav_constant_term
+        return calibrated_gravity
 
 
 class TiltBridge(models.Model):

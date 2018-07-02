@@ -99,7 +99,7 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    angle=float(ispindel_data['angle'])
+    angle = float(ispindel_data['angle'])
 
     calculated_gravity = ispindel_obj.third_degree_coefficient * angle**3
     calculated_gravity += ispindel_obj.second_degree_coefficient * angle**2
