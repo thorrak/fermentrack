@@ -111,13 +111,43 @@ class TiltHydrometerFermentrack(TiltHydrometer):
             self.values.append(TiltHydrometerValue(calibratedTemperature, calibratedGravity))
 
 
-class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
+class TiltHydrometerManagerFermentrack:
+    dev_id = 0
+    averagingPeriod = 0
+    medianWindow = 0
+    debug = False
+
+    scanning = True
+    # Dictionary to hold tiltHydrometers - index on colour
+    tiltHydrometers = {}
+
+    brewthread = None
+    lastLoadTime = 0
+    lastCheckedTime = 0
+
+    obj = None
+
     def __init__(self, device):
         self.initialized = False
         self.obj = device
         self.debug = False
 
         self.reloadSettings()
+
+    def loadSettings(self, filename=""):  # Preserving the filename argument just in case something changes later on
+        self.obj = gravity.models.TiltConfiguration.objects.get(color=self.obj.color)
+
+        self.dev_id = self.obj.dev_id()
+        self.averagingPeriod = self.obj.average_period_secs
+        self.medianWindow = self.obj.median_window_vals
+
+        # Since we're now only managing a single Tilt per manager, reload the settings that would have been reloaded
+        tiltHydrometer = self.tiltHydrometers.get(self.obj.color)
+        if tiltHydrometer is not None:
+            tiltHydrometer.averagingPeriod = self.averagingPeriod
+            tiltHydrometer.medianWindow = self.medianWindow
+            tiltHydrometer.temp_initialized = False  # This will force a reload
+            tiltHydrometer.gravity_initialized = False  # This will force a reload
 
     # Checks to see if the settings file has changed, then reloads the settings if it has. Returns True if the settings were reloaded.
     def reloadSettings(self):
@@ -134,25 +164,11 @@ class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
         else:
             return False
 
-    def loadSettings(self, filename=""):  # Preserving the filename argument just in case something changes later on
-        self.obj = gravity.models.TiltConfiguration.objects.get(color=self.obj.color)
-
-        self.inFahrenheit = self.obj.inFahrenheit()
-        self.dev_id = self.obj.dev_id()
-        self.averagingPeriod = self.obj.average_period_secs
-        self.medianWindow = self.obj.median_window_vals
-
-        # Since we're now only managing a single Tilt per manager, reload the settings that would have been reloaded
-        tiltHydrometer = self.tiltHydrometers.get(self.obj.color)
-        if tiltHydrometer is not None:
-            tiltHydrometer.averagingPeriod = self.averagingPeriod
-            tiltHydrometer.medianWindow = self.medianWindow
-            tiltHydrometer.temp_initialized = False  # This will force a reload
-            tiltHydrometer.gravity_initialized = False  # This will force a reload
 
 
     # Store function
     def storeValue(self, colour, temperature, gravity):
+        # TODO - COMPLETELY REWRITE THIS
         tiltHydrometer = self.tiltHydrometers.get(colour)
         if (tiltHydrometer is None):
             # TODO - Clean up the initialization function for TiltHydrometerFermentrack
@@ -160,3 +176,99 @@ class TiltHydrometerManagerFermentrack(TiltHydrometerManager):
             self.tiltHydrometers[colour] = tiltHydrometer
 
         tiltHydrometer.setValues(temperature, gravity)
+
+    # Convert Temp in F to C
+    def convertFtoC(self, temperatureF):
+        return (temperatureF - 32) * 5.0 / 9
+
+    # Convert Tilt SG to float
+    def convertSG(self, gravity):
+        return float(gravity) / 1000
+
+    # Convert Tilt UUID back to colour
+    def tiltHydrometerName(self, uuid):
+        return {
+            'a495bb10c5b14b44b5121370f02d74de': 'Red',
+            'a495bb20c5b14b44b5121370f02d74de': 'Green',
+            'a495bb30c5b14b44b5121370f02d74de': 'Black',
+            'a495bb40c5b14b44b5121370f02d74de': 'Purple',
+            'a495bb50c5b14b44b5121370f02d74de': 'Orange',
+            'a495bb60c5b14b44b5121370f02d74de': 'Blue',
+            'a495bb70c5b14b44b5121370f02d74de': 'Yellow',
+            'a495bb80c5b14b44b5121370f02d74de': 'Pink'
+        }.get(uuid)
+
+
+    # Retrieve function.
+    def getValue(self, colour):
+        returnValue = None
+        tiltHydrometer = self.tiltHydrometers.get(colour)
+        if (tiltHydrometer is not None):
+            returnValue = tiltHydrometer.getValues()
+        return returnValue
+
+    # Scanner function
+    def scan(self):
+        # Keep scanning until the manager is told to stop.
+        while self.scanning:
+            try:
+                sock = bluez.hci_open_dev(self.dev_id)
+
+            except (Exception) as e:
+                print("ERROR: Accessing bluetooth device: " + e.message)
+                sys.exit(1)
+
+            blescan.hci_le_set_scan_parameters(sock)
+            blescan.hci_enable_le_scan(sock)
+
+            try:
+                # Keep scanning until the manager is told to stop.
+                while self.scanning:
+                    self.processSocket(sock)
+
+                    reloaded = self.reloadSettings()
+                    if reloaded:
+                        break
+            except (Exception) as e:
+                print("ERROR: Accessing bluetooth device whilst scanning")
+                print("Resetting Bluetooth device")
+
+    # Processes Tilt BLE data from open socket.
+    def processSocket(self, sock):
+        returnedList = blescan.parse_events(sock, 10)
+
+        for beacon in returnedList:
+            beaconParts = beacon.split(",")
+
+            # Resolve whether the received BLE event is for a Tilt Hydrometer by looking at the UUID.
+            name = self.tiltHydrometerName(beaconParts[1])
+
+            # If the event is for a Tilt Hydrometer , process the data
+            if name is not None:
+                if (self.debug):
+                    print(name + " Tilt Device Found (UUID " + str(beaconParts[1]) + "): " + str(beaconParts))
+
+                # Get the temperature and convert to C if needed.
+                temperature = int(beaconParts[2])
+                if not self.obj.inFahrenheit:
+                    temperature = self.convertFtoC(temperature)
+
+                # Get the gravity.
+                gravity = self.convertSG(beaconParts[3])
+
+                # Store the retrieved values in the relevant Tilt Hydrometer object.
+                self.storeValue(name, temperature, gravity)
+            else:
+                # Output what has been found.
+                if (self.debug):
+                    print("UNKNOWN BLE Device Found: " + str(beaconParts))
+
+    # Stop Scanning function
+    def stop(self):
+        self.scanning = False
+
+    # Start the scanning thread
+    def start(self):
+        self.scanning = True
+        self.brewthread = thread.start_new_thread(self.scan, ())
+
