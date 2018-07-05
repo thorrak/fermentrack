@@ -21,7 +21,8 @@ from lib.ftcircus.client import CircusMgr, CircusException
 
 class ProcessManager(object):
     """Handles spawning and stopping processes associated with devices defined in Fermentrack database"""
-    def __init__(self, prefix, device_type, command_tmpl, circus_endpoint, logfilepath, log, query_db_func, debug=False):
+    def __init__(self, prefix, device_type, command_tmpl, circus_endpoint, logfilepath, log, query_db_func, debug=False,
+                 treat_query_as_boolean = False):
         # prefix          - Subprocess name prefix (used for tracking/logging)
         # device_type     - The human readable device type (for logging)
         # command_tmpl    - Command template for launching subprocess
@@ -30,6 +31,7 @@ class ProcessManager(object):
         # log             - The logger to use
         # debug           - Boolean - defines if we should print debug information
         # query_db_func   - Function (passed into this object) which retrieves all devices which need an active process
+        # treat_query_as_boolean - Boolean - Determines if the query_db_func returns a set of devices or a boolean
 
         # _querydb        - query_db_func passed in above
         # _circusmgr      - Circus manager object (not passed in)
@@ -40,9 +42,10 @@ class ProcessManager(object):
         self.circus_endpoint = circus_endpoint
         self.logfilepath = logfilepath
         self.log = log
-        self.debug = debug
+        self.debug = debug  # type:bool
+        self.treat_query_as_boolean = treat_query_as_boolean  # type: bool
 
-        self._querydb = query_db_func
+        self._querydb = query_db_func  # type: function
         self._circusmgr = CircusMgr(circus_endpoint=circus_endpoint)
         if self.debug:
             self.log.setLevel(logging.DEBUG)
@@ -57,7 +60,6 @@ class ProcessManager(object):
         # Only pic devices with prefix set, other apps are other functions and should be left alone.
         running_devices = [x for x in watchers if x.startswith(self.prefix)]
         return running_devices
-
 
     def startstop_once(self):
         """Checks for active devices in database, compares to running, starts and stops based on
@@ -74,24 +76,33 @@ class ProcessManager(object):
             ", ".join([dev for dev in running_devices])
             )
         names = []
-        # Find active but non-running devices
-        for dbd in db_devices:
-            dev_name = self.prefix + dbd.circus_parameter()
-            # https://github.com/circus-tent/circus/issues/927
-            dev_name = dev_name.lower()
-            names.append(dev_name)
-            if dev_name not in running_devices:
-                self.log.info("New {} device found: {}".format(self.device_type, dev_name))
-                self._add_process(dbd.circus_parameter())
+        if self.treat_query_as_boolean:
+            if db_devices and len(running_devices) < 1:
+                # We should be running, but aren't. Launch.
+                self.log.info("New {} device found: {}".format(self.device_type, self.prefix))
+                self._add_process("")  # There is no appended name for processes of this type - only the prefix is used
+            elif not db_devices and len(running_devices) > 0:
+                self.log.info("Device: %s should be stopped and removed, stopped", self.prefix)
+                self._rm_process(self.prefix)
 
-        # Find devices running but should not
-        for rdev in running_devices:
-            if rdev not in names:
-                self.log.info("Device: %s should be stopped and removed, stopped", rdev)
-                self._rm_process(rdev)
+        else:
+            # Find active but non-running devices
+            for dbd in db_devices:
+                dev_name = self.prefix + dbd.circus_parameter()
+                # https://github.com/circus-tent/circus/issues/927
+                dev_name = dev_name.lower()
+                names.append(dev_name)
+                if dev_name not in running_devices:
+                    self.log.info("New {} device found: {}".format(self.device_type, dev_name))
+                    self._add_process(dbd.circus_parameter())
 
+            # Find devices running but should not
+            for rdev in running_devices:
+                if rdev not in names:
+                    self.log.info("Device: %s should be stopped and removed, stopped", rdev)
+                    self._rm_process(rdev)
 
-    def _add_process(self, name):
+    def _add_process(self, name: str):
         # Spawn a new process via circus. <self.prefix> is prepended to the name to keep each process's devices separate
         proc_name = self.prefix + name
         # https://github.com/circus-tent/circus/issues/927
@@ -104,7 +115,7 @@ class ProcessManager(object):
             self.log.error("Could not spawn process: %s", proc_name, exc_info=self.debug)
 
 
-    def _stop_process(self, name):
+    def _stop_process(self, name: str):
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
         try:
@@ -114,7 +125,7 @@ class ProcessManager(object):
             self.log.debug("Could not stop process: %s", name, exc_info=self.debug)
 
 
-    def _rm_process(self, name):
+    def _rm_process(self, name: str):
         # https://github.com/circus-tent/circus/issues/927
         name = name.lower()
         try:
