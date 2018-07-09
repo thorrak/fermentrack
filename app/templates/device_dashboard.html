@@ -540,6 +540,14 @@ g2 = new Dygraph(
                 axis: 'y2'
             }
         },
+        axes: {
+            y1: {
+                digitsAfterDecimal: 1
+            },
+            y2: {
+                digitsAfterDecimal: 3
+            }
+        },
 {% else %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
 {% endif %}
