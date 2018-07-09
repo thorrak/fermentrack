@@ -66,18 +66,22 @@ class ProcessManager(object):
         if device should be running or not
         """
         # Get all devices from database
-        if self.treat_query_as_boolean:
-            db_devices = [True]  # Don't judge, it works.
-        else:
-            db_devices = self._querydb(self)
+        db_devices = self._querydb(self)
         # Only get devices that are run within circus with the prefix
         running_devices = self._running()
 
-        self.log.debug(
-            "DB devices (active): %s, Running device processes: %s",
-            ", ".join([dev.circus_parameter() for dev in db_devices]),
-            ", ".join([dev for dev in running_devices])
-            )
+        if self.treat_query_as_boolean:
+            self.log.debug(
+                "DB devices (active): %s, Running device processes: %s",
+                ", ".join([self.prefix]),
+                ", ".join([dev for dev in running_devices])
+                )
+        else:
+            self.log.debug(
+                "DB devices (active): %s, Running device processes: %s",
+                ", ".join([dev.circus_parameter() for dev in db_devices]),
+                ", ".join([dev for dev in running_devices])
+                )
         names = []
         if self.treat_query_as_boolean:
             if db_devices and len(running_devices) < 1:
