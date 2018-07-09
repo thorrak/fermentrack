@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-from __future__ import print_function
-
 import os, sys
 
 # In order to be able to use the Django ORM, we have to load everything else Django-related. Lets do that now.
@@ -13,23 +11,21 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 
-import time
-import getopt
-import pid
+
+import time, datetime, getopt, pid
+from beacontools import BeaconScanner, IBeaconFilter, IBeaconAdvertisement
+from typing import List, Dict
+
+from gravity.tilt.TiltHydrometer import TiltHydrometer
 
 import gravity.models
-from gravity.tilt import TiltHydrometerFermentrack
 
 import django.core.exceptions
-
 
 
 # Script Defaults
 verbose = False         # Should the script print out what it's doing to the console
 pidFileDir = "/tmp"     # Where the pidfile should be written out to
-
-sensor = None           # The sensor object (loaded below)
-sensor_color = ''       # Color of Tilt being used - Set in the TiltConfiguration object
 
 
 def print_to_stderr(*objs):
@@ -49,23 +45,12 @@ for o, a in opts:
     if o in ('-h', '--help'):
         print_to_stderr("\r\n Available command line options: ")
         print_to_stderr("--help: Print this help message")
-        print_to_stderr("--color <tilt color>: Specify the color of Tilt Hydrometer to interact with")
         print_to_stderr("--verbose: Echo readings to the console")
         print_to_stderr("--pidfiledir <directory path>: Directory to store the pidfile in")
         print_to_stderr("--list: List Tilt colors that have been set up in Fermentrack")
         exit()
 
-    # Specify a color - required for this script to operate
-    if o in ('-c', '--color'):
-        sensor_color = a
-        try:
-            sensor = gravity.models.TiltConfiguration.objects.get(color=sensor_color)
-        except django.core.exceptions.ObjectDoesNotExist:
-            print_to_stderr("Color {} is not configured within Fermentrack. Exiting.".format(a))
-            exit(0)
-
     # Echo additional information to the console
-    # TODO - Determine if this should also set "DEBUG=True" for TiltHydrometerManager instances
     if o in ('-v', '--verbose'):
         verbose = True
 
@@ -94,52 +79,70 @@ for o, a in opts:
             sys.exit(e)
 
 
-if sensor is None:
-    print_to_stderr("A valid color must be specified for tilt_monitor.py to operate")
-    exit(0)
+
 
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
-pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor_{}".format(sensor_color))
+pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor")
 try:
     pidFile.create()
 except pid.PidFileAlreadyLockedError:
-    print_to_stderr("Another instance of the monitor script is running for the specified color. Exiting.")
+    print_to_stderr("Another instance of the monitor script is running. Exiting.")
     exit(0)
 
+#### Code that's used during the main loop
 
-# And then start the scanner
-tiltHydrometer = TiltHydrometerFermentrack.TiltHydrometerManagerFermentrack(sensor)
-tiltHydrometer.loadSettings()
-tiltHydrometer.start()
+def callback(bt_addr, rssi, packet, additional_info):
+    # Although beacontools provides a device filter option, we're not going to use it as it doesn't currently allow
+    # specifying a list of UUIDs (I don't think, at least). Instead, we'll filter here.
+    if additional_info['uuid'] in uuids:
+        color = TiltHydrometer.color_lookup(additional_info['uuid'])  # Map the uuid back to our TiltHydrometer object
+        tilts[color].process_ibeacon_info(packet, rssi)  # Process the data sent from the Tilt
+        if verbose:
+            # If we're in 'verbose' mode, also go ahead and print out the data we received
+            tilts[color].print_data()
+
+
+
+
+#### The main loop
+
+# Create a list of TiltHydrometer objects for us to use
+tilts = {x: TiltHydrometer(x) for x in TiltHydrometer.tilt_colors}  # type: Dict[str, TiltHydrometer]
+# Create a list of UUIDs to match against & make it easy to lookup color
+uuids = [TiltHydrometer.tilt_colors[x] for x in TiltHydrometer.tilt_colors]  # type: List[str]
+
+
+# Start the scanner (filtering is done in the callback)
+scanner = BeaconScanner(callback)
+scanner.start()
 
 if verbose:
-    print("Beginning to scan for color {}".format(sensor_color))
+    print("Beginning to scan for Tilt Hydrometers")
+
+# For now, we're reloading Tilt hydrometers every 15 seconds
+reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
+reload = False
 
 while True:
-    tiltValue = tiltHydrometer.getValue(sensor_color)
-    if tiltValue is not None:
-        new_point = gravity.models.GravityLogPoint(
-            gravity=tiltValue.gravity,
-            temp=tiltValue.temperature,
-            temp_format=tiltHydrometer.obj.sensor.temp_format,
-            temp_is_estimate = False,
-            associated_device=tiltHydrometer.obj.sensor,
-        )
 
-        if tiltHydrometer.obj.sensor.active_log is not None:
-            new_point.associated_log = tiltHydrometer.obj.sensor.active_log
+    if datetime.datetime.now() > reload_objects_at:
+        # Doing this so that as time passes while we're polling objects, we still end up reloading everything
+        reload = True
 
-        new_point.save()
+    for this_tilt in tilts:
+        if tilts[this_tilt].should_save():
+            tilts[this_tilt].save_value_to_fermentrack(verbose=verbose)
 
-        if verbose:
-            print("Logging {}: {}".format(sensor_color, str(tiltValue)))
+        if reload:
+            tilts[this_tilt].load_obj_from_fermentrack()
 
-    else:
-        if verbose:
-            print("No data received.")
+    # Now that all the tilts have been attended to, if reload was true, reset the reload timer
+    if reload:
+        reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
+        reload = False
 
-    # We're explicitly not using sensor here as the tiltHydrometer object may update tiltHydrometer.obj on its own
-    time.sleep(tiltHydrometer.obj.polling_frequency)
+    time.sleep(1)
 
-# tiltHydrometer.stop()
+# This is unreachable, but leaving it here anyways
+scanner.stop()

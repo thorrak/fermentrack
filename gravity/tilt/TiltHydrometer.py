@@ -1,323 +1,174 @@
-# Tilt Hydrometer  Tilt polling library
-# Simon Bowler 22/01/2017
-# simon@bowler.id.au
-#
-# Version: 1.5 - Bug fix for debugging log and also adding connection resilliance. Will now reset
-#                bluetooth connection if dropped for any reason.
-# Version: 1.4 - Added additional resiliance and debugging when parsing configuration files.
-#                Also added debug parameter to settings.ini to provide additional logging.
-# Version: 1.3 - Upgraded for firmware 0.4.4
-# Version: 1.2 - Added ability to get smoothed value, current value (calibrated)
-#                and an measure of variance (can indicate vigor of fermentation).
-#                Renamed library to reflect new name of product
-
-
-from __future__ import print_function
-import blescan
-import sys
 import datetime
-import time
-import os
+from typing import List, Dict, TYPE_CHECKING
+from beacontools import IBeaconAdvertisement
+from collections import deque
 
-import bluetooth._bluetooth as bluez
-import threading
-
-# Python 3 (Though arguably, we could swap for functions from threading instead)
-import _thread as thread
+from gravity.models import TiltConfiguration, GravityLogPoint
 
 
-try:
-    # If we can't import numpy for any reason, exit
-    import numpy
-
-    from scipy.interpolate import interp1d
-    from scipy import arange, array, exp
-except:
-    exit(1)
-
-import csv
-import functools
-
-# Python 3
-import configparser as ConfigParser
+class TiltHydrometer(object):
+    # These are all the UUIDs currently available as Tilt colors
+    tilt_colors = {
+        'Red':    "a495bb10-c5b1-4b44-b512-1370f02d74de",
+        'Green':  "a495bb20-c5b1-4b44-b512-1370f02d74de",
+        'Black':  "a495bb30-c5b1-4b44-b512-1370f02d74de",
+        'Purple': "a495bb40-c5b1-4b44-b512-1370f02d74de",
+        'Orange': "a495bb50-c5b1-4b44-b512-1370f02d74de",
+        'Blue':   "a495bb60-c5b1-4b44-b512-1370f02d74de",
+        'Yellow': "a495bb70-c5b1-4b44-b512-1370f02d74de",
+        'Pink':   "a495bb80-c5b1-4b44-b512-1370f02d74de",
+    }  # type: Dict[str, str]
 
 
-TILTHYDROMETER_COLOURS = ['Red', 'Green', 'Black', 'Purple', 'Orange', 'Blue', 'Yellow', 'Pink']
+    def __init__(self, color: str):
+        self.color = color  # type: str
 
-# Default time in seconds to wait before checking config files to see if calibration data has changed.
-DATA_REFRESH_WINDOW = 60
+        # The smoothing_window is set in the TiltConfiguration object - just defaulting it here for now
+        self.smoothing_window = 60  # type: int
+        self.gravity_list = deque(maxlen=self.smoothing_window)  # type: deque[float]
+        self.temp_list = deque(maxlen=self.smoothing_window)  # type: deque[int]
+
+        self.last_value_received = datetime.datetime.now() - self._cache_expiry_seconds()  # type: datetime.datetime
+        self.last_saved_value = datetime.datetime.now()  # type: datetime.datetime
 
 
-# extrap1d Sourced from sastanin @ StackOverflow:
-# http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-an-extrapolated-result-beyond-the-input-range
-# This function is required as the interp1d function doesn't support extrapolation in the version of scipy that is currently available on the pi.
-def extrap1d(interpolator):
-    xs = interpolator.x
-    ys = interpolator.y
+        self.gravity = 0.0  # type: float
+        self.temp = 0  # type: int
+        self.rssi = 0  # type: int
 
-    def pointwise(x):
-        if x < xs[0]:
-            return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
-        elif x > xs[-1]:
-            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
+        self.obj = None  # type: TiltConfiguration
+
+        # Let's load the object from Fermentrack as part of the initialization
+        self.load_obj_from_fermentrack()
+
+
+    def _cache_expiry_seconds(self) -> datetime.timedelta:
+        # Assume we get 1 out of every 4 readings
+        return datetime.timedelta(seconds=(self.smoothing_window * 1.2 * 4))
+
+    def _cache_expired(self) -> bool:
+        return self.last_value_received <= datetime.datetime.now() - self._cache_expiry_seconds()
+
+
+    def _add_to_list(self, gravity, temp):
+        # This adds a gravity/temp value to the list for smoothing/averaging
+        if self._cache_expired():
+            # The cache expired (we lost contact with the Tilt for too long). Clear the lists.
+            self.gravity_list.clear()
+            self.temp_list.clear()
+
+        # Thankfully, deque enforces queue length, so all we need to do is add the value
+        self.last_value_received = datetime.datetime.now()
+        self.gravity_list.append(gravity)
+        self.temp_list.append(temp)
+
+    def should_save(self) -> bool:
+        if self.obj is None:
+            return False
+
+        return self.last_saved_value <= datetime.datetime.now() - datetime.timedelta(seconds=(self.obj.polling_frequency))
+
+    def process_ibeacon_info(self, ibeacon_info: IBeaconAdvertisement, rssi):
+        if self.obj is None:
+            # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
+            self.gravity = ibeacon_info.minor / 1000
         else:
-            return interpolator(x)
+            # Otherwise, apply the calibration
+            self.gravity = self.obj.apply_gravity_calibration(ibeacon_info.minor / 1000)
 
-    def ufunclike(xs):
-        return array(map(pointwise, array(xs)))
+        self.temp = ibeacon_info.major
+        self.rssi = rssi
+        self._add_to_list(self.gravity, self.temp)
 
-    return ufunclike
-
-
-# Simple offset calibration if only one point available.
-def offsetCalibration(offset, value):
-    return value + offset
-
-
-# More complex interpolation calibration if more than one calibration point available
-def extrapolationCalibration(extrapolationFunction, value):
-    inputValue = [value]
-    returnValue = extrapolationFunction(inputValue)
-    return returnValue[0]
-
-
-def noCalibration(value):
-    return value
-
-
-# Median utility function
-def median(values):
-    return numpy.median(numpy.array(values))
-
-
-# Class to hold a TiltHydrometer reading
-class TiltHydrometerValue:
-    temperature = 0
-    gravity = 0
-    timestamp = 0
-
-    def __init__(self, temperature, gravity):
-        self.temperature = round(temperature, 2)
-        self.gravity = round(gravity, 3)
-        self.timestamp = datetime.datetime.now()
-
-    def __str__(self):
-        return "T: " + str(self.temperature) + " G: " + str(self.gravity)
-
-
-# TiltHydrometer class, looks after calibration, storing of values and smoothing of read values.
-class TiltHydrometer:
-    colour = ''
-    debug = False
-    values = None
-    lock = None
-    averagingPeriod = 0
-    medianWindow = 0
-    tempCalibrationFunction = None
-    gravityCalibrationFunction = None
-    calibrationDataTime = {}
-
-    # Averaging period is number of secs to average across. 0 to disable.
-    # Median window is the window to use for applying a median filter accross the values. 0 to disable. Median window should be <= the averaging period.
-    # If Median is disabled, the returned value will be the average of all values recorded during the averaging period.
-    def __init__(self, colour, averagingPeriod=0, medianWindow=0, debug=False):
-        self.colour = colour
-        self.lock = threading.Lock()
-        self.averagingPeriod = averagingPeriod
-        self.medianWindow = medianWindow
-        self.debug = debug
-        self.values = []
-        self.calibrationDataTime = {}
-        self.calibrate()
-
-    def calibrate(self):
-        """Load/reload calibration functions."""
-        # Check for temperature function. If none, then not changed since last load.
-        tempFunction = self.tiltHydrometerCalibrationFunction("temperature", self.colour)
-        if (tempFunction is not None):
-            self.tempCalibrationFunction = tempFunction
-
-        # Check for gravity function. If none, then not changed since last load.
-        gravityFunction = self.tiltHydrometerCalibrationFunction("gravity", self.colour)
-        if (gravityFunction is not None):
-            self.gravityCalibrationFunction = gravityFunction
-
-    def setValues(self, temperature, gravity):
-        """Set/add the latest temperature & gravity readings to the store. These values will be calibrated before storing if calibration is enabled"""
-        with self.lock:
-            self.cleanValues()
-            self.calibrate()
-
-            calibratedTemperature = temperature
-            calibratedGravity = gravity
-
-            try:
-                calibratedTemperature = self.tempCalibrationFunction(temperature)
-            except (Exception) as e:
-                print("ERROR: TiltHydrometer (" + self.colour + "): Unable to calibrate temperature: " + str(
-                    temperature) + " - " + e.message)
-
-            try:
-                calibratedGravity = self.gravityCalibrationFunction(gravity)
-            except (Exception) as e:
-                print("ERROR: TiltHydrometer (" + self.colour + "): Unable to calibrate gravity: " + str(
-                    gravity) + " - " + e.message)
-
-            self.values.append(TiltHydrometerValue(calibratedTemperature, calibratedGravity))
-
-    def getValues(self):
-        """Returns the temperature & gravity values of the Tilt Hydrometer . This will be the latest read value unless averaging / median has been enabled"""
-        with self.lock:
-            returnValue = None
-            if (len(self.values) > 0):
-                if (self.medianWindow == 0):
-                    returnValue = self.averageValues()
-                else:
-                    returnValue = self.medianValues(self.medianWindow)
-
-                self.cleanValues()
-        return returnValue
-
-    def averageValues(self):
-        """Internal function to average all the stored values"""
-        returnValue = None
-        if (len(self.values) > 0):
-            returnValue = TiltHydrometerValue(0, 0)
-            for value in self.values:
-                returnValue.temperature += value.temperature
-                returnValue.gravity += value.gravity
-
-            # average values
-            returnValue.temperature /= len(self.values)
-            returnValue.gravity /= len(self.values)
-
-            # round values
-            returnValue.temperature = round(returnValue.temperature, 2)
-            returnValue.gravity = round(returnValue.gravity, 3)
-        return returnValue
-
-    def medianValues(self, window=3):
-        """Internal function to use a median method across the stored values to reduce noise.
-           window - Smoothing window to apply across the data. If the window is less than the dataset size, the window will be moved across the dataset,
-                    taking a median value for each window, with the resultant set averaged"""
-        returnValue = None
-        # Ensure there are enough values to do a median filter, if not shrink window temporarily
-        if (len(self.values) < window):
-            window = len(self.values)
-
-        # print("Median filter!")
-        returnValue = TiltHydrometerValue(0, 0)
-
-        sidebars = (window - 1) / 2
-        medianValueCount = 0
-
-        for i in range(len(self.values) - (window - 1)):
-            # Work out range of values to do median. At start and end of assessment, need to pad with start and end values.
-            medianValues = self.values[i:i + window]
-            medianValuesTemp = []
-            medianValuesGravity = []
-
-            # Separate out Temp and Gravity values
-            for medianValue in medianValues:
-                medianValuesTemp.append(medianValue.temperature)
-                medianValuesGravity.append(medianValue.gravity)
-
-            # Add the median value to the running total.
-            returnValue.temperature += median(medianValuesTemp)
-            returnValue.gravity += median(medianValuesGravity)
-
-            # Increase count
-            medianValueCount += 1
-
-        # average values
-        returnValue.temperature /= medianValueCount
-        returnValue.gravity /= medianValueCount
-
-        # round values
-        returnValue.temperature = round(returnValue.temperature, 2)
-        returnValue.gravity = round(returnValue.gravity, 3)
-
-        return returnValue
-
-    def cleanValues(self):
-        """Function to clean out stale values that are beyond the desired window"""
-        nowTime = datetime.datetime.now()
-
-        for value in self.values:
-            if ((nowTime - value.timestamp).seconds >= self.averagingPeriod):
-                self.values.pop(0)
-            else:
-                # The list is sorted in chronological order, so once we've hit this condition we can stop searching.
-                break
-
-    # Load the calibration settings from file and create the calibration functions
-    def tiltHydrometerCalibrationFunction(self, type, colour):
-        # This function is replaced under Fermentrack
-        returnFunction = noCalibration
-
-        originalValues = []
-        actualValues = []
-        csvFile = None
-        filename = "tiltHydrometer/" + type.upper() + "." + colour.lower()
-
-        # Find out last time we attempted to load.
-        lastChecked = self.calibrationDataTime.get(type + "_checked", 0)
-        if ((int(time.time()) - lastChecked) < DATA_REFRESH_WINDOW):
-            # Only check every x seconds
+    def smoothed_gravity(self):
+        # Return the average gravity in gravity_list
+        if len(self.gravity_list) <= 0:
             return None
 
-        # Retrieve at the last load time.
-        lastLoaded = self.calibrationDataTime.get(type, 0)
-        self.calibrationDataTime[type + "_checked"] = int(time.time())
+        grav_total = 0
+        for grav in self.gravity_list:
+            grav_total += grav
+        return round(grav_total / len(self.gravity_list), 3)  # Average it out & round
 
-        try:
-            if (os.path.isfile(filename)):
-                fileModificationTime = os.path.getmtime(filename)
-                if (lastLoaded >= fileModificationTime):
-                    # No need to load, no change
-                    return None
-                csvFile = open(filename, "rb")
-                csvFileReader = csv.reader(csvFile, skipinitialspace=True)
-                self.calibrationDataTime[type] = fileModificationTime
+    def smoothed_temp(self):
+        # Return the average temp in temp_list
+        if len(self.temp_list) <= 0:
+            return None
 
-                lineNumber = 1
-                for row in csvFileReader:
-                    if (self.debug):
-                        print("TiltHydrometer (" + colour + "): File - " + filename + ", Line " + str(
-                            lineNumber) + " processing [" + str(row) + "]")
-                    # Skip any comment rows and rows with no configuration data
-                    if ((len(row) != 2) or (row[0][:1] == "#")):
-                        print("WARNING: TiltHydrometer (" + colour + "): File - " + filename + ", Line " + str(
-                            lineNumber) + " was ignored as does not contain valid configuration data [" + str(row) + "]")
-                    else:
-                        if (self.debug):
-                            print("TiltHydrometer (" + colour + "): File - " + filename + ", Line " + str(
-                                lineNumber) + " processed successfully")
-                        originalValues.append(float(row[0]))
-                        actualValues.append(float(row[1]))
+        temp_total = 0
+        for temp in self.temp_list:
+            temp_total += temp
+        return round(temp_total / len(self.temp_list), 3)  # Average it out & round
 
-                    lineNumber += 1
-                # Close file
-                csvFile.close()
-        except IOError:
-            print("TiltHydrometer (" + colour + "):  " + type.capitalize() + ": No calibration data (" + filename + ")")
-        except (Exception) as e:
-            print("ERROR: TiltHydrometer (" + colour + "): Unable to initialise " + type.capitalize() + " Calibration data (" + filename + ") - " + e.message)
-            # Attempt to close the file
-            if (csvFile is not None):
-                # Close file
-                csvFile.close()
+    @classmethod
+    def color_lookup(cls, color):
+        if len(cls.color_lookup_table) >= 0:
+            cls.color_lookup_table = {cls.tilt_colors[x]: x for x in cls.tilt_colors}
 
-        # If more than two values, use interpolation
-        if (len(actualValues) >= 2):
-            interpolationFunction = interp1d(originalValues, actualValues, bounds_error=False, fill_value=1)
-            returnFunction = functools.partial(extrapolationCalibration, extrap1d(interpolationFunction))
-            print("TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Interpolation")
-        # Not enough values. Likely just an offset calculation
-        elif (len(actualValues) == 1):
-            offset = actualValues[0] - originalValues[0]
-            returnFunction = functools.partial(offsetCalibration, offset)
-            print("TiltHydrometer (" + colour + "): Initialised " + type.capitalize() + " Calibration: Offset (" + str(
-                offset) + ")")
-        return returnFunction
+        if color in cls.color_lookup_table:
+            return cls.color_lookup_table[color]
+        else:
+            return None
 
+    def print_data(self):
+        print("{} Tilt: {} ({}) / {} F".format(self.color, self.smoothed_gravity(), self.gravity, self.temp))
+
+    def load_obj_from_fermentrack(self, obj:TiltConfiguration = None):
+        if obj is None:
+            # If we weren't handed the object itself, try to load it
+            try:
+                obj = TiltConfiguration.objects.get(color=self.color,
+                                                    connection_type=TiltConfiguration.CONNECTION_BLUETOOTH)
+            except:
+                # TODO - Rewrite this slightly
+                self.obj = None
+                return False
+
+        # If the smoothing window changed, just recreate the deque objects
+        if obj.smoothing_window_vals != self.smoothing_window:
+            self.smoothing_window = obj.smoothing_window_vals
+            self.gravity_list = deque(maxlen=self.smoothing_window)
+            self.temp_list = deque(maxlen=self.smoothing_window)
+
+        self.obj = obj
+
+    def save_value_to_fermentrack(self, verbose=False):
+        if self.obj is None:
+            # If we don't have a TiltConfiguration object loaded, we can't save the data point
+            if verbose:
+                print("{} Tilt: No object loaded for this color".format(self.color))
+            return False
+
+        if self._cache_expired():
+            if verbose:
+                print("{} Tilt: Cache is expired/No data available to save".format(self.color))
+            return False
+
+        # TODO - Test that temp_format actually works as intended here
+        new_point = GravityLogPoint(
+            gravity=self.smoothed_gravity(),
+            gravity_latest=self.gravity,
+            temp=self.smoothed_temp(),
+            temp_latest=self.temp,
+            temp_format=self.obj.sensor.temp_format,
+            temp_is_estimate=False,
+            associated_device=self.obj.sensor,
+        )
+
+        if self.obj.sensor.active_log is not None:
+            new_point.associated_log = self.obj.sensor.active_log
+
+        new_point.save()
+
+        # Also, set/save the RSSI so we can load it for debugging
+        self.obj.rssi = self.rssi
+        self.obj.save_extras_to_redis()
+
+        self.last_saved_value = datetime.datetime.now()
+
+        if verbose:
+            print("{} Tilt: Logging {}".format(self.color, self.smoothed_gravity()))
+
+        else:
+            if verbose:
+                print("No data received.")
