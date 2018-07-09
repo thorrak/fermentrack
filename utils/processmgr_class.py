@@ -114,7 +114,10 @@ class ProcessManager(object):
         proc_name = self.prefix + name
         # https://github.com/circus-tent/circus/issues/927
         proc_name = proc_name.lower()
-        cmd = self.command_tmpl % name
+        if self.treat_query_as_boolean:
+            cmd = self.command_tmpl
+        else:
+            cmd = self.command_tmpl % name
         try:
             call = self._circusmgr.add_controller(cmd, proc_name, self.logfilepath)
             self.log.debug("_add_process circus client call")
