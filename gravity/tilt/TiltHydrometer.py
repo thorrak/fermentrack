@@ -20,6 +20,9 @@ class TiltHydrometer(object):
     }  # type: Dict[str, str]
 
 
+    # color_lookup is created at first use in color_lookup
+    color_lookup_table = {}  # type: Dict[str, str]
+
     def __init__(self, color: str):
         self.color = color  # type: str
 
