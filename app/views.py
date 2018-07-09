@@ -594,7 +594,6 @@ def logout(request):
 def site_settings(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
 
-
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         return redirect('siteroot')
 
