@@ -144,6 +144,11 @@ class TiltHydrometer(object):
                 print("{} Tilt: Cache is expired/No data available to save".format(self.color))
             return False
 
+        if self.smoothed_gravity() is None or self.smoothed_temp() is None:
+            if verbose:
+                print("{} Tilt: No data available to save".format(self.color))
+            return False
+
         # TODO - Test that temp_format actually works as intended here
         new_point = GravityLogPoint(
             gravity=self.smoothed_gravity(),
