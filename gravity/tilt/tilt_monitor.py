@@ -33,7 +33,7 @@ def print_to_stderr(*objs):
 
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hc:vp:l", ['help', 'color=', 'verbose', 'pidfiledir=', 'list'])
+    opts, args = getopt.getopt(sys.argv[1:], "h:vp:l", ['help', 'verbose', 'pidfiledir=', 'list'])
 except getopt.GetoptError:
     print_to_stderr("Unknown parameter. Available options: --help, --color <color name>, --verbose, " +
                     "--pidfiledir <directory>", "--list")
