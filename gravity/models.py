@@ -808,7 +808,12 @@ class IspindelConfiguration(models.Model):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
         extras = {'ispindel_id': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
-                  'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
+                  'ispindel_gravity': self.ispindel_gravity or None}
+
+        if 'token' in self:
+            extras['token'] = self.token
+        else:
+            extras['token'] = None
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
