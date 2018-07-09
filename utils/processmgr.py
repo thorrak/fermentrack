@@ -12,7 +12,7 @@ import logging
 import argparse
 
 from circus.util import DEFAULT_ENDPOINT_DEALER
-from .processmgr_class import ProcessManager
+from utils.processmgr_class import ProcessManager
 
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
