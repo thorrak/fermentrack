@@ -115,7 +115,7 @@ $(function () {
                 }
             },
             dataType: 'json',
-            url: '{% url 'get_ispindel_extras' active_device.id %}'
+            url: '{% url 'get_ispindel_extras' active_device.id %}',
             {#url: '/api/gravity/ispindel/{{ active_device.id }}/',#}
             success: function(data) {
                 $('#ispindelCalibrationAngleFeed').html(data.angle);

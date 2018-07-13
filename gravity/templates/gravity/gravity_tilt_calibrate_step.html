@@ -115,7 +115,7 @@ $(function () {
                 }
             },
             dataType: 'json',
-            url: '{% url 'get_tilt_extras' active_device.id %}'
+            url: '{% url 'get_tilt_extras' active_device.id %}',
             {#url: '/api/gravity/tilt/{{ active_device.id }}/',#}
             success: function(data) {
                 $('#tiltGravityFeed').html(data.raw_gravity);
