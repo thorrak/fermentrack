@@ -36,7 +36,9 @@ class TiltHydrometer(object):
 
 
         self.gravity = 0.0  # type: float
+        self.raw_gravity = 0.0  # type: float
         self.temp = 0  # type: int
+        self.raw_temp = 0  # type: int
         self.rssi = 0  # type: int
 
         self.obj = None  # type: TiltConfiguration
@@ -44,6 +46,8 @@ class TiltHydrometer(object):
         # Let's load the object from Fermentrack as part of the initialization
         self.load_obj_from_fermentrack()
 
+    def __str__(self):
+        return self.color
 
     def _cache_expiry_seconds(self) -> datetime.timedelta:
         # Assume we get 1 out of every 4 readings
@@ -51,7 +55,6 @@ class TiltHydrometer(object):
 
     def _cache_expired(self) -> bool:
         return self.last_value_received <= datetime.datetime.now() - self._cache_expiry_seconds()
-
 
     def _add_to_list(self, gravity, temp):
         # This adds a gravity/temp value to the list for smoothing/averaging
@@ -72,14 +75,16 @@ class TiltHydrometer(object):
         return self.last_saved_value <= datetime.datetime.now() - datetime.timedelta(seconds=(self.obj.polling_frequency))
 
     def process_ibeacon_info(self, ibeacon_info: IBeaconAdvertisement, rssi):
+        self.raw_gravity = ibeacon_info.minor / 1000
         if self.obj is None:
             # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
-            self.gravity = ibeacon_info.minor / 1000
+            self.gravity = self.raw_gravity
         else:
             # Otherwise, apply the calibration
-            self.gravity = self.obj.apply_gravity_calibration(ibeacon_info.minor / 1000)
+            self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
 
-        self.temp = ibeacon_info.major
+        self.raw_temp = ibeacon_info.major
+        self.temp = self.raw_temp
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
 
@@ -168,8 +173,10 @@ class TiltHydrometer(object):
 
         new_point.save()
 
-        # Also, set/save the RSSI so we can load it for debugging
+        # Also, set/save the RSSI/Raw Temp/Raw Gravity so we can load it for debugging
         self.obj.rssi = self.rssi
+        self.obj.raw_gravity = self.raw_gravity
+        self.obj.raw_temp = self.raw_temp
         self.obj.save_extras_to_redis()
 
         self.last_saved_value = datetime.datetime.now()

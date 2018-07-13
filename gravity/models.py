@@ -643,6 +643,10 @@ class TiltConfiguration(models.Model):
                                                                              "gravity calibration equation")
     grav_constant_term = models.FloatField(default=0.0, help_text="The constant term in the gravity calibration "
                                                                   "equation")
+    # While coefficients_up_to_date is kept accurate, at the moment it doesn't really get used anywhere.
+    # TODO - Do something useful with this
+    coefficients_up_to_date = models.BooleanField(default=True, help_text="Have the calibration points changed since "
+                                                                          "the coefficient calculator was run?")
 
     def tiltHydrometerName(self, uuid):
         return {
@@ -695,14 +699,14 @@ class TiltConfiguration(models.Model):
         else:
             return True
 
-
-    # These two functions are explicitly so we have some way of saving/tracking RSSI for debugging later on. If theres
-    # any other reason to leverage them, we can expand accordingly.
+    # These two functions are explicitly so we have some way of saving/tracking RSSI for debugging and raw temp/gravity
+    # later on.
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
-        extras = {'rssi': self.rssi or None}
+        extras = {'rssi': self.rssi or None, 'raw_gravity': self.raw_gravity or None,
+                  'raw_temp': self.raw_temp or None}
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
 
@@ -719,6 +723,12 @@ class TiltConfiguration(models.Model):
 
         if 'rssi' in extras:
             self.rssi = extras['rssi']
+
+        if 'raw_gravity' in extras:
+            self.raw_gravity = extras['raw_gravity']
+
+        if 'raw_temp' in extras:
+            self.raw_gravity = extras['raw_temp']
 
         return extras
 
@@ -816,7 +826,6 @@ class IspindelConfiguration(models.Model):
             extras['token'] = None
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
-
 
     def load_extras_from_redis(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)

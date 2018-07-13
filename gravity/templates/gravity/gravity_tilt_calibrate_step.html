@@ -1,7 +1,7 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}{% load static %}
 
-{% block title %}Configure iSpindel{% endblock %}
+{% block title %}Configure Tilt{% endblock %}
 
 {% block header_scripts %}
 {% endblock %}
@@ -9,7 +9,7 @@
 
 {% block content %}
 
-<h1 class="page-header">iSpindel Guided Calibration</h1>
+<h1 class="page-header">Tilt Guided Calibration</h1>
 
 
     <h3>Calibration Point {{ on_step }} - Instructions:</h3>
@@ -18,7 +18,7 @@
         <p>
             Let's get started! Into the empty bucket add {{ this_step_data.water_addition }} grams of room temperature
             water{% if this_step_data.sugar_addition > 0 %} and {{ this_step_data.sugar_addition }} grams of sugar. Stir
-            the mixture well to dissolve the sugar{% endif %}. Once done, place the iSpindel in the bucket and wait for
+            the mixture well to dissolve the sugar{% endif %}. Once done, place the Tilt in the bucket and wait for
             it to level off.
         </p>
 
@@ -27,33 +27,33 @@
             Next, in the glass measuring cup, add {{ this_step_data.water_addition }} grams of warm
             water{% if this_step_data.sugar_addition > 0 %} and {{ this_step_data.sugar_addition }} grams of sugar. Stir
             the mixture well to dissolve the sugar{% endif %}. Once dissolved, pour the mixture into the bucket with the
-            iSpindel and wait for it to level off.
+            Tilt and wait for it to level off.
         </p>
 
     {% endif %}
 
     <p>
-        Once the iSpindel is level and you see the angle below has updated, type the angle of the iSpindel into the form
+        Once the Tilt is level and you see the gravity below has updated, type the gravity of the Tilt into the form
         and click the button to add the calibration point and move on to the next step.
     </p>
 
     <h3>Calibration Point {{ on_step }}:</h3>
 
-        <form action="{% url "gravity_ispindel_guided_calibration" active_device.id next_step %}" class="form-horizontal" method="post">{% csrf_token %}
-        <input type="hidden" value="{{ ispindel_calibration_form.sensor.value }}" name="{{ ispindel_calibration_form.sensor.name }}">
-        <input type="hidden" value="{{ ispindel_calibration_form.gravity.value }}" name="{{ ispindel_calibration_form.gravity.name }}">
+        <form action="{% url "gravity_tilt_guided_calibration" active_device.id next_step %}" class="form-horizontal" method="post">{% csrf_token %}
+        <input type="hidden" value="{{ tilt_calibration_point_form.sensor.value }}" name="{{ tilt_calibration_point_form.sensor.name }}">
+        <input type="hidden" value="{{ tilt_calibration_point_form.actual_value.value }}" name="{{ tilt_calibration_point_form.actual_value.name }}">
             <div class="row">
-                <div class="col-sm-2">Reported Angle</div>
-                <div class="col-sm-10" id="ispindelCalibrationAngleFeed"></div>
+                <div class="col-sm-2">Last Reported Tilt Gravity</div>
+                <div class="col-sm-10" id="tiltGravityFeed"></div>
             </div>
 
             <div class="row">
-                <div class="col-sm-2">Angle</div>
-                <div class="col-sm-10">{{ ispindel_calibration_form.angle }}</div>
+                <div class="col-sm-2">Tilt Gravity</div>
+                <div class="col-sm-10">{{ tilt_calibration_point_form.orig_value }}</div>
             </div>
             <div class="row">
-                <div class="col-sm-2">Gravity</div>
-                <div class="col-sm-10">{{ ispindel_calibration_form.gravity.value }}</div>
+                <div class="col-sm-2">Expected Gravity</div>
+                <div class="col-sm-10">{{ tilt_calibration_point_form.actual_value.value }}</div>
             </div>
 
         <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
@@ -73,8 +73,8 @@
                 <th>Total Water</th>
                 <th>Total Sugar</th>
                 <th>Plato</th>
-                <th>Specific Gravity</th>
-                <th>Angle (&deg;)</th>
+                <th>Expected Gravity</th>
+                <th>Tilt Measurement</th>
             </tr>
         </thead>
 
@@ -87,7 +87,7 @@
                 <td>{{ this_step_info.cumulative_sugar }}g</td>
                 <td>{{ this_step_info.plato }}&deg;P</td>
                 <td>{{ this_step_info.specific_gravity }}</td>
-                <td>{{ this_step_info.angle }}&deg;</td>
+                <td>{{ this_step_info.tilt_gravity }}</td>
             </tr>
         {% endfor %}
     </table>
@@ -103,9 +103,9 @@ $(function () {
 
 </script>
 
-{# This script pulls in the "extra data" that the iSpindel transmits & populates it on the manage page #}
+{# This script pulls in the "extra data" that was recorded from the Tilt & populates it on the manage page #}
 <script type="text/javascript">
-    (function ispindel_worker() {
+    (function tilt_worker() {
         $.ajax({
             type: 'GET',
             async: true,
@@ -115,14 +115,14 @@ $(function () {
                 }
             },
             dataType: 'json',
-            url: '{% url 'get_ispindel_extras' active_device.id %}'
-            {#url: '/api/gravity/ispindel/{{ active_device.id }}/',#}
+            url: '{% url 'get_tilt_extras' active_device.id %}'
+            {#url: '/api/gravity/tilt/{{ active_device.id }}/',#}
             success: function(data) {
-                $('#ispindelCalibrationAngleFeed').html(data.angle);
+                $('#tiltGravityFeed').html(data.raw_gravity);
             },
             complete: function() {
             // Schedule the next request when the current one's complete
-            setTimeout(ispindel_worker, 3000);
+            setTimeout(tilt_worker, 3000);
             }
         });
     })();
