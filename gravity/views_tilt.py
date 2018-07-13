@@ -10,7 +10,7 @@ from django.utils import timezone
 import json, socket, decimal
 from django.http import JsonResponse
 
-from gravity.models import GravitySensor, GravityLog, IspindelConfiguration, GravityLogPoint, TiltGravityCalibrationPoint
+from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint
 try:
     import numpy
     NUMPY_ENABLED = True
@@ -97,7 +97,7 @@ def gravity_tilt_add_gravity_calibration_point(request, sensor_id):
             tilt_calibration_point_form.save()
             messages.success(request, u"Calibration point added")
 
-            if sensor.ispindel_configuration.coefficients_up_to_date:
+            if sensor.tilt_configuration.coefficients_up_to_date:
                 # If we're changing any coefficients since the calibration script was last run, clear the 'calibrated'
                 # flag so we know.
                 messages.warning(request, u"New calibration points have been added since the coefficients were last "
@@ -321,11 +321,11 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
     if step == 0:
         # Step 0 just lays out the basic instructions. We do want to collect existing points (if any) so we can warn
         # the user, however.
-        existing_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.ispindel_configuration)
+        existing_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration)
         context['existing_points'] = existing_points
         return render(request, template_name='gravity/gravity_tilt_calibrate_start.html', context=context)
     elif step <= len(water_additions_by_step):
-        tilt_calibration_point_form = forms.IspindelCalibrationPointForm(
+        tilt_calibration_point_form = forms.TiltGravityCalibrationPointForm(
             initial={'sensor': sensor.tilt_configuration, 'actual_value': step_data[step-1]['specific_gravity']})
         context['tilt_calibration_point_form'] = tilt_calibration_point_form
         context['this_step_data'] = step_data[step - 1]
