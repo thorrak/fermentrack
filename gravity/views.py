@@ -483,7 +483,7 @@ def gravity_manage(request, sensor_id):
 
     context = {'active_device': sensor}
 
-    if sensor.sensor_type == 'ispindel':
+    if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
         initial = {
             'a': sensor.ispindel_configuration.third_degree_coefficient,
@@ -498,6 +498,21 @@ def gravity_manage(request, sensor_id):
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
+
+    if sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        initial = {
+            'b': sensor.tilt_configuration.grav_second_degree_coefficient,
+            'c': sensor.tilt_configuration.grav_first_degree_coefficient,
+            'd': sensor.tilt_configuration.grav_constant_term,
+        }
+        tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
+        context['tilt_coefficient_form'] = tilt_coefficient_form
+
+        calibration_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration).order_by('orig_value')
+        context['tilt_calibration_points'] = calibration_points
+        tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
+        context['tilt_calibration_form'] = tilt_calibration_form
 
     return render(request, template_name='gravity/gravity_manage.html', context=context)
 

@@ -50,7 +50,7 @@
 
         <p>
             After entering a handful of tilt/specific gravity readings, Fermentrack can automatically determine the
-            proper coefficients for calculating specific gravity. To enter
+            proper coefficients for calculating specific gravity.
         </p>
 
 
@@ -184,6 +184,65 @@
     {% elif active_device.sensor_type == "tilt" %}
 
 
+        <h2>Calibration Points</h2>
+
+        <p>
+            After entering a handful of measured/expected gravity readings, Fermentrack can automatically determine the
+            proper coefficients for correcting specific gravity.
+        </p>
+
+
+        {% if tilt_calibration_points %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tilt Gravity</th>
+                    <th>Actual Gravity</th>
+                    <th>Entered</th>
+                    <th>Remove Point</th>
+                </tr>
+            </thead>
+
+            {% for this_point in tilt_calibration_points %}
+                <tr>
+                    <td>{{ this_point.orig_value }}</td>
+                    <td>{{ this_point.actual_value }}</td>
+                    {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
+                    <td>{{ this_point.created | timezone:preferred_tz | date:"r" }}</td>
+                    <td><a href="{% url 'gravity_tilt_delete_calibration_point' active_device.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% if tilt_calibration_points|length >= 2 %}
+        <div class="row">
+            <div class="col-xs-12">
+                <a href="{% url "gravity_tilt_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        {% else %}
+        <div class="row">
+            <div class="col-xs-12">
+
+        {% endif %}
+
+
+    {% else %}
+        <h5>There are no calibration points saved for this sensor</h5>
+        <div class="row">
+            <div class="col-xs-12">
+    {% endif %}
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
+                <a href="{% url "gravity_tilt_guided_calibration" active_device.id 0 %}" class="btn btn-primary">Perform Guided Calibration</a>
+
+            </div>
+        </div>
+
+
+        <h2>Extra Data from Device</h2>
+
+        <div class="row">
+            <div class="col-sm-2">Current Signal Strength</div>
+            <div class="col-sm-10" id="tiltRSSIFeed"></div>
+        </div>
 
 
 
@@ -377,6 +436,7 @@ if ($('[data-toggle="switch"]').length) {
             });
         })();
     </script>
+    {# TODO - Do the same for Tilt RSSI #}
 {% endif %}
 
 
