@@ -571,8 +571,9 @@ class TiltTempCalibrationPoint(models.Model):
 
 class TiltGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('TiltConfiguration')
-    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Gravity Value")
-    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Gravity Value")
+    actual_gravity = models.DecimalField(max_digits=5, decimal_places=3, verbose_name="Actual (Correct) Gravity value")
+    tilt_measured_gravity = models.DecimalField(max_digits=5, decimal_places=3,
+                                                verbose_name="Tilt Measured Gravity Value")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
 
 

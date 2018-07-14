@@ -245,7 +245,7 @@ class TiltCoefficientForm(forms.Form):
 class TiltGravityCalibrationPointForm(forms.ModelForm):
     class Meta:
         model = TiltGravityCalibrationPoint
-        fields = ['orig_value', 'actual_value', 'sensor']
+        fields = ['actual_gravity', 'tilt_measured_gravity', 'sensor']
 
 
 class IspindelCreateForm(forms.Form):

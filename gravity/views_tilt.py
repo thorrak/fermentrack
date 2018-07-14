@@ -206,8 +206,9 @@ def gravity_tilt_calibrate(request, sensor_id):
     #                               u"re-perform calibration.")
 
     # Now set up the x/y arrays and have numpy do the heavy lifting
-    x = [float(point.angle) for point in points]
-    y = [float(point.gravity) for point in points]
+    # The input for our equation is the measurement, with the desired output being the actual gravity
+    x = [float(point.tilt_measured_gravity) for point in points]
+    y = [float(point.actual_gravity) for point in points]
     poly_terms = numpy.polyfit(x, y, degree)
 
     # Save the results out to our Tilt configuration...
@@ -260,7 +261,7 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
             try:
                 # If a point exists with the exact same expected specific gravity that we just entered, delete it.
                 # This is specifically to prevent the user from accidentally running this calibration twice.
-                point_to_delete = TiltGravityCalibrationPoint.objects.get(orig_value=tilt_calibration_point_form.cleaned_data['orig_value'],
+                point_to_delete = TiltGravityCalibrationPoint.objects.get(actual_gravity=tilt_calibration_point_form.cleaned_data['actual_gravity'],
                                                                           sensor=sensor.tilt_configuration)
                 point_to_delete.delete()
             except:
@@ -303,13 +304,13 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
             this_step['cumulative_sugar'] += step_data[i-1]['cumulative_sugar']
 
         this_step['plato'] = 1.0*this_step['cumulative_sugar'] / (this_step['cumulative_sugar'] + this_step['cumulative_water']) * 100
-        this_step['specific_gravity'] = round(decimal.Decimal(1+this_step['plato']/(258.6-(227.1*(this_step['plato']/258.2)))), 4)
+        this_step['specific_gravity'] = round(decimal.Decimal(1+this_step['plato']/(258.6-(227.1*(this_step['plato']/258.2)))), 3)
         this_step['plato'] = round(decimal.Decimal(this_step['plato']),2)  # Make it pretty to look at
 
         try:
-            point_with_grav = TiltGravityCalibrationPoint.objects.get(actual_value=this_step['specific_gravity'],
+            point_with_grav = TiltGravityCalibrationPoint.objects.get(actual_gravity=this_step['specific_gravity'],
                                                                       sensor=sensor.tilt_configuration)
-            this_step['tilt_gravity'] = point_with_grav.orig_value
+            this_step['tilt_gravity'] = point_with_grav.tilt_measured_gravity
         except:
             this_step['tilt_gravity'] = ""
 
@@ -326,7 +327,7 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
         return render(request, template_name='gravity/gravity_tilt_calibrate_start.html', context=context)
     elif step <= len(water_additions_by_step):
         tilt_calibration_point_form = forms.TiltGravityCalibrationPointForm(
-            initial={'sensor': sensor.tilt_configuration, 'actual_value': step_data[step-1]['specific_gravity']})
+            initial={'sensor': sensor.tilt_configuration, 'actual_gravity': step_data[step - 1]['specific_gravity']})
         context['tilt_calibration_point_form'] = tilt_calibration_point_form
         context['this_step_data'] = step_data[step - 1]
         return render(request, template_name='gravity/gravity_tilt_calibrate_step.html', context=context)
