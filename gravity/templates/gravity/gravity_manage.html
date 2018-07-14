@@ -205,8 +205,8 @@
 
             {% for this_point in tilt_calibration_points %}
                 <tr>
-                    <td>{{ this_point.orig_value }}</td>
-                    <td>{{ this_point.actual_value }}</td>
+                    <td>{{ this_point.tilt_measured_gravity }}</td>
+                    <td>{{ this_point.actual_gravity }}</td>
                     {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
                     <td>{{ this_point.created | timezone:preferred_tz | date:"r" }}</td>
                     <td><a href="{% url 'gravity_tilt_delete_gravity_calibration_point' active_device.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>
