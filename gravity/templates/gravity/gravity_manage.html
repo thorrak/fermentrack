@@ -30,7 +30,7 @@
         </p>
 
         <p>
-            You can update the coefficients of this formula below manually, or enter gravity & tilt calibration points
+            You can update the coefficients of this formula below manually, or enter gravity & angle calibration points
             and have Fermentrack calculate the coefficients automatically.
         </p>
 
@@ -182,6 +182,35 @@
 
         {# End iSpindel Configuration Section #}
     {% elif active_device.sensor_type == "tilt" %}
+
+
+
+        <h2>Tilt-to-Gravity Equation</h2>
+
+        <p>
+            Tilt Hydrometers measure & transmit a specific gravity directly, but this measurement can be slightly off
+            from what the specific gravity actually is. Using a handful of calibration points, we fit an equation that
+            can be used to convert the Tilt-measured gravity to what we expect the actual gravity to be.
+        </p>
+
+        <p>
+            Current Formula: gravity = {{ active_device.tilt_configuration.grav_second_degree_coefficient }}x^2 +
+            {{ active_device.tilt_configuration.grav_first_degree_coefficient }}x +
+            {{ active_device.tilt_configuration.grav_constant_term }}
+        </p>
+
+        <p>
+            You can update the coefficients of this formula below manually, or enter gravity & tilt calibration points
+            and have Fermentrack calculate the coefficients automatically.
+        </p>
+
+        <form action="{% url "gravity_tilt_coefficients" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.b %}</div>
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.c %}</div>
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.d %}</div>
+            <div class="row col-xs-12"><input type="submit" value="Update Coefficients" class="btn btn-primary" /></div>
+        </form>
+
 
 
         <h2>Calibration Points</h2>

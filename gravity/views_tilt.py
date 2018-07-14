@@ -228,7 +228,8 @@ def gravity_tilt_calibrate(request, sensor_id):
     sensor.tilt_configuration.save()
 
     # ...and we're done!
-    messages.success(request, u"Coefficients have been updated based on the calibration points")
+    messages.success(request, u"Coefficients have been updated based on the calibration points. This may take up to a "
+                              u"minute to take effect.")
 
     return redirect("gravity_manage", sensor_id=sensor_id)
 
