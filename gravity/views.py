@@ -509,7 +509,7 @@ def gravity_manage(request, sensor_id):
         tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
         context['tilt_coefficient_form'] = tilt_coefficient_form
 
-        calibration_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration).order_by('orig_value')
+        calibration_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration).order_by('tilt_measured_gravity')
         context['tilt_calibration_points'] = calibration_points
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
