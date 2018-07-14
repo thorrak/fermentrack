@@ -307,7 +307,7 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
         this_step['plato'] = round(decimal.Decimal(this_step['plato']),2)  # Make it pretty to look at
 
         try:
-            point_with_grav = TiltGravityCalibrationPoint.objects.get(gravity=this_step['specific_gravity'],
+            point_with_grav = TiltGravityCalibrationPoint.objects.get(actual_value=this_step['specific_gravity'],
                                                                       sensor=sensor.tilt_configuration)
             this_step['tilt_gravity'] = point_with_grav.orig_value
         except:
