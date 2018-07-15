@@ -9,8 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import json, socket, decimal
 from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 
-from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint
+from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint, TiltBridge, TiltConfiguration
+
 try:
     import numpy
     NUMPY_ENABLED = True
@@ -336,3 +338,77 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
         # Last step is just a message.
         return render(request, template_name='gravity/gravity_tilt_calibrate_end.html', context=context)
 
+
+@csrf_exempt
+def tiltbridge_handler(request):
+    if request.body is None:
+        logger.error("No data in TiltBridge request body")
+        return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
+    import pprint
+    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
+        pprint.pprint(request.body.decode('utf-8'), logFile)
+
+    # This should look like this (while testing only):
+    # {
+    #   'api_key': 'Key Goes Here',
+    #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
+    #            {'color': 'Orange', 'temp': 66, 'gravity': 1.001}
+    # }
+
+    tiltbridge_data = json.loads(request.body.decode('utf-8'))
+    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
+        pprint.pprint(tiltbridge_data, logFile)
+
+    try:
+        if 'api_key' in tiltbridge_data:
+            tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
+        else:
+            logger.error(u"Malformed TiltBridge JSON - No key provided!")
+            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No api_key provided!"}, safe=False,
+                                json_dumps_params={'indent': 4})
+    except ObjectDoesNotExist:
+        logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
+        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
+    for this_tilt in tiltbridge_data['tilts']:
+        try:
+            tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
+                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
+
+            raw_temp = tiltbridge_data['tilts'][this_tilt]['temp']
+            converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
+
+            raw_gravity = 0
+            normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
+
+            # TODO - Use the calibration function to recalculate gravity
+            new_point = GravityLogPoint(
+                gravity=normalized_gravity,
+                temp=converted_temp,
+                temp_format=temp_format,
+                temp_is_estimate=False,
+                associated_device=tilt_obj.sensor,
+                gravity_latest=normalized_gravity,
+                temp_latest=converted_temp,
+            )
+
+            if tilt_obj.sensor.active_log is not None:
+                new_point.associated_log = tilt_obj.sensor.active_log
+
+            new_point.save()
+
+            # Now that the point is saved, save out the 'extra' data so we can use it later for calibration
+            tilt_obj.raw_gravity = raw_gravity
+            tilt_obj.raw_temp = raw_temp  # TODO - Determine if we want to record this in F or sensor_format
+
+            tilt_obj.save_extras_to_redis()
+
+        except ObjectDoesNotExist:
+            # We received data for an invalid tilt from TiltBridge
+            pass
+
+    return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
+                        json_dumps_params={'indent': 4})
