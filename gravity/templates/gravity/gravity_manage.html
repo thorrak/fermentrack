@@ -266,12 +266,14 @@
         </div>
 
 
+    {% if active_device.tilt_configuration.connection_type == "Bluetooth" %}
         <h2>Extra Data from Device</h2>
 
         <div class="row"> {# TODO - Make this actually useful to an end user (right now it's just the straight signal # which isn't meaningful) #}
             <div class="col-sm-2">Current Signal Strength</div>
             <div class="col-sm-10" id="tiltRSSIFeed"></div>
         </div>
+    {% endif %}
 
 
 
@@ -468,28 +470,31 @@ if ($('[data-toggle="switch"]').length) {
 
 {% elif active_device.sensor_type == "tilt" %}
     {# This script pulls in the "extra data" that the Tilt saves & populates it on the manage page #}
-    <script type="text/javascript">
-        (function tilt_worker() {
-            $.ajax({
-                type: 'GET',
-                async: true,
-                beforeSend: function (xhr) {
-                    if (xhr && xhr.overrideMimeType) {
-                        xhr.overrideMimeType('application/json;charset=utf-8');
+    {# Since this is currently only used for RSSI (and that doesn't apply to TiltBridge) only show for Bluetooth #}
+    {% if active_device.tilt_configuration.connection_type == "Bluetooth" %}
+        <script type="text/javascript">
+            (function tilt_worker() {
+                $.ajax({
+                    type: 'GET',
+                    async: true,
+                    beforeSend: function (xhr) {
+                        if (xhr && xhr.overrideMimeType) {
+                            xhr.overrideMimeType('application/json;charset=utf-8');
+                        }
+                    },
+                    dataType: 'json',
+                    url: '{% url 'get_tilt_extras' active_device.id %}',
+                    success: function(data) {
+                        $('#tiltRSSIFeed').html(data.rssi);
+                    },
+                    complete: function() {
+                    // Schedule the next request when the current one's complete
+                    setTimeout(tilt_worker, 2000);
                     }
-                },
-                dataType: 'json',
-                url: '{% url 'get_tilt_extras' active_device.id %}',
-                success: function(data) {
-                    $('#tiltRSSIFeed').html(data.rssi);
-                },
-                complete: function() {
-                // Schedule the next request when the current one's complete
-                setTimeout(tilt_worker, 2000);
-                }
-            });
-        })();
-    </script>
+                });
+            })();
+        </script>
+    {% endif %}
 
 {% endif %}
 
