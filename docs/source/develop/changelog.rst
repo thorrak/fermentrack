@@ -33,6 +33,7 @@ Fixed
 
 - Removed constant LCD polling for "modern" controllers
 - Gravity support will now be properly disabled when the correct flag is set at setup
+- iSpindel devices that do not report all 'extras' will no longer throw errors when reporting gravity
 
 
 

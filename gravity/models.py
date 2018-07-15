@@ -706,14 +706,11 @@ class TiltConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
-        extras = {'rssi': None, 'raw_gravity': None, 'raw_temp': None}
-
-        if 'rssi' in self:
-            extras['rssi'] = self.rssi
-        if 'raw_gravity' in self:
-            extras['raw_gravity'] = self.raw_gravity
-        if 'raw_temp' in self:
-            extras['raw_temp'] = self.raw_temp
+        extras = {
+            'rssi': getattr(self, 'rssi', None),
+            'raw_gravity': getattr(self, 'raw_gravity', None),
+            'raw_temp': getattr(self, 'raw_temp', None)
+        }
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
 
@@ -821,18 +818,13 @@ class IspindelConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
-        extras = {'ispindel_id': None, 'angle': None, 'battery': None, 'ispindel_gravity': None, 'token': None}
-
-        if 'ispindel_id' in self:
-            extras['ispindel_id'] = self.ispindel_id
-        if 'angle' in self:
-            extras['angle'] = self.angle
-        if 'battery' in self:
-            extras['battery'] = self.battery
-        if 'ispindel_gravity' in self:
-            extras['ispindel_gravity'] = self.ispindel_gravity
-        if 'token' in self:
-            extras['token'] = self.token
+        extras = {
+            'ispindel_id': getattr(self, 'ispindel_id', None),
+            'angle': getattr(self, 'angle', None),
+            'battery': getattr(self, 'battery', None),
+            'ispindel_gravity': getattr(self, 'ispindel_gravity', None),
+            'token': getattr(self, 'token', None)
+        }
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
