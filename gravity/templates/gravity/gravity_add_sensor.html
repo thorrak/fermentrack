@@ -17,6 +17,15 @@
         Please select the sensor family that you are attempting to set up.
     </p>
 
+     {% if manual_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in manual_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
+     {% if tilt_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in tilt_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
+     {% if ispindel_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in ispindel_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
 
 
     <!-- Accordion Selector -->

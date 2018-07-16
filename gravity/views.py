@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import bluetooth._bluetooth as bluez
+    import beacontools
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False
@@ -108,7 +108,8 @@ def gravity_add_board(request):
 
                 return redirect('gravity_ispindel_setup', sensor_id=sensor.id)
 
-        messages.error(request, 'Error adding sensor')
+        # TODO - Display form validation error message
+        messages.error(request, 'Error adding sensor - See below for details')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
     return render(request, template_name='gravity/gravity_add_sensor.html',
@@ -128,7 +129,8 @@ def gravity_list(request):
                                   'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
                                   'to resolve this issue.')
 
-    return render(request, template_name="gravity/gravity_list.html",)
+    all_devices = GravitySensor.objects.all()
+    return render(request, template_name="gravity/gravity_list.html", context={'all_devices': all_devices})
 
 
 @login_required
