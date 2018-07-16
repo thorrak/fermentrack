@@ -483,7 +483,7 @@ def gravity_manage(request, sensor_id):
 
     context = {'active_device': sensor}
 
-    if sensor.sensor_type == 'ispindel':
+    if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
         initial = {
             'a': sensor.ispindel_configuration.third_degree_coefficient,
@@ -498,6 +498,21 @@ def gravity_manage(request, sensor_id):
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
+
+    if sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        initial = {
+            'b': sensor.tilt_configuration.grav_second_degree_coefficient,
+            'c': sensor.tilt_configuration.grav_first_degree_coefficient,
+            'd': sensor.tilt_configuration.grav_constant_term,
+        }
+        tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
+        context['tilt_coefficient_form'] = tilt_coefficient_form
+
+        calibration_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration).order_by('tilt_measured_gravity')
+        context['tilt_calibration_points'] = calibration_points
+        tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
+        context['tilt_calibration_form'] = tilt_calibration_form
 
     return render(request, template_name='gravity/gravity_manage.html', context=context)
 
@@ -522,69 +537,3 @@ def almost_json_view(request, sensor_id, log_id):
     else:
         empty_array = []
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
-
-
-@csrf_exempt
-def tiltbridge_handler(request):
-    if request.body is None:
-        logger.error("No data in TiltBridge request body")
-        return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
-                            json_dumps_params={'indent': 4})
-
-    import pprint
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
-        pprint.pprint(request.body.decode('utf-8'), logFile)
-
-    # This should look like this (while testing only):
-    # {
-    #   'api_key': 'Key Goes Here',
-    #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
-    #            {'color': 'Orange', 'temp': 66, 'gravity': 1.001}
-    # }
-
-    tiltbridge_data = json.loads(request.body.decode('utf-8'))
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
-        pprint.pprint(tiltbridge_data, logFile)
-
-    try:
-        if 'api_key' in tiltbridge_data:
-            tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
-        else:
-            logger.error(u"Malformed TiltBridge JSON - No key provided!")
-            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No api_key provided!"}, safe=False,
-                                json_dumps_params={'indent': 4})
-    except ObjectDoesNotExist:
-        logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
-        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
-                            json_dumps_params={'indent': 4})
-
-    for this_tilt in tiltbridge_data['tilts']:
-        try:
-            tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
-                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
-
-            converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(
-                float(tiltbridge_data['tilts'][this_tilt]['temp']), 'F')
-
-            # TODO - Use the calibration function to recalculate gravity
-            new_point = GravityLogPoint(
-                gravity=tiltbridge_data['tilts'][this_tilt]['gravity']/1000,
-                temp=converted_temp,
-                temp_format=temp_format,
-                temp_is_estimate=False,
-                associated_device=tilt_obj.sensor,
-                gravity_latest=tiltbridge_data['tilts'][this_tilt]['gravity']/1000,
-                temp_latest=converted_temp,
-            )
-
-            if tilt_obj.sensor.active_log is not None:
-                new_point.associated_log = tilt_obj.sensor.active_log
-
-            new_point.save()
-
-        except ObjectDoesNotExist:
-            # We received data for an invalid tilt from TiltBridge
-            pass
-
-    return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
-                        json_dumps_params={'indent': 4})

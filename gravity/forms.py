@@ -1,7 +1,7 @@
 from django import forms
-from constance import config
-from django.conf import settings
-from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint, TiltBridge
+# from constance import config
+# from django.conf import settings
+from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint, TiltBridge, TiltGravityCalibrationPoint
 from app.models import BrewPiDevice
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
@@ -227,6 +227,25 @@ class TiltCreateForm(forms.Form):
         self.fields['tiltbridge'] = forms.ChoiceField(required=False, choices=self.get_tiltbridge_choices(),
                                                       widget=forms.Select(attrs={'class': 'form-control',
                                                                                  'data-toggle': 'select'}))
+
+
+class TiltCoefficientForm(forms.Form):
+    # Allow for inputting the coefficients/constant term of the gravity equation (if known)
+    # a = forms.DecimalField(required=False, help_text="The third degree coefficient of the gravity equation")
+    b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
+    c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
+    d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
+
+    def __init__(self, *args, **kwargs):
+        super(TiltCoefficientForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
+class TiltGravityCalibrationPointForm(forms.ModelForm):
+    class Meta:
+        model = TiltGravityCalibrationPoint
+        fields = ['actual_gravity', 'tilt_measured_gravity', 'sensor']
 
 
 class IspindelCreateForm(forms.Form):

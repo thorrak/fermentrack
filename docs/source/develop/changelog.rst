@@ -16,17 +16,24 @@ Added
 - DS18b20 sensors can now have temperature offsets added to each reading to correct for calibration errors
 - ESP8266 controllers can now have their WiFi settings reset via the "manage sensor" web interface
 - Control constants form now supports both "new" (OEM BrewPi) and "old" ("Legacy" branch) control constants
+- Tilt hydrometers can now have their specific gravity readings calibrated
+- "Heat/Cool State" will now be shown on temperature graphs
+- Fermentrack logo added as favicon
 
 
 Changed
 ---------------------
 
 - The iSpindel endpoint can now be accessed at either /ispindel or /ispindle
+- Specific gravity will now be shown on graphs with 3 decimal places
+- Beer log format has been changed to add state information
 
 Fixed
 ---------------------
 
 - Removed constant LCD polling for "modern" controllers
+- Gravity support will now be properly disabled when the correct flag is set at setup
+- iSpindel devices that do not report all 'extras' will no longer throw errors when reporting gravity
 
 
 
