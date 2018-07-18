@@ -489,17 +489,63 @@ g2 = new Dygraph(
         displayAnnotations: true,
         showLabelsOnHighlight: true,
         hideOverlayOnMouseOut: false,
+        // TODO - Test this with gravity data
+        visibility: {{ beer.base_column_visibility }},
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
-{% if beer.gravity_enabled %}
+        underlayCallback: function(canvas, area, g) {
+
+            function highlight_period(x_start, x_end, state) {
+                if(state==3)  // Heating
+                    canvas.fillStyle = "rgba(198, 9, 35, 0.3)";
+                else if(state==4)  // Cooling
+                    canvas.fillStyle = "rgba(66, 134, 244, 0.3)";
+                else  // Anything else
+                    canvas.fillStyle = "rgba(255, 255, 255, 0.0)";
+
+              var canvas_left_x = g.toDomXCoord(x_start);
+              var canvas_right_x = g.toDomXCoord(x_end);
+              var canvas_width = canvas_right_x - canvas_left_x;
+              canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+            }
+
+            // Save the initial state/x coord
+            var start_x = g.rolledSeries_[g.setIndexByName_.state]["0"]["0"];
+            var last_x = start_x;
+            var state = g.rolledSeries_[g.setIndexByName_.state]["0"]["1"];
+
+            for(i=0; i<g.rolledSeries_[6].length; i++) {
+                // For every change in state, trigger a rectangle draw
+                if(g.rolledSeries_[g.setIndexByName_.state][i]["1"] != state) {
+                    if(state == 3 || state == 4)
+                        highlight_period(start_x, last_x, state);
+                    state = g.rolledSeries_[g.setIndexByName_.state][i]["1"];
+                    start_x = g.rolledSeries_[g.setIndexByName_.state][i]["0"];
+                }
+                last_x = g.rolledSeries_[g.setIndexByName_.state][i]["0"];
+            }
+            // Also trigger a draw at the end (assuming the state isn't "inactive")
+            if(state == 3 || state == 4)
+                highlight_period(start_x, last_x, state);
+
+          },
+        {% if beer.gravity_enabled %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
         ylabel: 'Temperature',
         y2label: 'Gravity',
         series: {
             'gravity': {
                 axis: 'y2'
+            }
+        },
+        axes: {
+            y: {
+                digitsAfterDecimal: 1
+            },
+            y2: {
+                digitsAfterDecimal: 3
             }
         },
 {% else %}

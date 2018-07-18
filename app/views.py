@@ -194,6 +194,44 @@ def device_control_constants_legacy(request, device_id, control_constants):
                                    context={'form': form, 'active_device': active_device})
 
 
+
+@login_required
+@site_is_configured
+def device_control_constants_modern(request, device_id, control_constants):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.add_device'):
+    #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
+    #     return redirect("/")
+
+    active_device = BrewPiDevice.objects.get(id=device_id)
+
+    if request.POST:
+        form = device_forms.NewCCModelForm(request.POST)
+        if form.is_valid():
+            # Generate the new_control_constants object from the form data
+            new_control_constants = form.save(commit=False)
+
+            # At this point, we have both the OLD control constants (control_constants) and the NEW control constants
+            # TODO - Modify the below to only send constants that have changed to the controller
+            if not new_control_constants.save_all_to_controller(active_device):
+                return render(request, template_name='device_control_constants_new.html',
+                                           context={'form': form, 'active_device': active_device})
+
+            # TODO - Make it so if we added a preset name we save the new preset
+            # new_device.save()
+
+            messages.success(request, u'Control constants updated for device {}'.format(active_device))
+            return redirect("/")
+
+        else:
+            return render(request, template_name='device_control_constants_new.html',
+                                       context={'form': form, 'active_device': active_device})
+    else:
+        form = device_forms.OldCCModelForm(instance=control_constants)
+        return render(request, template_name='device_control_constants_new.html',
+                                   context={'form': form, 'active_device': active_device})
+
+
 @login_required
 @site_is_configured
 def device_control_constants(request, device_id):
@@ -213,8 +251,7 @@ def device_control_constants(request, device_id):
     elif is_legacy:
         return device_control_constants_legacy(request, device_id, control_constants)
     else:
-        # TODO - Replace this with device_control_constants_modern or whatever it ends up getting called
-        return device_control_constants_legacy(request, device_id, control_constants)
+        return device_control_constants_modern(request, device_id, control_constants)
 
 
 @login_required
@@ -274,6 +311,7 @@ def sensor_config(request, device_id):
                                                                                 address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
             sensor_to_adjust.invert = form.cleaned_data['invert']
+            sensor_to_adjust.calibrate_adjust = form.cleaned_data['calibration']
 
             if form.cleaned_data['perform_uninstall']:
                 write_succeeded = sensor_to_adjust.uninstall()
@@ -325,7 +363,7 @@ def device_dashboard(request, device_id, beer_id=None):
 
     if beer_id is None:
         beer_obj = active_device.active_beer or None
-        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # TODO - Do I want to exclude the active beer?
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id)
     else:
         try:
             beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id)
@@ -342,7 +380,6 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         beer_file_url = beer_obj.data_file_url('base_csv')
 
-
     if beer_obj is None:
         column_headers = {}
     else:
@@ -351,7 +388,7 @@ def device_dashboard(request, device_id, beer_id=None):
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': column_headers,
+                                        # 'column_headers': column_headers,
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
 
@@ -556,7 +593,6 @@ def logout(request):
 @site_is_configured
 def site_settings(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
-
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         return redirect('siteroot')
@@ -872,7 +908,7 @@ def debug_connection(request, device_id):
         # Start with the mDNS hostname (if mdns_lookup was successful)
         if mdns_lookup is not None:
             hostname = active_device.wifi_host
-            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname, active_device.wifi_port)
 
             if connection_check:
                 # We were able to telnet into the hostname
@@ -897,7 +933,7 @@ def debug_connection(request, device_id):
 
         if len(active_device.wifi_host_ip) > 7:
             hostname = active_device.wifi_host_ip
-            connection_check, version_check, version_string = connection_debug.test_telnet(hostname)
+            connection_check, version_check, version_string = connection_debug.test_telnet(hostname, active_device.wifi_port)
 
             test_result = {'name': 'Cached IP Test', 'parameter': hostname, 'status': PASSED,
                            'result': 'Available'}

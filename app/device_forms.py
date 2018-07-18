@@ -159,7 +159,19 @@ class OldCCModelForm(ModelForm):
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
 
+class NewCCModelForm(ModelForm):
+    class Meta:
+        model = NewControlConstants
+        fields = NewControlConstants.firmware_field_list
+
+    def __init__(self, *args, **kwargs):
+        super(NewCCModelForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
 class SensorForm(ModelForm):
+    # TODO - Delete if no longer required
     class Meta:
         model = SensorDevice
         fields = ['device_function', 'invert', 'pin', 'address']
@@ -171,6 +183,7 @@ class SensorForm(ModelForm):
 
 
 class SensorFormRevised(forms.Form):
+    # TODO - Overwrite the DEVICE_FUNCTION_CHOICES to match the type of device being configured
     device_function = forms.ChoiceField(label="Device Function",
                                         widget=forms.Select(attrs={'class': 'form-control select select-primary',
                                                                    'data-toggle': 'select'}),
@@ -180,6 +193,10 @@ class SensorFormRevised(forms.Form):
                                choices=SensorDevice.INVERT_CHOICES, required=False)
     # Not sure if I want to change 'invert' to be a switch or a dropdown
     # invert = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'data-toggle': 'switch'}))
+
+    calibration = forms.DecimalField(label="Temp Calibration Offset", required=False, initial=0.0,
+                                     help_text="The temperature calibration to be added to each reading (in case "
+                                               "your temperature sensors misread temps)")
 
     address = forms.CharField(widget=forms.HiddenInput, required=False)
     pin = forms.CharField(widget=forms.HiddenInput)

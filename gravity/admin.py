@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from gravity.models import GravitySensor, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint
+from gravity.models import GravitySensor, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint, TiltBridge
 
 @admin.register(GravitySensor)
 class gravitySensorAdmin(admin.ModelAdmin):
@@ -13,6 +13,11 @@ class tiltConfigurationAdmin(admin.ModelAdmin):
 @admin.register(IspindelConfiguration)
 class ispindelConfigurationAdmin(admin.ModelAdmin):
     list_display = ('sensor', 'name_on_device', )
+
+@admin.register(TiltBridge)
+class tiltBridgeConfigurationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'api_key', )
+
 
 # @admin.register(IspindelGravityCalibrationPoint)
 # class IspindelGravityCalibrationPointAdmin(admin.ModelAdmin):

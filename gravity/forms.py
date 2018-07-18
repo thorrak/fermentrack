@@ -1,11 +1,11 @@
-from django.contrib.auth.models import User
 from django import forms
-from constance import config
-#from constance.admin import ConstanceForm
-from django.conf import settings
-from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint
+# from constance import config
+# from django.conf import settings
+from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint, TiltBridge, TiltGravityCalibrationPoint
 from app.models import BrewPiDevice
 from django.forms import ModelForm
+from django.core.validators import RegexValidator
+from django.core.exceptions import ObjectDoesNotExist
 
 
 ###################################################################################################################
@@ -24,6 +24,22 @@ class ManualForm(ModelForm):
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
+    def clean(self):  # TODO - Determine if this should be clean_color instead of clean
+        # The override of "clean" only exists to allow us to be able to validate that there isn't an existing gravity
+        # sensor with the same name as the one the user is attempting to add.
+        cleaned_data = self.cleaned_data
+
+        if cleaned_data.get("name"):
+            try:
+                GravitySensor.objects.get(name__iexact=cleaned_data['name'])
+                raise forms.ValidationError("A gravity sensor with the name {} ".format(cleaned_data['name']) +
+                                            "already exists. Please choose another name.")
+            except ObjectDoesNotExist:
+                pass
+
+        return cleaned_data
+
+
 # Manual sensors don't have special configuration.
 class ManualPointForm(ModelForm):
     class Meta:
@@ -34,9 +50,6 @@ class ManualPointForm(ModelForm):
         super(ManualPointForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
-
-
-
 
 
 class GravityLogCreateForm(forms.Form):
@@ -91,7 +104,6 @@ class GravityLogCreateForm(forms.Form):
 
 
 class SensorAttachForm(forms.Form):
-
     sensor = forms.ChoiceField(required=True)
     temp_controller = forms.ChoiceField(required=True)
 
@@ -112,7 +124,6 @@ class SensorAttachForm(forms.Form):
             device_tuple = (this_device.id, this_device.device_name)
             choices.append(device_tuple)
         return choices
-
 
     def __init__(self, *args, **kwargs):
         super(SensorAttachForm, self).__init__(*args, **kwargs)
@@ -143,12 +154,36 @@ class SensorAttachForm(forms.Form):
         return cleaned_data
 
 
-
 class TiltCreateForm(forms.Form):
+    key_validator = RegexValidator(r"[0-9A-Za-z_-]+", "Key can only consist of 0-9, A-Z, a-z, dashes, and underscores.")
+
     name = forms.CharField(max_length=255, min_length=1, required=True, )
     temp_format = forms.ChoiceField(required=True, choices=GravitySensor.TEMP_FORMAT_CHOICES)
-
     color = forms.ChoiceField(required=True, choices=TiltConfiguration.COLOR_CHOICES)
+
+    # With the addition of TiltBridge support, we now need to allow the user to choose a connection type for Tilt
+    # hydrometers (either Bluetooth or TiltBridge)
+    connection_type = forms.ChoiceField(required=True, choices=TiltConfiguration.CONNECTION_CHOICES)
+
+    # The following three options allow a user who has selected the TiltBridge connection type to configure a new (or
+    # select an existing) TiltBridge.
+    tiltbridge = forms.ChoiceField(required=False, help_text="Select a TiltBridge for this Tilt to connect through")
+    tiltbridge_name = forms.CharField(max_length=64, required=False,
+                                      help_text="Human-readable name for the new TiltBridge")
+    tiltbridge_api_key = forms.CharField(max_length=64, validators=[key_validator], required=False,
+                                         help_text="API key (also known as a 'token') that the TiltBridge will use to "
+                                                   "identify itself. Can only consist of letters, numbers, dashes, and "
+                                                   "underscores.")
+    @staticmethod
+    def get_tiltbridge_choices():
+        choices = []
+        available_tiltbridges = TiltBridge.objects.all()
+        for this_tiltbridge in available_tiltbridges:
+            device_tuple = (this_tiltbridge.api_key, this_tiltbridge.name)
+            choices.append(device_tuple)
+        # Always provide the user the option to create a new TiltBridge if he/she so wishes
+        choices.append(('+', '<Create New TiltBridge>'))
+        return choices
 
     def clean_color(self):
         if self.cleaned_data.get("color"):
@@ -167,10 +202,76 @@ class TiltCreateForm(forms.Form):
 
         return self.cleaned_data['color']
 
+    def clean_tiltbridge_api_key(self):
+        if self.cleaned_data.get("tiltbridge_api_key"):
+            # Again, although the uniqueness check is enforced on the database insert, I want to validate it as part of
+            # the form. Unlike color, however, api keys aren't required in most cases.
+            try:
+                tilt_bridge = TiltBridge.objects.get(api_key=self.cleaned_data['tiltbridge_api_key'])
+            except:
+                tilt_bridge = None
+
+            if tilt_bridge is not None:
+                raise forms.ValidationError("There is already a TiltBridge configured "
+                                            "with the API key {}".format(self.cleaned_data['tiltbridge_api_key']))
+            return self.cleaned_data['tiltbridge_api_key']
+
+    def clean_name(self):
+        # Enforce uniqueness for sensor name
+        if self.cleaned_data.get("name"):
+            try:
+                # Check to make sure that the name of the gravity sensor is unique
+                GravitySensor.objects.get(name__iexact=self.cleaned_data['name'])
+                raise forms.ValidationError("A gravity sensor with the name {} ".format(self.cleaned_data['name']) +
+                                            "already exists. Please choose another name.")
+            except ObjectDoesNotExist:
+                pass
+        return self.cleaned_data['name']
+
+    def clean(self):
+        # In this case, we're only validating that we have all the data we need if the user selected to use a
+        # TiltBridge rather than bluetooth. Arguably, I could also put a check for Bluetooth support here (invalidating
+        # the form if the environment doesn't support Bluetooth)
+        cleaned_data = self.cleaned_data
+
+        if cleaned_data.get("connection_type", "") == TiltConfiguration.CONNECTION_BRIDGE:
+            # The user selected to use a TiltBridge to connect. We need to test that we have everything we need
+            if cleaned_data.get("tiltbridge", "") == '+':
+                # The user is trying to create a new TiltBridge object. Validation of the data within each field is
+                # enforced by the field validator, but we need to make sure both were specified.
+                if 'tiltbridge_name' not in cleaned_data or 'tiltbridge_api_key' not in cleaned_data:
+                    raise forms.ValidationError("When creating a new TiltBridge, both a name & api key must be provided")
+                elif len(cleaned_data['tiltbridge_name']) < 1 or len(cleaned_data['tiltbridge_api_key']) < 1:
+                    raise forms.ValidationError("When creating a new TiltBridge, both a name & api key must be provided")
+
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         super(TiltCreateForm, self).__init__(*args, **kwargs)
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
+        self.fields['tiltbridge'] = forms.ChoiceField(required=False, choices=self.get_tiltbridge_choices(),
+                                                      widget=forms.Select(attrs={'class': 'form-control',
+                                                                                 'data-toggle': 'select'}))
+
+
+class TiltCoefficientForm(forms.Form):
+    # Allow for inputting the coefficients/constant term of the gravity equation (if known)
+    # a = forms.DecimalField(required=False, help_text="The third degree coefficient of the gravity equation")
+    b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
+    c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
+    d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
+
+    def __init__(self, *args, **kwargs):
+        super(TiltCoefficientForm, self).__init__(*args, **kwargs)
+        for this_field in self.fields:
+            self.fields[this_field].widget.attrs['class'] = "form-control"
+
+
+class TiltGravityCalibrationPointForm(forms.ModelForm):
+    class Meta:
+        model = TiltGravityCalibrationPoint
+        fields = ['actual_gravity', 'tilt_measured_gravity', 'sensor']
 
 
 class IspindelCreateForm(forms.Form):
@@ -195,6 +296,18 @@ class IspindelCreateForm(forms.Form):
             raise forms.ValidationError("iSpindel sensors require a name on device to be specified")
 
         return self.cleaned_data['name_on_device']
+
+    def clean_name(self):
+        # Enforce uniqueness for sensor name
+        if self.cleaned_data.get("name"):
+            try:
+                # Check to make sure that the name of the gravity sensor is unique
+                GravitySensor.objects.get(name__iexact=self.cleaned_data['name'])
+                raise forms.ValidationError("A gravity sensor with the name {} ".format(self.cleaned_data['name']) +
+                                            "already exists. Please choose another name.")
+            except ObjectDoesNotExist:
+                pass
+        return self.cleaned_data['name']
 
     def __init__(self, *args, **kwargs):
         super(IspindelCreateForm, self).__init__(*args, **kwargs)
