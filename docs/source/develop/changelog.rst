@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unversioned]
-~~~~~~~~~~~~~~~~~~~~~
+[2018-07-XX] - Gravity Refactoring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -37,7 +37,7 @@ Fixed
 
 
 [2018-04-27] - "v1.0 release"
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -61,6 +61,7 @@ Added
 - Added support for Tilt Hydrometers
 - Added support for iSpindel specific gravity sensors
 
+
 Changed
 ---------------------
 
@@ -74,6 +75,7 @@ Changed
 - Added icon to graph legend to display line color
 - Updated to Django v1.11 (Long term support version)
 - Changed from supporting Python 2 to Python 3
+
 
 Fixed
 ---------------------
@@ -90,7 +92,7 @@ Fixed
 
 
 [2017-03-17] - "v0.1 release"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
