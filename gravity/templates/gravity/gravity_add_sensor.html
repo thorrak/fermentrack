@@ -97,8 +97,10 @@
                             Use this to set Fermentrack up to interact with <a href="https://tilthydrometer.com/">Tilt Hydrometers</a>.
                             Tilt Hydrometers are an automatic, wireless specific gravity sensor and will provide a
                             continuous stream of specific gravity data to Fermentrack allowing you to graph the progress
-                            as your beer ferments. Fermentrack also supports the use of the
-                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.
+                            as your beer ferments.
+
+{#                            Fermentrack also supports the use of the#}
+{#                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.#}
                         </div>
                     </div>
                     <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
@@ -107,16 +109,17 @@
                         <div class="row col-xs-12">{% form_generic tilt_form.name %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.temp_format %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.color %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
 
-                        {# TODO - Make these fields hidden if connection type isn't tiltbridge #}
-                        <div id="tiltBridgeHidden" style="display: block">
-                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
-                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
-                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
-                        </div>
+                        {# TODO - Reenable this when TiltBridge is ready for release #}
+                        <input type="hidden" value="Bluetooth" name="{{ tilt_form.connection_type.name }}">
 
-
+{#                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>#}
+{##}
+{#                        <div id="tiltBridgeHidden" style="display: block">#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>#}
+{#                        </div>#}
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
                     </form>

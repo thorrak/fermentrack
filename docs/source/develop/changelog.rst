@@ -12,7 +12,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 Added
 ---------------------
 
-- Support for "TiltBridge" Tilt-to-WiFi bridge
 - DS18b20 sensors can now have temperature offsets added to each reading to correct for calibration errors
 - ESP8266 controllers can now have their WiFi settings reset via the "manage sensor" web interface
 - Control constants form now supports both "new" (OEM BrewPi) and "old" ("Legacy" branch) control constants
