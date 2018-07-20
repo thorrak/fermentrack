@@ -495,6 +495,25 @@ g2 = new Dygraph(
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
+
+        {% if beer.gravity_enabled %}
+        colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
+        ylabel: 'Temperature',
+        y2label: 'Gravity',
+        series: {
+            'gravity': {
+                axis: 'y2'
+            }
+        },
+        axes: {
+            y: {
+                digitsAfterDecimal: 1
+            },
+            y2: {
+                digitsAfterDecimal: 3
+            }
+        },
+{% else %}
         underlayCallback: function(canvas, area, g) {
 
             function highlight_period(x_start, x_end, state) {
@@ -531,24 +550,6 @@ g2 = new Dygraph(
                 highlight_period(start_x, last_x, state);
 
           },
-        {% if beer.gravity_enabled %}
-        colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
-        ylabel: 'Temperature',
-        y2label: 'Gravity',
-        series: {
-            'gravity': {
-                axis: 'y2'
-            }
-        },
-        axes: {
-            y: {
-                digitsAfterDecimal: 1
-            },
-            y2: {
-                digitsAfterDecimal: 3
-            }
-        },
-{% else %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
 {% endif %}
         highlightCallback: updateLegend
