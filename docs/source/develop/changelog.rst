@@ -6,8 +6,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unversioned]
-~~~~~~~~~~~~~~~~~~~~~
+[2018-07-XX] - Gravity Refactoring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- DS18b20 sensors can now have temperature offsets added to each reading to correct for calibration errors
+- ESP8266 controllers can now have their WiFi settings reset via the "manage sensor" web interface
+- Control constants form now supports both "new" (OEM BrewPi) and "old" ("Legacy" branch) control constants
+- Tilt hydrometers can now have their specific gravity readings calibrated
+- "Heat/Cool State" will now be shown on temperature graphs
+- Fermentrack logo added as favicon
+
+
+Changed
+---------------------
+
+- The iSpindel endpoint can now be accessed at either /ispindel or /ispindle
+- Specific gravity will now be shown on graphs with 3 decimal places
+- Beer log format has been changed to add state information
+
+Fixed
+---------------------
+
+- Removed constant LCD polling for "modern" controllers
+- Gravity support will now be properly disabled when the correct flag is set at setup
+- iSpindel devices that do not report all 'extras' will no longer throw errors when reporting gravity
+
+
+
+[2018-04-27] - "v1.0 release"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -31,6 +61,7 @@ Added
 - Added support for Tilt Hydrometers
 - Added support for iSpindel specific gravity sensors
 
+
 Changed
 ---------------------
 
@@ -44,6 +75,7 @@ Changed
 - Added icon to graph legend to display line color
 - Updated to Django v1.11 (Long term support version)
 - Changed from supporting Python 2 to Python 3
+
 
 Fixed
 ---------------------
@@ -59,8 +91,8 @@ Fixed
 
 
 
-[0.1.0] - 2017-03-17 - "v1 release"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2017-03-17] - "v0.1 release"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------

@@ -6,7 +6,7 @@
                 
 #### A replacement web interface for BrewPi
 
-Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It adds key features such as the ability to manage multiple controllers and control both Arduino-based and ESP8266-based controllers connecting via serial or WiFi. Fermentrack also integrates standalone support for Tilt & iSpindel specific gravity sensors allowing specific gravity to be tracked in the absence of BrewPi controllers.
+Fermentrack is an application designed to manage and log fermentation temperatures and specific gravity. It acts as a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It also can track Tilt Hydrometers and iSpindel specific gravity sensors - both alongside BrewPi controllers as well as by themselves.
 
 Fermentrack is Python-based, does not require PHP5, and works with Raspbian Stretch or later including on Raspberry Pi 3 B+. Fermentrack is intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same device. 
 
@@ -15,12 +15,11 @@ Want to see it in action? See videos of key Fermentrack features on [YouTube](ht
 
 ### Included with Fermentrack
 
-* **Fermentrack** - The Django-based replacement for brewpi-www. Licensed under MIT license.
-* **brewpi-script** - Installed alongside Fermentrack is brewpi-script. Licensed under GPL v3.
+* **Fermentrack** - Django-based fermentation tracking and control interface. Replaces brewpi-www. Licensed under MIT license.
+* **brewpi-script** - Installed alongside Fermentrack to control BrewPi controllers. Licensed under GPL v3.
 * **nginx** - A reverse proxy/webserver. Licensed under 2-Clause BSD-like license.
 * **circusd** - A python-based process manager. Licensed under the Apache license, v2.0.
-* **chaussette** - A wsgi server. 
-
+* **chaussette** - A wsgi server. Licensed under the Apache license, v2.0.
 
 ## New Features
 
@@ -31,8 +30,9 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 * Integrated support for ESP8266-based controllers
 * Official support for "legacy" controllers
 * Native support (including mDNS autodetection) for WiFi controllers
-* Specific gravity sensor support, including Tilt Hydrometers & iSpindel devices
+* Integrated specific gravity sensor support, including for Tilt Hydrometers and iSpindel devices
 
+A full table of controllers/expected hardware availability is available [https://fermentrack.readthedocs.io/](https://fermentrack.readthedocs.io/).
 
 ## Installation & Documentation
 

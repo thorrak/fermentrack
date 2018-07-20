@@ -1,9 +1,8 @@
 from django.shortcuts import render
-from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from constance import config
+from django.core.exceptions import ObjectDoesNotExist
 
 from gravity.models import GravitySensor
 
@@ -50,10 +49,13 @@ def getGravitySensors(req, device_id=None):
     return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
 
-def getIspindelExtras(req, device_id):
+def get_ispindel_extras(req, device_id):
     ret = []
 
-    device = GravitySensor.objects.get(id=device_id)
+    try:
+        device = GravitySensor.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Unable to locate device with ID {}'.format(device_id)}, safe=False)
 
     if device.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # Load the iSpindel 'extras' from redis
@@ -65,3 +67,21 @@ def getIspindelExtras(req, device_id):
 
     return JsonResponse(extras, safe=False, json_dumps_params={'indent': 4})
 
+
+def get_tilt_extras(req, device_id):
+    ret = []
+
+    try:
+        device = GravitySensor.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Unable to locate device with ID {}'.format(device_id)}, safe=False)
+
+    if device.sensor_type == GravitySensor.SENSOR_TILT:
+        # Load the Tilt 'extras' from redis
+        extras = device.tilt_configuration.load_extras_from_redis()
+        extras['device_name'] = device.name
+        extras['device_id'] = device.id
+    else:
+        extras = {}
+
+    return JsonResponse(extras, safe=False, json_dumps_params={'indent': 4})

@@ -8,7 +8,7 @@ running on the device that handles reading temperatures, switching cooling and h
 Everything but the firmware part is running under a process manager which takes care of
 launching the front end and brewpi.py controller scripts.
 
-![Fermentrack Architechture](img/fermentrack.png)
+![Fermentrack Architecture](img/fermentrack.png)
 
 See [components](components.md) documentation for links and licenses.
 

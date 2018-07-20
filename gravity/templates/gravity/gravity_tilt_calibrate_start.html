@@ -1,0 +1,78 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Tilt Guided Calibration{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Tilt Guided Calibration</h1>
+
+
+    <h3>Overview</h3>
+
+    <p>
+        Although Tilt devices seem to output specific gravity readings, they work by internally measuring the angle
+        (tilt) of the device and applying an equation to convert this angle to the expected specific gravity. Although
+        we do not have the ability to edit or calibrate this conversion equation directly, we can apply a correction
+        factor to the readings it provides to add additional accuracy to the specific gravity we log.
+    </p>
+
+    <p>
+        This process will guide you through creating sugar/water mixtures of known specific gravity and then seeing what
+        specific gravity the Tilt reports from each. By the end of this process you will have collected 5 data points
+        which Fermentrack will then use to derive your Tilt's conversion function. You will need a few pieces of
+        equipment to complete this process - all of which are listed out below.
+    </p>
+
+
+    <h3>Supplies</h3>
+
+    <p>In order to perform this guided calibration, you will need the following supplies:</p>
+
+    <ul>
+        <li>4 lbs (2 kg) White Table Sugar</li>
+        <li>Water</li>
+        <li>2 cup (500 ml) measuring cup (for mixing) </li>
+        <li>2+ gallon (or 6+ liter) bucket (does not need to be sanitized)</li>
+        <li>Tilt Hydrometer</li>
+        <li>Gram scale</li>
+    </ul>
+
+
+    {% if existing_points|length > 0 %}
+    <h3>Setup</h3>
+
+    <p>
+        One last thing before we begin --<br>
+        Right now, you have a handful of existing calibration points. If you're sure these are still accurate, that's
+        perfectly fine - more points help the accuracy of the calibration. If you aren't sure however, please return to
+        the manage device screen and delete them before continuing. If any of these points have an identical
+        expected gravity they will be deleted automatically.
+    </p>
+    {% endif %}
+
+
+    <div class="row">
+        <div class="col-xs-12">
+            <a href="{% url "gravity_tilt_guided_calibration" active_device.id 1 %}" class="btn btn-success">Begin Guided Calibration</a>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

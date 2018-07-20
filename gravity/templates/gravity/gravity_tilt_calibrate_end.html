@@ -1,7 +1,7 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}{% load static %}
 
-{% block title %}iSpindel Guided Calibration{% endblock %}
+{% block title %}Tilt Guided Calibration{% endblock %}
 
 {% block header_scripts %}
 {% endblock %}
@@ -9,16 +9,16 @@
 
 {% block content %}
 
-<h1 class="page-header">iSpindel Guided Calibration</h1>
+<h1 class="page-header">Tilt Guided Calibration</h1>
 
 
     <h3>Final Thoughts</h3>
 
     <p>
-        Congratulations! You have now finished gathering initial calibration points for your iSpindel device. The final
-        step is to have Fermentrack use these points to determine the specific gravity equation for your iSpindel. Take
-        a quick look at the points below to make sure you agree with them all, and once done click "Perform Calibration
-        with Above Points" to trigger the calibration & return to the manage sensor screen.
+        Congratulations! You have now finished gathering initial calibration points for your Tilt Hydrometer device. The
+        final step is to have Fermentrack use these points to determine the specific gravity equation for your Tilt
+        Hydrometer. Take a quick look at the points below to make sure you agree with them all, and once done click
+        "Perform Calibration with Above Points" to trigger the calibration & return to the manage sensor screen.
     </p>
 
 
@@ -32,7 +32,7 @@
                 <th>Total Sugar</th>
                 <th>Plato</th>
                 <th>Specific Gravity</th>
-                <th>Angle (&deg;)</th>
+                <th>Measured Gravity</th>
             </tr>
         </thead>
 
@@ -45,13 +45,13 @@
                 <td>{{ this_step_info.cumulative_sugar }}</td>
                 <td>{{ this_step_info.plato }}&deg;P</td>
                 <td>{{ this_step_info.specific_gravity }}</td>
-                <td>{{ this_step_info.angle }}</td>
+                <td>{{ this_step_info.tilt_gravity }}</td>
             </tr>
         {% endfor %}
     </table>
 
 
-    <a href="{% url "gravity_ispindel_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+    <a href="{% url "gravity_tilt_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
 
 
 {% endblock %}
