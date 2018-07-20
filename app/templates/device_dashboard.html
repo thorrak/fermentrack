@@ -531,7 +531,7 @@ g2 = new Dygraph(
                 highlight_period(start_x, last_x, state);
 
           },
-        {% if beer.gravity_enabled %}
+{% if beer.gravity_enabled %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
         ylabel: 'Temperature',
         y2label: 'Gravity',

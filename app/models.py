@@ -1112,7 +1112,7 @@ class Beer(models.Model):
 
         # This works because we're appending the gravity data to both logs
         if self.gravity_enabled:
-            visibility += ", true"
+            visibility += ", true, true"
 
         if self.model_version > 1:
             visibility += ", false"  # Literally the whole point of this code block is to hide "state"
