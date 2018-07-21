@@ -1114,8 +1114,8 @@ class Beer(models.Model):
         if self.gravity_enabled:
             visibility += ", true, true"
 
-        if self.model_version > 1:
-            visibility += ", false"  # Literally the whole point of this code block is to hide "state"
+        # if self.model_version >= 1:
+        visibility += ", false"  # Literally the whole point of this code block is to hide "state"
 
         visibility += "]"
 
