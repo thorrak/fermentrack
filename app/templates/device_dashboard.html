@@ -490,7 +490,9 @@ g2 = new Dygraph(
         showLabelsOnHighlight: true,
         hideOverlayOnMouseOut: false,
         // TODO - Test this with gravity data
+{% if beer.model_version > 1 %}
         visibility: {{ beer.base_column_visibility }},
+{% endif %}
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
