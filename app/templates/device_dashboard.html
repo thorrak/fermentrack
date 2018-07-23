@@ -497,6 +497,7 @@ g2 = new Dygraph(
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
+{% if beer.model_version >= 2 %}
         underlayCallback: function(canvas, area, g) {
 
             function highlight_period(x_start, x_end, state) {
@@ -533,6 +534,7 @@ g2 = new Dygraph(
                 highlight_period(start_x, last_x, state);
 
           },
+{% endif %}
 {% if beer.gravity_enabled %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
         ylabel: 'Temperature',
