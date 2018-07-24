@@ -87,8 +87,8 @@ source ~/venv/bin/activate  # Assuming the directory based on a normal install w
 
 # Given that this script can be called by the webapp proper, give it 2 seconds to finish sending a reply to the
 # user if he/she initiated an upgrade through the webapp.
-printinfo "Waiting 2 seconds for Fermentrack to send updates if triggered from the web..."
-sleep 2s
+printinfo "Waiting 1 second for Fermentrack to send updates if triggered from the web..."
+sleep 1s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."

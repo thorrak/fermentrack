@@ -81,6 +81,8 @@ def setup_config(request):
             config.TEMPERATURE_FORMAT = f['temperature_format']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
+            config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
+            config.GIT_UPDATE_TYPE = f['update_preference']
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
@@ -99,13 +101,11 @@ def setup_config(request):
             return redirect('siteroot')
         else:
             return render(request, template_name='setup/setup_config.html',
-                                       context={'form': form,
-                                                'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+                          context={'form': form, 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
     else:
         form = setup_forms.GuidedSetupConfigForm()
         return render(request, template_name='setup/setup_config.html',
-                                   context={'form': form,
-                                            'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+                      context={'form': form, 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 
 
 def setup_splash(request):

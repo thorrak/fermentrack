@@ -6,21 +6,26 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 import app.almost_json as almost_json
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 
 import fermentrack_django.settings as settings
-from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint
+from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTempCalibrationPoint, TiltGravityCalibrationPoint, IspindelConfiguration, GravityLogPoint, IspindelGravityCalibrationPoint, TiltBridge
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
-import os, subprocess, datetime, pytz
+import os, subprocess, datetime, pytz, json, logging
 
 import gravity.forms as forms
+
+logger = logging.getLogger(__name__)
+
 
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import bluetooth._bluetooth as bluez
+    import beacontools
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False
@@ -51,6 +56,21 @@ def gravity_add_board(request):
         elif request.POST['sensor_family'] == "tilt":
             tilt_form = forms.TiltCreateForm(request.POST)
             if tilt_form.is_valid():
+
+                if tilt_form.cleaned_data['connection_type'] == TiltConfiguration.CONNECTION_BRIDGE:
+                    if tilt_form.cleaned_data['tiltbridge'] == '+':
+                        tilt_bridge = TiltBridge(
+                            api_key=tilt_form.cleaned_data['tiltbridge_api_key'],
+                            name=tilt_form.cleaned_data['tiltbridge_name']
+                        )
+                        tilt_bridge.save()
+                        messages.success(request, 'New TiltBridge created')
+                    else:
+                        tilt_bridge = TiltBridge.objects.get(api_key=tilt_form.cleaned_data['tiltbridge'])
+                else:
+                    # We don't need to link to a bridge, so leave it null
+                    tilt_bridge = None
+
                 sensor = GravitySensor(
                     name=tilt_form.cleaned_data['name'],
                     temp_format=tilt_form.cleaned_data['temp_format'],
@@ -61,6 +81,7 @@ def gravity_add_board(request):
                 tilt_config = TiltConfiguration(
                     sensor=sensor,
                     color=tilt_form.cleaned_data['color'],
+                    tiltbridge=tilt_bridge,
                 )
                 tilt_config.save()
                 messages.success(request, 'New tilt sensor added')
@@ -87,12 +108,12 @@ def gravity_add_board(request):
 
                 return redirect('gravity_ispindel_setup', sensor_id=sensor.id)
 
-        messages.error(request, 'Error adding sensor')
+        # TODO - Display form validation error message
+        messages.error(request, 'Error adding sensor - See below for details')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render(request, template_name='gravity/gravity_family.html',
-                               context={'manual_form': manual_form, 'tilt_form': tilt_form,
-                                        'ispindel_form': ispindel_form})
+    return render(request, template_name='gravity/gravity_add_sensor.html',
+                  context={'manual_form': manual_form, 'tilt_form': tilt_form, 'ispindel_form': ispindel_form})
 
 
 @site_is_configured
@@ -103,11 +124,14 @@ def gravity_list(request):
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
 
     if not bluetooth_loaded:
+        # TODO - Only display this error message when Bluetooth Tilts are present
         messages.warning(request, 'Bluetooth packages for python have not been installed. Tilt support will not work. '
                                   'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
                                   'to resolve this issue.')
 
-    return render(request, template_name="gravity/gravity_list.html",)
+    all_devices = GravitySensor.objects.all()
+    return render(request, template_name="gravity/gravity_list.html", context={'all_devices': all_devices})
+
 
 @login_required
 @site_is_configured
@@ -120,7 +144,7 @@ def gravity_add_point(request, manual_sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=manual_sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(manual_sensor_id))
         return redirect('gravity_list')
 
@@ -147,8 +171,7 @@ def gravity_add_point(request, manual_sensor_id):
         messages.error(request, 'Unable to add new manual log point')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render(request, template_name='gravity/gravity_add_point.html',
-                               context={'form': form, 'sensor': sensor})
+    return render(request, template_name='gravity/gravity_add_point.html', context={'form': form, 'sensor': sensor})
 
 
 @site_is_configured
@@ -157,7 +180,7 @@ def gravity_add_point(request, manual_sensor_id):
 def gravity_dashboard(request, sensor_id, log_id=None):
     try:
         active_device = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u"Unable to load gravity sensor with ID {}".format(sensor_id))
         return redirect('gravity_list')
 
@@ -177,7 +200,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     else:
         try:
             active_log = GravityLog.objects.get(id=log_id, device_id=active_device.id)
-        except:
+        except ObjectDoesNotExist:
             # If we are given an invalid log ID, let's return an error & drop back to the (valid) dashboard
             messages.error(request, u'Unable to load log with ID {}'.format(log_id))
             return redirect('gravity_dashboard', sensor_id=sensor_id)
@@ -190,12 +213,11 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         log_file_url = active_log.data_file_url('base_csv')
 
     return render(request, template_name="gravity/gravity_dashboard.html",
-                               context={'active_device': active_device, 'log_create_form': log_create_form,
-                                        'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
-                                        'log_file_url': log_file_url, 'available_logs': available_logs,
-                                        'selected_log_id': log_id, 'manual_add_form': manual_add_form})
-
+                  context={'active_device': active_device, 'log_create_form': log_create_form,
+                           'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                           'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
+                           'log_file_url': log_file_url, 'available_logs': available_logs,
+                           'selected_log_id': log_id, 'manual_add_form': manual_add_form})
 
 
 @login_required
@@ -247,7 +269,7 @@ def gravity_log_stop(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -302,6 +324,7 @@ def gravity_log_delete(request, log_id):
         log_obj.delete()
         messages.success(request, u'Log "{}" was deleted'.format(log_obj.name))
     except:
+        # TODO - Rewrite this to make it more specific (ObjectDoesNotExist error, for example)
         messages.error(request, u'Unable to delete log with ID {}'.format(log_id))
     return redirect('gravity_log_list')
 
@@ -317,7 +340,7 @@ def gravity_attach(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -360,9 +383,7 @@ def gravity_attach(request, sensor_id):
             # else:
         #     messages.error(request, "Invalid " % form.errors['__all__'])
 
-
     return render(request, template_name='gravity/gravity_attach.html', context={'selected_sensor': sensor, 'form': form})
-
 
 
 @login_required
@@ -376,7 +397,7 @@ def gravity_detach(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -409,7 +430,7 @@ def gravity_uninstall(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
@@ -422,7 +443,21 @@ def gravity_uninstall(request, sensor_id):
                         # The temperature sensor is currently actively logging something. Let's stop it.
                         sensor.assigned_brewpi_device.manage_logging('stop')
 
+                if 'tilt_configuration' in sensor and 'tiltbridge' in sensor.tilt_configuration:
+                    # TODO - Test this code to make sure it works
+                    # Sensor has an attached tiltbridge - cache it so we can delete it if this is the only device that
+                    # is connected to it
+                    tiltbridge_device = sensor.tilt_configuration.tiltbridge
+                else:
+                    tiltbridge_device = None
+
                 sensor.delete()
+
+                if tiltbridge_device is not None:
+                    if tiltbridge_device.tiltconfiguration_set.count() == 0:
+                        # Sure enough, the tiltbridge no longer has any attached devices. Delete it.
+                        tiltbridge_device.delete()
+
                 messages.success(request, u"The device '{}' was successfully uninstalled.".format(sensor))
                 return redirect("siteroot")
 
@@ -432,8 +467,6 @@ def gravity_uninstall(request, sensor_id):
     else:
         messages.error(request, "To uninstall a device, use the form on the 'Manage Sensor' page.")
         return redirect("gravity_manage", sensor_id=sensor_id)
-
-
 
 
 @login_required
@@ -446,19 +479,20 @@ def gravity_manage(request, sensor_id):
 
     try:
         sensor = GravitySensor.objects.get(id=sensor_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, u'Unable to load sensor with ID {}'.format(sensor_id))
         return redirect('gravity_log_list')
 
     context = {'active_device': sensor}
 
-    if sensor.sensor_type == 'ispindel':
+    if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {'a': sensor.ispindel_configuration.third_degree_coefficient,
-                   'b': sensor.ispindel_configuration.second_degree_coefficient,
-                   'c': sensor.ispindel_configuration.first_degree_coefficient,
-                   'd': sensor.ispindel_configuration.constant_term,
-                   }
+        initial = {
+            'a': sensor.ispindel_configuration.third_degree_coefficient,
+            'b': sensor.ispindel_configuration.second_degree_coefficient,
+            'c': sensor.ispindel_configuration.first_degree_coefficient,
+            'd': sensor.ispindel_configuration.constant_term,
+        }
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
@@ -466,6 +500,21 @@ def gravity_manage(request, sensor_id):
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
+
+    if sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        initial = {
+            'b': sensor.tilt_configuration.grav_second_degree_coefficient,
+            'c': sensor.tilt_configuration.grav_first_degree_coefficient,
+            'd': sensor.tilt_configuration.grav_constant_term,
+        }
+        tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
+        context['tilt_coefficient_form'] = tilt_coefficient_form
+
+        calibration_points = TiltGravityCalibrationPoint.objects.filter(sensor=sensor.tilt_configuration).order_by('tilt_measured_gravity')
+        context['tilt_calibration_points'] = calibration_points
+        tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
+        context['tilt_calibration_form'] = tilt_calibration_form
 
     return render(request, template_name='gravity/gravity_manage.html', context=context)
 

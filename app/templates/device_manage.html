@@ -98,6 +98,15 @@
     </p>
     <a href="{% url 'device_eeprom_reset' active_device.id %}" class="btn btn-danger btn-large btn-lg">Reset EEPROM</a>
 
+    <h2>Reset WiFi Settings</h2>
+    <p>
+        If you need to reset the WiFi configuration on your device (for switching to a new network/router, for example)
+        click the button below to delete the WiFi connection settings on the device. Once the settings have been erased
+        you will need to physically reset the device to cause it to launch the configuration access point.
+    </p>
+    <a href="{% url 'device_wifi_reset' active_device.id %}" class="btn btn-danger btn-large btn-lg">Reset WiFi Settings</a>
+
+
     <h2>Uninstall Device</h2>
     <p>
         To uninstall a device from Fermentrack, approve the following statements and click the "Uninstall Device" button

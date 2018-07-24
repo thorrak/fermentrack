@@ -23,9 +23,8 @@ sys.path.append("..")  # It's a hack, but it works. TODO - Fix this
 from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
 # Check needed software dependencies to nudge users to fix their setup
-# TODO - Update to 3.5 or something later
-if sys.version_info < (2, 7):
-    printStdErr("Sorry, requires Python 2.7.")
+if sys.version_info < (3, 4):
+    printStdErr("Sorry, requires Python 3.4.")
     sys.exit(1)
 
 # standard libraries
@@ -316,7 +315,7 @@ else:
     else:
         logMessage("BrewPi version received was {} which this script supports in ".format(hwVersion.toString()) +
                    "'develop' branch mode.")
-        hwMode = "0.4.x"
+        hwMode = "modern"
 
 
     if int(hwVersion.log) != int(expandLogMessage.getVersion()):
@@ -396,6 +395,7 @@ prevTempJson = {
 
 def renameTempKey(key):
     rename = {
+        "Log1Temp": "RoomTemp", # Added for convenience, allows a configured OEM BrewPi to log room temp with Log1Temp
         "bt": "BeerTemp",
         "bs": "BeerSet",
         "ba": "BeerAnn",
@@ -454,6 +454,9 @@ while run:
         if messageType == "ack":  # acknowledge request
             conn.send(b'ack')
         elif messageType == "lcd":  # lcd contents requested
+            if hwMode == "modern":
+                # TODO - Emulate lcdText for modern controllers
+                pass
             conn.send(json.dumps(lcdText).encode(encoding="cp437"))
         elif messageType == "getMode":  # echo cs['mode'] setting
             conn.send(cs['mode'].encode(encoding="cp437"))
@@ -666,6 +669,11 @@ while run:
             bg_ser.writeln('v')  # request control variables cv
 
             trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
+        elif messageType == "resetWiFi":
+            logMessage("Resetting controller WiFi settings")
+            bg_ser.writeln("w")
+            # TODO - Determine if we should sleep & exit here
+            trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 
@@ -685,7 +693,10 @@ while run:
         if(time.time() - prevLcdUpdate) > 5:
             # request new LCD text
             prevLcdUpdate += 5 # give the controller some time to respond
-            bg_ser.writeln('l')
+            if hwMode == "legacy":
+                # 'l' is only recognized on legacy controllers and results in an error for 'modern' controllers.
+                # We will need to emulate the LCD text
+                bg_ser.writeln('l')
 
         if(time.time() - prevSettingsUpdate) > 60:
             # Request Settings from controller to stay up to date

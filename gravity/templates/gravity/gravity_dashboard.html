@@ -512,6 +512,15 @@ g2 = new Dygraph(
                 axis: 'y2'
             },
         },
+        axes: {
+            y: {
+                digitsAfterDecimal: 3
+            },
+            y2: {
+                digitsAfterDecimal: 1
+            }
+        },
+
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();

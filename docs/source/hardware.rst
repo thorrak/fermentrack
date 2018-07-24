@@ -92,7 +92,9 @@ Tilt Hydrometer
 ~~~~~~~~~~~~~~~~~~~
 
 The `Tilt Hydrometer`_ is supported natively by Fermentrack which will assist with device setup. Tilt Hydrometers are
-easy to use, and can be installed either alongside or independent of a temperature controller.
+easy to use, and can be installed either alongside or independent of a temperature controller. Natively, Tilt
+Hydrometers communicate via Bluetooth, however they can also be connected via the TiltBridge_ Bluetooth-to-WiFi adaptor.
+
 
 iSpindel
 ~~~~~~~~~~~

@@ -13,27 +13,43 @@ Python Packages
 
 In addition to Django, this app utilizes a number of Python packages. These packages include:
 
-.. todo:: Fix the "Python Packages" table to match the format of "Javascript Packages" (and the rest)
+.. list-table::
+    :header-rows: 1
 
-+-------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Package                                                                     	| License                                                                                   |
-+-------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| [Django](https://www.djangoproject.com/foundation/faq/)                       | [BSD 3 Clause](https://github.com/django/django/blob/master/LICENSE)                      |
-| [configobj](https://pypi.python.org/pypi/configobj/5.0.6)                     | [BSD 3 Clause](https://github.com/DiffSK/configobj/blob/master/LICENSE)                   |
-| [pyserial](https://pypi.python.org/pypi/pyserial/3.2.1)                       | [BSD 3 Clause](https://github.com/pyserial/pyserial/blob/master/LICENSE.txt)              |
-| [huey](https://github.com/coleifer/huey)                                      | [MIT (Expat)](https://github.com/coleifer/huey/blob/master/LICENSE)                       |
-| [raven](https://sentry.io/)                                                   | [BSD 3 Clause](https://github.com/getsentry/raven-python/blob/master/LICENSE)             |
-| [django-constance](https://pypi.python.org/pypi/django-constance)             | [BSD 3 Clause](https://github.com/jazzband/django-constance/blob/master/LICENSE)          |
-| [GitPython](https://pypi.python.org/pypi/GitPython/2.1.1)                     | [BSD 3 Clause](https://github.com/gitpython-developers/GitPython/blob/master/LICENSE)     |
-| [pytz](https://pypi.python.org/pypi/pytz/2016.10)                             | [MIT (Expat) License](http://pythonhosted.org/pytz/#license)                              |
-| [zeroconf](https://pypi.python.org/pypi/zeroconf)                             | [LGPL v2](https://github.com/jstasiak/python-zeroconf/blob/master/COPYING)                |
-| [pyudev](https://pyudev.readthedocs.io/en/latest/)                            | [LGPL v2.1](https://pyudev.readthedocs.io/en/latest/licencing.html)                       |
-| [circus](http://circus.readthedocs.io/en/latest/copyright/)                   | [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                    |
-| [circus-web](http://circus.readthedocs.io/en/latest/copyright/)               | [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                    |
-| [chaussette](https://github.com/circus-tent/chaussette/blob/master/LICENSE)   | [Apache Public License v2](http://www.apache.org/licenses/LICENSE-2.0)                    |
-| [pid](https://pypi.python.org/pypi/pid/2.1.1)                                 | [Apache Public License v2](https://github.com/trbs/pid/blob/master/LICENSE)               |
-| [redis](https://redislabs.com/lp/python-redis/)                              	| [MIT (Expat)](https://github.com/andymccurdy/redis-py/blob/master/LICENSE)                |
-+-------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+    * - Package
+      - License
+    * - `Django <https://www.djangoproject.com/foundation/faq/>`__
+      - `BSD 3 Clause <https://github.com/django/django/blob/master/LICENSE>`__
+    * - `configobj <https://pypi.python.org/pypi/configobj/5.0.6>`__
+      - `BSD 3 Clause <https://github.com/DiffSK/configobj/blob/master/LICENSE>`__
+    * - `pyserial <https://pypi.python.org/pypi/pyserial/3.2.1>`__
+      - `BSD 3 Clause <https://github.com/pyserial/pyserial/blob/master/LICENSE.txt>`__
+    * - `huey <https://github.com/coleifer/huey>`__
+      - `MIT (Expat) <https://github.com/coleifer/huey/blob/master/LICENSE>`__
+    * - `raven <https://sentry.io/>`__
+      - `BSD 3 Clause <https://github.com/getsentry/raven-python/blob/master/LICENSE>`__
+    * - `django-constance <https://pypi.python.org/pypi/django-constance>`__
+      - `BSD 3 Clause <https://github.com/jazzband/django-constance/blob/master/LICENSE>`__
+    * - `GitPython <https://pypi.python.org/pypi/GitPython/2.1.1>`__
+      - `BSD 3 Clause <https://github.com/gitpython-developers/GitPython/blob/master/LICENSE>`__
+    * - `pytz <https://pypi.python.org/pypi/pytz/2016.10>`__
+      - `MIT (Expat) <http://pythonhosted.org/pytz/#license>`__
+    * - `redis <https://redislabs.com/lp/python-redis/>`__
+      - `MIT (Expat) <https://github.com/andymccurdy/redis-py/blob/master/LICENSE>`__
+    * - `zeroconf <https://pypi.python.org/pypi/zeroconf>`__
+      - `LGPL v2 <https://github.com/jstasiak/python-zeroconf/blob/master/COPYING>`__
+    * - `pyudev <https://pyudev.readthedocs.io/en/latest/>`__
+      - `LGPL v2.1 <https://pyudev.readthedocs.io/en/latest/licencing.html>`__
+    * - `circus <http://circus.readthedocs.io/en/latest/copyright/>`__
+      - `Apache Public License v2 <http://www.apache.org/licenses/LICENSE-2.0>`__
+    * - `circus-web <http://circus.readthedocs.io/en/latest/copyright/>`__
+      - `Apache Public License v2 <http://www.apache.org/licenses/LICENSE-2.0>`__
+    * - `chaussette <https://github.com/circus-tent/chaussette/blob/master/LICENSE>`__
+      - `Apache Public License v2 <http://www.apache.org/licenses/LICENSE-2.0>`__
+    * - `pid <https://pypi.python.org/pypi/pid/2.1.1>`__
+      - `Apache Public License v2 <https://github.com/trbs/pid/blob/master/LICENSE>`__
+    * - `beacontools <https://github.com/citruz/beacontools>`__
+      - `MIT (Expat) <https://github.com/citruz/beacontools/blob/master/LICENSE.txt>`__
 
 
 JavaScript Packages
