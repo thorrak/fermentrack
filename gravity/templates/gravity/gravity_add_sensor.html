@@ -99,8 +99,8 @@
                             continuous stream of specific gravity data to Fermentrack allowing you to graph the progress
                             as your beer ferments.
 
-{#                            Fermentrack also supports the use of the#}
-{#                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.#}
+                            Fermentrack also supports the use of the
+                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.
                         </div>
                     </div>
                     <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
@@ -113,13 +113,13 @@
                         {# TODO - Reenable this when TiltBridge is ready for release #}
                         <input type="hidden" value="Bluetooth" name="{{ tilt_form.connection_type.name }}">
 
-{#                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>#}
-{##}
-{#                        <div id="tiltBridgeHidden" style="display: block">#}
-{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>#}
-{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>#}
-{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>#}
-{#                        </div>#}
+                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
+
+                        <div id="tiltBridgeHidden" style="display: block">
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
+                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
+                        </div>
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
                     </form>
