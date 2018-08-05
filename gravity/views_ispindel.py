@@ -99,14 +99,15 @@ def ispindel_handler(request):
 
     # Let's calculate the gravity using the coefficients stored in the ispindel configuration. This will allow us to
     # reconfigure on the fly.
-    angle=float(ispindel_data['angle'])
+    angle = float(ispindel_data['angle'])
 
     calculated_gravity = ispindel_obj.third_degree_coefficient * angle**3
     calculated_gravity += ispindel_obj.second_degree_coefficient * angle**2
     calculated_gravity += ispindel_obj.first_degree_coefficient * angle
     calculated_gravity += ispindel_obj.constant_term
 
-    converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']), 'C')
+    converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']),
+                                                                                    getattr(ispindel_data, 'temp_units', 'C'))
 
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
@@ -154,9 +155,8 @@ def gravity_ispindel_coefficients(request, sensor_id):
         return redirect('gravity_log_list')
 
     if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
-        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way'.format(sensor_id))
         return redirect('gravity_log_list')
-
 
     if request.POST:
         ispindel_coefficient_form = forms.IspindelCoefficientForm(request.POST)
@@ -196,7 +196,7 @@ def gravity_ispindel_add_calibration_point(request, sensor_id):
         return redirect('gravity_log_list')
 
     if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
-        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way'.format(sensor_id))
         return redirect('gravity_log_list')
 
     if request.POST:
@@ -237,17 +237,17 @@ def gravity_ispindel_delete_calibration_point(request, sensor_id, point_id):
         return redirect('gravity_log_list')
 
     if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
-        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way'.format(sensor_id))
         return redirect('gravity_log_list')
 
     try:
         point = IspindelGravityCalibrationPoint.objects.get(id=point_id)
     except:
-        messages.error(request, u'Unable to find calibration point with ID {}!'.format(point_id))
+        messages.error(request, u'Unable to find calibration point with ID {}'.format(point_id))
         return redirect("gravity_manage", sensor_id=sensor_id)
 
     if point.sensor != sensor.ispindel_configuration:
-        messages.error(request, u"Point {} doesn't belong to sensor {}!".format(point_id, sensor_id))
+        messages.error(request, u"Point {} doesn't belong to sensor {}".format(point_id, sensor_id))
         return redirect("gravity_manage", sensor_id=sensor_id)
 
     # The sensor exists & is an ispindel, the point exists & belongs to the sensor. Delete it.
@@ -267,9 +267,6 @@ def gravity_ispindel_delete_calibration_point(request, sensor_id, point_id):
     return redirect("gravity_manage", sensor_id=sensor_id)
 
 
-
-
-
 @login_required
 @site_is_configured
 def gravity_ispindel_calibrate(request, sensor_id):
@@ -285,7 +282,7 @@ def gravity_ispindel_calibrate(request, sensor_id):
         return redirect('gravity_log_list')
 
     if sensor.sensor_type != GravitySensor.SENSOR_ISPINDEL:
-        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way!'.format(sensor_id))
+        messages.error(request, u'Sensor {} is not an iSpindel and cannot be configured in this way'.format(sensor_id))
         return redirect('gravity_log_list')
 
     if not NUMPY_ENABLED:
@@ -341,8 +338,6 @@ def gravity_ispindel_calibrate(request, sensor_id):
     return redirect("gravity_manage", sensor_id=sensor_id)
 
 
-
-
 @login_required
 @site_is_configured
 def gravity_ispindel_guided_calibration(request, sensor_id, step):
@@ -371,7 +366,8 @@ def gravity_ispindel_guided_calibration(request, sensor_id, step):
             try:
                 # If a point exists with the exact same specific gravity that we just entered, delete it.
                 # This is specifically to prevent the user from accidentally running this calibration twice.
-                point_to_delete = IspindelGravityCalibrationPoint.objects.get(gravity=ispindel_calibration_point_form.cleaned_data['gravity'])
+                point_to_delete = IspindelGravityCalibrationPoint.objects.get(gravity=ispindel_calibration_point_form.cleaned_data['gravity'],
+                                                                              sensor=sensor.ispindel_configuration)
                 point_to_delete.delete()
             except:
                 # No point existed. We're good.
@@ -417,7 +413,8 @@ def gravity_ispindel_guided_calibration(request, sensor_id, step):
         this_step['plato'] = round(decimal.Decimal(this_step['plato']),2)  # Make it pretty to look at
 
         try:
-            point_with_grav = IspindelGravityCalibrationPoint.objects.get(gravity=this_step['specific_gravity'])
+            point_with_grav = IspindelGravityCalibrationPoint.objects.get(gravity=this_step['specific_gravity'],
+                                                                          sensor=sensor.ispindel_configuration)
             this_step['angle'] = point_with_grav.angle
         except:
             this_step['angle'] = ""

@@ -169,6 +169,10 @@ process.off = noop;
 process.removeListener = noop;
 process.removeAllListeners = noop;
 process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
@@ -2837,7 +2841,8 @@ DygraphInteraction.defaultModel = {
     // Give plugins a chance to grab this event.
     var e = {
       canvasx: context.dragEndX,
-      canvasy: context.dragEndY
+      canvasy: context.dragEndY,
+      cancelable: true
     };
     if (g.cascadeEvents_('dblclick', e)) {
       return;
@@ -3495,6 +3500,12 @@ if (typeof process !== 'undefined') {
         "type": "integer",
         "description": "Width, in pixels, of the chart. If the container div has been explicitly sized, this will be ignored."
       },
+      "pixelRatio": {
+        "default": "(devicePixelRatio / context.backingStoreRatio)",
+        "labels": ["Overall display"],
+        "type": "float",
+        "description": "Overrides the pixel ratio scaling factor for the canvas's 2d context. Ordinarily, this is set to the devicePixelRatio / (context.backingStoreRatio || 1), so on mobile devices, where the devicePixelRatio can be somewhere around 3, performance can be improved by overriding this value to something less precise, like 1, at the expense of resolution."
+      },
       "interactionModel": {
         "default": "...",
         "labels": ["Interactive Elements"],
@@ -3764,7 +3775,7 @@ if (typeof process !== 'undefined') {
         "default": "null",
         "labels": ["Axis display", "Interactive Elements"],
         "type": "float",
-        "description": "A value representing the farthest a graph may be panned, in percent of the display. For example, a value of 0.1 means that the graph can only be panned 10% pased the edges of the displayed values. null means no bounds."
+        "description": "A value representing the farthest a graph may be panned, in percent of the display. For example, a value of 0.1 means that the graph can only be panned 10% passed the edges of the displayed values. null means no bounds."
       },
       "title": {
         "labels": ["Chart labels"],
@@ -4694,29 +4705,36 @@ var dateTicker = function dateTicker(a, b, pixels, opts, dygraph, vals) {
 exports.dateTicker = dateTicker;
 // Time granularity enumeration
 var Granularity = {
-  SECONDLY: 0,
-  TWO_SECONDLY: 1,
-  FIVE_SECONDLY: 2,
-  TEN_SECONDLY: 3,
-  THIRTY_SECONDLY: 4,
-  MINUTELY: 5,
-  TWO_MINUTELY: 6,
-  FIVE_MINUTELY: 7,
-  TEN_MINUTELY: 8,
-  THIRTY_MINUTELY: 9,
-  HOURLY: 10,
-  TWO_HOURLY: 11,
-  SIX_HOURLY: 12,
-  DAILY: 13,
-  TWO_DAILY: 14,
-  WEEKLY: 15,
-  MONTHLY: 16,
-  QUARTERLY: 17,
-  BIANNUAL: 18,
-  ANNUAL: 19,
-  DECADAL: 20,
-  CENTENNIAL: 21,
-  NUM_GRANULARITIES: 22
+  MILLISECONDLY: 0,
+  TWO_MILLISECONDLY: 1,
+  FIVE_MILLISECONDLY: 2,
+  TEN_MILLISECONDLY: 3,
+  FIFTY_MILLISECONDLY: 4,
+  HUNDRED_MILLISECONDLY: 5,
+  FIVE_HUNDRED_MILLISECONDLY: 6,
+  SECONDLY: 7,
+  TWO_SECONDLY: 8,
+  FIVE_SECONDLY: 9,
+  TEN_SECONDLY: 10,
+  THIRTY_SECONDLY: 11,
+  MINUTELY: 12,
+  TWO_MINUTELY: 13,
+  FIVE_MINUTELY: 14,
+  TEN_MINUTELY: 15,
+  THIRTY_MINUTELY: 16,
+  HOURLY: 17,
+  TWO_HOURLY: 18,
+  SIX_HOURLY: 19,
+  DAILY: 20,
+  TWO_DAILY: 21,
+  WEEKLY: 22,
+  MONTHLY: 23,
+  QUARTERLY: 24,
+  BIANNUAL: 25,
+  ANNUAL: 26,
+  DECADAL: 27,
+  CENTENNIAL: 28,
+  NUM_GRANULARITIES: 29
 };
 
 exports.Granularity = Granularity;
@@ -4747,6 +4765,13 @@ var DateField = {
  * @type {Array.<{datefield:number, step:number, spacing:number}>}
  */
 var TICK_PLACEMENT = [];
+TICK_PLACEMENT[Granularity.MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 1, spacing: 1 };
+TICK_PLACEMENT[Granularity.TWO_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 2, spacing: 2 };
+TICK_PLACEMENT[Granularity.FIVE_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 5, spacing: 5 };
+TICK_PLACEMENT[Granularity.TEN_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 10, spacing: 10 };
+TICK_PLACEMENT[Granularity.FIFTY_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 50, spacing: 50 };
+TICK_PLACEMENT[Granularity.HUNDRED_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 100, spacing: 100 };
+TICK_PLACEMENT[Granularity.FIVE_HUNDRED_MILLISECONDLY] = { datefield: DateField.DATEFIELD_MS, step: 500, spacing: 500 };
 TICK_PLACEMENT[Granularity.SECONDLY] = { datefield: DateField.DATEFIELD_SS, step: 1, spacing: 1000 * 1 };
 TICK_PLACEMENT[Granularity.TWO_SECONDLY] = { datefield: DateField.DATEFIELD_SS, step: 2, spacing: 1000 * 2 };
 TICK_PLACEMENT[Granularity.FIVE_SECONDLY] = { datefield: DateField.DATEFIELD_SS, step: 5, spacing: 1000 * 5 };
@@ -5011,7 +5036,7 @@ var logRangeFraction = function logRangeFraction(r0, r1, pct) {
   // Original calcuation:
   // pct = (log(x) - log(xRange[0])) / (log(xRange[1]) - log(xRange[0])));
   //
-  // Multiply both sides by the right-side demoninator.
+  // Multiply both sides by the right-side denominator.
   // pct * (log(xRange[1] - log(xRange[0]))) = log(x) - log(xRange[0])
   //
   // add log(xRange[0]) to both sides
@@ -5279,7 +5304,7 @@ function isValidPoint(p, opt_allowNaNY) {
 ;
 
 /**
- * Number formatting function which mimicks the behavior of %g in printf, i.e.
+ * Number formatting function which mimics the behavior of %g in printf, i.e.
  * either exponential or fixed format (without trailing 0s) is used depending on
  * the length of the generated string.  The advantage of this format is that
  * there is a predictable upper bound on the resulting string length,
@@ -5433,7 +5458,7 @@ function hmsString_(hh, mm, ss, ms) {
 /**
  * Convert a JS date (millis since epoch) to a formatted string.
  * @param {number} time The JavaScript time value (ms since epoch)
- * @param {boolean} utc Wether output UTC or local time
+ * @param {boolean} utc Whether output UTC or local time
  * @return {string} A date of one of these forms:
  *     "YYYY/MM/DD", "YYYY/MM/DD HH:MM" or "YYYY/MM/DD HH:MM:SS"
  * @private
@@ -6341,6 +6366,12 @@ function dateAxisLabelFormatter(date, granularity, opts) {
     if (frac === 0 || granularity >= DygraphTickers.Granularity.DAILY) {
       // e.g. '21 Jan' (%d%b)
       return zeropad(day) + '&#160;' + SHORT_MONTH_NAMES_[month];
+    } else if (granularity < DygraphTickers.Granularity.SECONDLY) {
+      // e.g. 40.310 (meaning 40 seconds and 310 milliseconds)
+      var str = "" + millis;
+      return zeropad(secs) + "." + ('000' + str).substring(str.length);
+    } else if (granularity > DygraphTickers.Granularity.MINUTELY) {
+      return hmsString_(hours, mins, secs, 0);
     } else {
       return hmsString_(hours, mins, secs, millis);
     }
@@ -6420,7 +6451,7 @@ function dateValueFormatter(d, opts) {
  * @param {Object} attrs Various other attributes, e.g. errorBars determines
  * whether the input data contains error ranges. For a complete list of
  * options, see http://dygraphs.com/options.html.
- */var Dygraph=function Dygraph(div,data,opts){this.__init__(div,data,opts);};Dygraph.NAME = "Dygraph";Dygraph.VERSION = "2.0.0"; // Various default values
+ */var Dygraph=function Dygraph(div,data,opts){this.__init__(div,data,opts);};Dygraph.NAME = "Dygraph";Dygraph.VERSION = "2.1.0"; // Various default values
 Dygraph.DEFAULT_ROLL_PERIOD = 1;Dygraph.DEFAULT_WIDTH = 480;Dygraph.DEFAULT_HEIGHT = 320; // For max 60 Hz. animation:
 Dygraph.ANIMATION_STEPS = 12;Dygraph.ANIMATION_DURATION = 200; /**
  * Standard plotters. These may be used by clients.
@@ -6691,9 +6722,9 @@ var target=e.target || e.fromElement;var relatedTarget=e.relatedTarget || e.toEl
 // This happens when the graph is resized.
 if(!this.resizeHandler_){this.resizeHandler_ = function(e){dygraph.resize();}; // Update when the window is resized.
 // TODO(danvk): drop frames depending on complexity of the chart.
-this.addAndTrackEvent(window,'resize',this.resizeHandler_);}};Dygraph.prototype.resizeElements_ = function(){this.graphDiv.style.width = this.width_ + "px";this.graphDiv.style.height = this.height_ + "px";var canvasScale=utils.getContextPixelRatio(this.canvas_ctx_);this.canvas_.width = this.width_ * canvasScale;this.canvas_.height = this.height_ * canvasScale;this.canvas_.style.width = this.width_ + "px"; // for IE
+this.addAndTrackEvent(window,'resize',this.resizeHandler_);}};Dygraph.prototype.resizeElements_ = function(){this.graphDiv.style.width = this.width_ + "px";this.graphDiv.style.height = this.height_ + "px";var pixelRatioOption=this.getNumericOption('pixelRatio');var canvasScale=pixelRatioOption || utils.getContextPixelRatio(this.canvas_ctx_);this.canvas_.width = this.width_ * canvasScale;this.canvas_.height = this.height_ * canvasScale;this.canvas_.style.width = this.width_ + "px"; // for IE
 this.canvas_.style.height = this.height_ + "px"; // for IE
-if(canvasScale !== 1){this.canvas_ctx_.scale(canvasScale,canvasScale);}var hiddenScale=utils.getContextPixelRatio(this.hidden_ctx_);this.hidden_.width = this.width_ * hiddenScale;this.hidden_.height = this.height_ * hiddenScale;this.hidden_.style.width = this.width_ + "px"; // for IE
+if(canvasScale !== 1){this.canvas_ctx_.scale(canvasScale,canvasScale);}var hiddenScale=pixelRatioOption || utils.getContextPixelRatio(this.hidden_ctx_);this.hidden_.width = this.width_ * hiddenScale;this.hidden_.height = this.height_ * hiddenScale;this.hidden_.style.width = this.width_ + "px"; // for IE
 this.hidden_.style.height = this.height_ + "px"; // for IE
 if(hiddenScale !== 1){this.hidden_ctx_.scale(hiddenScale,hiddenScale);}}; /**
  * Detach DOM elements in the dygraph and null out all data references.
@@ -6849,6 +6880,7 @@ var oldValueRanges=this.yAxisRanges();var newValueRanges=[];for(var i=0;i < this
  */Dygraph.prototype.resetZoom = function(){var _this4=this;var dirtyX=this.isZoomed('x');var dirtyY=this.isZoomed('y');var dirty=dirtyX || dirtyY; // Clear any selection, since it's likely to be drawn in the wrong place.
 this.clearSelection();if(!dirty)return; // Calculate extremes to avoid lack of padding on reset.
 var _xAxisExtremes=this.xAxisExtremes();var _xAxisExtremes2=_slicedToArray(_xAxisExtremes,2);var minDate=_xAxisExtremes2[0];var maxDate=_xAxisExtremes2[1];var animatedZooms=this.getBooleanOption('animatedZooms');var zoomCallback=this.getFunctionOption('zoomCallback'); // TODO(danvk): merge this block w/ the code below.
+// TODO(danvk): factor out a generic, public zoomTo method.
 if(!animatedZooms){this.dateWindow_ = null;this.axes_.forEach(function(axis){if(axis.valueRange)delete axis.valueRange;});this.drawGraph_();if(zoomCallback){zoomCallback.call(this,minDate,maxDate,this.yAxisRanges());}return;}var oldWindow=null,newWindow=null,oldValueRanges=null,newValueRanges=null;if(dirtyX){oldWindow = this.xAxisRange();newWindow = [minDate,maxDate];}if(dirtyY){oldValueRanges = this.yAxisRanges();newValueRanges = this.yAxisExtremes();}this.doAnimatedZoom(oldWindow,newWindow,oldValueRanges,newValueRanges,function(){_this4.dateWindow_ = null;_this4.axes_.forEach(function(axis){if(axis.valueRange)delete axis.valueRange;});if(zoomCallback){zoomCallback.call(_this4,minDate,maxDate,_this4.yAxisRanges());}});}; /**
  * Combined animation logic for all zoom functions.
  * either the x parameters or y parameters may be null.
@@ -7265,7 +7297,7 @@ if('rollPeriod' in attrs){this.rollPeriod_ = attrs.rollPeriod;}if('dateWindow' i
 // highlightCircleSize
 // Check if this set options will require new points.
 var requiresNewPoints=utils.isPixelChangingOptionList(this.attr_("labels"),attrs);utils.updateDeep(this.user_attrs_,attrs);this.attributes_.reparseSeries();if(file){ // This event indicates that the data is about to change, but hasn't yet.
-// TODO(danvk): support cancelation of the update via this event.
+// TODO(danvk): support cancellation of the update via this event.
 this.cascadeEvents_('dataWillUpdate',{});this.file_ = file;if(!block_redraw)this.start_();}else {if(!block_redraw){if(requiresNewPoints){this.predraw_();}else {this.renderGraph_(false);}}}}; /**
  * Make a copy of input attributes, removing file as a convenience.
  * @private
@@ -8796,8 +8828,8 @@ rangeSelector.prototype.updateVisibility_ = function () {
  * Resizes the range selector.
  */
 rangeSelector.prototype.resize_ = function () {
-  function setElementRect(canvas, context, rect) {
-    var canvasScale = utils.getContextPixelRatio(context);
+  function setElementRect(canvas, context, rect, pixelRatioOption) {
+    var canvasScale = pixelRatioOption || utils.getContextPixelRatio(context);
 
     canvas.style.top = rect.y + 'px';
     canvas.style.left = rect.x + 'px';
@@ -8824,8 +8856,9 @@ rangeSelector.prototype.resize_ = function () {
     h: this.getOption_('rangeSelectorHeight')
   };
 
-  setElementRect(this.bgcanvas_, this.bgcanvas_ctx_, this.canvasRect_);
-  setElementRect(this.fgcanvas_, this.fgcanvas_ctx_, this.canvasRect_);
+  var pixelRatioOption = this.dygraph_.getNumericOption('pixelRatio');
+  setElementRect(this.bgcanvas_, this.bgcanvas_ctx_, this.canvasRect_, pixelRatioOption);
+  setElementRect(this.fgcanvas_, this.fgcanvas_ctx_, this.canvasRect_, pixelRatioOption);
 };
 
 /**

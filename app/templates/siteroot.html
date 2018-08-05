@@ -201,5 +201,7 @@ No gravity sensors have been configured yet. To get started, add a new sensor:
     <script type="text/javascript" src="{% static "vendor/vue/js/vue.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/lcd.js" %}"></script>
     {# Gravity.js is in the gravity app #}
+{% if config.GRAVITY_SUPPORT_ENABLED %}
     <script type="text/javascript" src="{% static "js/gravity.js" %}"></script>
+{% endif %}
 {% endblock %}
