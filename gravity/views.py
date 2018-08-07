@@ -500,7 +500,9 @@ def gravity_manage(request, sensor_id):
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
 
-    if sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        return render(request, template_name='gravity/gravity_manage_ispindel.html', context=context)
+
+    elif sensor.sensor_type == GravitySensor.SENSOR_TILT:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
         initial = {
             'b': sensor.tilt_configuration.grav_second_degree_coefficient,
@@ -515,7 +517,9 @@ def gravity_manage(request, sensor_id):
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
 
-    return render(request, template_name='gravity/gravity_manage.html', context=context)
+        return render(request, template_name='gravity/gravity_manage_tilt.html', context=context)
+    else:
+        return render(request, template_name='gravity/gravity_manage.html', context=context)
 
 
 # So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to

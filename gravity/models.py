@@ -715,8 +715,12 @@ class TiltConfiguration(models.Model):
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
 
     def load_extras_from_redis(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        redis_response = r.get('tilt_{}_extras'.format(self.color))
+        try:
+            r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+            redis_response = r.get('tilt_{}_extras'.format(self.color))
+        except redis.exceptions.ConnectionError:
+            # More than likely redis is offline (or we're in testing)
+            return {}
 
         if redis_response is None:
             # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
