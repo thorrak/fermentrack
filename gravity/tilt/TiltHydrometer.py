@@ -34,7 +34,6 @@ class TiltHydrometer(object):
         self.last_value_received = datetime.datetime.now() - self._cache_expiry_seconds()  # type: datetime.datetime
         self.last_saved_value = datetime.datetime.now()  # type: datetime.datetime
 
-
         self.gravity = 0.0  # type: float
         self.raw_gravity = 0.0  # type: float
         # Note - temp is always in fahrenheit
@@ -50,7 +49,7 @@ class TiltHydrometer(object):
         if self.obj is not None:
             self.temp_format = self.obj.sensor.temp_format
         else:
-            self.temp_format = 'F'  # Defaulting to Fahrenheit as that's what the Tilt proides
+            self.temp_format = GravitySensor.TEMP_FAHRENHEIT  # Defaulting to Fahrenheit as that's what the Tilt sends
 
     def __str__(self):
         return self.color
@@ -99,6 +98,7 @@ class TiltHydrometer(object):
 
         # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
         self.raw_temp = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major, GravitySensor.TEMP_FAHRENHEIT)
+        self.temp = self.raw_temp
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
 
