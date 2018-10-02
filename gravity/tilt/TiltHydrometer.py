@@ -3,7 +3,7 @@ from typing import List, Dict, TYPE_CHECKING
 from beacontools import IBeaconAdvertisement
 from collections import deque
 
-from gravity.models import TiltConfiguration, GravityLogPoint
+from gravity.models import TiltConfiguration, GravityLogPoint, GravitySensor
 
 
 class TiltHydrometer(object):
@@ -37,6 +37,7 @@ class TiltHydrometer(object):
 
         self.gravity = 0.0  # type: float
         self.raw_gravity = 0.0  # type: float
+        # Note - temp is always in fahrenheit
         self.temp = 0  # type: int
         self.raw_temp = 0  # type: int
         self.rssi = 0  # type: int
@@ -46,6 +47,11 @@ class TiltHydrometer(object):
         # Let's load the object from Fermentrack as part of the initialization
         self.load_obj_from_fermentrack()
 
+        if self.obj is not None:
+            self.temp_format = self.obj.sensor.temp_format
+        else:
+            self.temp_format = 'F'  # Defaulting to Fahrenheit as that's what the Tilt proides
+
     def __str__(self):
         return self.color
 
@@ -54,6 +60,14 @@ class TiltHydrometer(object):
         return datetime.timedelta(seconds=(self.smoothing_window * 1.2 * 4))
 
     def _cache_expired(self) -> bool:
+        if self.obj is not None:
+            # The other condition we want to explicitly clear the cache is if the temp format has changed between what
+            # was loaded from the sensor object & what we previously had cached when the object was loaded
+            if self.temp_format != self.obj.sensor.temp_format:
+                # Clear the cached temp/gravity values &
+                self.temp_format = self.obj.sensor.temp_format  # Cache the new temp format
+                return True
+
         return self.last_value_received <= datetime.datetime.now() - self._cache_expiry_seconds()
 
     def _add_to_list(self, gravity, temp):
@@ -83,8 +97,8 @@ class TiltHydrometer(object):
             # Otherwise, apply the calibration
             self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
 
-        self.raw_temp = ibeacon_info.major
-        self.temp = self.raw_temp
+        # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
+        self.raw_temp = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major, GravitySensor.TEMP_FAHRENHEIT)
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
 
@@ -121,7 +135,7 @@ class TiltHydrometer(object):
     def print_data(self):
         print("{} Tilt: {} ({}) / {} F".format(self.color, self.smoothed_gravity(), self.gravity, self.temp))
 
-    def load_obj_from_fermentrack(self, obj:TiltConfiguration = None):
+    def load_obj_from_fermentrack(self, obj: TiltConfiguration = None):
         if obj is None:
             # If we weren't handed the object itself, try to load it
             try:
