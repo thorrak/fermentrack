@@ -97,7 +97,9 @@ class TiltHydrometer(object):
             self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
 
         # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
-        self.raw_temp = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major, GravitySensor.TEMP_FAHRENHEIT)
+        # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
+        self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major,
+                                                                         GravitySensor.TEMP_FAHRENHEIT)
         self.temp = self.raw_temp
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
