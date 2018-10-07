@@ -183,3 +183,8 @@
 	margin: 0 auto;
 
 }
+
+.control-btn {
+    display: table;
+    margin: 15px auto;
+}
