@@ -13,7 +13,6 @@ application = get_wsgi_application()
 
 
 import time, datetime, getopt, pid
-# from beacontools import BeaconScanner, IBeaconFilter, IBeaconAdvertisement
 from typing import List, Dict
 
 from gravity.tilt.TiltHydrometer import TiltHydrometer
@@ -28,8 +27,6 @@ import asyncio
 import argparse
 import re
 import aioblescan as aiobs
-# from aioblescan.plugins import EddyStone
-# from aioblescan.plugins import RuuviWeather
 
 
 
@@ -90,26 +87,12 @@ for o, a in opts:
 
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
-pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor")
+pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor_aio")
 try:
     pidFile.create()
 except pid.PidFileAlreadyLockedError:
     print_to_stderr("Another instance of the monitor script is running. Exiting.")
     exit(0)
-
-#### Code that's used during the main loop
-
-def callback(bt_addr, rssi, packet, additional_info):
-    # Although beacontools provides a device filter option, we're not going to use it as it doesn't currently allow
-    # specifying a list of UUIDs (I don't think, at least). Instead, we'll filter here.
-    if additional_info['uuid'] in uuids:
-        color = TiltHydrometer.color_lookup(additional_info['uuid'])  # Map the uuid back to our TiltHydrometer object
-        tilts[color].process_ibeacon_info(packet, rssi)  # Process the data sent from the Tilt
-        if verbose:
-            # If we're in 'verbose' mode, also go ahead and print out the data we received
-            tilts[color].print_data()
-
-
 
 
 #### The main loop
@@ -117,42 +100,7 @@ def callback(bt_addr, rssi, packet, additional_info):
 # Create a list of TiltHydrometer objects for us to use
 tilts = {x: TiltHydrometer(x) for x in TiltHydrometer.tilt_colors}  # type: Dict[str, TiltHydrometer]
 # Create a list of UUIDs to match against & make it easy to lookup color
-uuids = [TiltHydrometer.tilt_colors[x] for x in TiltHydrometer.tilt_colors]  # type: List[str]
-
-
-# # Start the scanner (filtering is done in the callback)
-# scanner = BeaconScanner(callback)
-# scanner.start()
-#
-# if verbose:
-#     print("Beginning to scan for Tilt Hydrometers")
-#
-# # For now, we're reloading Tilt hydrometers every 15 seconds
-# reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
-# reload = False
-#
-# while True:
-#
-#     if datetime.datetime.now() > reload_objects_at:
-#         # Doing this so that as time passes while we're polling objects, we still end up reloading everything
-#         reload = True
-#
-#     for this_tilt in tilts:
-#         if tilts[this_tilt].should_save():
-#             tilts[this_tilt].save_value_to_fermentrack(verbose=verbose)
-#
-#         if reload:
-#             tilts[this_tilt].load_obj_from_fermentrack()
-#
-#     # Now that all the tilts have been attended to, if reload was true, reset the reload timer
-#     if reload:
-#         reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
-#         reload = False
-#
-#     time.sleep(1)
-#
-# # This is unreachable, but leaving it here anyways
-# scanner.stop()
+uuids = [TiltHydrometer.tilt_colors[x].replace("-","") for x in TiltHydrometer.tilt_colors]  # type: List[str]
 
 
 reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
@@ -166,10 +114,37 @@ def my_process(data):
     ev = aiobs.HCI_Event()
     xx = ev.decode(data)
 
-    if opts.raw:
-        print("Raw data: {}".format(ev.raw_data))
-    else:
-        ev.show(0)
+    # To make things easier, let's convert the byte string to a hex string first
+    raw_data_hex = ev.raw_data.hex()
+
+    if len(raw_data_hex) < 80:  # Very quick filter to determine if this is a valid Tilt device
+        return False
+    if "1370f02d74de" not in raw_data_hex:  # Another very quick filter (honestly, might not be faster than just looking at uuid below)
+        return False
+
+    # For testing/viewing raw announcements, uncomment the following
+    # print("Raw data (hex) {}: {}".format(len(raw_data_hex), raw_data_hex))
+    # ev.show(0)
+
+    try:
+        # Let's use some of the functions of aioblesscan to tease out the mfg_specific_data payload
+        payload = ev.retrieve("Payload for mfg_specific_data")[0].val.hex()
+
+        # ...and then dissect said payload into a UUID, temp, gravity, and rssi (which isn't actually rssi)
+        uuid = payload[8:40]
+        temp = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
+        gravity = int.from_bytes(bytes.fromhex(payload[44:48]), byteorder='big')
+        # tx_pwr = int.from_bytes(bytes.fromhex(payload[48:49]), byteorder='big')
+        # rssi = int.from_bytes(bytes.fromhex(payload[49:50]), byteorder='big')
+        rssi = 0  # TODO - Fix this
+    except:
+        return
+
+    if verbose:
+        print("Tilt Payload (hex): {}".format(payload))
+
+    color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
+    tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
 
     # The Fermentrack specific stuff:
     reload = False
@@ -203,10 +178,8 @@ mysocket = aiobs.create_bt_socket(mydev)
 # fac=event_loop.create_connection(aiobs.BLEScanRequester,sock=mysocket)
 # Thanks to martensjacobs for this fix
 fac = event_loop._create_connection_transport(mysocket, aiobs.BLEScanRequester, None, None)
-# Start it
-conn,btctrl = event_loop.run_until_complete(fac)
-# Attach your processing
-btctrl.process=my_process
+conn,btctrl = event_loop.run_until_complete(fac)  # Start the bluetooth control loop
+btctrl.process=my_process  # Attach the handler to the bluetooth control loop
 
 #Probe
 btctrl.send_scan_request()
@@ -214,9 +187,11 @@ try:
     # event_loop.run_until_complete(coro)
     event_loop.run_forever()
 except KeyboardInterrupt:
-    print('keyboard interrupt')
+    if verbose:
+        print('keyboard interrupt')
 finally:
-    print('closing event loop')
+    if verbose:
+        print('closing event loop')
     btctrl.stop_scan_request()
     command = aiobs.HCI_Cmd_LE_Advertise(enable=False)
     btctrl.send_command(command)

@@ -22,6 +22,7 @@ class TiltHydrometer(object):
 
     # color_lookup is created at first use in color_lookup
     color_lookup_table = {}  # type: Dict[str, str]
+    color_lookup_table_no_dash = {}  # type: Dict[str, str]
 
     def __init__(self, color: str):
         self.color = color  # type: str
@@ -104,6 +105,24 @@ class TiltHydrometer(object):
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
 
+    def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi):
+        self.raw_gravity = sensor_gravity / 1000
+        if self.obj is None:
+            # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
+            self.gravity = self.raw_gravity
+        else:
+            # Otherwise, apply the calibration
+            self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
+
+        # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
+        # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
+        self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(sensor_temp,
+                                                                         GravitySensor.TEMP_FAHRENHEIT)
+        self.temp = self.raw_temp
+        self.rssi = rssi
+        self._add_to_list(self.gravity, self.temp)
+
+
     def smoothed_gravity(self):
         # Return the average gravity in gravity_list
         if len(self.gravity_list) <= 0:
@@ -126,11 +145,15 @@ class TiltHydrometer(object):
 
     @classmethod
     def color_lookup(cls, color):
-        if len(cls.color_lookup_table) >= 0:
+        if len(cls.color_lookup_table) <= 0:
             cls.color_lookup_table = {cls.tilt_colors[x]: x for x in cls.tilt_colors}
+        if len(cls.color_lookup_table_no_dash) <= 0:
+            cls.color_lookup_table_no_dash = {cls.tilt_colors[x].replace("-",""): x for x in cls.tilt_colors}
 
         if color in cls.color_lookup_table:
             return cls.color_lookup_table[color]
+        elif color in cls.color_lookup_table_no_dash:
+            return cls.color_lookup_table_no_dash[color]
         else:
             return None
 
