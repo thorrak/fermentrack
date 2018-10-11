@@ -1,6 +1,12 @@
 #!/usr/bin/python
 
 import os, sys
+import time, datetime, getopt, pid
+from typing import List, Dict
+import asyncio
+# import argparse, re
+import aioblescan as aiobs
+
 
 # In order to be able to use the Django ORM, we have to load everything else Django-related. Lets do that now.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,28 +17,17 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 
-
-import time, datetime, getopt, pid
-from typing import List, Dict
-
 from gravity.tilt.TiltHydrometer import TiltHydrometer
-
 import gravity.models
 
-import django.core.exceptions
-
-# Replacement imports for aio
-import sys
-import asyncio
-import argparse
-import re
-import aioblescan as aiobs
+# import django.core.exceptions
 
 
 
 # Script Defaults
 verbose = False         # Should the script print out what it's doing to the console
 pidFileDir = "/tmp"     # Where the pidfile should be written out to
+mydev = 0  # Default to /dev/hci0
 
 
 def print_to_stderr(*objs):
@@ -40,10 +35,10 @@ def print_to_stderr(*objs):
 
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "h:vp:l", ['help', 'verbose', 'pidfiledir=', 'list'])
+    opts, args = getopt.getopt(sys.argv[1:], "h:vp:d:l", ['help', 'verbose', 'pidfiledir=', 'device=', 'list'])
 except getopt.GetoptError:
-    print_to_stderr("Unknown parameter. Available options: --help, --color <color name>, --verbose, " +
-                    "--pidfiledir <directory>", "--list")
+    print_to_stderr("Unknown parameter. Available options: --help, --verbose, " +
+                    "--pidfiledir <directory> --device <device number>", "--list")
     sys.exit()
 
 
@@ -54,6 +49,7 @@ for o, a in opts:
         print_to_stderr("--help: Print this help message")
         print_to_stderr("--verbose: Echo readings to the console")
         print_to_stderr("--pidfiledir <directory path>: Directory to store the pidfile in")
+        print_to_stderr("--device <device number>: The number of the bluetooth device (the X in /dev/hciX)")
         print_to_stderr("--list: List Tilt colors that have been set up in Fermentrack")
         exit()
 
@@ -67,6 +63,12 @@ for o, a in opts:
             sys.exit('ERROR: pidfiledir "%s" does not exist' % a)
         pidFileDir = a
 
+    # Allow the user to specify an alternative bluetooth device
+    if o in ('-d', '--device'):
+        if not os.path.exists("/dev/hci{}".format(a)):
+            sys.exit('ERROR: Device /dev/hci{} does not exist!'.format(a))
+        mydev = a
+
     # List out the colors currently configured in Fermentrack
     if o in ('-l', '--list'):
         try:
@@ -76,7 +78,7 @@ for o, a in opts:
                 print("No configured devices found.")
             else:
                 x = 0
-                print("Available Colors:")
+                print("Configured Colors:")
                 for d in dbDevices:
                     x += 1
                     print("  %d: %s" % (x, d.color))
@@ -86,7 +88,7 @@ for o, a in opts:
             sys.exit(e)
 
 
-# check for other running instances of BrewPi that will cause conflicts with this instance
+# check for other running instances of the Tilt monitor script that will cause conflicts with this instance
 pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor_aio")
 try:
     pidFile.create()
@@ -101,10 +103,11 @@ except pid.PidFileAlreadyLockedError:
 tilts = {x: TiltHydrometer(x) for x in TiltHydrometer.tilt_colors}  # type: Dict[str, TiltHydrometer]
 # Create a list of UUIDs to match against & make it easy to lookup color
 uuids = [TiltHydrometer.tilt_colors[x].replace("-","") for x in TiltHydrometer.tilt_colors]  # type: List[str]
-
-
+# Create the default
 reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
-def my_process(data):
+
+
+def processBLEBeacon(data):
     # While I'm not a fan of globals, not sure how else we can store state here easily
     global opts
     global reload_objects_at
@@ -161,37 +164,27 @@ def my_process(data):
             tilts[this_tilt].load_obj_from_fermentrack()
 
 
-# try:
-#     mydev=int(sys.argv[1])
-# except:
-# TODO - Enable the ability to switch the device number from hci0
-mydev = 0  # Default to hci0
-
-
 event_loop = asyncio.get_event_loop()
 
 # First create and configure a raw socket
 mysocket = aiobs.create_bt_socket(mydev)
 
-# create a connection with the raw socket
-# This used to work but now requires a STREAM socket.
-# fac=event_loop.create_connection(aiobs.BLEScanRequester,sock=mysocket)
-# Thanks to martensjacobs for this fix
+# create a connection with the raw socket (Uses _create_connection_transport instead of create_connection as this now
+# requires a STREAM socket) - previously was fac=event_loop.create_connection(aiobs.BLEScanRequester,sock=mysocket)
 fac = event_loop._create_connection_transport(mysocket, aiobs.BLEScanRequester, None, None)
-conn,btctrl = event_loop.run_until_complete(fac)  # Start the bluetooth control loop
-btctrl.process=my_process  # Attach the handler to the bluetooth control loop
+conn, btctrl = event_loop.run_until_complete(fac)  # Start the bluetooth control loop
+btctrl.process=processBLEBeacon  # Attach the handler to the bluetooth control loop
 
-#Probe
+# Begin probing
 btctrl.send_scan_request()
 try:
-    # event_loop.run_until_complete(coro)
     event_loop.run_forever()
 except KeyboardInterrupt:
     if verbose:
-        print('keyboard interrupt')
+        print('Keyboard interrupt')
 finally:
     if verbose:
-        print('closing event loop')
+        print('Closing event loop')
     btctrl.stop_scan_request()
     command = aiobs.HCI_Cmd_LE_Advertise(enable=False)
     btctrl.send_command(command)
