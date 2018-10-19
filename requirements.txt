@@ -21,7 +21,10 @@ esptool         # for flashing ESP8266 devices
 redis           # for huey & gravity sensor support
 
 pybluez         # for gravity sensor support
+beacontools[scan]           # for Tilt hydrometer support
+aioblescan      # Replacement for beacontools for Tilt support
 
 # Requirements to make Circus work
 pyzmq<17
 tornado<5
+

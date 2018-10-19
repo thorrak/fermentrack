@@ -3,7 +3,6 @@
 # This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
 # a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
 
-# This is the new new version of the BrewPi-script log manager which isn't fully in use.
 
 from __future__ import print_function
 
@@ -13,7 +12,7 @@ import logging
 import argparse
 
 from circus.util import DEFAULT_ENDPOINT_DEALER
-from processmgr_class import ProcessManager
+from utils.processmgr_class import ProcessManager
 
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,6 +35,7 @@ SLEEP_INTERVAL = 15
 ########## BrewPi Script Configuration
 BREWPI_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
 
+
 def BrewPiDevice_query_db(self):
     """Query django database for active BrewPiDevices, returns an empty iterable if error"""
     try:
@@ -48,18 +48,21 @@ def BrewPiDevice_query_db(self):
 
 
 ########## Tilt Hydrometer Script Configuration
-TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor.py") + ' --color "%s"'
+TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor_aio.py")
+
 
 def TiltConfiguration_query_db(self):
     """Query django database for active Tilt Hydrometers connected via Bluetooth, returns an empty iterable if error"""
     try:
-        return gravity.models.TiltConfiguration.objects.filter(sensor__status=gravity.models.GravitySensor.STATUS_ACTIVE,
-                                                               connection_type=gravity.models.TiltConfiguration.CONNECTION_BLUETOOTH)
+        active_tilts = gravity.models.TiltConfiguration.objects.filter(sensor__status=gravity.models.GravitySensor.STATUS_ACTIVE,
+                                                                       connection_type=gravity.models.TiltConfiguration.CONNECTION_BLUETOOTH)
+        if len(active_tilts) > 0:
+            return True
     except self.model.DoesNotExist:
         self.log.info("No active {}".format(self.device_type))
     except (Exception) as e:
         self.log.critical("Could not query database for active devices", exc_info=self.debug)
-    return []
+    return False
 
 
 
@@ -92,18 +95,20 @@ def run():
         logfilepath=os.path.expanduser("~/fermentrack/log"),
         log=LOG,
         query_db_func=BrewPiDevice_query_db,
-        debug=args.debug
+        debug=args.debug,
+        treat_query_as_boolean=False  # For BrewPi we have individual brewpi-script instances for each controller
     )
 
     tilt_process_spawner = ProcessManager(
-        prefix="tilt-",  # Must match gravity.models.TiltConfiguration.daemon_log_prefix
+        prefix="tilt-",
         device_type="Tilt",
         command_tmpl=TILT_SCRIPT_CMD_TEMPLATE,
         circus_endpoint=DEFAULT_ENDPOINT_DEALER,
         logfilepath=os.path.expanduser("~/fermentrack/log"),
         log=LOG,
         query_db_func=TiltConfiguration_query_db,
-        debug=args.debug
+        debug=args.debug,
+        treat_query_as_boolean=True  # For tilts, we only have a single process manager rather than individual ones
     )
 
     #### Actually run the process managers

@@ -40,6 +40,7 @@ class GuidedSetupUserForm(forms.ModelForm):
             user.save()
         return user
 
+
 class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting
     date_time_display_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_display_select'][1]['choices']
@@ -87,13 +88,11 @@ class GuidedSetupConfigForm(forms.Form):
         # widget=forms.RadioSelect(),
         )
 
-
-    enable_sentry_support = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+    enable_sentry_support = forms.ChoiceField(  # initial=settings.ENABLE_SENTRY
         choices=true_false,
         help_text="Enable automatic error reporting to Fermentrack developers",
         # widget=forms.RadioSelect(),
         )
-
 
     def __init__(self, *args, **kwargs):
         super(GuidedSetupConfigForm, self).__init__(*args, **kwargs)
@@ -107,6 +106,8 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
         self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
+        self.fields['update_preference'].initial = config.GIT_UPDATE_TYPE
+
         self.fields['enable_sentry_support'].initial = settings.ENABLE_SENTRY
 
         # This is super-hackish, but whatever. If it works, it works

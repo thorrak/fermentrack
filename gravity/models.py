@@ -159,7 +159,10 @@ class GravitySensor(models.Model):
     # Loggable gravity & loggable temp are what we generally want. These can have smoothing/filtering applied.
     def retrieve_loggable_gravity(self):
         point = self.retrieve_latest_point()
-        return None if point is None else round(point.gravity, 3)
+        if point is None:
+            return None
+        else:
+            return None if point.gravity is None else round(point.gravity, 3)
 
     def retrieve_loggable_temp(self):
         # So temp needs units... we'll return a tuple (temp, temp_format)
@@ -167,7 +170,7 @@ class GravitySensor(models.Model):
         if point is None:
             return None, None
         else:
-            return round(point.temp, 2), point.temp_format
+            return None if point.temp is None else round(point.temp, 2), point.temp_format
 
 
     def create_log_and_start_logging(self, name):
@@ -366,12 +369,12 @@ class GravityLogPoint(models.Model):
         else:
             return (self.temp-32) * 5 / 9
 
+
     def data_point(self, data_format='base_csv', set_defaults=True):
         # Everything gets stored in UTC and then converted back on the fly
 
         utc_tz = pytz.timezone("UTC")
         time_value = self.log_time.astimezone(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
-
 
         if set_defaults:
             temp = self.temp or 0
@@ -385,7 +388,6 @@ class GravityLogPoint(models.Model):
             extra_data = self.extra_data or None
             gravity_latest = self.gravity_latest or None
             temp_latest = self.temp_latest or None
-
 
         if data_format == 'base_csv':
             return [time_value, self.gravity, temp]
@@ -565,8 +567,9 @@ class TiltTempCalibrationPoint(models.Model):
 
 class TiltGravityCalibrationPoint(models.Model):
     sensor = models.ForeignKey('TiltConfiguration')
-    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Gravity Value")
-    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Gravity Value")
+    actual_gravity = models.DecimalField(max_digits=5, decimal_places=3, verbose_name="Actual (Correct) Gravity value")
+    tilt_measured_gravity = models.DecimalField(max_digits=5, decimal_places=3,
+                                                verbose_name="Tilt Measured Gravity Value")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
 
 
@@ -604,37 +607,43 @@ class TiltConfiguration(models.Model):
     color = models.CharField(max_length=32, choices=COLOR_CHOICES, unique=True,
                              help_text="The color of Tilt Hydrometer being used")
 
-    # The following two options are migrated from the Tilt manager configuration file
+    # As a result of the Tilt Hydrometer rewrite, some of the options that were previously available here have been
+    # either eliminated or moved elsewhere:
+    #   average_period_secs is no longer an option for smoothing data coming from the Tilt
+    #   median_window_vals is now smoothing_window_vals and only provides a moving average function (not median filter)
+    #   polling_frequency is explicitly how often Redis gets updated with the latest gravity readings
+    #   bluetooth_device_id is no longer captured/used
 
-    # Record values over a period in order to average/median the numbers. This is used to smooth noise.
-    # Note - If we poll during this window, we'll get the same value returned as long as median_window_vals set below
-    # is sufficiently high.
-    # Default: Originally 5 mins, now 2 mins
-    average_period_secs = models.IntegerField(default=2*60, help_text="Number of seconds over which to average readings")
-
-    # Use a median filter over the average period. The window will be applied multiple times.
+    # Use a smoothing window that takes the moving average of the specified number of Tilt values
     # Generally the tilt hydrometer generates about 1.3 values every second. So for 300 seconds, you will end up with a
     # set of 360-380 values.
-    # Setting the window to < 360, will then give you a moving average like function.
-    # Setting the window to >380 will disable this and use a median filter across the whole set. This means that changes
-    # in temp/gravity will take ~2.5 mins to be observed.
-    median_window_vals = models.IntegerField(default=10000,
-                                             help_text="Number of readings to include in the average window. If set to "
-                                                       "less than ~1.3*average_period_secs, you will get a moving "
-                                                       "average. If set to greater, you'll get the median value.")
+    smoothing_window_vals = models.IntegerField(default=70,
+                                                help_text="Number of readings to include in the smoothing window.")
 
     # While average_period_secs and median_window_vals
     polling_frequency = models.IntegerField(default=15, help_text="How frequently Fermentrack should update the "
-                                                                  "temp/gravity reading from the sensor")
-
-    # This is almost always 0, but adding it here in case someone needs to configure it later on
-    bluetooth_device_id = models.IntegerField(default=0, help_text="Almost always 0 - Change if you have Bluetooth issues")
+                                                                  "temp/gravity reading")
 
     connection_type = models.CharField(max_length=32, choices=CONNECTION_CHOICES, default=CONNECTION_BLUETOOTH,
                                        help_text="How should Fermentrack connect to this Tilt?")
 
     tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, default=None,
                                    help_text="TiltBridge device to use (if any)")
+
+    # Switching calibration to use the same equation-based approach as used on iSpindel. For now, going to start out
+    # fairly basic - can revisit as things become more complex. The first degree coefficient defaults to 1 as we're
+    # doing a gravity-to-gravity conversion. The default state should be to just keep whatever gravity was read off the
+    # Tilt.
+    grav_second_degree_coefficient = models.FloatField(default=0.0, help_text="The second degree coefficient in the "
+                                                                              "gravity calibration equation")
+    grav_first_degree_coefficient = models.FloatField(default=1.0, help_text="The first degree coefficient in the "
+                                                                             "gravity calibration equation")
+    grav_constant_term = models.FloatField(default=0.0, help_text="The constant term in the gravity calibration "
+                                                                  "equation")
+    # While coefficients_up_to_date is kept accurate, at the moment it doesn't really get used anywhere.
+    # TODO - Do something useful with this
+    coefficients_up_to_date = models.BooleanField(default=True, help_text="Have the calibration points changed since "
+                                                                          "the coefficient calculator was run?")
 
     def tiltHydrometerName(self, uuid):
         return {
@@ -656,9 +665,6 @@ class TiltConfiguration(models.Model):
         else:
             raise NotImplementedError
 
-    def dev_id(self):
-        return self.bluetooth_device_id
-
     def __str__(self):
         return self.color
 
@@ -669,6 +675,7 @@ class TiltConfiguration(models.Model):
         """Returns the parameter used by Circus to track this device's processes"""
         return self.color
 
+    # TODO - Eliminate the xxx_redis_reload_flag functions
     def set_redis_reload_flag(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
                         socket_timeout=5)
@@ -689,9 +696,50 @@ class TiltConfiguration(models.Model):
         else:
             return True
 
+    # These two functions are explicitly so we have some way of saving/tracking RSSI for debugging and raw temp/gravity
+    # later on.
+    def save_extras_to_redis(self):
+        # This saves the current (presumably complete) object as the 'current' point to redis
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+
+        extras = {
+            'rssi': getattr(self, 'rssi', None),
+            'raw_gravity': getattr(self, 'raw_gravity', None),
+            'raw_temp': getattr(self, 'raw_temp', None)
+        }
+
+        r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
+
+    def load_extras_from_redis(self):
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        redis_response = r.get('tilt_{}_extras'.format(self.color))
+
+        if redis_response is None:
+            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+            return {}
+
+        redis_response = redis_response.decode(encoding="utf-8")
+        extras = json.loads(redis_response)
+
+        if 'rssi' in extras:
+            self.rssi = extras['rssi']
+        if 'raw_gravity' in extras:
+            self.raw_gravity = extras['raw_gravity']
+        if 'raw_temp' in extras:
+            self.raw_gravity = extras['raw_temp']
+
+        return extras
+
     def daemon_log_prefix(self):
+        # TODO - Remove this if no longer used
         # This must match the log prefix used in utils/processmgr.py
         return "tilt-" + self.color.lower()
+
+    def apply_gravity_calibration(self, uncalibrated_gravity):
+        calibrated_gravity = self.grav_second_degree_coefficient * uncalibrated_gravity ** 2
+        calibrated_gravity += self.grav_first_degree_coefficient * uncalibrated_gravity ** 1
+        calibrated_gravity += self.grav_constant_term
+        return calibrated_gravity
 
 
 class TiltBridge(models.Model):
@@ -707,10 +755,21 @@ class TiltBridge(models.Model):
     Attributes:
         api_key: A token which is provided by the TiltBridge to identify the device
     """
+
+    class Meta:
+        verbose_name = "TiltBridge"
+        verbose_name_plural = "TiltBridges"
+
     name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
     api_key = models.CharField(max_length=64, primary_key=True,
                                help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
                                          "itself when it connects to the Raspberry Pi")
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.name
 
 
 ### iSpindel specific models
@@ -755,13 +814,15 @@ class IspindelConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
-        extras = {}
-
-        extras = {'ispindel_id': self.ispindel_id or None, 'angle': self.angle or None, 'battery': self.battery or None,
-                  'ispindel_gravity': self.ispindel_gravity or None, 'token': self.token or None}
+        extras = {
+            'ispindel_id': getattr(self, 'ispindel_id', None),
+            'angle': getattr(self, 'angle', None),
+            'battery': getattr(self, 'battery', None),
+            'ispindel_gravity': getattr(self, 'ispindel_gravity', None),
+            'token': getattr(self, 'token', None)
+        }
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
-
 
     def load_extras_from_redis(self):
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)

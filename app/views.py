@@ -363,7 +363,7 @@ def device_dashboard(request, device_id, beer_id=None):
 
     if beer_id is None:
         beer_obj = active_device.active_beer or None
-        available_beer_logs = Beer.objects.filter(device_id=active_device.id)  # TODO - Do I want to exclude the active beer?
+        available_beer_logs = Beer.objects.filter(device_id=active_device.id)
     else:
         try:
             beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id)
@@ -380,7 +380,6 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         beer_file_url = beer_obj.data_file_url('base_csv')
 
-
     if beer_obj is None:
         column_headers = {}
     else:
@@ -389,7 +388,7 @@ def device_dashboard(request, device_id, beer_id=None):
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                                        'column_headers': column_headers,
+                                        # 'column_headers': column_headers,
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
 
@@ -594,7 +593,6 @@ def logout(request):
 @site_is_configured
 def site_settings(request):
     # TODO - Add user permissioning. The wizard creates the user and login so we can check for superuser here
-
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         return redirect('siteroot')

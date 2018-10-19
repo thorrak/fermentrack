@@ -17,6 +17,15 @@
         Please select the sensor family that you are attempting to set up.
     </p>
 
+     {% if manual_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in manual_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
+     {% if tilt_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in tilt_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
+     {% if ispindel_form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in ispindel_form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
 
 
     <!-- Accordion Selector -->
@@ -88,8 +97,10 @@
                             Use this to set Fermentrack up to interact with <a href="https://tilthydrometer.com/">Tilt Hydrometers</a>.
                             Tilt Hydrometers are an automatic, wireless specific gravity sensor and will provide a
                             continuous stream of specific gravity data to Fermentrack allowing you to graph the progress
-                            as your beer ferments. Fermentrack also supports the use of the
-                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.
+                            as your beer ferments.
+
+{#                            Fermentrack also supports the use of the#}
+{#                            <a href="http://www.tiltbridge.com/">TiltBridge</a> Bluetooth-to-WiFi bridge if present.#}
                         </div>
                     </div>
                     <form action="{% url "gravity_add_board" %}" class="form-horizontal" method="post">{% csrf_token %}
@@ -98,14 +109,17 @@
                         <div class="row col-xs-12">{% form_generic tilt_form.name %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.temp_format %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.color %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
 
-                        {# TODO - Make these fields hidden if connection type isn't tiltbridge #}
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
-                        <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>
+                        {# TODO - Reenable this when TiltBridge is ready for release #}
+                        <input type="hidden" value="Bluetooth" name="{{ tilt_form.connection_type.name }}">
 
-
+{#                        <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>#}
+{##}
+{#                        <div id="tiltBridgeHidden" style="display: block">#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>#}
+{#                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_api_key %}</div>#}
+{#                        </div>#}
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>
                     </form>
@@ -174,6 +188,22 @@
 
 {% block scripts %}
 <script>
+
+function TiltBridgeHide() {
+    if(document.getElementById('id_connection_type').value != "Bridge") {
+         document.getElementById('tiltBridgeHidden').style.display = 'none';
+    } else {
+         document.getElementById('tiltBridgeHidden').style.display = '';
+    }
+}
+
+window.onload = function() {
+    document.getElementById('id_connection_type').onchange = TiltBridgeHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    TiltBridgeHide();
+};
+
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()
