@@ -48,7 +48,7 @@ def BrewPiDevice_query_db(self):
 
 
 ########## Tilt Hydrometer Script Configuration
-TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor.py")
+TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor_aio.py")
 
 
 def TiltConfiguration_query_db(self):
