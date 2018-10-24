@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import beacontools
+    import aioblescan
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False
