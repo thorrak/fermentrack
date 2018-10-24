@@ -11,8 +11,8 @@ import datetime
 import pytz
 import random
 
-class DeviceForm(forms.Form):
 
+class DeviceForm(forms.Form):
     device_name = forms.CharField(max_length=48, help_text="Unique name for this device",
                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Device Name'}))
 
@@ -26,7 +26,6 @@ class DeviceForm(forms.Form):
     connection_type = forms.ChoiceField(initial='serial', choices=BrewPiDevice.CONNECTION_TYPE_CHOICES,
                                         help_text="Type of connection between the Raspberry Pi and the hardware",
                                         widget=forms.Select(attrs={'class': 'form-control'}))
-
 
     useInetSocket = forms.BooleanField(required=False, initial=True,
                                        help_text="Whether or not to use an internet socket (rather than local)")
@@ -194,9 +193,9 @@ class SensorFormRevised(forms.Form):
     # Not sure if I want to change 'invert' to be a switch or a dropdown
     # invert = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'data-toggle': 'switch'}))
 
-    calibration = forms.DecimalField(label="Temp Calibration Offset", required=False, initial=0.0,
-                                     help_text="The temperature calibration to be added to each reading (in case "
-                                               "your temperature sensors misread temps)")
+    calibration = forms.FloatField(label="Temp Calibration Offset", required=False, initial=0.0,
+                                   help_text="The temperature calibration to be added to each reading (in case "
+                                             "your temperature sensors misread temps)")
 
     address = forms.CharField(widget=forms.HiddenInput, required=False)
     pin = forms.CharField(widget=forms.HiddenInput)

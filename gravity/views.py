@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import beacontools
+    import aioblescan
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False
@@ -443,12 +443,11 @@ def gravity_uninstall(request, sensor_id):
                         # The temperature sensor is currently actively logging something. Let's stop it.
                         sensor.assigned_brewpi_device.manage_logging('stop')
 
-                if 'tilt_configuration' in sensor and 'tiltbridge' in sensor.tilt_configuration:
-                    # TODO - Test this code to make sure it works
-                    # Sensor has an attached tiltbridge - cache it so we can delete it if this is the only device that
+                try:
+                    # If sensor has an attached tiltbridge - cache it so we can delete it if this is the only device that
                     # is connected to it
                     tiltbridge_device = sensor.tilt_configuration.tiltbridge
-                else:
+                except:
                     tiltbridge_device = None
 
                 sensor.delete()

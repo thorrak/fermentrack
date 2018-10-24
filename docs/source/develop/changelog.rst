@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[2018-07-XX] - Gravity Refactoring
+[2018-08-05] - Gravity Refactoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added

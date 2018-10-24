@@ -77,7 +77,7 @@
     <!-- Start Dashboard Panels -->
     <div class="row">
 
-        <div class="col-md-3 col-xs-6">
+        <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="dashpanel dashpanel-top bg-petermann">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
                 <div class="dashpanel-title">Beer Temp</div>
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 col-xs-6">
+        <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="dashpanel dashpanel-top bg-amethyst" id="fridgeTempPanel">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
                 <div class="dashpanel-title">Fridge Temp</div>
@@ -120,7 +120,7 @@
 
         </div>
 
-        <div class="col-md-3 col-xs-6">
+        <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="dashpanel dashpanel-top bg-concrete">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-bolt fa-fw"></i></div>
                 <div class="dashpanel-title">Control Mode</div>
@@ -148,7 +148,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 col-xs-6">
+        <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="dashpanel dashpanel-top bg-wet-asphalt">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-clock-o fa-fw"></i></div>
                 <div class="dashpanel-title">Log Interval</div>
@@ -183,66 +183,70 @@
                         </div>
                 </div>
                 <div class="panel-body">
-                        <div class="chart-legend-row row" id="beerTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="beer_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Beer Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerTempValue"></div>
-                        </div>
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr id="beerTempRow">
+                                <td id="beerTempLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_TEMP_COLOR }}" id="beer_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Beer Temp
+                                </td>
+                                <td id="beerTempValue"></td>
+                            </tr>
 
-                        <div class="chart-legend-row row" id="beerSetRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="beerSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}" id="beer_set_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Beer Setting
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="beerSetValue"></div>
-                        </div>
+                            <tr id="beerSetRow">
+                                <td id="beerSetLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_BEER_SET_COLOR }}" id="beer_set_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Beer Setting
+                                </td>
+                                <td id="beerSetValue"></td>
+                            </tr>
 
-                        <div class="chart-legend-row row" id="fridgeTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}" id="fridge_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Fridge Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeTempValue"></div>
-                        </div>
+                            <tr id="fridgeTempRow">
+                                <td id="fridgeTempLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_TEMP_COLOR }}" id="fridge_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Fridge Temp
+                                </td>
+                                <td id="fridgeTempValue"></td>
+                            </tr>
 
-                        <div class="chart-legend-row row" id="fridgeSetRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="fridgeSetLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="fridge_set_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Fridge Setting
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="fridgeSetValue"></div>
-                        </div>
+                            <tr id="fridgeSetRow">
+                                <td id="fridgeSetLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="fridge_set_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Fridge Setting
+                                </td>
+                                <td id="fridgeSetValue"></td>
+                            </tr>
 
-                        <div class="chart-legend-row row" id="roomTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="roomTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="room_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Room Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="roomTempValue"></div>
-                        </div>
+                            <tr id="roomTempRow">
+                                <td id="roomTempLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="room_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Room Temp
+                                </td>
+                                <td id="roomTempValue"></td>
+                            </tr>
 
-                        {# This is part of the specific gravity sensor support #}
-                        {% if beer.gravity_enabled %}
-                        <div class="chart-legend-row row" id="gravityRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Gravity
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityValue"></div>
-                        </div>
+                            {# This is part of the specific gravity sensor support #}
+                            {% if beer.gravity_enabled %}
+                            <tr id="gravityRow">
+                                <td id="gravityLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Gravity
+                                </td>
+                                <td id="gravityValue"></td>
+                            </tr>
 
-                        <div class="chart-legend-row row" id="gravityTempRow">
-                            <div class="legend-label pull-left" style="padding-left: 10px;" id="gravityTempLabel">
-                                <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
-                                Grav Sensor Temp
-                            </div>
-                            <div class="legend-value pull-right" style="padding-right: 15px;" id="gravityTempValue"></div>
-                        </div>
-                        {% endif %}
+                            <tr id="gravityTempRow">
+                                <td id="gravityTempLabel">
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    Grav Sensor Temp
+                                </td>
+                                <td id="gravityTempValue"></td>
+                            </tr>
+                            {% endif %}
+
+                        </tbody>
+                    </table>
                 </div>
-                <div class="panel-footer"></div>
 
             </div>
         </div>
@@ -253,14 +257,14 @@
     <!-- Begin Controls -->
     <div class="row" >
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-danger center" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
+            <button type="button" class="btn btn-lg btn-danger control-btn" data-toggle="modal" data-target="#tempControl{{ active_device.id }}">Control Temperature</button>
         </div>
 
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-info center" data-toggle="modal" data-target="#beerModal">Control Logging</button>
+            <button type="button" class="btn btn-lg btn-info control-btn" data-toggle="modal" data-target="#beerModal">Control Logging</button>
         </div>
         <div class="col-md-4">
-            <button type="button" class="btn btn-lg btn-success center" data-toggle="modal" data-target="#beerLogModal">Load Prior Log</button>
+            <button type="button" class="btn btn-lg btn-success control-btn" data-toggle="modal" data-target="#beerLogModal">Load Prior Log</button>
         </div>
 
 
@@ -490,11 +494,14 @@ g2 = new Dygraph(
         showLabelsOnHighlight: true,
         hideOverlayOnMouseOut: false,
         // TODO - Test this with gravity data
+{% if beer.model_version > 1 %}
         visibility: {{ beer.base_column_visibility }},
+{% endif %}
         xValueParser: function(x) { // This will implicitly convert the data we have stored (in UTC) to local (browser) time
             var m = moment.tz(x, "YYYY/MM/DD HH:mm:ssZ", "UTC");
             return m.valueOf();
         },
+{% if beer.model_version >= 2 %}
         underlayCallback: function(canvas, area, g) {
 
             function highlight_period(x_start, x_end, state) {
@@ -531,7 +538,8 @@ g2 = new Dygraph(
                 highlight_period(start_x, last_x, state);
 
           },
-        {% if beer.gravity_enabled %}
+{% endif %}
+{% if beer.gravity_enabled %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}", "{{ config.GRAPH_GRAVITY_COLOR }}", "{{ config.GRAPH_GRAVITY_TEMP_COLOR }}"],
         ylabel: 'Temperature',
         y2label: 'Gravity',
