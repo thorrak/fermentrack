@@ -48,8 +48,8 @@ In addition to Django, this app utilizes a number of Python packages. These pack
       - `Apache Public License v2 <http://www.apache.org/licenses/LICENSE-2.0>`__
     * - `pid <https://pypi.python.org/pypi/pid/2.1.1>`__
       - `Apache Public License v2 <https://github.com/trbs/pid/blob/master/LICENSE>`__
-    * - `beacontools <https://github.com/citruz/beacontools>`__
-      - `MIT (Expat) <https://github.com/citruz/beacontools/blob/master/LICENSE.txt>`__
+    * - `aioblescan <https://github.com/frawau/aioblescan>`__
+      - `MIT (Expat) <https://github.com/frawau/aioblescan/blob/master/LICENSE.txt>`__
 
 
 JavaScript Packages

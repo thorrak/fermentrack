@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+
+[2018-10-24] - Tilt Monitor Refactoring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changed
+---------------------
+
+- The Tilt Hydrometer monitor now uses aioblescan instead of beacontools for better reliability
+- Added support for smaller screen sizes
+
+Fixed
+---------------------
+
+- Tilt Hydrometers will now properly record temperatures measured in Celsius
+
+
 [2018-08-05] - Gravity Refactoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

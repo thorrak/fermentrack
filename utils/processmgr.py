@@ -13,6 +13,7 @@ import argparse
 
 from circus.util import DEFAULT_ENDPOINT_DEALER
 from utils.processmgr_class import ProcessManager
+from django.core.exceptions import ObjectDoesNotExist
 
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +41,7 @@ def BrewPiDevice_query_db(self):
     """Query django database for active BrewPiDevices, returns an empty iterable if error"""
     try:
         return app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE)
-    except self.model.DoesNotExist:
+    except ObjectDoesNotExist:
         self.log.info("No active {}".format(self.device_type))
     except (Exception) as e:
         self.log.critical("Could not query database for active devices", exc_info=self.debug)
@@ -58,7 +59,7 @@ def TiltConfiguration_query_db(self):
                                                                        connection_type=gravity.models.TiltConfiguration.CONNECTION_BLUETOOTH)
         if len(active_tilts) > 0:
             return True
-    except self.model.DoesNotExist:
+    except ObjectDoesNotExist:
         self.log.info("No active {}".format(self.device_type))
     except (Exception) as e:
         self.log.critical("Could not query database for active devices", exc_info=self.debug)
