@@ -546,7 +546,7 @@ while run:
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
                     dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
-            except json.JSONDecodeError:
+            except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
             raise socket.timeout
         elif messageType == "stopScript":  # exit instruction received. Stop script.
@@ -635,7 +635,7 @@ while run:
             # applyDevice is used to apply settings to an existing device (pin/OneWire assignment, etc.)
             try:
                 configStringJson = json.loads(value)  # load as JSON to check syntax
-            except json.JSONDecodeError:
+            except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             logMessage("Received applyDevice request, updating to: {}".format(value))
@@ -648,7 +648,7 @@ while run:
             # writeDevice is used to -create- "actuators" -- Specifically, (for now) buttons.
             try:
                 configStringJson = json.loads(value)  # load as JSON to check syntax
-            except json.JSONDecodeError:
+            except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
                 continue
             bg_ser.writeln("d" + json.dumps(configStringJson))
@@ -793,7 +793,7 @@ while run:
                     else:
                         logMessage("Cannot process line from controller: " + line)
                     # end or processing a line
-                except (json.decoder.JSONDecodeError) as e:
+                except ValueError as e:
                     logMessage("JSON decode error: %s" % str(e))
                     logMessage("Line received was: " + line)
                 bg_ser.line_was_processed()  # Clean out the queue
@@ -801,7 +801,7 @@ while run:
                 try:
                     expandedMessage = expandLogMessage.expandLogMessage(message)
                     logMessage("Controller debug message: " + expandedMessage)
-                except (Exception) as e:  # catch all exceptions, because out of date file could cause errors
+                except Exception as e:  # catch all exceptions, because out of date file could cause errors
                     logMessage("Error while expanding log message '" + message + "'" + str(e))
                 bg_ser.message_was_processed()  # Clean out the queue
 
