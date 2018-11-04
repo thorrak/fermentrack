@@ -204,6 +204,12 @@ except pid.PidFileAlreadyLockedError:
         logMessage("Another instance of BrewPi is already running, which will conflict with this instance. "
                    "This instance will exit")
     exit(0)
+except pid.PidFileAlreadyRunningError:
+    if not checkDontRunFile:  # Even for database configurations, we don't want to log this if the gatekeeper launched me
+        logMessage("Another instance of BrewPi is already running, which will conflict with this instance. "
+                   "This instance will exit")
+    exit(0)
+
 
 if checkStartupOnly:
     exit(1)
