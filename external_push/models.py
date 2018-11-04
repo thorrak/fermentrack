@@ -23,17 +23,17 @@ class GenericPushTarget(models.Model):
     SENSOR_SELECT_NONE = "none"
 
     SENSOR_SELECT_CHOICES = (
-        SENSOR_SELECT_ALL, "All Sensors/Devices",
-        SENSOR_SELECT_LIST, "Specific Sensors/Devices",
-        SENSOR_SELECT_NONE, "Nothing of this type",
+        (SENSOR_SELECT_ALL, "All Sensors/Devices"),
+        (SENSOR_SELECT_LIST, "Specific Sensors/Devices"),
+        (SENSOR_SELECT_NONE, "Nothing of this type"),
     )
 
     SENSOR_PUSH_HTTP = "http"
     SENSOR_PUSH_TCP = "tcp"
 
     SENSOR_PUSH_CHOICES = (
-        SENSOR_PUSH_HTTP, "HTTP/HTTPS",
-        SENSOR_PUSH_TCP, "TCP (Telnet/Socket)",
+        (SENSOR_PUSH_HTTP, "HTTP/HTTPS"),
+        (SENSOR_PUSH_TCP, "TCP (Telnet/Socket)"),
     )
 
     STATUS_ACTIVE = 'active'
@@ -53,10 +53,7 @@ class GenericPushTarget(models.Model):
     )
 
     PUSH_FREQUENCY_CHOICES = (
-        (5,     '5 seconds'),
-        (10,    '10 seconds'),
-        (15,    '15 seconds'),
-        (30,    '30 seconds'),
+        # (30,    '30 seconds'),
         (60,    '1 minute'),
         (60*2,  '2 minutes'),
         (60*5,  '5 minutes'),
@@ -71,7 +68,8 @@ class GenericPushTarget(models.Model):
                               default=STATUS_ACTIVE)
     push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60*15,
                                          help_text="How often to push data to the target")
-    api_key = models.CharField(max_length=256, help_text="API key required by the push target (if any)")
+    api_key = models.CharField(max_length=256, help_text="API key required by the push target (if any)", default="",
+                               blank=True)
 
     brewpi_push_selection = models.CharField(max_length=12, choices=SENSOR_SELECT_CHOICES, default=SENSOR_SELECT_ALL,
                                              help_text="How the BrewPi devices to push are selected")
@@ -86,14 +84,20 @@ class GenericPushTarget(models.Model):
 
     target_type = models.CharField(max_length=24, default=SENSOR_PUSH_HTTP, choices=SENSOR_PUSH_CHOICES,
                                    help_text="Protocol to use to connect to the push target")
-    target_host = models.CharField(max_length=256, default="http://127.0.0.1/",
+    # TODO - Change default to "", and change the URL to be a placeholder on the form
+    target_host = models.CharField(max_length=256, default="http://127.0.0.1/", blank=True,
                                    help_text="The URL to push to (for HTTP/HTTPS) or hostname/IP address (for TCP)")
     target_port = models.IntegerField(default=80, validators=[MinValueValidator(10,"Port must be 10 or higher"),
-                                                               MaxValueValidator(65535, "Port must be 65535 or lower")],
-                                     help_text="The port to use (not used for HTTP/HTTPS)")
+                                                              MaxValueValidator(65535, "Port must be 65535 or lower")],
+                                      help_text="The port to use (not used for HTTP/HTTPS)")
 
     data_format = models.CharField(max_length=24, help_text="The data format to send to the push target",
                                    choices=DATA_FORMAT_CHOICES, default=DATA_FORMAT_GENERIC)
+    last_triggered = models.DateTimeField(default=timezone.now, help_text="The last time we pushed data to this target")
+
+    # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
+    # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
+    # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
 
     def data_to_push(self):
         if self.brewpi_push_selection == GenericPushTarget.SENSOR_SELECT_ALL:
@@ -118,10 +122,12 @@ class GenericPushTarget(models.Model):
         if self.data_format == self.DATA_FORMAT_TILTBRIDGE:
             to_send = {'api_key': self.api_key, 'brewpi': []}
             for brewpi in brewpi_to_send:
+                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                 device_info = brewpi.get_dashpanel_info()
 
                 to_send['brewpi'].append({
                     'name': brewpi.device_name,
+                    'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
                     'beer_temp':  device_info['BeerTemp'],
                     'fridge_temp': device_info['FridgeTemp'],
@@ -130,14 +136,16 @@ class GenericPushTarget(models.Model):
             string_to_send = json.dumps(to_send)
 
         elif self.data_format == self.DATA_FORMAT_GENERIC:
-            to_send = {'api_key': self.api_key, 'brewpi': [], 'gravity_sensors': []}
+            to_send = {'api_key': self.api_key, 'brewpi_devices': [], 'gravity_sensors': []}
             for brewpi in brewpi_to_send:
+                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                 device_info = brewpi.get_dashpanel_info()
 
-                to_send['brewpi'].append({
+                to_send['brewpi_devices'].append({
                     'name': brewpi.device_name,
+                    'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  device_info['BeerTemp'],
+                    'beer_temp':  gdevice_info['BeerTemp'],
                     'fridge_temp': device_info['FridgeTemp'],
                     'room_temp': device_info['RoomTemp'],
                     'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
@@ -149,9 +157,8 @@ class GenericPushTarget(models.Model):
 
                 grav_dict = {
                     'name': sensor.name,
-                    'temp_format': sensor.temp_format,
+                    'internal_id': sensor.id,
                     'sensor_type': sensor.sensor_type,
-                    'status': sensor.status,
                 }
 
                 if latest_log_point is None:
@@ -171,6 +178,7 @@ class GenericPushTarget(models.Model):
         return string_to_send
 
     def send_data(self):
+        # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
         if len(json_data) <= 0:
@@ -178,7 +186,7 @@ class GenericPushTarget(models.Model):
             return False
 
         if self.target_type == self.SENSOR_PUSH_HTTP:
-            r = requests.post(self.target_host, data={'api_key': self.api_key, 'json_data': json_data})
+            r = requests.post(self.target_host, data=json_data)
             return True  # TODO - Check if the post actually succeeded & react accordingly
         elif self.target_type == self.SENSOR_PUSH_TCP:
             # TODO - Push to a socket endpoint
