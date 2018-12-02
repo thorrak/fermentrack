@@ -65,9 +65,8 @@ Getting started with Fermentrack is incredibly easy! All you need to do is:
 
 #. Install Raspbian on your Raspberry Pi
 #. Install Fermentrack (one command!)
-#. Configure Fermentrack
-#. Connect your BrewPi temperature controllers or specific gravity sensors
-#. Configure your BrewPi Temperature Controllers or specific gravity sensors
+#. Configure Fermentrack from your web browser
+#. Connect & configure your BrewPi temperature controllers or specific gravity sensors
 
 It can be done from start to finish in a bit under an hour, assuming all your hardware is assembled & ready to go. To
 learn how, read :doc:`getting started/index`.
@@ -76,8 +75,8 @@ learn how, read :doc:`getting started/index`.
 Other Notes
 -------------
 
-Fermentrack is currently designed for "legacy" brewpi firmware running on ESP8266 and Arduino hardware, and does not
-support "modern" firmware such as that included with official BrewPi controllers.
+Fermentrack is currently designed for "legacy" BrewPi firmware running on ESP8266 and Arduino hardware, and does not
+support "modern" firmware such as that included with current official BrewPi controllers.
 
 A full table of controllers/expected hardware availability is available in :doc:`hardware`.
 

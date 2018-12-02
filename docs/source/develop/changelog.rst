@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unreleased]
+~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Fermentrack can now periodically "push" readings out to an external device/app
+- Added support for pushing to BrewersFriend as a push target.
+
+Fixed
+---------------------
+
+- Explicitly linked Favicon from template
+- Fixed BrewPi-Script error when attempting to use feature not available in Python 3.4
+- Properly catch error in BrewPi-Script when pidfile already exists
+
+
 [2018-10-24] - Tilt Monitor Refactoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
