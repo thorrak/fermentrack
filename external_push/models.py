@@ -23,12 +23,12 @@ class GenericPushTarget(models.Model):
     SENSOR_SELECT_NONE = "none"
 
     SENSOR_SELECT_CHOICES = (
-        (SENSOR_SELECT_ALL, "All Sensors/Devices"),
+        (SENSOR_SELECT_ALL, "All Active Sensors/Devices"),
         (SENSOR_SELECT_LIST, "Specific Sensors/Devices"),
         (SENSOR_SELECT_NONE, "Nothing of this type"),
     )
 
-    SENSOR_PUSH_HTTP = "http"
+    SENSOR_PUSH_HTTP = "http (post)"
     SENSOR_PUSH_TCP = "tcp"
 
     SENSOR_PUSH_CHOICES = (
@@ -46,21 +46,23 @@ class GenericPushTarget(models.Model):
 
     DATA_FORMAT_GENERIC = 'generic'
     DATA_FORMAT_TILTBRIDGE = 'tiltbridge'
+    DATA_FORMAT_BREWERSFRIEND = 'brewersfriend'
 
     DATA_FORMAT_CHOICES = (
-        (DATA_FORMAT_TILTBRIDGE, 'TiltBridge Device'),
         (DATA_FORMAT_GENERIC, 'All Data (Generic)'),
+        (DATA_FORMAT_BREWERSFRIEND, 'Brewers Friend'),
+        # (DATA_FORMAT_TILTBRIDGE, 'TiltBridge Device'),
     )
 
     PUSH_FREQUENCY_CHOICES = (
-        # (30,    '30 seconds'),
-        (60,    '1 minute'),
-        (60*2,  '2 minutes'),
-        (60*5,  '5 minutes'),
-        (60*10, '10 minutes'),
-        (60*15, '15 minutes'),
-        (60*30, '30 minutes'),
-        (60*60, '1 hour'),
+        # (30-1,    '30 seconds'),
+        (60-1,    '1 minute'),
+        (60*2-1,  '2 minutes'),
+        (60*5-1,  '5 minutes'),
+        (60*10-1, '10 minutes'),
+        (60*15-1, '15 minutes'),
+        (60*30-1, '30 minutes'),
+        (60*60-1, '1 hour'),
     )
 
     name = models.CharField(max_length=48, help_text="Unique name for this push target", unique=True)
@@ -101,8 +103,7 @@ class GenericPushTarget(models.Model):
 
     def data_to_push(self):
         if self.brewpi_push_selection == GenericPushTarget.SENSOR_SELECT_ALL:
-            # TODO - Determine if this should actually be all devices, or just active ones (& update descriptions above as necessary)
-            brewpi_to_send = BrewPiDevice.objects.all()
+            brewpi_to_send = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
         elif self.brewpi_push_selection == GenericPushTarget.SENSOR_SELECT_LIST:
             brewpi_to_send = self.brewpi_to_push.all()
         else:
@@ -110,8 +111,7 @@ class GenericPushTarget(models.Model):
             brewpi_to_send = None
 
         if self.gravity_push_selection == GenericPushTarget.SENSOR_SELECT_ALL:
-            # TODO - Determine if this should actually be all devices, or just active ones (& update descriptions above as necessary)
-            grav_sensors_to_send = GravitySensor.objects.all()
+            grav_sensors_to_send = GravitySensor.objects.filter(status=GravitySensor.STATUS_ACTIVE)
         elif self.gravity_push_selection == GenericPushTarget.SENSOR_SELECT_LIST:
             grav_sensors_to_send = self.gravity_sensors_to_push.all()
         else:
@@ -123,6 +123,7 @@ class GenericPushTarget(models.Model):
             to_send = {'api_key': self.api_key, 'brewpi': []}
             for brewpi in brewpi_to_send:
                 # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
                 to_send['brewpi'].append({
@@ -139,13 +140,14 @@ class GenericPushTarget(models.Model):
             to_send = {'api_key': self.api_key, 'brewpi_devices': [], 'gravity_sensors': []}
             for brewpi in brewpi_to_send:
                 # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
                 to_send['brewpi_devices'].append({
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  gdevice_info['BeerTemp'],
+                    'beer_temp':  device_info['BeerTemp'],
                     'fridge_temp': device_info['FridgeTemp'],
                     'room_temp': device_info['RoomTemp'],
                     'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
@@ -174,6 +176,13 @@ class GenericPushTarget(models.Model):
                 to_send['gravity_sensors'].append(grav_dict)
 
             string_to_send = json.dumps(to_send)
+        elif self.data_format == self.DATA_FORMAT_BREWERSFRIEND:
+            # For Brewers Friend, we're just cascading the gravity sensors downstream to the app
+            raise NotImplementedError("Brewers Friend coming (very) soon")
+            pass
+
+        else:
+            raise ValueError("Invalid data format specified for push target")
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
@@ -190,8 +199,8 @@ class GenericPushTarget(models.Model):
             return True  # TODO - Check if the post actually succeeded & react accordingly
         elif self.target_type == self.SENSOR_PUSH_TCP:
             # TODO - Push to a socket endpoint
-            raise NotImplemented
+            raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
         else:
-            raise NotImplemented
+            raise ValueError("Invalid target type specified for push target")
 
         return False  # Should never get here, but just in case something changes later
