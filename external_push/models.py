@@ -75,12 +75,12 @@ class GenericPushTarget(models.Model):
 
     brewpi_push_selection = models.CharField(max_length=12, choices=SENSOR_SELECT_CHOICES, default=SENSOR_SELECT_ALL,
                                              help_text="How the BrewPi devices to push are selected")
-    brewpi_to_push = models.ManyToManyField(to=BrewPiDevice, related_name="push_targets",
+    brewpi_to_push = models.ManyToManyField(to=BrewPiDevice, related_name="push_targets", null=True, default=None,
                                             help_text="BrewPi Devices to push (ignored if 'all' devices selected)")
 
     gravity_push_selection = models.CharField(max_length=12, choices=SENSOR_SELECT_CHOICES, default=SENSOR_SELECT_ALL,
                                               help_text="How the gravity sensors to push are selected")
-    gravity_sensors_to_push = models.ManyToManyField(to=GravitySensor, related_name="push_targets",
+    gravity_sensors_to_push = models.ManyToManyField(to=GravitySensor, related_name="push_targets", null=True, default=None,
                                                      help_text="Gravity Sensors to push (ignored if 'all' "
                                                                "sensors selected)")
 
@@ -95,7 +95,7 @@ class GenericPushTarget(models.Model):
 
     data_format = models.CharField(max_length=24, help_text="The data format to send to the push target",
                                    choices=DATA_FORMAT_CHOICES, default=DATA_FORMAT_GENERIC)
-    last_triggered = models.DateTimeField(default=timezone.now, help_text="The last time we pushed data to this target")
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -126,12 +126,13 @@ class GenericPushTarget(models.Model):
                 # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
+                # Have to coerce temps to floats, as Decimals aren't json serializable
                 to_send['brewpi'].append({
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  device_info['BeerTemp'],
-                    'fridge_temp': device_info['FridgeTemp'],
+                    'beer_temp':  float(device_info['BeerTemp']),
+                    'fridge_temp': float(device_info['FridgeTemp']),
                     'gravity': '-.---',  # TODO - Actually make gravity readings work here
                 })
             string_to_send = json.dumps(to_send)
@@ -143,13 +144,14 @@ class GenericPushTarget(models.Model):
                 # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
+                # Have to coerce temps to floats, as Decimals aren't json serializable
                 to_send['brewpi_devices'].append({
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  device_info['BeerTemp'],
-                    'fridge_temp': device_info['FridgeTemp'],
-                    'room_temp': device_info['RoomTemp'],
+                    'beer_temp':  float(device_info['BeerTemp']),
+                    'fridge_temp': float(device_info['FridgeTemp']),
+                    'room_temp': float(device_info['RoomTemp']),
                     'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
                     'gravity': '-.---',  # TODO - Actually make gravity readings work here
                 })
@@ -170,7 +172,7 @@ class GenericPushTarget(models.Model):
                     grav_dict['temp_format'] = None
                 else:
                     grav_dict['gravity'] = latest_log_point.gravity
-                    grav_dict['temp'] = latest_log_point.temp
+                    grav_dict['temp'] = float(latest_log_point.temp)
                     grav_dict['temp_format'] = latest_log_point.temp_format
 
                 to_send['gravity_sensors'].append(grav_dict)
