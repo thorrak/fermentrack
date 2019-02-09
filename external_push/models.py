@@ -185,7 +185,7 @@ class GenericPushTarget(models.Model):
                     grav_dict['temp'] = None
                     grav_dict['temp_format'] = None
                 else:
-                    grav_dict['gravity'] = latest_log_point.gravity
+                    grav_dict['gravity'] = float(latest_log_point.gravity)
                     grav_dict['temp'] = float(latest_log_point.temp)
                     grav_dict['temp_format'] = latest_log_point.temp_format
 
