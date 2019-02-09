@@ -126,15 +126,21 @@ class GenericPushTarget(models.Model):
                 # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
-                # Have to coerce temps to floats, as Decimals aren't json serializable
-                to_send['brewpi'].append({
+                data_to_send = {
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  float(device_info['BeerTemp']),
-                    'fridge_temp': float(device_info['FridgeTemp']),
                     'gravity': '-.---',  # TODO - Actually make gravity readings work here
-                })
+                }
+
+                # Because not every device will have temp sensors, only serialize the sensors that exist.
+                # Have to coerce temps to floats, as Decimals aren't json serializable
+                if device_info['BeerTemp'] is not None:
+                    data_to_send['beer_temp'] = float(device_info['BeerTemp'])
+                if device_info['FridgeTemp'] is not None:
+                    data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
+
+                to_send['brewpi'].append(data_to_send)
             string_to_send = json.dumps(to_send)
 
         elif self.data_format == self.DATA_FORMAT_GENERIC:
@@ -145,16 +151,24 @@ class GenericPushTarget(models.Model):
                 device_info = brewpi.get_dashpanel_info()
 
                 # Have to coerce temps to floats, as Decimals aren't json serializable
-                to_send['brewpi_devices'].append({
+                data_to_send = {
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'beer_temp':  float(device_info['BeerTemp']),
-                    'fridge_temp': float(device_info['FridgeTemp']),
-                    'room_temp': float(device_info['RoomTemp']),
                     'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
                     'gravity': '-.---',  # TODO - Actually make gravity readings work here
-                })
+                }
+
+                # Because not every device will have temp sensors, only serialize the sensors that exist.
+                # Have to coerce temps to floats, as Decimals aren't json serializable
+                if device_info['BeerTemp'] is not None:
+                    data_to_send['beer_temp'] = float(device_info['BeerTemp'])
+                if device_info['FridgeTemp'] is not None:
+                    data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
+                if device_info['RoomTemp'] is not None:
+                    data_to_send['room_temp'] = float(device_info['RoomTemp'])
+
+                to_send['brewpi_devices'].append(data_to_send)
 
             for sensor in grav_sensors_to_send:
                 latest_log_point = sensor.retrieve_latest_point()
