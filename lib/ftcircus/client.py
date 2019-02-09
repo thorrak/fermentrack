@@ -90,10 +90,14 @@ class CircusMgr(object):
                 "stdout_stream": {
                     "class": "FileStream",
                     "filename": u"%s/%s-stdout.log" % (logpath, name),
+                    "max_bytes": 2097152,
+                    "backup_count": 1,
                 },
                 "stderr_stream": {
                     "class": "FileStream",
                     "filename": u"%s/%s-stderr.log" % (logpath, name),
+                    "max_bytes": 2097152,
+                    "backup_count": 1,
                 }
 
             }
