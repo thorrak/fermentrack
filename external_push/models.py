@@ -130,7 +130,6 @@ class GenericPushTarget(models.Model):
                     'name': brewpi.device_name,
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
-                    'gravity': '-.---',  # TODO - Actually make gravity readings work here
                 }
 
                 # Because not every device will have temp sensors, only serialize the sensors that exist.
@@ -140,7 +139,13 @@ class GenericPushTarget(models.Model):
                 if device_info['FridgeTemp'] is not None:
                     data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
 
+                # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
+                if brewpi.gravity_sensor is not None:
+                    gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                    data_to_send['gravity'] = float(gravity)
+
                 to_send['brewpi'].append(data_to_send)
+
             string_to_send = json.dumps(to_send)
 
         elif self.data_format == self.DATA_FORMAT_GENERIC:
@@ -156,7 +161,6 @@ class GenericPushTarget(models.Model):
                     'internal_id': brewpi.id,
                     'temp_format': brewpi.temp_format,
                     'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
-                    'gravity': '-.---',  # TODO - Actually make gravity readings work here
                 }
 
                 # Because not every device will have temp sensors, only serialize the sensors that exist.
@@ -167,6 +171,11 @@ class GenericPushTarget(models.Model):
                     data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
                 if device_info['RoomTemp'] is not None:
                     data_to_send['room_temp'] = float(device_info['RoomTemp'])
+
+                # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
+                if brewpi.gravity_sensor is not None:
+                    gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                    data_to_send['gravity'] = float(gravity)
 
                 to_send['brewpi_devices'].append(data_to_send)
 
@@ -181,13 +190,19 @@ class GenericPushTarget(models.Model):
 
                 if latest_log_point is None:
                     # There is no latest log point on redis - default to None
+                    # TODO - Determine if we really want to default to 'None' here, or just pass nothing
                     grav_dict['gravity'] = None
-                    grav_dict['temp'] = None
-                    grav_dict['temp_format'] = None
+                    # Not sure if we want to include a 'None' reading here
+                    # grav_dict['temp'] = None
+                    # grav_dict['temp_format'] = None
                 else:
                     grav_dict['gravity'] = float(latest_log_point.gravity)
-                    grav_dict['temp'] = float(latest_log_point.temp)
-                    grav_dict['temp_format'] = latest_log_point.temp_format
+
+                    # For now all gravity sensors have temp info, but just in case
+                    if 'temp' in grav_dict:
+                        if grav_dict['temp'] is not None:
+                            grav_dict['temp'] = float(latest_log_point.temp)
+                            grav_dict['temp_format'] = latest_log_point.temp_format
 
                 to_send['gravity_sensors'].append(grav_dict)
 
