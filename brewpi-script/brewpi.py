@@ -846,4 +846,3 @@ if ser:
 if conn:
     conn.shutdown(socket.SHUT_RDWR)  # close socket
     conn.close()
-
