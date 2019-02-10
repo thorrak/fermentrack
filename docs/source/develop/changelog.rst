@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 [2018-10-24] - Tilt Monitor Refactoring
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Changed
 ---------------------
