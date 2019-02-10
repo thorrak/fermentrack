@@ -140,10 +140,13 @@ class GenericPushTarget(models.Model):
                     data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
 
                 # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
-                if brewpi.gravity_sensor is not None:
-                    gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                    if gravity is not None:
-                        data_to_send['gravity'] = float(gravity)
+                try:
+                    if brewpi.gravity_sensor is not None:
+                        gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                        if gravity is not None:
+                            data_to_send['gravity'] = float(gravity)
+                except:
+                    pass
 
                 to_send['brewpi'].append(data_to_send)
 
@@ -174,10 +177,13 @@ class GenericPushTarget(models.Model):
                     data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
                 # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
-                if brewpi.gravity_sensor is not None:
-                    gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                    if gravity is not None:
-                        data_to_send['gravity'] = float(gravity)
+                try:
+                    if brewpi.gravity_sensor is not None:
+                        gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                        if gravity is not None:
+                            data_to_send['gravity'] = float(gravity)
+                except:
+                    pass
 
                 to_send['brewpi_devices'].append(data_to_send)
 
