@@ -188,15 +188,10 @@ class GenericPushTarget(models.Model):
                     'sensor_type': sensor.sensor_type,
                 }
 
-                if latest_log_point is None:
-                    # There is no latest log point on redis - default to None
-                    # TODO - Determine if we really want to default to 'None' here, or just pass nothing
-                    grav_dict['gravity'] = None
-                    # Not sure if we want to include a 'None' reading here
-                    # grav_dict['temp'] = None
-                    # grav_dict['temp_format'] = None
-                else:
-                    grav_dict['gravity'] = float(latest_log_point.gravity)
+                if latest_log_point is not None:
+                    # For now, if we can't get a latest log point, let's default to just not sending anything.
+                    if 'gravity' in grav_dict:
+                        grav_dict['gravity'] = float(latest_log_point.gravity)
 
                     # For now all gravity sensors have temp info, but just in case
                     if 'temp' in grav_dict:
