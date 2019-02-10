@@ -142,7 +142,8 @@ class GenericPushTarget(models.Model):
                 # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
                 if brewpi.gravity_sensor is not None:
                     gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                    data_to_send['gravity'] = float(gravity)
+                    if gravity is not None:
+                        data_to_send['gravity'] = float(gravity)
 
                 to_send['brewpi'].append(data_to_send)
 
@@ -175,19 +176,19 @@ class GenericPushTarget(models.Model):
                 # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
                 if brewpi.gravity_sensor is not None:
                     gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                    data_to_send['gravity'] = float(gravity)
+                    if gravity is not None:
+                        data_to_send['gravity'] = float(gravity)
 
                 to_send['brewpi_devices'].append(data_to_send)
 
             for sensor in grav_sensors_to_send:
-                latest_log_point = sensor.retrieve_latest_point()
-
                 grav_dict = {
                     'name': sensor.name,
                     'internal_id': sensor.id,
                     'sensor_type': sensor.sensor_type,
                 }
 
+                latest_log_point = sensor.retrieve_latest_point()
                 if latest_log_point is not None:
                     # For now, if we can't get a latest log point, let's default to just not sending anything.
                     if 'gravity' in grav_dict:
