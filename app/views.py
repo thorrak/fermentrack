@@ -30,12 +30,6 @@ def error_notifications(request):
         try:
             if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
 
-                # TODO - Remove this check after April 2018
-                if sys.version_info[0] < 3:
-                    messages.warning(request, "This app is currently running on Python 2 which will no longer be " +
-                                              "supported after April 2018. To upgrade to Python 3, simply follow the " +
-                                              'instructions <a href="http://www.fermentrack.com/help/python3/">at ' +
-                                              'this link.</a>')
                 try:
                     if git_integration.app_is_current():
                         config.LAST_GIT_CHECK = now_time

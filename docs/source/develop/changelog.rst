@@ -22,6 +22,7 @@ Fixed
 - Explicitly linked Favicon from template
 - Fixed BrewPi-Script error when attempting to use feature not available in Python 3.4
 - Properly catch error in BrewPi-Script when pidfile already exists
+- Added filesize check for gravity sensor & brewpi-device logfiles
 
 
 [2018-10-24] - Tilt Monitor Refactoring

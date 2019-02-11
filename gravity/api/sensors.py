@@ -13,7 +13,10 @@ def getGravitySensors(req, device_id=None):
     if device_id is None:
         devices = GravitySensor.objects.all()
     else:
-        devices = [GravitySensor.objects.get(id=device_id),]
+        try:
+            devices = [GravitySensor.objects.get(id=device_id),]
+        except ObjectDoesNotExist:
+            devices = []
     for dev in devices:
         if dev.sensor_type == GravitySensor.SENSOR_MANUAL:
             # For manual sensors, we want the "manage device" link to be for adding a reading instead
