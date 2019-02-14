@@ -1,0 +1,50 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Add Push Target{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Add Push Target</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+<p>
+    <form action="{% url "external_push_generic_target_add" %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Device Constants</h3>
+            {% form_generic form.name %}
+            {% form_generic form.push_frequency %}
+            {% form_generic form.api_key %}
+            {# TODO - Add carveout to hide BrewPi selections if BrewPi support is disabled #}
+            {% form_generic form.brewpi_push_selection %}
+            {% form_generic form.brewpi_to_push %}
+            {# TODO - Add carveout to hide gravity selections if gravity support is disabled #}
+            {% form_generic form.gravity_push_selection %}
+            {% form_generic form.gravity_sensors_to_push %}
+            {% form_generic form.target_type %}
+            {% form_generic form.target_host %}
+            {% form_generic form.target_port %}
+
+        </div>
+
+        <input type="submit" value="Add Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

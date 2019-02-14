@@ -75,12 +75,12 @@ class GenericPushTarget(models.Model):
 
     brewpi_push_selection = models.CharField(max_length=12, choices=SENSOR_SELECT_CHOICES, default=SENSOR_SELECT_ALL,
                                              help_text="How the BrewPi devices to push are selected")
-    brewpi_to_push = models.ManyToManyField(to=BrewPiDevice, related_name="push_targets", null=True, default=None,
+    brewpi_to_push = models.ManyToManyField(to=BrewPiDevice, related_name="push_targets", blank=True, default=None,
                                             help_text="BrewPi Devices to push (ignored if 'all' devices selected)")
 
     gravity_push_selection = models.CharField(max_length=12, choices=SENSOR_SELECT_CHOICES, default=SENSOR_SELECT_ALL,
                                               help_text="How the gravity sensors to push are selected")
-    gravity_sensors_to_push = models.ManyToManyField(to=GravitySensor, related_name="push_targets", null=True, default=None,
+    gravity_sensors_to_push = models.ManyToManyField(to=GravitySensor, related_name="push_targets", blank=True, default=None,
                                                      help_text="Gravity Sensors to push (ignored if 'all' "
                                                                "sensors selected)")
 

@@ -1,0 +1,23 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}External Push Targets{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">All Push Targets</h1>
+
+
+    <ul>
+    {% for push_target in all_push_targets %}
+        <li>{{ push_target.name }} - {{ push_target.status }}</li>
+    {% endfor %}
+    </ul>
+
+    <p>
+    <a href="external_push_generic_target_add">Add Push Target</a>
+    </p>
+
+
+{% endblock %}
