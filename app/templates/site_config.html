@@ -18,6 +18,17 @@
 {# Setting this as an include so we can reuse it on our site settings page #}
 {% include 'setup/constance_app_configuration.html' %}
 
+    <h3 class="form-header">External Push Targets</h3>
+    <ul>
+    {% for push_target in all_push_targets %}
+        <li>{{ push_target.name }} - {{ push_target.status }}</li>
+    {% endfor %}
+    </ul>
+
+    <p>
+    <a href="{% url 'external_push_generic_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Push Target</a>
+    </p>
+
 
 
 {% endblock %}

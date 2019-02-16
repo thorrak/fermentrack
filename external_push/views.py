@@ -30,7 +30,7 @@ def external_push_list(request):
 
     all_push_targets = GenericPushTarget.objects.all()
 
-    return render(request, template_name='external_push/generic_push_target_add.html',
+    return render(request, template_name='external_push/push_target_list.html',
                   context={'all_push_targets': all_push_targets})
 
 
@@ -60,6 +60,6 @@ def external_push_generic_target_add(request):
         messages.error(request, 'Unable to add new push target')
 
     # Basically, if we don't get redirected, in every case we're just outputting the same template
-    return render(request, template_name='external_push/generic_push_target_add.html', context={'form': form, 'sensor': sensor})
+    return render(request, template_name='external_push/generic_push_target_add.html', context={'form': form})
 
 
