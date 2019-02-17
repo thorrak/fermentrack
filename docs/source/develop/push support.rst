@@ -12,9 +12,8 @@ future - support pushing via TCP (sockets)).
 Supported "Push" Targets
 ------------------------------
 
-Fermentrack currently supports two push targets, though more are likely to be added in the near future:
+Fermentrack currently supports one push target, though more are likely to be added in the near future:
 
-- Brewers Friend - Fermentrack supports pushing collected data from specific gravity sensors to Brewers Friend using their push API
 - "Generic" Push Target - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 
 
@@ -33,15 +32,13 @@ testing/development purposes.
 ::
 
     {'api_key': 'abcde',
-     'brewpi_devices': [{'beer_temp': 0.0,
-                         'control_mode': 'f',
-                         'fridge_temp': 0.0,
+     'brewpi_devices': [{'control_mode': 'f',
                          'internal_id': 1,
                          'name': 'Legacy 2',
                          'temp_format': 'F'},
-                        {'beer_temp': 27.64,
+                        {'beer_temp': 31.97,
                          'control_mode': 'f',
-                         'fridge_temp': 34.11,
+                         'fridge_temp': 36.26,
                          'internal_id': 2,
                          'name': 'Kegerator',
                          'temp_format': 'F'}],
@@ -49,19 +46,12 @@ testing/development purposes.
                           'internal_id': 1,
                           'name': 'Pinky',
                           'sensor_type': 'tilt',
-                          'temp': 79.0,
+                          'temp': 78.0,
                           'temp_format': 'F'},
-                         {'gravity': 0.0,
-                          'internal_id': 3,
+                         {'internal_id': 3,
                           'name': 'Spindly',
                           'sensor_type': 'ispindel',
                           'temp': 86.225,
-                          'temp_format': 'F'},
-                         {'gravity': 1.2120000123977661,
-                          'internal_id': 4,
-                          'name': 'Purple Bridge',
-                          'sensor_type': 'tilt',
-                          'temp': 81.0,
                           'temp_format': 'F'}],
      'version': '1.0'}
 
