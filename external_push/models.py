@@ -173,11 +173,14 @@ class GenericPushTarget(models.Model):
                 # Because not every device will have temp sensors, only serialize the sensors that exist.
                 # Have to coerce temps to floats, as Decimals aren't json serializable
                 if device_info['BeerTemp'] is not None:
-                    data_to_send['beer_temp'] = float(device_info['BeerTemp'])
+                    if device_info['BeerTemp'] != 0:
+                        data_to_send['beer_temp'] = float(device_info['BeerTemp'])
                 if device_info['FridgeTemp'] is not None:
-                    data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
+                    if device_info['FridgeTemp'] != 0:
+                        data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
                 if device_info['RoomTemp'] is not None:
-                    data_to_send['room_temp'] = float(device_info['RoomTemp'])
+                    if device_info['RoomTemp'] != 0:
+                        data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
                 # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
                 try:
@@ -200,7 +203,8 @@ class GenericPushTarget(models.Model):
                 latest_log_point = sensor.retrieve_latest_point()
                 if latest_log_point is not None:
                     # For now, if we can't get a latest log point, let's default to just not sending anything.
-                    grav_dict['gravity'] = float(latest_log_point.gravity)
+                    if latest_log_point.gravity != 0.0:
+                        grav_dict['gravity'] = float(latest_log_point.gravity)
 
                     # For now all gravity sensors have temp info, but just in case
                     if latest_log_point.temp is not None:

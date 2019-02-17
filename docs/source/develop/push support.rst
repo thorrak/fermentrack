@@ -30,8 +30,40 @@ specific gravity sensor and BrewPi controller.
 This format is supported by the `Fermentrack Push Target app <http://github.com/thorrak/fermentrack_push_target>`__ for
 testing/development purposes.
 
-.. TODO:: Add example of the data format here
+::
 
+    {'api_key': 'abcde',
+     'brewpi_devices': [{'beer_temp': 0.0,
+                         'control_mode': 'f',
+                         'fridge_temp': 0.0,
+                         'internal_id': 1,
+                         'name': 'Legacy 2',
+                         'temp_format': 'F'},
+                        {'beer_temp': 27.64,
+                         'control_mode': 'f',
+                         'fridge_temp': 34.11,
+                         'internal_id': 2,
+                         'name': 'Kegerator',
+                         'temp_format': 'F'}],
+     'gravity_sensors': [{'gravity': 1.247,
+                          'internal_id': 1,
+                          'name': 'Pinky',
+                          'sensor_type': 'tilt',
+                          'temp': 79.0,
+                          'temp_format': 'F'},
+                         {'gravity': 0.0,
+                          'internal_id': 3,
+                          'name': 'Spindly',
+                          'sensor_type': 'ispindel',
+                          'temp': 86.225,
+                          'temp_format': 'F'},
+                         {'gravity': 1.2120000123977661,
+                          'internal_id': 4,
+                          'name': 'Purple Bridge',
+                          'sensor_type': 'tilt',
+                          'temp': 81.0,
+                          'temp_format': 'F'}],
+     'version': '1.0'}
 
 
 Implementation Notes
