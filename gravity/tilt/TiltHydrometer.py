@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Dict, TYPE_CHECKING
-from beacontools import IBeaconAdvertisement
+# from beacontools import IBeaconAdvertisement
 from collections import deque
 
 from gravity.models import TiltConfiguration, GravityLogPoint, GravitySensor
@@ -88,22 +88,22 @@ class TiltHydrometer(object):
 
         return self.last_saved_value <= datetime.datetime.now() - datetime.timedelta(seconds=(self.obj.polling_frequency))
 
-    def process_ibeacon_info(self, ibeacon_info: IBeaconAdvertisement, rssi):
-        self.raw_gravity = ibeacon_info.minor / 1000
-        if self.obj is None:
-            # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
-            self.gravity = self.raw_gravity
-        else:
-            # Otherwise, apply the calibration
-            self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
-
-        # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
-        # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
-        self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major,
-                                                                         GravitySensor.TEMP_FAHRENHEIT)
-        self.temp = self.raw_temp
-        self.rssi = rssi
-        self._add_to_list(self.gravity, self.temp)
+    # def process_ibeacon_info(self, ibeacon_info: IBeaconAdvertisement, rssi):
+    #     self.raw_gravity = ibeacon_info.minor / 1000
+    #     if self.obj is None:
+    #         # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
+    #         self.gravity = self.raw_gravity
+    #     else:
+    #         # Otherwise, apply the calibration
+    #         self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
+    #
+    #     # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
+    #     # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
+    #     self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(ibeacon_info.major,
+    #                                                                      GravitySensor.TEMP_FAHRENHEIT)
+    #     self.temp = self.raw_temp
+    #     self.rssi = rssi
+    #     self._add_to_list(self.gravity, self.temp)
 
     def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi):
         self.raw_gravity = sensor_gravity / 1000

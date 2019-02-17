@@ -3,7 +3,7 @@
 # This is a process manager used for launching individual instances of BrewPi-script for each valid configuration in
 # a Fermentrack database. It is launched & maintained by Circus, and is assumed to itself be daemonized.
 
-# This is the old version of the script, which isn't yet fully phased out.
+# This is the old version of the script, and should be fully phased out.
 
 import os
 import sys
@@ -13,6 +13,7 @@ import logging
 from circus.client import CircusClient
 from circus.exc import CallError
 from circus.util import DEFAULT_ENDPOINT_DEALER
+from django.core.exceptions import ObjectDoesNotExist
 
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,9 +56,9 @@ class BrewPiSpawner(object):
         """Query django database for active devices, returns an empty iterable if error"""
         try:
             return self.model.objects.filter(status='active')
-        except self.model.DoesNotExist:
+        except ObjectDoesNotExist:
             self.log.info("No active devices")
-        except Exception, e:
+        except (Exception) as e:
             self.log.info("Could not query database for active devices", exc_info=True)
         return []
 

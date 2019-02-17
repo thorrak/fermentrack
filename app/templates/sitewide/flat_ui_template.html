@@ -10,7 +10,8 @@
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
-        <link rel="shortcut icon" href="img/favicon.ico">
+        <link rel="shortcut icon" href="{% static "favicon.ico" %}">
+        <link rel="icon" href="{% static "favicon.ico" %}">
         {% block header_scripts %}{% endblock %}
         {# TODO - Move dygraph out to only the pages that use it #}
         <script type="text/javascript" src="{% static "vendor/dygraph/js/dygraph.min.js" %}"></script>

@@ -1,22 +1,13 @@
 {% extends "sitewide/flat_ui_template.html" %}
 {% load custom_tags %}
 
-{# I'm converting this form so that it can be used in both the initial guided setup as well as when the user clicks #}
-{# the "gear" icon in the upper right of the form #}
 
-{% block title %}App Settings{% endblock %}
+{% block title %}External Push Targets{% endblock %}
 
 {% block content %}
 
-<h1 class="page-header">App Configuration</h1>
+<h1 class="page-header">All Push Targets</h1>
 
-
-        <h3 class="form-header">Configuration Tools</h3>
-        <a href="/admin/" class="btn btn-large btn-lg btn-primary">Django Admin Panel</a>
-        <a href="{% url 'github_trigger_upgrade' %}" class="btn btn-large btn-lg btn-primary">Update from GitHub</a>
-
-{# Setting this as an include so we can reuse it on our site settings page #}
-{% include 'setup/constance_app_configuration.html' %}
 
     <h3 class="form-header">External Push Targets</h3>
 
@@ -41,15 +32,4 @@
     </p>
 
 
-
-{% endblock %}
-
-{% block scripts %}
-<script>
-
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-})
-
-</script>
 {% endblock %}
