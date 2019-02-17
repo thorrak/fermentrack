@@ -69,3 +69,12 @@ Push requests are handled asynchronously. Due to the way that the polling script
 be up to one polling cycle (currently 1 minute) later than expected. For 1 minute push cycles, this means that the
 actual frequency could be as high as 2 minutes.
 
+
+Feedback
+------------------------------
+
+Push support was designed to support future applications that do not yet exist, and as such, may not be perfect for
+*your* application. That said, feedback is always appreciated and welcome. Feel free to reach out (HBT forums,
+GitHub, Reddit...) if you have something in mind that you'd like to integrate Fermentrack into, and don't think the
+existing push options will quite work.
+
