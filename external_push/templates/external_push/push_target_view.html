@@ -11,7 +11,7 @@
    <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
 {% endif %}
 <p>
-    <form action="{% url "external_push_generic_target_add" %}" class="form-horizontal" method="post">
+    <form action="{% url "external_push_view" %}" class="form-horizontal" method="post">
         {% csrf_token %}
 
         <div id="pushTargetSection">
