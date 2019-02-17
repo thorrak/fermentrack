@@ -153,7 +153,10 @@ class GenericPushTarget(models.Model):
             string_to_send = json.dumps(to_send)
 
         elif self.data_format == self.DATA_FORMAT_GENERIC:
-            to_send = {'api_key': self.api_key, 'brewpi_devices': [], 'gravity_sensors': []}
+            GENERIC_DATA_FORMAT_VERSION = "1.0"
+
+            to_send = {'api_key': self.api_key, 'version': GENERIC_DATA_FORMAT_VERSION, 'brewpi_devices': [],
+                       'gravity_sensors': []}
             for brewpi in brewpi_to_send:
                 # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                 # TODO - Make it so that this data is stored in/loaded from Redis
@@ -197,11 +200,11 @@ class GenericPushTarget(models.Model):
                 latest_log_point = sensor.retrieve_latest_point()
                 if latest_log_point is not None:
                     # For now, if we can't get a latest log point, let's default to just not sending anything.
-                    if 'gravity' in grav_dict:
+                    if 'gravity' in latest_log_point:
                         grav_dict['gravity'] = float(latest_log_point.gravity)
 
                     # For now all gravity sensors have temp info, but just in case
-                    if 'temp' in grav_dict:
+                    if 'temp' in latest_log_point:
                         if grav_dict['temp'] is not None:
                             grav_dict['temp'] = float(latest_log_point.temp)
                             grav_dict['temp_format'] = latest_log_point.temp_format
