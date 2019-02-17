@@ -1,6 +1,6 @@
 from django import forms
-# from constance import config
-# from django.conf import settings
+from constance import config
+from django.conf import settings
 from gravity.models import GravitySensor, GravityLogPoint, GravityLog, TiltConfiguration, IspindelConfiguration, IspindelGravityCalibrationPoint, TiltBridge, TiltGravityCalibrationPoint
 from app.models import BrewPiDevice
 from django.forms import ModelForm

@@ -381,10 +381,9 @@ def tiltbridge_handler(request):
             raw_temp = tiltbridge_data['tilts'][this_tilt]['temp']
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
 
-            raw_gravity = 0
+            raw_gravity = tiltbridge_data['tilts'][this_tilt]['gravity']
             normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
 
-            # TODO - Use the calibration function to recalculate gravity
             new_point = GravityLogPoint(
                 gravity=normalized_gravity,
                 temp=converted_temp,

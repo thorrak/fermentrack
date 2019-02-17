@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[2019-02-17] - External Push (Remote Logging) Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Fermentrack can now periodically "push" readings out to an external device/app
+- Added "new control constants" support for "modern" controllers
+
+Fixed
+---------------------
+
+- Explicitly linked Favicon from template
+- Fixed BrewPi-Script error when attempting to use feature not available in Python 3.4
+- Properly catch error in BrewPi-Script when pidfile already exists
+- Added filesize check for gravity sensor & brewpi-device logfiles
+- Add support for temperature calibration offsets
+
+
 [2018-10-24] - Tilt Monitor Refactoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

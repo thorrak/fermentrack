@@ -140,7 +140,7 @@ class GravitySensor(models.Model):
         return True
 
     # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
-    def retrieve_latest_point(self):
+    def retrieve_latest_point(self) -> 'GravityLogPoint':
         return GravityLogPoint.load_from_redis(self.id)
 
     # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
@@ -207,8 +207,6 @@ class GravitySensor(models.Model):
             return (temp-32) * 5 / 9, self.temp_format
         else:
             raise ValueError
-
-
 
 
 class GravityLog(models.Model):
@@ -359,7 +357,6 @@ class GravityLogPoint(models.Model):
     # Associated device is so we can save to redis even without an associated log
     associated_device = models.ForeignKey(GravitySensor, db_index=True, on_delete=models.DO_NOTHING, null=True)
 
-
     def temp_to_f(self):
         if self.temp_format == 'F':
             return self.temp
@@ -502,9 +499,8 @@ class GravityLogPoint(models.Model):
         else:
             r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
 
-
     @classmethod
-    def load_from_redis(cls, sensor_id):
+    def load_from_redis(cls, sensor_id) -> 'GravityLogPoint':
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         try:
             # TODO - Redo this to remove overly greedy except

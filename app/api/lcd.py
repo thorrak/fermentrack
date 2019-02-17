@@ -1,6 +1,3 @@
-from django.shortcuts import render
-from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
 from django.http import JsonResponse
 from django.urls import reverse
 from constance import config
@@ -33,7 +30,6 @@ def getLCD(req, device_id):
 
 def getPanel(req, device_id):
 
-    # Don't repeat yourself...
     def temp_text(temp, temp_format):
         if temp == 0:
             return "--&deg; {}".format(temp_format)
@@ -50,7 +46,6 @@ def getPanel(req, device_id):
         ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'room_temp': null_temp, 'control_mode': "--",
                     'log_interval': 0})
         return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
-
 
     if device_info['Mode'] == "o":
         device_mode = "Off"
@@ -72,7 +67,6 @@ def getPanel(req, device_id):
         interval_text = "{} hour".format(int(device_info['LogInterval']/(60*60)))
         if int(device_info['LogInterval']) >= (60*60*2):
             interval_text += "s"  # IT WORKS. QUIT JUDGING.
-
 
     ret.append({'beer_temp': temp_text(device_info['BeerTemp'], dev.temp_format),
                 'fridge_temp': temp_text(device_info['FridgeTemp'], dev.temp_format),

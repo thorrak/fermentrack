@@ -1,0 +1,98 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Push Target {{ push_target.name }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">{{ push_target.name }}</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+<p>
+    <form action="{% url "external_push_view" push_target.id %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Push Target Settings</h3>
+            {% form_generic form.name %}
+            {% form_generic form.push_frequency %}
+            {% form_generic form.api_key %}
+            {# TODO - Add carveout to hide BrewPi selections if BrewPi support is disabled #}
+            {% form_generic form.brewpi_push_selection %}
+            <div id="brewPiPushChoices">
+                <!-- Hidden if anything other than 'list' is selected above -->
+                {% form_generic form.brewpi_to_push %}
+            </div>
+            {# TODO - Add carveout to hide gravity selections if gravity support is disabled #}
+            {% form_generic form.gravity_push_selection %}
+            <div id="gravityPushChoices">
+                <!-- Hidden if anything other than 'list' is selected above -->
+                {% form_generic form.gravity_sensors_to_push %}
+            </div>
+            {% form_generic form.target_type %}
+            {% form_generic form.target_host %}
+            {% form_generic form.target_port %}
+
+        </div>
+
+        <input type="submit" value="Update Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+    <p>
+    <a href="{% url 'external_push_delete' push_target.id %}" class="btn btn-large btn-lg btn-danger">Delete Push Target</a>
+    </p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+{#function InetSocketHide() {#}
+{#    if(document.getElementById('id_useInetSocket').checked) {#}
+{#         document.getElementById('localSocketHidden').style.display = 'none';#}
+{#         document.getElementById('inetSocketHidden').style.display = '';#}
+{#    } else {#}
+{#         document.getElementById('localSocketHidden').style.display = '';#}
+{#         document.getElementById('inetSocketHidden').style.display = 'none';#}
+{#    }#}
+{# } #}
+
+function BrewPiPushSelectionHide() {
+    if(document.getElementById('id_brewpi_push_selection').options[document.getElementById('id_brewpi_push_selection').selectedIndex].value == "list") {
+         document.getElementById('brewPiPushChoices').style.display = '';
+    } else {
+         document.getElementById('brewPiPushChoices').style.display = 'none';
+    }
+}
+
+function GravityPushSelectionHide() {
+    if(document.getElementById('id_gravity_push_selection').options[document.getElementById('id_gravity_push_selection').selectedIndex].value == "list") {
+         document.getElementById('gravityPushChoices').style.display = '';
+    } else {
+         document.getElementById('gravityPushChoices').style.display = 'none';
+    }
+}
+
+
+window.onload = function() {
+    document.getElementById('id_brewpi_push_selection').onchange = BrewPiPushSelectionHide;
+    document.getElementById('id_gravity_push_selection').onchange = GravityPushSelectionHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    BrewPiPushSelectionHide();
+    GravityPushSelectionHide();
+};
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
+
