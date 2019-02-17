@@ -7,17 +7,19 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.core import serializers
 
-import os.path, csv, logging, socket
+import os.path, csv, logging, socket, typing
 import json, time, datetime, pytz
 from constance import config
 from fermentrack_django import settings
 import re
 import redis
 
-
-from lib.ftcircus.client import CircusMgr, CircusException
+# from lib.ftcircus.client import CircusMgr, CircusException
 
 from app.models import BrewPiDevice
+
+if typing.TYPE_CHECKING:
+    from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,6 @@ logger = logging.getLogger(__name__)
 #  Any extra data (optional)
 #
 # In addition to these 5 fields, we track when the data point was saved (but this isn't expected to be passed in)
-
 
 
 class GravitySensor(models.Model):
@@ -120,15 +121,14 @@ class GravitySensor(models.Model):
     assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL,
                                                   related_name='gravity_sensor')
 
-
-    def __str__(self):
+    def __str__(self) -> str:
         # TODO - Make this test if the name is unicode, and return a default name if that is the case
         return self.name
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return self.name
 
-    def is_gravity_sensor(self):  # This is a hack used in the site template so we can display relevant functionality
+    def is_gravity_sensor(self) -> bool:  # This is a hack used in the site template so we can display relevant functionality
         """Indicates that the object being examined is a gravity sensor
 
         This is a hack used in the site template so we can display relevant functionality. It currently has no purpose
@@ -144,12 +144,11 @@ class GravitySensor(models.Model):
         return GravityLogPoint.load_from_redis(self.id)
 
     # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
-    def retrieve_latest_gravity(self):
+    def retrieve_latest_gravity(self) -> float:
         point = self.retrieve_latest_point()
         return None if point is None else point.latest_gravity
 
-    def retrieve_latest_temp(self):
-        # So temp needs units... we'll return a tuple (temp, temp_format)
+    def retrieve_latest_temp(self) -> (float, str):
         point = self.retrieve_latest_point()
         if point is None:
             return None, None
@@ -157,14 +156,14 @@ class GravitySensor(models.Model):
             return point.latest_temp, point.temp_format
 
     # Loggable gravity & loggable temp are what we generally want. These can have smoothing/filtering applied.
-    def retrieve_loggable_gravity(self):
+    def retrieve_loggable_gravity(self) -> float:
         point = self.retrieve_latest_point()
         if point is None:
             return None
         else:
             return None if point.gravity is None else round(point.gravity, 3)
 
-    def retrieve_loggable_temp(self):
+    def retrieve_loggable_temp(self) -> (float, str):
         # So temp needs units... we'll return a tuple (temp, temp_format)
         point = self.retrieve_latest_point()
         if point is None:
@@ -172,11 +171,10 @@ class GravitySensor(models.Model):
         else:
             return None if point.temp is None else round(point.temp, 2), point.temp_format
 
-
-    def create_log_and_start_logging(self, name):
+    def create_log_and_start_logging(self, name: str):
         # First, create the new gravity log
         new_log = GravityLog(
-            name= name,
+            name=name,
             device=self,
             format=self.temp_format,
         )
@@ -186,19 +184,19 @@ class GravitySensor(models.Model):
         self.active_log = new_log
         self.save()
 
-    def has_daemon_log(self):
+    def has_daemon_log(self) -> bool:
         if self.sensor_type != self.SENSOR_TILT:
             return False
         else:
             return True
 
-    def daemon_log_prefix(self):
+    def daemon_log_prefix(self) -> str:
         if self.sensor_type == self.SENSOR_TILT:
             return self.tilt_configuration.daemon_log_prefix()
         else:
             return None
 
-    def convert_temp_to_sensor_format(self, temp, temp_format):
+    def convert_temp_to_sensor_format(self, temp: float, temp_format: str) -> (float, str):
         if self.temp_format == temp_format:
             return temp, self.temp_format
         elif self.temp_format == 'F' and temp_format == 'C':
@@ -221,23 +219,22 @@ class GravityLog(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
     format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F')
 
-    # model_version is the revision number of the "GravityLog" and "GravityLogPoint" models, designed to be iterated when any
-    # change is made to the format/content of the flatfiles that would be written out. The idea is that a separate
-    # converter could then be written moving between each iteration of model_version that could then be sequentially
-    # applied to bring a beer log in line with what the model then expects.
+    # model_version is the revision number of the "GravityLog" and "GravityLogPoint" models, designed to be iterated
+    # when any change is made to the format/content of the flatfiles that would be written out. The idea is that a
+    # separate converter could then be written moving between each iteration of model_version that could then be
+    # sequentially applied to bring a beer log in line with what the model then expects.
     model_version = models.IntegerField(default=1)
 
     display_extra_data_as_annotation = models.BooleanField(default=False, help_text='Should any extra data be displayed as a graph annotation?')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return self.__str__()
 
     @staticmethod
-    def column_headers(which='base_csv', human_readable=False):
-
+    def column_headers(which: str='base_csv', human_readable: bool=False) -> list or None:
         if which == 'base_csv':
             if human_readable:
                 return ['Log Time', 'Specific Gravity', 'Temp']
@@ -254,7 +251,7 @@ class GravityLog(models.Model):
             return None
 
     @staticmethod
-    def column_headers_to_graph_string(which='base_csv'):
+    def column_headers_to_graph_string(which: str='base_csv') -> str:
         col_headers = GravityLog.column_headers(which, True)
 
         graph_string = ""
@@ -268,18 +265,18 @@ class GravityLog(models.Model):
             return ""
 
     @staticmethod
-    def name_is_valid(proposed_name):
+    def name_is_valid(proposed_name: str) -> bool:
         # Since we're using self.name in a file path, want to make sure no injection-type attacks can occur.
         return True if re.match("^[a-zA-Z0-9 _-]*$", proposed_name) else False
 
-    def base_filename(self):  # This is the "base" filename used in all the files saved out
+    def base_filename(self) -> str:  # This is the "base" filename used in all the files saved out
         # Including the beer ID in the file name to ensure uniqueness (if the user duplicates the name, for example)
         if self.name_is_valid(self.name):
             return "Gravity Device " + str(self.device_id) + " - L" + str(self.id) + " - " + self.name
         else:
             return "Gravity Device " + str(self.device_id) + " - L" + str(self.id) + " - NAME ERROR - "
 
-    def full_filename(self, which_file, extension_only=False):
+    def full_filename(self, which_file: str, extension_only: bool=False) -> str:
         if extension_only:
             base_name = ""
         else:
@@ -294,10 +291,10 @@ class GravityLog(models.Model):
         else:
             return None
 
-    def data_file_url(self, which_file):
+    def data_file_url(self, which_file: str) -> str:
         return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
 
-    def full_csv_url(self):
+    def full_csv_url(self) -> str:
         return self.data_file_url('full_csv')
 
         # def base_csv_url(self):
@@ -357,20 +354,19 @@ class GravityLogPoint(models.Model):
     # Associated device is so we can save to redis even without an associated log
     associated_device = models.ForeignKey(GravitySensor, db_index=True, on_delete=models.DO_NOTHING, null=True)
 
-    def temp_to_f(self):
+    def temp_to_f(self) -> float:
         if self.temp_format == 'F':
             return self.temp
         else:
             return (self.temp*9/5) + 32
 
-    def temp_to_c(self):
+    def temp_to_c(self) -> float:
         if self.temp_format == 'C':
             return self.temp
         else:
             return (self.temp-32) * 5 / 9
 
-
-    def data_point(self, data_format='base_csv', set_defaults=True):
+    def data_point(self, data_format: str='base_csv', set_defaults: bool=True) -> list:
         # Everything gets stored in UTC and then converted back on the fly
 
         utc_tz = pytz.timezone("UTC")
@@ -417,18 +413,18 @@ class GravityLogPoint(models.Model):
 
     def save(self, *args, **kwargs):
         # Don't repeat yourself
-        def check_and_write_headers(path, col_headers):
+        def check_and_write_headers(path, col_headers: list):
             if not os.path.exists(path):
                 with open(path, 'w') as f:
                     writer = csv.writer(f)
                     writer.writerow(col_headers)
 
-        def write_data(path, row_data):
+        def write_data(path, row_data: list):
             with open(path, 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow(row_data)
 
-        def check_and_write_annotation_json_head(path):
+        def check_and_write_annotation_json_head(path: str):
             if not os.path.exists(path):
                 with open(path, 'w') as f:
                     f.write("[\r\n")
@@ -436,7 +432,7 @@ class GravityLogPoint(models.Model):
             else:
                 return True
 
-        def write_annotation_json(path, annotation_data, write_comma=True):
+        def write_annotation_json(path: str, annotation_data: list, write_comma: bool=True):
             # annotation_data is actually an array of potential annotations. We'll loop through them & write them out
             with open(path, 'a') as f:
                 for this_annotation in annotation_data:
@@ -486,7 +482,7 @@ class GravityLogPoint(models.Model):
         # Once everything is written out, also write to redis as the cached current point
         self.save_to_redis()
 
-    def save_to_redis(self, device_id=None):
+    def save_to_redis(self, device_id: int=None):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         if device_id is None:
@@ -500,7 +496,7 @@ class GravityLogPoint(models.Model):
             r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
 
     @classmethod
-    def load_from_redis(cls, sensor_id) -> 'GravityLogPoint':
+    def load_from_redis(cls, sensor_id: int) -> 'GravityLogPoint' or None:
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         try:
             # TODO - Redo this to remove overly greedy except
@@ -518,25 +514,27 @@ class TiltTempCalibrationPoint(models.Model):
     TEMP_FORMAT_CHOICES = (('F', 'Fahrenheit'), ('C', 'Celsius'))
 
     sensor = models.ForeignKey('TiltConfiguration')
-    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Temp Value", help_text="Original (Sensor) Temp Value")
-    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Temp Value", help_text="Actual (Measured) Temp Value")
+    orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Temp Value",
+                                     help_text="Original (Sensor) Temp Value")
+    actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Temp Value",
+                                       help_text="Actual (Measured) Temp Value")
 
     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F')
     created = models.DateTimeField(default=timezone.now)  # So we can track when the configuration was current as of
 
-    def temp_to_f(self, temp):
+    def temp_to_f(self, temp: Decimal) -> Decimal:
         if self.temp_format == 'F':
             return temp
         else:
             return (temp*9/5) + 32
 
-    def temp_to_c(self, temp):
+    def temp_to_c(self, temp: Decimal) -> Decimal:
         if self.temp_format == 'C':
             return temp
         else:
             return (temp-32) * 5 / 9
 
-    def orig_in_preferred_format(self):
+    def orig_in_preferred_format(self) -> Decimal:
         # Converts the temperature format of the configuration point to the currently active format assigned to the
         # sensor
         preferred_format = self.sensor.sensor.temp_format
@@ -550,7 +548,7 @@ class TiltTempCalibrationPoint(models.Model):
         else:
             raise NotImplementedError
 
-    def actual_in_preferred_format(self):
+    def actual_in_preferred_format(self) -> Decimal:
         # Converts the temperature format of the configuration point to the currently active format assigned to the
         # sensor
         preferred_format = self.sensor.sensor.temp_format
@@ -645,7 +643,7 @@ class TiltConfiguration(models.Model):
     coefficients_up_to_date = models.BooleanField(default=True, help_text="Have the calibration points changed since "
                                                                           "the coefficient calculator was run?")
 
-    def tiltHydrometerName(self, uuid):
+    def tiltHydrometerName(self, uuid: str) -> str:
         return {
                 'a495bb10c5b14b44b5121370f02d74de': self.COLOR_RED,
                 'a495bb20c5b14b44b5121370f02d74de': self.COLOR_GREEN,
@@ -657,7 +655,7 @@ class TiltConfiguration(models.Model):
                 'a495bb80c5b14b44b5121370f02d74de': self.COLOR_PINK,
         }.get(uuid)
 
-    def inFahrenheit(self):
+    def inFahrenheit(self) -> bool:
         if self.sensor.temp_format == 'F':
             return True
         elif self.sensor.temp_format == 'C':
@@ -665,14 +663,15 @@ class TiltConfiguration(models.Model):
         else:
             raise NotImplementedError
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.color
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return str(self)
 
-    def circus_parameter(self):
+    def circus_parameter(self) -> str:
         """Returns the parameter used by Circus to track this device's processes"""
+        # TODO - Check if this is still used
         return self.color
 
     # TODO - Eliminate the xxx_redis_reload_flag functions
@@ -686,7 +685,7 @@ class TiltConfiguration(models.Model):
                         socket_timeout=5)
         r.set('tilt_reload_{}'.format(self.color), None)
 
-    def check_redis_reload_flag(self):
+    def check_redis_reload_flag(self) -> bool:
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
                         socket_timeout=5)
         reload_flag = r.get('tilt_reload_{}'.format(self.color))
@@ -710,9 +709,13 @@ class TiltConfiguration(models.Model):
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
 
-    def load_extras_from_redis(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        redis_response = r.get('tilt_{}_extras'.format(self.color))
+    def load_extras_from_redis(self) -> dict:
+        try:
+            r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+            redis_response = r.get('tilt_{}_extras'.format(self.color))
+        except redis.exceptions.ConnectionError:
+            # More than likely redis is offline (or we're in testing)
+            return {}
 
         if redis_response is None:
             # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
@@ -730,12 +733,12 @@ class TiltConfiguration(models.Model):
 
         return extras
 
-    def daemon_log_prefix(self):
+    def daemon_log_prefix(self) -> str:
         # TODO - Remove this if no longer used
         # This must match the log prefix used in utils/processmgr.py
         return "tilt-" + self.color.lower()
 
-    def apply_gravity_calibration(self, uncalibrated_gravity):
+    def apply_gravity_calibration(self, uncalibrated_gravity: float) -> float:
         calibrated_gravity = self.grav_second_degree_coefficient * uncalibrated_gravity ** 2
         calibrated_gravity += self.grav_first_degree_coefficient * uncalibrated_gravity ** 1
         calibrated_gravity += self.grav_constant_term
@@ -765,10 +768,10 @@ class TiltBridge(models.Model):
                                help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
                                          "itself when it connects to the Raspberry Pi")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return self.name
 
 
@@ -804,10 +807,10 @@ class IspindelConfiguration(models.Model):
     coefficients_up_to_date = models.BooleanField(default=False, help_text="Have the calibration points changed since "
                                                                            "the coefficient calculator was run?")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name_on_device
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return str(self)
 
     def save_extras_to_redis(self):
@@ -824,7 +827,7 @@ class IspindelConfiguration(models.Model):
 
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
-    def load_extras_from_redis(self):
+    def load_extras_from_redis(self) -> dict:
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
 

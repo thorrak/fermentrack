@@ -13,6 +13,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint, TiltBridge, TiltConfiguration
 
+import csv
+
 try:
     import numpy
     NUMPY_ENABLED = True
@@ -360,6 +362,16 @@ def tiltbridge_handler(request):
     tiltbridge_data = json.loads(request.body.decode('utf-8'))
     with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
         pprint.pprint(tiltbridge_data, logFile)
+
+    # This is to keep a log to watch for slowing down of check-ins
+    # TODO - Remove this once done with testing
+    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_checkin_times.log'), 'a') as f:
+        utc_tz = pytz.timezone("UTC")
+        time_value = datetime.datetime.now(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
+
+        writer = csv.writer(f)
+        writer.writerow([time_value, getattr(tiltbridge_data, 'api_key', 'none')])
+
 
     try:
         if 'api_key' in tiltbridge_data:
