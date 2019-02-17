@@ -13,6 +13,8 @@ external_push_urlpatterns = [
     ## Device Guided Setup Views
     url(r'^push/$', external_push.views.external_push_list, name='external_push_list'),
     url(r'^push/add/$', external_push.views.external_push_generic_target_add, name='external_push_generic_target_add'),
+    url(r'^push/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_view, name='external_push_view'),
+    url(r'^push/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_delete, name='external_push_delete'),
 
     # # Sensor Views
     # url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/$', gravity.views.gravity_dashboard, name='gravity_dashboard'),

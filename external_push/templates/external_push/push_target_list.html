@@ -9,11 +9,23 @@
 <h1 class="page-header">All Push Targets</h1>
 
 
-    <ul>
-    {% for push_target in all_push_targets %}
-        <li>{{ push_target.name }} - {{ push_target.status }}</li>
-    {% endfor %}
+    <h3 class="form-header">External Push Targets</h3>
+
+    {% if all_push_targets.count > 0 %}
+        <ul class="list-group list-group-flush">
+        {% for push_target in all_push_targets %}
+            <!-- GenericPushTarget Line -->
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6"><a href="{% url "external_push_view" push_target.id %}">{{ push_target.name }}</a></div>
+                    <div class="col-sm-2 col-md-2">{{ push_target.status }}</div>
+                    <div class="col-sm-10 col-md-4">{{ push_target.target_host }}</div>
+                </div>
+            </li>
+            <!-- End GenericPushTarget Line -->
+        {% endfor %}
     </ul>
+    {% endif %}
 
     <p>
     <a href="{% url 'external_push_generic_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Push Target</a>

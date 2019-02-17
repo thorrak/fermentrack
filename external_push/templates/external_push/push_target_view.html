@@ -2,11 +2,11 @@
 {% load custom_tags %}
 
 
-{% block title %}Add Push Target{% endblock %}
+{% block title %}Push Target {{ push_target.name }}{% endblock %}
 
 {% block content %}
 
-<h1 class="page-header">Add Push Target</h1>
+<h1 class="page-header">{{ push_target.name }}</h1>
 {% if form.errors %}
    <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
 {% endif %}
@@ -37,9 +37,14 @@
 
         </div>
 
-        <input type="submit" value="Add Push Target" class="btn btn-primary" />
+        <input type="submit" value="Update Push Target" class="btn btn-primary" />
     </form>
 </p>
+
+
+    <p>
+    <a href="{% url 'external_push_delete' push_target.id %}" class="btn btn-large btn-lg btn-danger">Delete Push Target</a>
+    </p>
 
 
 {% endblock %}
