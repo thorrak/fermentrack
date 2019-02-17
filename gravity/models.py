@@ -140,7 +140,7 @@ class GravitySensor(models.Model):
         return True
 
     # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
-    def retrieve_latest_point(self):
+    def retrieve_latest_point(self) -> 'GravityLogPoint':
         return GravityLogPoint.load_from_redis(self.id)
 
     # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
@@ -500,7 +500,7 @@ class GravityLogPoint(models.Model):
             r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
 
     @classmethod
-    def load_from_redis(cls, sensor_id):
+    def load_from_redis(cls, sensor_id) -> 'GravityLogPoint':
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
         try:
             # TODO - Redo this to remove overly greedy except

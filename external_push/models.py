@@ -200,14 +200,12 @@ class GenericPushTarget(models.Model):
                 latest_log_point = sensor.retrieve_latest_point()
                 if latest_log_point is not None:
                     # For now, if we can't get a latest log point, let's default to just not sending anything.
-                    if 'gravity' in latest_log_point:
-                        grav_dict['gravity'] = float(latest_log_point.gravity)
+                    grav_dict['gravity'] = float(latest_log_point.gravity)
 
                     # For now all gravity sensors have temp info, but just in case
-                    if 'temp' in latest_log_point:
-                        if grav_dict['temp'] is not None:
-                            grav_dict['temp'] = float(latest_log_point.temp)
-                            grav_dict['temp_format'] = latest_log_point.temp_format
+                    if latest_log_point.temp is not None:
+                        grav_dict['temp'] = float(latest_log_point.temp)
+                        grav_dict['temp_format'] = latest_log_point.temp_format
 
                 to_send['gravity_sensors'].append(grav_dict)
 
