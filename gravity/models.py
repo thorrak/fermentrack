@@ -18,8 +18,8 @@ import redis
 
 from app.models import BrewPiDevice
 
-if typing.TYPE_CHECKING:
-    from decimal import Decimal
+# if typing.TYPE_CHECKING:
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
