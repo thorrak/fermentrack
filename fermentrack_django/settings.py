@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'app.apps.AppConfig',
     'firmware_flash.apps.AppConfig',
     'gravity.apps.GravityAppConfig',
+    'external_push.apps.AppConfig',
     'constance',
     'constance.backends.database',
     'huey.contrib.djhuey',

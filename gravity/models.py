@@ -140,8 +140,7 @@ class GravitySensor(models.Model):
         return True
 
     # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
-    def retrieve_latest_point(self):
-        # TODO - Figure out how to add type hinting here
+    def retrieve_latest_point(self) -> 'GravityLogPoint':
         return GravityLogPoint.load_from_redis(self.id)
 
     # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
@@ -495,7 +494,6 @@ class GravityLogPoint(models.Model):
                 raise ReferenceError  # Not sure if this is the right error type, but running with it
         else:
             r.set('grav_{}_full'.format(device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
-
 
     @classmethod
     def load_from_redis(cls, sensor_id: int) -> 'GravityLogPoint' or None:

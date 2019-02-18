@@ -14,6 +14,7 @@ import app.circus_views
 
 import firmware_flash.urls
 import gravity.urls
+import external_push.urls
 
 admin.autodiscover()
 
@@ -119,4 +120,6 @@ urlpatterns = [
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
-              firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns
+              firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + \
+              external_push.urls.external_push_urlpatterns
+# TODO - Convert the above to be properly namespaced
