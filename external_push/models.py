@@ -121,34 +121,35 @@ class GenericPushTarget(models.Model):
         string_to_send = ""  # This is what ultimately needs to be populated.
         if self.data_format == self.DATA_FORMAT_TILTBRIDGE:
             to_send = {'api_key': self.api_key, 'brewpi': []}
-            for brewpi in brewpi_to_send:
-                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
-                # TODO - Make it so that this data is stored in/loaded from Redis
-                device_info = brewpi.get_dashpanel_info()
+            if brewpi_to_send is not None:
+                for brewpi in brewpi_to_send:
+                    # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                    # TODO - Make it so that this data is stored in/loaded from Redis
+                    device_info = brewpi.get_dashpanel_info()
 
-                data_to_send = {
-                    'name': brewpi.device_name,
-                    'internal_id': brewpi.id,
-                    'temp_format': brewpi.temp_format,
-                }
+                    data_to_send = {
+                        'name': brewpi.device_name,
+                        'internal_id': brewpi.id,
+                        'temp_format': brewpi.temp_format,
+                    }
 
-                # Because not every device will have temp sensors, only serialize the sensors that exist.
-                # Have to coerce temps to floats, as Decimals aren't json serializable
-                if device_info['BeerTemp'] is not None:
-                    data_to_send['beer_temp'] = float(device_info['BeerTemp'])
-                if device_info['FridgeTemp'] is not None:
-                    data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
+                    # Because not every device will have temp sensors, only serialize the sensors that exist.
+                    # Have to coerce temps to floats, as Decimals aren't json serializable
+                    if device_info['BeerTemp'] is not None:
+                        data_to_send['beer_temp'] = float(device_info['BeerTemp'])
+                    if device_info['FridgeTemp'] is not None:
+                        data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
 
-                # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
-                try:
-                    if brewpi.gravity_sensor is not None:
-                        gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                        if gravity is not None:
-                            data_to_send['gravity'] = float(gravity)
-                except:
-                    pass
+                    # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
+                    try:
+                        if brewpi.gravity_sensor is not None:
+                            gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                            if gravity is not None:
+                                data_to_send['gravity'] = float(gravity)
+                    except:
+                        pass
 
-                to_send['brewpi'].append(data_to_send)
+                    to_send['brewpi'].append(data_to_send)
 
             string_to_send = json.dumps(to_send)
 
@@ -157,61 +158,63 @@ class GenericPushTarget(models.Model):
 
             to_send = {'api_key': self.api_key, 'version': GENERIC_DATA_FORMAT_VERSION, 'brewpi_devices': [],
                        'gravity_sensors': []}
-            for brewpi in brewpi_to_send:
-                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
-                # TODO - Make it so that this data is stored in/loaded from Redis
-                device_info = brewpi.get_dashpanel_info()
+            if brewpi_to_send is not None:
+                for brewpi in brewpi_to_send:
+                    # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                    # TODO - Make it so that this data is stored in/loaded from Redis
+                    device_info = brewpi.get_dashpanel_info()
 
-                # Have to coerce temps to floats, as Decimals aren't json serializable
-                data_to_send = {
-                    'name': brewpi.device_name,
-                    'internal_id': brewpi.id,
-                    'temp_format': brewpi.temp_format,
-                    'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
-                }
+                    # Have to coerce temps to floats, as Decimals aren't json serializable
+                    data_to_send = {
+                        'name': brewpi.device_name,
+                        'internal_id': brewpi.id,
+                        'temp_format': brewpi.temp_format,
+                        'control_mode': device_info['Mode'],  # TODO - Determine if we want the raw or verbose device mode
+                    }
 
-                # Because not every device will have temp sensors, only serialize the sensors that exist.
-                # Have to coerce temps to floats, as Decimals aren't json serializable
-                if device_info['BeerTemp'] is not None:
-                    if device_info['BeerTemp'] != 0:
-                        data_to_send['beer_temp'] = float(device_info['BeerTemp'])
-                if device_info['FridgeTemp'] is not None:
-                    if device_info['FridgeTemp'] != 0:
-                        data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
-                if device_info['RoomTemp'] is not None:
-                    if device_info['RoomTemp'] != 0:
-                        data_to_send['room_temp'] = float(device_info['RoomTemp'])
+                    # Because not every device will have temp sensors, only serialize the sensors that exist.
+                    # Have to coerce temps to floats, as Decimals aren't json serializable
+                    if device_info['BeerTemp'] is not None:
+                        if device_info['BeerTemp'] != 0:
+                            data_to_send['beer_temp'] = float(device_info['BeerTemp'])
+                    if device_info['FridgeTemp'] is not None:
+                        if device_info['FridgeTemp'] != 0:
+                            data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
+                    if device_info['RoomTemp'] is not None:
+                        if device_info['RoomTemp'] != 0:
+                            data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
-                # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
-                try:
-                    if brewpi.gravity_sensor is not None:
-                        gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
-                        if gravity is not None:
-                            data_to_send['gravity'] = float(gravity)
-                except:
-                    pass
+                    # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
+                    try:
+                        if brewpi.gravity_sensor is not None:
+                            gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                            if gravity is not None:
+                                data_to_send['gravity'] = float(gravity)
+                    except:
+                        pass
 
-                to_send['brewpi_devices'].append(data_to_send)
+                    to_send['brewpi_devices'].append(data_to_send)
 
-            for sensor in grav_sensors_to_send:
-                grav_dict = {
-                    'name': sensor.name,
-                    'internal_id': sensor.id,
-                    'sensor_type': sensor.sensor_type,
-                }
+            if grav_sensors_to_send is not None:
+                for sensor in grav_sensors_to_send:
+                    grav_dict = {
+                        'name': sensor.name,
+                        'internal_id': sensor.id,
+                        'sensor_type': sensor.sensor_type,
+                    }
 
-                latest_log_point = sensor.retrieve_latest_point()
-                if latest_log_point is not None:
-                    # For now, if we can't get a latest log point, let's default to just not sending anything.
-                    if latest_log_point.gravity != 0.0:
-                        grav_dict['gravity'] = float(latest_log_point.gravity)
+                    latest_log_point = sensor.retrieve_latest_point()
+                    if latest_log_point is not None:
+                        # For now, if we can't get a latest log point, let's default to just not sending anything.
+                        if latest_log_point.gravity != 0.0:
+                            grav_dict['gravity'] = float(latest_log_point.gravity)
 
-                    # For now all gravity sensors have temp info, but just in case
-                    if latest_log_point.temp is not None:
-                        grav_dict['temp'] = float(latest_log_point.temp)
-                        grav_dict['temp_format'] = latest_log_point.temp_format
+                        # For now all gravity sensors have temp info, but just in case
+                        if latest_log_point.temp is not None:
+                            grav_dict['temp'] = float(latest_log_point.temp)
+                            grav_dict['temp_format'] = latest_log_point.temp_format
 
-                to_send['gravity_sensors'].append(grav_dict)
+                    to_send['gravity_sensors'].append(grav_dict)
 
             string_to_send = json.dumps(to_send)
         elif self.data_format == self.DATA_FORMAT_BREWERSFRIEND:
