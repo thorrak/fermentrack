@@ -160,9 +160,11 @@ class GenericPushTarget(models.Model):
                        'gravity_sensors': []}
             if brewpi_to_send is not None:
                 for brewpi in brewpi_to_send:
-                    # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                     # TODO - Make it so that this data is stored in/loaded from Redis
                     device_info = brewpi.get_dashpanel_info()
+
+                    if device_info is None:
+                        continue
 
                     # Have to coerce temps to floats, as Decimals aren't json serializable
                     data_to_send = {
