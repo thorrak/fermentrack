@@ -360,6 +360,7 @@ def tiltbridge_handler(request):
     # }
 
     tiltbridge_data = json.loads(request.body.decode('utf-8'))
+    # TODO - Remove this when done with testing
     with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
         pprint.pprint(tiltbridge_data, logFile)
 

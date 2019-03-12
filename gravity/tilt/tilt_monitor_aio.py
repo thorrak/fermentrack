@@ -118,6 +118,9 @@ def processBLEBeacon(data):
     xx = ev.decode(data)
 
     # To make things easier, let's convert the byte string to a hex string first
+    if ev.raw_data is None:
+        return False
+
     raw_data_hex = ev.raw_data.hex()
 
     if len(raw_data_hex) < 80:  # Very quick filter to determine if this is a valid Tilt device
