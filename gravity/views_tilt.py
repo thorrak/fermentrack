@@ -391,10 +391,10 @@ def tiltbridge_handler(request):
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
                                                      tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
 
-            raw_temp = tiltbridge_data['tilts'][this_tilt]['temp']
+            raw_temp = int(tiltbridge_data['tilts'][this_tilt]['temp'])
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
 
-            raw_gravity = tiltbridge_data['tilts'][this_tilt]['gravity']
+            raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
             normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
 
             new_point = GravityLogPoint(
