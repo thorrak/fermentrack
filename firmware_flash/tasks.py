@@ -17,14 +17,15 @@ def flash_firmware(flash_request_id):
     flash_request.status = models.FlashRequest.STATUS_RUNNING
     flash_request.save()
 
-    firmware_path = flash_request.firmware_to_flash.download_to_file()
-    if firmware_path is None:
-        flash_request.fail("Unable to download firmware file!")
+    if not flash_request.firmware_to_flash.download_to_file():
+        flash_request.fail("Unable to download firmware file(s)!")
         return None
 
+    firmware_path = flash_request.firmware_to_flash.full_filepath("firmware")
+
     # Ok, we now have the firmware file. Let's do something with it
-    if flash_request.firmware_to_flash.family.flash_method == models.DeviceFamily.FLASH_ESP8266:
-        # We're using an ESP8266, which means esptool.
+    if flash_request.firmware_to_flash.family.flash_method == models.DeviceFamily.FLASH_ESP:
+        # We're using an ESP8266/ESP32, which means esptool.
         flash_cmd = ["esptool.py"]
     elif flash_request.firmware_to_flash.family.flash_method == models.DeviceFamily.FLASH_ARDUINO:
         flash_cmd = ["avrdude"]
@@ -38,6 +39,23 @@ def flash_firmware(flash_request_id):
     for arg in flash_args:
         flash_cmd.append(str(arg).replace("{serial_port}", flash_request.serial_port).replace("{firmware_path}",
                                                                                               firmware_path))
+
+    # For ESP32 devices only, we need to also check to see if we need to flash partitions or SPIFFS
+    if flash_request.board_type.family.detection_family == models.DeviceFamily.DETECT_ESP32:
+        # First, check if we have a partitions file to flash
+        if len(flash_request.firmware_to_flash.download_url_partitions) > 0 and len(flash_request.firmware_to_flash.checksum_partitions) > 0:
+            # We need to flash partitions. Partitions are (currently) always at 0x8000
+            flash_cmd.append("0x8000")
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("firmware"))
+
+        # Then, check for SPIFFS
+        if len(flash_request.firmware_to_flash.download_url_spiffs) > 0 and \
+                 len(flash_request.firmware_to_flash.checksum_spiffs) > 0 and \
+                 len(flash_request.firmware_to_flash.spiffs_address) > 2:
+            # We need to flash SPIFFS. The location is dependent on the partition scheme, so we need to use the address
+            flash_cmd.append(flash_request.firmware_to_flash.spiffs_address)
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("firmware"))
+
 
     # TODO - Explicitly need to disable any device on that port
     # If we are running as part of a fermentrack installation (which presumably, we are) we need to disable

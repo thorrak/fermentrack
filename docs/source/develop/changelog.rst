@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[2019-03-17] - Firmware Flash Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for flashing multi-part firmware (eg partition tables)
+
+Changed
+---------------------
+
+- Updated firmware_flash models to support additional device families
+- Changed to version 2 of firmware_flash models
+
 
 [2019-02-17] - External Push (Remote Logging) Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

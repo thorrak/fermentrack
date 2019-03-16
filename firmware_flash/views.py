@@ -321,8 +321,7 @@ def firmware_flash_flash_firmware(request, board_id):
 
     return render(request, template_name='firmware_flash/flash_firmware.html',
                                context={'flash_family': flash_family, 'firmware': firmware_to_flash,
-                                        'serial_port': request.POST['serial_port'],
-                                        'board': board_obj})
+                                        'serial_port': request.POST['serial_port'], 'board': board_obj})
 
 @login_required
 @site_is_configured
