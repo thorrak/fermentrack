@@ -921,7 +921,10 @@ class BrewPiDevice(models.Model):
         return self.send_message("setParameters", json.dumps(parameters))
 
     def get_dashpanel_info(self):
-        return json.loads(self.send_message("getDashInfo", read_response=True))
+        try:  # This is apparently failing when being called in a loop for external_push - Wrapping in a try/except so the loop doesn't die
+            return json.loads(self.send_message("getDashInfo", read_response=True))
+        except TypeError:
+            return None
 
     def circus_parameter(self):
         """Returns the parameter used by Circus to track this device's processes"""

@@ -20,8 +20,8 @@ except:
 
 logger = logging.getLogger(__name__)
 
-FERMENTRACK_COM_URL = "http://www.fermentrack.com"
-MODEL_VERSION = 1
+FERMENTRACK_COM_URL = "https://www.fermentrack.com"
+MODEL_VERSION = 2
 
 
 def check_model_version():
@@ -45,21 +45,23 @@ class DeviceFamily(models.Model):
         verbose_name_plural = "Device Families"
 
     FLASH_ARDUINO = "avrdude"
-    FLASH_ESP8266 = "esptool"
+    FLASH_ESP = "esptool"
 
     FLASH_CHOICES = (
         (FLASH_ARDUINO, "Avrdude (Arduino)"),
-        (FLASH_ESP8266, "Esptool (ESP8266)")
+        (FLASH_ESP, "Esptool (ESP8266)")
     )
 
     DETECT_ARDUINO = "arduino"
     DETECT_ESP8266 = "esp8266"
     DETECT_PARTICLE = "particle"
+    DETECT_ESP32 = "esp32"
 
     DETECT_CHOICES = (
         (DETECT_ARDUINO, "Arduino"),
         (DETECT_ESP8266, "ESP8266"),
         (DETECT_PARTICLE, "Particle (Spark/Core)"),
+        (DETECT_ESP32, "ESP32"),
     )
 
     name = models.CharField(max_length=30, blank=False, null=False, help_text="The name of the device family")
@@ -86,9 +88,14 @@ class DeviceFamily(models.Model):
             DeviceFamily.objects.all().delete()
             # Then loop through the data we received and recreate it again
             for row in data:
-                newDevice = DeviceFamily(name=row['name'], flash_method=row['flash_method'], id=row['id'],
-                                         detection_family=row['detection_family'])
-                newDevice.save()
+                try:
+                    # This gets wrapped in a try/except as I don't want this failing if the local copy of Fermentrack
+                    # is slightly behind what is available at Fermentrack.com (eg - if there are new device families)
+                    newDevice = DeviceFamily(name=row['name'], flash_method=row['flash_method'], id=row['id'],
+                                             detection_family=row['detection_family'])
+                    newDevice.save()
+                except:
+                    pass
 
             return True  # DeviceFamily table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
@@ -98,7 +105,7 @@ class DeviceFamily(models.Model):
 
         if self.flash_method == self.FLASH_ARDUINO:
             return ".hex"
-        elif self.flash_method == self.FLASH_ESP8266:
+        elif self.flash_method == self.FLASH_ESP:
             return ".bin"
         else:
             return None
@@ -143,6 +150,15 @@ class Firmware(models.Model):
 
     download_url = models.CharField(max_length=255, default="", blank=True, null=False,
                                     help_text="The URL at which the firmware can be downloaded")
+    download_url_partitions = models.CharField(max_length=255, default="", blank=True, null=False,
+                                               help_text="The URL at which the partitions binary can be downloaded (ESP32 only, optional)")
+    download_url_spiffs = models.CharField(max_length=255, default="", blank=True, null=False,
+                                           help_text="The URL at which the SPIFFS binary can be downloaded (ESP32 only, optional)")
+
+    spiffs_address = models.CharField(max_length=12, default="", blank=True, null=False,
+                                           help_text="The flash address the SPIFFS data is at (ESP32 only, optional)")
+
+
     project_url = models.CharField(max_length=255, default="", blank=True, null=False,
                                    help_text="The URL for the project associated with the firmware")
     documentation_url = models.CharField(max_length=255, default="", blank=True, null=False,
@@ -153,6 +169,11 @@ class Firmware(models.Model):
 
     checksum = models.CharField(max_length=64, help_text="SHA256 checksum of the file (for checking validity)",
                                 default="", blank=True)
+    checksum_partitions = models.CharField(max_length=64, help_text="SHA256 checksum of the partitions file (for checking validity)",
+                                           default="", blank=True)
+    checksum_spiffs = models.CharField(max_length=64, help_text="SHA256 checksum of the SPIFFS file (for checking validity)",
+                                       default="", blank=True)
+
 
     def __str__(self):
         return self.name + " - " + self.version + " - " + self.revision + " - " + self.variant
@@ -174,20 +195,28 @@ class Firmware(models.Model):
             Firmware.objects.all().delete()
             # Then loop through the data we received and recreate it again
             for row in data:
-                newFirmware = Firmware(
-                    name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
-                    variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
-                    in_error=row['in_error'], description=row['description'],
-                    variant_description=row['variant_description'], download_url=row['download_url'],
-                    project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
-                    checksum=row['checksum'],
-                )
-                newFirmware.save()
+                try:
+                    # This gets wrapped in a try/except as I don't want this failing if the local copy of Fermentrack
+                    # is slightly behind what is available at Fermentrack.com (eg - if there are new device families)
+                    newFirmware = Firmware(
+                        name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
+                        variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
+                        in_error=row['in_error'], description=row['description'],
+                        variant_description=row['variant_description'], download_url=row['download_url'],
+                        project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
+                        download_url_partitions=row['download_url_partitions'],
+                        download_url_spiffs=row['download_url_spiffs'], checksum=row['checksum'],
+                        checksum_partitions=row['checksum_partitions'], checksum_spiffs=row['checksum_spiffs'],
+                        spiffs_address=row['spiffs_address'],
+                    )
+                    newFirmware.save()
+                except:
+                    pass
 
             return True  # Firmware table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
 
-    def local_filename(self):
+    def local_filename(self, bintype):
         def stripslashes(string):
             return string.replace('\\', '').replace('/', '')
 
@@ -195,28 +224,34 @@ class Firmware(models.Model):
         fname_base += "v" + stripslashes(self.version) + "r" + stripslashes(self.revision)
         if len(self.variant) > 0:
             fname_base += " -- " + stripslashes(self.variant)
+
+        fname_base += " - " + stripslashes(bintype)  # For SPIFFS, Partition, etc.
+
         fname_base += self.family.file_suffix()
 
         return fname_base
 
-    def local_filepath(self):
+    @classmethod
+    def local_filepath(cls):
         return os.path.join(settings.BASE_DIR, "firmware_flash", "firmware")
 
-    def download_to_file(self, check_checksum=True, force_download=False):
-        full_path = os.path.join(self.local_filepath(), self.local_filename())
+    def full_filepath(self, bintype):
+        return os.path.join(self.local_filepath(), self.local_filename(bintype))
 
+    @classmethod
+    def download_file(cls, full_path, url, checksum, check_checksum, force_download):
         if os.path.isfile(full_path):
             if force_download:  # If we're just going to force the download anyways, just kill the file
                 os.remove(full_path)
-            elif self.checksum == fhash.hash_of_file(full_path):  # If the file already exists check the checksum
+            elif checksum == fhash.hash_of_file(full_path):  # If the file already exists check the checksum
                 # The file is valid - return the path
-                return full_path
+                return True
             else:
                 # The checksum check failed - Kill the file
                 os.remove(full_path)
 
         # So either we don't have a downloaded copy (or it's invalid). Let's download a new one.
-        r = requests.get(self.download_url, stream=True)
+        r = requests.get(url, stream=True)
 
         with open(full_path, str("wb")) as f:
             for chunk in r.iter_content():
@@ -226,13 +261,28 @@ class Firmware(models.Model):
         if check_checksum:
             if os.path.isfile(full_path):
                 # If the file already exists check the checksum (and delete if it fails)
-                if self.checksum != fhash.hash_of_file(full_path):
+                if checksum != fhash.hash_of_file(full_path):
                     os.remove(full_path)
-                    return None
+                    return False
             else:
-                return None
+                return False
         # The file is valid (or we aren't checking checksums). Return the path.
-        return full_path
+        return True
+
+    def download_to_file(self, check_checksum=True, force_download=False):
+        # If this is a multi-part firmware (ESP32, with partitions or SPIFFS) then download the additional parts.
+        if len(self.download_url_partitions) > 12 and len(self.checksum_partitions) > 0:
+            if not self.download_file(self.full_filepath("partitions"), self.download_url_partitions,
+                                      self.checksum_partitions, check_checksum, force_download):
+                return False
+
+        if len(self.download_url_spiffs) > 12 and len(self.checksum_spiffs) > 0 and len(self.spiffs_address) > 2:
+            if not self.download_file(self.full_filepath("spiffs"), self.download_url_spiffs,
+                                      self.checksum_spiffs, check_checksum, force_download):
+                return False
+
+        # Always download the main firmware
+        return self.download_file(self.full_filepath("firmware"), self.download_url, self.checksum, check_checksum, force_download)
 
 
 class Board(models.Model):
@@ -284,11 +334,16 @@ class Board(models.Model):
             Board.objects.all().delete()
             # Then loop through the data we received and recreate it again
             for row in data:
-                newBoard = Board(
-                    name=row['name'], family_id=row['family_id'], description=row['description'], weight=row['weight'],
-                    flash_options_json=row['flash_options_json'], id=row['id'],
-                )
-                newBoard.save()
+                try:
+                    # This gets wrapped in a try/except as I don't want this failing if the local copy of Fermentrack
+                    # is slightly behind what is available at Fermentrack.com (eg - if there are new device families)
+                    newBoard = Board(
+                        name=row['name'], family_id=row['family_id'], description=row['description'], weight=row['weight'],
+                        flash_options_json=row['flash_options_json'], id=row['id'],
+                    )
+                    newBoard.save()
+                except:
+                    pass
 
             return True  # Board table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error

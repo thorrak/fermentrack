@@ -18,6 +18,7 @@ import fermentrack_django.settings as settings
 
 
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
+from external_push.models import GenericPushTarget
 from django.contrib.auth.models import User
 
 
@@ -30,12 +31,6 @@ def error_notifications(request):
         try:
             if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
 
-                # TODO - Remove this check after April 2018
-                if sys.version_info[0] < 3:
-                    messages.warning(request, "This app is currently running on Python 2 which will no longer be " +
-                                              "supported after April 2018. To upgrade to Python 3, simply follow the " +
-                                              'instructions <a href="http://www.fermentrack.com/help/python3/">at ' +
-                                              'this link.</a>')
                 try:
                     if git_integration.app_is_current():
                         config.LAST_GIT_CHECK = now_time
@@ -597,6 +592,8 @@ def site_settings(request):
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         return redirect('siteroot')
 
+    all_push_targets = GenericPushTarget.objects.all()
+
     if request.POST:
         form = setup_forms.GuidedSetupConfigForm(request.POST)
         if form.is_valid():
@@ -627,12 +624,12 @@ def site_settings(request):
             return redirect('siteroot')
         else:
             return render(request, template_name='site_config.html',
-                                       context={'form': form,
+                                       context={'form': form, 'all_push_targets': all_push_targets,
                                                 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
     else:
         form = setup_forms.GuidedSetupConfigForm()
         return render(request, template_name='site_config.html',
-                                   context={'form': form,
+                                   context={'form': form, 'all_push_targets': all_push_targets,
                                             'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
 
 
