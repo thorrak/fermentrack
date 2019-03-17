@@ -29,7 +29,6 @@ def getLCD(req, device_id):
 
 
 def getPanel(req, device_id):
-
     def temp_text(temp, temp_format):
         if temp == 0:
             return "--&deg; {}".format(temp_format)
@@ -42,6 +41,13 @@ def getPanel(req, device_id):
         device_info = dev.get_dashpanel_info()
     except:
         # We were given an invalid panel number - Just send back the equivalent of null data
+        null_temp = temp_text(0, config.TEMPERATURE_FORMAT)
+        ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'room_temp': null_temp, 'control_mode': "--",
+                    'log_interval': 0})
+        return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
+
+    if device_info is None:
+        # We were unable to communicate with the device (get_dashpanel_info returned None)
         null_temp = temp_text(0, config.TEMPERATURE_FORMAT)
         ret.append({'beer_temp': null_temp, 'fridge_temp': null_temp, 'room_temp': null_temp, 'control_mode': "--",
                     'log_interval': 0})
