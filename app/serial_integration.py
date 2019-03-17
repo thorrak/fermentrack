@@ -33,6 +33,9 @@ known_devices = {
     ],
     'esp8266': [
         {'vid': 0x1D50, 'pid': 0x607D, 'name': "Generic CP2104 USB-Serial Chip", 'generic': True},
+    ],
+    'esp32': [
+        {'vid': 0x1D50, 'pid': 0x607D, 'name': "Generic CP2104 USB-Serial Chip", 'generic': True},
     ]
 }
 
