@@ -60,13 +60,13 @@ def gravity_add_board(request):
                 if tilt_form.cleaned_data['connection_type'] == TiltConfiguration.CONNECTION_BRIDGE:
                     if tilt_form.cleaned_data['tiltbridge'] == '+':
                         tilt_bridge = TiltBridge(
-                            api_key=tilt_form.cleaned_data['tiltbridge_api_key'],
+                            mdns_id=tilt_form.cleaned_data['tiltbridge_mdns_id'],
                             name=tilt_form.cleaned_data['tiltbridge_name']
                         )
                         tilt_bridge.save()
                         messages.success(request, 'New TiltBridge created')
                     else:
-                        tilt_bridge = TiltBridge.objects.get(api_key=tilt_form.cleaned_data['tiltbridge'])
+                        tilt_bridge = TiltBridge.objects.get(mdns_id=tilt_form.cleaned_data['tiltbridge'])
                 else:
                     # We don't need to link to a bridge, so leave it null
                     tilt_bridge = None

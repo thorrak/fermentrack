@@ -170,16 +170,15 @@ class TiltCreateForm(forms.Form):
     tiltbridge = forms.ChoiceField(required=False, help_text="Select a TiltBridge for this Tilt to connect through")
     tiltbridge_name = forms.CharField(max_length=64, required=False,
                                       help_text="Human-readable name for the new TiltBridge")
-    tiltbridge_api_key = forms.CharField(max_length=64, validators=[key_validator], required=False,
-                                         help_text="API key (also known as a 'token') that the TiltBridge will use to "
-                                                   "identify itself. Can only consist of letters, numbers, dashes, and "
-                                                   "underscores.")
+    tiltbridge_mdns_id = forms.CharField(max_length=64, validators=[key_validator], required=False,
+                                         help_text="The mDNS ID set on your TiltBridge which it will use to identify " +
+                                                   "itself. Can only consist of letters & numbers")
     @staticmethod
     def get_tiltbridge_choices():
         choices = []
         available_tiltbridges = TiltBridge.objects.all()
         for this_tiltbridge in available_tiltbridges:
-            device_tuple = (this_tiltbridge.api_key, this_tiltbridge.name)
+            device_tuple = (this_tiltbridge.mdns_id, this_tiltbridge.name)
             choices.append(device_tuple)
         # Always provide the user the option to create a new TiltBridge if he/she so wishes
         choices.append(('+', '<Create New TiltBridge>'))
@@ -202,19 +201,19 @@ class TiltCreateForm(forms.Form):
 
         return self.cleaned_data['color']
 
-    def clean_tiltbridge_api_key(self):
-        if self.cleaned_data.get("tiltbridge_api_key"):
+    def clean_tiltbridge_mdns_id(self):
+        if self.cleaned_data.get("tiltbridge_mdns_id"):
             # Again, although the uniqueness check is enforced on the database insert, I want to validate it as part of
             # the form. Unlike color, however, api keys aren't required in most cases.
             try:
-                tilt_bridge = TiltBridge.objects.get(api_key=self.cleaned_data['tiltbridge_api_key'])
+                tilt_bridge = TiltBridge.objects.get(mdns_id=self.cleaned_data['tiltbridge_mdns_id'])
             except:
                 tilt_bridge = None
 
             if tilt_bridge is not None:
                 raise forms.ValidationError("There is already a TiltBridge configured "
-                                            "with the API key {}".format(self.cleaned_data['tiltbridge_api_key']))
-            return self.cleaned_data['tiltbridge_api_key']
+                                            "with the mDNS ID {}".format(self.cleaned_data['tiltbridge_mdns_id']))
+            return self.cleaned_data['tiltbridge_mdns_id']
 
     def clean_name(self):
         # Enforce uniqueness for sensor name
@@ -239,10 +238,10 @@ class TiltCreateForm(forms.Form):
             if cleaned_data.get("tiltbridge", "") == '+':
                 # The user is trying to create a new TiltBridge object. Validation of the data within each field is
                 # enforced by the field validator, but we need to make sure both were specified.
-                if 'tiltbridge_name' not in cleaned_data or 'tiltbridge_api_key' not in cleaned_data:
-                    raise forms.ValidationError("When creating a new TiltBridge, both a name & api key must be provided")
-                elif len(cleaned_data['tiltbridge_name']) < 1 or len(cleaned_data['tiltbridge_api_key']) < 1:
-                    raise forms.ValidationError("When creating a new TiltBridge, both a name & api key must be provided")
+                if 'tiltbridge_name' not in cleaned_data or 'tiltbridge_mdns_id' not in cleaned_data:
+                    raise forms.ValidationError("When creating a new TiltBridge, both a name & mDNS ID must be provided")
+                elif len(cleaned_data['tiltbridge_name']) < 1 or len(cleaned_data['tiltbridge_mdns_id']) < 1:
+                    raise forms.ValidationError("When creating a new TiltBridge, both a name & mDNS ID must be provided")
 
         return cleaned_data
 

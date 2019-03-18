@@ -756,7 +756,7 @@ class TiltBridge(models.Model):
     color and a user-provided 'api key' identifying the TiltBridge itself.
 
     Attributes:
-        api_key: A token which is provided by the TiltBridge to identify the device
+        mdns_id: The mDNS ID which is provided by the TiltBridge to identify the device
     """
 
     class Meta:
@@ -764,9 +764,9 @@ class TiltBridge(models.Model):
         verbose_name_plural = "TiltBridges"
 
     name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
-    api_key = models.CharField(max_length=64, primary_key=True,
-                               help_text="API key (a.k.a 'token') provided by the TiltBridge to identify/validate "
-                                         "itself when it connects to the Raspberry Pi")
+    mdns_id = models.CharField(max_length=64, primary_key=True,
+                               help_text="mDNS ID used by the TiltBridge to identify itself both on your network " +
+                                         "and to Fermentrack. NOTE - Prefix only - do not include '.local'")
 
     def __str__(self) -> str:
         return self.name

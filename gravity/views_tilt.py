@@ -352,9 +352,9 @@ def tiltbridge_handler(request):
     with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
         pprint.pprint(request.body.decode('utf-8'), logFile)
 
-    # This should look like this (while testing only):
+    # This should look like this:
     # {
-    #   'api_key': 'Key Goes Here',
+    #   'mdns_id': 'mDNS ID goes here',
     #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
     #            {'color': 'Orange', 'temp': 66, 'gravity': 1.001}
     # }
@@ -371,19 +371,19 @@ def tiltbridge_handler(request):
         time_value = datetime.datetime.now(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
 
         writer = csv.writer(f)
-        writer.writerow([time_value, getattr(tiltbridge_data, 'api_key', 'none')])
+        writer.writerow([time_value, getattr(tiltbridge_data, 'mdns_id', 'none')])
 
 
     try:
-        if 'api_key' in tiltbridge_data:
-            tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
+        if 'mdns_id' in tiltbridge_data:
+            tiltbridge_obj = TiltBridge.objects.get(mdns_id=tiltbridge_data['mdns_id'])
         else:
-            logger.error(u"Malformed TiltBridge JSON - No key provided!")
-            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No api_key provided!"}, safe=False,
+            logger.error(u"Malformed TiltBridge JSON - No mdns ID provided!")
+            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No mDNS ID provided!"}, safe=False,
                                 json_dumps_params={'indent': 4})
     except ObjectDoesNotExist:
-        logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
-        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
+        logger.error(u"Unable to load TiltBridge with mDNS ID {}".format(tiltbridge_data['mdns_id']))
+        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
                             json_dumps_params={'indent': 4})
 
     for this_tilt in tiltbridge_data['tilts']:

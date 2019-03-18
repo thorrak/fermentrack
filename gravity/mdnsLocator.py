@@ -22,7 +22,7 @@ class ZeroconfListener(object):
         self.tiltbridge_services[name] = info
         if self.print_on_discover:
             # print("Found '{}' running version '{}' of branch '{}' on a {}".format(info.server[:-1], info.properties['version'], info.properties['branch'], info.properties['board']))
-            print("Found TiltBridge '{}.local' with API key {}".format(info.server[:-1], info.properties['api_key']))
+            print("Found TiltBridge '{}.local'".format(info.server[:-1],))
 
 
 def locate_tiltbridge_services():
@@ -45,14 +45,13 @@ def find_mdns_devices():
 
     for this_service in services:
         found_device['mDNSname'] = services[this_service].server[:-1]
-        found_device['api_key'] = services[this_service].properties[b'api_key'].decode(encoding='cp437')
         # found_device['branch'] = services[this_service].properties[b'branch'].decode(encoding='cp437')
         # found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding='cp437')
         # found_device['version'] = services[this_service].properties[b'version'].decode(encoding='cp437')
 
         try:
             # If we found the device, then we're golden - it's already installed (in theory)
-            found_device['device'] = TiltBridge.objects.get(api_key=found_device['api_key'])
+            found_device['device'] = TiltBridge.objects.get(mdns_id=found_device['mDNSname'])
             installed_tiltbridges.append(found_device.copy())
         except:
             found_device['device'] = None
@@ -74,7 +73,7 @@ if __name__ == '__main__':
         #                                                                      this_device['board'],
         #                                                                      this_device['branch'],
         #                                                                      this_device['revision']))
-        print("Found Device: {} - API Key {}".format(this_device['mDNSname'], this_device['api_key'],))
+        print("Found Device: {}".format(this_device['mDNSname'],))
 
     print("All found devices listed. Exiting.")
     # try:
