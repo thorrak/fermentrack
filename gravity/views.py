@@ -467,7 +467,6 @@ def gravity_uninstall(request, sensor_id):
         messages.error(request, "To uninstall a device, use the form on the 'Manage Sensor' page.")
         return redirect("gravity_manage", sensor_id=sensor_id)
 
-
 @login_required
 @site_is_configured
 def gravity_manage(request, sensor_id):
@@ -485,19 +484,20 @@ def gravity_manage(request, sensor_id):
     context = {'active_device': sensor}
 
     if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
-        if sensor.ispindel_configuration is None:
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        try:
+            initial = {
+                'a': sensor.ispindel_configuration.third_degree_coefficient,
+                'b': sensor.ispindel_configuration.second_degree_coefficient,
+                'c': sensor.ispindel_configuration.first_degree_coefficient,
+                'd': sensor.ispindel_configuration.constant_term,
+            }
+        except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
             messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
             sensor.delete()
             return redirect("siteroot")
 
-        # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {
-            'a': sensor.ispindel_configuration.third_degree_coefficient,
-            'b': sensor.ispindel_configuration.second_degree_coefficient,
-            'c': sensor.ispindel_configuration.first_degree_coefficient,
-            'd': sensor.ispindel_configuration.constant_term,
-        }
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
@@ -509,18 +509,20 @@ def gravity_manage(request, sensor_id):
         return render(request, template_name='gravity/gravity_manage_ispindel.html', context=context)
 
     elif sensor.sensor_type == GravitySensor.SENSOR_TILT:
-        if sensor.tilt_configuration is None:
+        # I am sure there is an easier way to do this, I just can't think of it at the moment
+        try:
+            initial = {
+                'b': sensor.tilt_configuration.grav_second_degree_coefficient,
+                'c': sensor.tilt_configuration.grav_first_degree_coefficient,
+                'd': sensor.tilt_configuration.grav_constant_term,
+            }
+        except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
             messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
             sensor.delete()
             return redirect("siteroot")
 
-        # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {
-            'b': sensor.tilt_configuration.grav_second_degree_coefficient,
-            'c': sensor.tilt_configuration.grav_first_degree_coefficient,
-            'd': sensor.tilt_configuration.grav_constant_term,
-        }
+
         tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
         context['tilt_coefficient_form'] = tilt_coefficient_form
 
