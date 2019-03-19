@@ -485,6 +485,12 @@ def gravity_manage(request, sensor_id):
     context = {'active_device': sensor}
 
     if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+        if sensor.ispindel_configuration is None:
+            # The sensor is in an inconsistent state. Delete it.
+            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            sensor.delete()
+            return redirect("siteroot")
+
         # I am sure there is an easier way to do this, I just can't think of it at the moment
         initial = {
             'a': sensor.ispindel_configuration.third_degree_coefficient,
@@ -503,6 +509,12 @@ def gravity_manage(request, sensor_id):
         return render(request, template_name='gravity/gravity_manage_ispindel.html', context=context)
 
     elif sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        if sensor.tilt_configuration is None:
+            # The sensor is in an inconsistent state. Delete it.
+            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            sensor.delete()
+            return redirect("siteroot")
+
         # I am sure there is an easier way to do this, I just can't think of it at the moment
         initial = {
             'b': sensor.tilt_configuration.grav_second_degree_coefficient,
