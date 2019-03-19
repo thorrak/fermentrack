@@ -185,7 +185,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         return redirect('gravity_list')
 
     if active_device.sensor_type == GravitySensor.SENSOR_TILT:
-        if not bluetooth_loaded:
+        if not bluetooth_loaded and active_device.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BLUETOOTH:
             messages.warning(request,
                              'Bluetooth packages for python have not been installed. Tilt support will not work. '
                              'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '

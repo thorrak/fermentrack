@@ -4,7 +4,10 @@ from __future__ import print_function
 import zeroconf
 from time import sleep
 
-from gravity.models import TiltBridge
+try:
+    from gravity.models import TiltBridge
+except:
+    pass
 
 
 class ZeroconfListener(object):
@@ -36,7 +39,7 @@ def locate_tiltbridge_services():
     return listener.tiltbridge_services
 
 
-def find_mdns_devices():
+def find_mdns_tiltbridge_devices():
     services = locate_tiltbridge_services()
 
     installed_tiltbridges = []
@@ -44,10 +47,8 @@ def find_mdns_devices():
     found_device = {}
 
     for this_service in services:
-        found_device['mDNSname'] = services[this_service].server[:-1]
-        # found_device['branch'] = services[this_service].properties[b'branch'].decode(encoding='cp437')
-        # found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding='cp437')
-        # found_device['version'] = services[this_service].properties[b'version'].decode(encoding='cp437')
+        found_device['mDNSname'] = services[this_service].server[:-7]  # Taking off the .local.
+        # found_device['mDNSname'] = services[this_service].server[:-1]
 
         try:
             # If we found the device, then we're golden - it's already installed (in theory)
@@ -65,8 +66,8 @@ if __name__ == '__main__':
     # listener = zeroconfListener()
     # browser = zeroconf.ServiceBrowser(zeroconf_obj, "_tiltbridge._tcp.local.", listener)
 
-    print("Scanning for available mDNS devices")
-    _, available_devices = find_mdns_devices()
+    print("Scanning for available mDNS TiltBridge devices")
+    _, available_devices = find_mdns_tiltbridge_devices()
 
     for this_device in available_devices:
         # print("Found Device: {} - Board {} - Branch {} - Revision {}".format(this_device['mDNSname'],

@@ -1,0 +1,33 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Set TiltBridge Fermentrack URL{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Configure TiltBridge</h1>
+
+    <p>
+        You have successfully added the new TiltBridge named {{ tiltbridge.name }} to Fermentrack with the mDNS ID
+        "{{ tiltbridge.mdns_id }}". Unfortunately, Fermentrack was not able to automatically update the Fermentrack
+        URL on this device. Please connect to your TiltBridge and update the Fermentrack URL to the following:
+    </p>
+
+    <div class="row">
+        <div class="col-sm-2">Fermentrack URL:</div>
+        <div class="col-sm-10">{{ fermentrack_url }}</div>
+    </div>
+
+    <p>
+        Once complete, you can return to the <a href="{% url "gravity_add_board" %}">Add Gravity Sensor</a> page to add a new TiltBridge connected Tilt.
+    </p>
+
+
+
+{% endblock %}
+
+{% block scripts %}{% endblock %}

@@ -110,15 +110,15 @@
                         <div class="row col-xs-12">{% form_generic tilt_form.temp_format %}</div>
                         <div class="row col-xs-12">{% form_generic tilt_form.color %}</div>
 
-                        {# TODO - Reenable this when TiltBridge is ready for release #}
-                        <input type="hidden" value="Bluetooth" name="{{ tilt_form.connection_type.name }}">
-
                         <div class="row col-xs-12">{% form_generic tilt_form.connection_type %}</div>
 
                         <div id="tiltBridgeHidden" style="display: block">
+                        {% if tilt_form.get_tiltbridge_choices|length %}
                             <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge %}</div>
-                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_name %}</div>
-                            <div class="row col-xs-12">{% form_generic tilt_form.tiltbridge_mdns_id %}</div>
+                        {% else %}
+                            <div class="row"><div class="col-sm-2"></div><div class="col-sm-10">No TiltBridges have been added to Fermentrack. Click the link below to add a new TiltBridge device.</div></div>
+                        {% endif %}
+                            <div class="row"><div class="col-sm-2"></div><div class="col-sm-10"><a href="{% url "gravity_tiltbridge_add" %}">Add New TiltBridge</a></div></div>
                         </div>
 
                         <div class="row col-xs-12"><input type="submit" value="Create Sensor" class="btn btn-primary" /></div>

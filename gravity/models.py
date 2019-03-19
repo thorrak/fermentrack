@@ -1,13 +1,13 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.utils import timezone
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.core import serializers
 
-import os.path, csv, logging, socket, typing
+import os.path, csv, logging, socket, typing, requests
 import json, time, datetime, pytz
 from constance import config
 from fermentrack_django import settings
@@ -753,9 +753,10 @@ class TiltBridge(models.Model):
     external web service (such as Fermentrack).
 
     TiltBridge controllers provide raw (unadjusted) temperature & gravity readings from the Tilt as well as the Tilt's
-    color and a user-provided 'api key' identifying the TiltBridge itself.
+    color and the mDNS ID identifying the TiltBridge itself.
 
     Attributes:
+        name: The internal identifier used to identify the TiltBridge within Fermentrack
         mdns_id: The mDNS ID which is provided by the TiltBridge to identify the device
     """
 
@@ -764,7 +765,7 @@ class TiltBridge(models.Model):
         verbose_name_plural = "TiltBridges"
 
     name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
-    mdns_id = models.CharField(max_length=64, primary_key=True,
+    mdns_id = models.CharField(max_length=64, primary_key=True, validators=[RegexValidator(regex="^[a-zA-Z0-9]+$")],
                                help_text="mDNS ID used by the TiltBridge to identify itself both on your network " +
                                          "and to Fermentrack. NOTE - Prefix only - do not include '.local'")
 
@@ -773,6 +774,30 @@ class TiltBridge(models.Model):
 
     def __unicode__(self) -> str:
         return self.name
+
+    def update_fermentrack_url_on_tiltbridge(self, fermentrack_host) -> bool:
+        # fermentrack_host = request.META['HTTP_HOST']
+        try:
+            if ":" in fermentrack_host:
+                fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
+            ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+            ip_list = [result[-1][0] for result in ais]
+            ip_list = list(set(ip_list))
+            resolved_address = ip_list[0]
+            fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
+            tiltbridge_url = "http://{}.local/settings/update/".format(self.mdns_id)
+
+            r = requests.post(tiltbridge_url, data={'fermentrackURL': fermentrack_url})
+
+            if r.status_code == 200:
+                return True
+            else:
+                return False
+
+        except:
+            # For some reason we failed to resolve the IP address of Fermentrack. Return False.
+            return False
+
 
 
 ### iSpindel specific models

@@ -7,6 +7,13 @@ from django.forms import ModelForm
 from django.core.validators import RegexValidator
 from django.core.exceptions import ObjectDoesNotExist
 
+try:
+    # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
+    # pop up an error message.
+    import aioblescan
+    bluetooth_loaded = True
+except ImportError:
+    bluetooth_loaded = False
 
 ###################################################################################################################
 # Generic (Manual) Forms
@@ -154,6 +161,12 @@ class SensorAttachForm(forms.Form):
         return cleaned_data
 
 
+class TiltBridgeForm(forms.ModelForm):
+    class Meta:
+        model = TiltBridge
+        fields = ['name', 'mdns_id', ]
+
+
 class TiltCreateForm(forms.Form):
     key_validator = RegexValidator(r"[0-9A-Za-z_-]+", "Key can only consist of 0-9, A-Z, a-z, dashes, and underscores.")
 
@@ -165,14 +178,10 @@ class TiltCreateForm(forms.Form):
     # hydrometers (either Bluetooth or TiltBridge)
     connection_type = forms.ChoiceField(required=True, choices=TiltConfiguration.CONNECTION_CHOICES)
 
-    # The following three options allow a user who has selected the TiltBridge connection type to configure a new (or
-    # select an existing) TiltBridge.
+    # If the user chooses to connect via TiltBridge, allow them to select an existing TiltBridge device. If no devices
+    # have been set up, the template will prompt the user to create one.
     tiltbridge = forms.ChoiceField(required=False, help_text="Select a TiltBridge for this Tilt to connect through")
-    tiltbridge_name = forms.CharField(max_length=64, required=False,
-                                      help_text="Human-readable name for the new TiltBridge")
-    tiltbridge_mdns_id = forms.CharField(max_length=64, validators=[key_validator], required=False,
-                                         help_text="The mDNS ID set on your TiltBridge which it will use to identify " +
-                                                   "itself. Can only consist of letters & numbers")
+
     @staticmethod
     def get_tiltbridge_choices():
         choices = []
@@ -180,8 +189,6 @@ class TiltCreateForm(forms.Form):
         for this_tiltbridge in available_tiltbridges:
             device_tuple = (this_tiltbridge.mdns_id, this_tiltbridge.name)
             choices.append(device_tuple)
-        # Always provide the user the option to create a new TiltBridge if he/she so wishes
-        choices.append(('+', '<Create New TiltBridge>'))
         return choices
 
     def clean_color(self):
@@ -201,20 +208,6 @@ class TiltCreateForm(forms.Form):
 
         return self.cleaned_data['color']
 
-    def clean_tiltbridge_mdns_id(self):
-        if self.cleaned_data.get("tiltbridge_mdns_id"):
-            # Again, although the uniqueness check is enforced on the database insert, I want to validate it as part of
-            # the form. Unlike color, however, api keys aren't required in most cases.
-            try:
-                tilt_bridge = TiltBridge.objects.get(mdns_id=self.cleaned_data['tiltbridge_mdns_id'])
-            except:
-                tilt_bridge = None
-
-            if tilt_bridge is not None:
-                raise forms.ValidationError("There is already a TiltBridge configured "
-                                            "with the mDNS ID {}".format(self.cleaned_data['tiltbridge_mdns_id']))
-            return self.cleaned_data['tiltbridge_mdns_id']
-
     def clean_name(self):
         # Enforce uniqueness for sensor name
         if self.cleaned_data.get("name"):
@@ -227,23 +220,13 @@ class TiltCreateForm(forms.Form):
                 pass
         return self.cleaned_data['name']
 
-    def clean(self):
-        # In this case, we're only validating that we have all the data we need if the user selected to use a
-        # TiltBridge rather than bluetooth. Arguably, I could also put a check for Bluetooth support here (invalidating
-        # the form if the environment doesn't support Bluetooth)
-        cleaned_data = self.cleaned_data
+    def clean_connection_type(self):
+        if self.cleaned_data.get('connection_type'):
+            if self.cleaned_data.get('connection_type') == TiltConfiguration.CONNECTION_BLUETOOTH and not bluetooth_loaded:
+                raise forms.ValidationError('Bluetooth packages for python have not been installed. Tilt Hydrometers '
+                                            'cannot be connected via Bluetooth.')
+        return self.cleaned_data['connection_type']
 
-        if cleaned_data.get("connection_type", "") == TiltConfiguration.CONNECTION_BRIDGE:
-            # The user selected to use a TiltBridge to connect. We need to test that we have everything we need
-            if cleaned_data.get("tiltbridge", "") == '+':
-                # The user is trying to create a new TiltBridge object. Validation of the data within each field is
-                # enforced by the field validator, but we need to make sure both were specified.
-                if 'tiltbridge_name' not in cleaned_data or 'tiltbridge_mdns_id' not in cleaned_data:
-                    raise forms.ValidationError("When creating a new TiltBridge, both a name & mDNS ID must be provided")
-                elif len(cleaned_data['tiltbridge_name']) < 1 or len(cleaned_data['tiltbridge_mdns_id']) < 1:
-                    raise forms.ValidationError("When creating a new TiltBridge, both a name & mDNS ID must be provided")
-
-        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super(TiltCreateForm, self).__init__(*args, **kwargs)

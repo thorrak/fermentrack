@@ -13,6 +13,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint, TiltBridge, TiltConfiguration
 
+from gravity import mdnsLocator
+
 import csv
 
 try:
@@ -424,3 +426,74 @@ def tiltbridge_handler(request):
 
     return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
                         json_dumps_params={'indent': 4})
+
+
+
+@login_required
+@site_is_configured
+def gravity_tiltbridge_add(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+    installed_devices, available_devices = mdnsLocator.find_mdns_tiltbridge_devices()
+
+
+    if request.POST:
+        form = forms.TiltBridgeForm(request.POST)
+        if form.is_valid():
+            new_tiltbridge = form.save()
+            messages.success(request, u"TiltBridge '{}' created".format(new_tiltbridge.name))
+
+            fermentrack_host = request.META['HTTP_HOST']
+
+            if new_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
+                messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(new_tiltbridge.name))
+                return redirect("gravity_add_board")
+            else:
+                messages.error(request, u"Unable to automatically update Fermentrack URL on TiltBridge {}".format(new_tiltbridge.name))
+                return redirect("gravity_tiltbridge_urlerror", tiltbridge_id=new_tiltbridge.mdns_id)
+
+        else:
+            messages.error(request, u"Invalid TiltBridge specification")
+
+    else:
+        form = forms.TiltBridgeForm()
+
+    return render(request, template_name='gravity/gravity_tiltbridge_add.html',
+                  context={'form': form, 'available_devices': available_devices,})
+
+
+@login_required
+@site_is_configured
+def gravity_tiltbridge_urlerror(request, tiltbridge_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        selected_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
+    except:
+        messages.error(request, u"Unable to load TiltBridge with mDNS ID '{}'".format(tiltbridge_id))
+        return redirect("gravity_add_board")
+
+    # In order to tell the user what to do, we need to look up Fermentrack's IP address. Attempt it here, and send back
+    # an error if this fails.
+    try:
+        fermentrack_host = request.META['HTTP_HOST']
+        if ":" in fermentrack_host:
+            fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
+        ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+        ip_list = [result[-1][0] for result in ais]
+        ip_list = list(set(ip_list))
+        resolved_address = ip_list[0]
+        fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
+
+    except:
+        # For some reason we failed to resolve the IP address of Fermentrack. Return an error.
+        messages.error(request, u"Unable to identify Fermentrack's IP Address ")
+        return redirect("gravity_add_board")
+
+    return render(request, template_name='gravity/gravity_tiltbridge_urlerror.html',
+                  context={'tiltbridge': selected_tiltbridge, 'fermentrack_url': fermentrack_url,})
