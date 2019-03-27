@@ -1,4 +1,5 @@
 import os
+import datetime
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
 from git import Repo
@@ -265,6 +266,7 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+       # 'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
@@ -278,7 +280,9 @@ REST_FRAMEWORK = {
 
 JWT_AUTH = { 
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300)
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
     'JWT_ALLOW_REFRESH': True,
     'JWT_VERIFY': True,
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'app.api.drf.serializers.jwt_response_payload_handler',
+    'JWT_PAYLOAD_HANDLER': 'app.api.drf.serializers.jwt_payload_handler',
 }

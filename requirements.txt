@@ -28,3 +28,7 @@ aioblescan      # Replacement for beacontools for Tilt support
 pyzmq<17
 tornado<5
 
+# Django Rest Framework and related
+djangorestframework
+djangorestframework-jwt
+
