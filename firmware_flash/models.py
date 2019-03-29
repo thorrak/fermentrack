@@ -271,12 +271,12 @@ class Firmware(models.Model):
 
     def download_to_file(self, check_checksum=True, force_download=False):
         # If this is a multi-part firmware (ESP32, with partitions or SPIFFS) then download the additional parts.
-        if len(self.download_url_partitions) > 12 and len(self.checksum_partitions) > 0:
+        if len(self.download_url_partitions) > 12:
             if not self.download_file(self.full_filepath("partitions"), self.download_url_partitions,
                                       self.checksum_partitions, check_checksum, force_download):
                 return False
 
-        if len(self.download_url_spiffs) > 12 and len(self.checksum_spiffs) > 0 and len(self.spiffs_address) > 2:
+        if len(self.download_url_spiffs) > 12 and len(self.spiffs_address) > 2:
             if not self.download_file(self.full_filepath("spiffs"), self.download_url_spiffs,
                                       self.checksum_spiffs, check_checksum, force_download):
                 return False
