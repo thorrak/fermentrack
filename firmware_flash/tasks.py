@@ -76,7 +76,7 @@ def flash_firmware(flash_request_id):
     # And now, let's call the actual flasher
     try:
         output_text = "Flash Command: " + " ".join(flash_cmd) + "\r\n\r\n"
-        output_text += subprocess.check_output(flash_cmd)
+        output_text += subprocess.check_output(flash_cmd).decode(encoding="cp437")
     except subprocess.CalledProcessError as e:
         flash_request.fail("Flash process returned code {}".format(e.returncode), e.output)
         return None
