@@ -250,6 +250,9 @@ class Firmware(models.Model):
                 # The checksum check failed - Kill the file
                 os.remove(full_path)
 
+        if len(url) < 12:  # If we don't have a URL, we can't download anything
+            return False
+
         # So either we don't have a downloaded copy (or it's invalid). Let's download a new one.
         r = requests.get(url, stream=True)
 
