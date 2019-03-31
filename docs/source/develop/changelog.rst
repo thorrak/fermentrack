@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+
+[2019-03-31] - TiltBridge Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for TiltBridge Tilt-to-WiFi devices
+
+Changed
+---------------------
+
+- Removed Hex SHA display on GitHub update
+- Tweaked backup count for log files to reduce clutter
+
+Fixed
+---------------------
+
+- Fixed hostname lookup in connection debug when running on a nonstandard port
+- Fixed multipart firmware flashing
+
+
 [2019-03-17] - Firmware Flash Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
