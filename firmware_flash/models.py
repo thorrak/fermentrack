@@ -174,9 +174,11 @@ class Firmware(models.Model):
     checksum_spiffs = models.CharField(max_length=64, help_text="SHA256 checksum of the SPIFFS file (for checking validity)",
                                        default="", blank=True)
 
-
     def __str__(self):
-        return self.name + " - " + self.version + " - " + self.revision + " - " + self.variant
+        name = self.name + " - " + self.version + " - " + self.revision
+        if len(self.variant) > 0:
+            name += " - " + self.variant
+        return name
 
     def __unicode__(self):
         return self.__str__()
