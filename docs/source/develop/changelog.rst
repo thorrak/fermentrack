@@ -28,6 +28,7 @@ Fixed
 - Fixed multipart firmware flashing
 - Remove Git branch switching prompt during initial setup
 - Remove links to defunct Tilt logs
+- Fixed OneWire address display on BrewPi "Assign Pin/Device" page
 
 
 [2019-03-17] - Firmware Flash Changes
