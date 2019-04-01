@@ -67,7 +67,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = []
+exclude_patterns = ['Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -154,7 +154,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'Fermentrack', 'Fermentrack Documentation',
-     author, 'Fermentrack', 'One line description of project.',
+     author, 'Fermentrack', 'A replacement BrewPi web interface',
      'Miscellaneous'),
 ]
 
