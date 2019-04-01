@@ -26,6 +26,8 @@ Fixed
 
 - Fixed hostname lookup in connection debug when running on a nonstandard port
 - Fixed multipart firmware flashing
+- Remove Git branch switching prompt during initial setup
+- Remove links to defunct Tilt logs
 
 
 [2019-03-17] - Firmware Flash Changes
