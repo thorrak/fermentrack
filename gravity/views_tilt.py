@@ -350,10 +350,6 @@ def tiltbridge_handler(request):
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    import pprint
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
-        pprint.pprint(request.body.decode('utf-8'), logFile)
-
     # This should look like this:
     # {
     #   'mdns_id': 'mDNS ID goes here',
@@ -362,20 +358,6 @@ def tiltbridge_handler(request):
     # }
 
     tiltbridge_data = json.loads(request.body.decode('utf-8'))
-    # TODO - Remove this when done with testing
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
-        pprint.pprint(tiltbridge_data, logFile)
-
-    # This is to keep a log to watch for slowing down of check-ins
-    # TODO - Remove this once done with testing
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_checkin_times.log'), 'a') as f:
-        utc_tz = pytz.timezone("UTC")
-        time_value = datetime.datetime.now(utc_tz).strftime('%Y/%m/%d %H:%M:%SZ')  # Adding 'Zulu' designation
-
-        writer = csv.writer(f)
-        writer.writerow([time_value, getattr(tiltbridge_data, 'mdns_id', 'none')])
-
-
     try:
         if 'mdns_id' in tiltbridge_data:
             tiltbridge_obj = TiltBridge.objects.get(mdns_id=tiltbridge_data['mdns_id'])

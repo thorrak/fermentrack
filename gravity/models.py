@@ -184,18 +184,6 @@ class GravitySensor(models.Model):
         self.active_log = new_log
         self.save()
 
-    def has_daemon_log(self) -> bool:
-        if self.sensor_type != self.SENSOR_TILT:
-            return False
-        else:
-            return True
-
-    def daemon_log_prefix(self) -> str:
-        if self.sensor_type == self.SENSOR_TILT:
-            return self.tilt_configuration.daemon_log_prefix()
-        else:
-            return None
-
     def convert_temp_to_sensor_format(self, temp: float, temp_format: str) -> (float, str):
         if self.temp_format == temp_format:
             return temp, self.temp_format
@@ -732,11 +720,6 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_temp']
 
         return extras
-
-    def daemon_log_prefix(self) -> str:
-        # TODO - Remove this if no longer used
-        # This must match the log prefix used in utils/processmgr.py
-        return "tilt-" + self.color.lower()
 
     def apply_gravity_calibration(self, uncalibrated_gravity: float) -> float:
         calibrated_gravity = self.grav_second_degree_coefficient * uncalibrated_gravity ** 2

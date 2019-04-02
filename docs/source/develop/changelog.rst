@@ -26,6 +26,10 @@ Fixed
 
 - Fixed hostname lookup in connection debug when running on a nonstandard port
 - Fixed multipart firmware flashing
+- Remove Git branch switching prompt during initial setup
+- Remove links to defunct Tilt logs
+- Fixed OneWire address display on BrewPi "Assign Pin/Device" page
+- Fix link to "load beer log" modal on device dashboard when no beer is loaded
 
 
 [2019-03-17] - Firmware Flash Changes
