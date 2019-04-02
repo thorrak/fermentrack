@@ -19,7 +19,7 @@ import external_push.urls
 #django rest framework extras
 from django.contrib.auth.models import User
 from rest_framework import routers
-from app.api.drf.views import UserViewSet, BeerViewSet
+from app.api.drf.views import CreateUserViewSet, UserViewSet, BeerViewSet, BrewPiDeviceViewSet, FermentationProfileViewSet, FermentationProfilePointViewSet, BeerLogPointViewSet
 
 #DRF Json web token
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
@@ -32,6 +32,11 @@ admin.autodiscover()
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'beers', BeerViewSet)
+router.register(r'create_user', CreateUserViewSet)
+router.register(r'devices', BrewPiDeviceViewSet)
+router.register(r'profiles', FermentationProfileViewSet)
+router.register(r'profile_points', FermentationProfilePointViewSet)
+router.register(r'beer_points', BeerLogPointViewSet)
 
 # In addition to urlpatterns below, three paths are mapped by the nginx config file:
 # r'^static/' - Maps to collected_static/. Contains collected static files.
