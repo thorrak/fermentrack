@@ -36,7 +36,7 @@ A full table of controllers/expected hardware availability is available [https:/
 
 ## Installation & Documentation
 
-Full documentation for Fermentrack (including complete installation instructions) is available at [https://docs.fermentrack.com/](https://docs.fermentrack.com/).
+Full documentation for Fermentrack (including complete installation instructions) is available at [https://fermentrack.readthedocs.io/](https://fermentrack.readthedocs.io/).
 
 
 ### Quick Installation Instructions
