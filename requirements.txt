@@ -9,7 +9,7 @@ zeroconf        # for locating ESP8266 devices
 circus          # for managing Fermentrack wsgi & brewpi.py processes
 #circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
-huey            # asynchronous task queue
+huey>=1.11,<2.0            # asynchronous task queue
 pid             # for pid-file handling
 pyserial        # for serial interaction
 
