@@ -233,17 +233,14 @@ REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell i
 # Huey Configuration
 HUEY = {
     'name': 'fermentrack_huey',
-    'events': True,
     'store_none': False,
-    'always_eager': False,
-    'store_errors': True,
+    'immediate': False,
 
     'connection': {
         'host': REDIS_HOSTNAME,
         'port': REDIS_PORT,
         'password': REDIS_PASSWORD,  # TODO - Check if this actually works
         'read_timeout': 1,
-        'max_errors': 100,
     }
 }
 
