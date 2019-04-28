@@ -806,6 +806,9 @@ while run:
                 bg_ser.message_was_processed()  # Clean out the queue
 
         # Check for update from temperature profile
+        if 'mode' not in cs:
+            logMessage("Error receiving mode from controller - restarting")
+            sys.exit(1)
         if cs['mode'] == 'p':
             newTemp = dbConfig.get_profile_temp()  # Use the Django model
 
