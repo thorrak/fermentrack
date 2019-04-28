@@ -5,6 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
@@ -231,7 +232,7 @@ def device_control_constants_modern(request, device_id, control_constants):
 def device_control_constants(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -253,7 +254,7 @@ def device_control_constants(request, device_id):
 def sensor_list(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -285,7 +286,7 @@ def sensor_list(request, device_id):
 def sensor_config(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -343,7 +344,7 @@ def sensor_config(request, device_id):
 def sensor_refresh(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -356,7 +357,7 @@ def sensor_refresh(request, device_id):
 def device_dashboard(request, device_id, beer_id=None):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
     beer_create_form = beer_forms.BeerCreateForm()
@@ -367,7 +368,7 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         try:
             beer_obj = Beer.objects.get(id=beer_id, device_id=active_device.id)
-        except:
+        except ObjectDoesNotExist:
             # If we are given an invalid beer log ID, let's return an error & drop back to the (valid) dashboard
             messages.error(request, 'Unable to load beer log with ID {}'.format(beer_id))
             return redirect('device_dashboard', device_id=device_id)
@@ -403,7 +404,7 @@ def device_temp_control(request, device_id):
 
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -682,7 +683,7 @@ def device_control_constants_legacy(request, device_id, control_constants):
 def device_eeprom_reset(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -704,7 +705,7 @@ def device_eeprom_reset(request, device_id):
 def device_wifi_reset(request, device_id):
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -735,7 +736,7 @@ def device_manage(request, device_id):
 
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -806,7 +807,7 @@ def device_uninstall(request, device_id):
 
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
@@ -874,7 +875,7 @@ def debug_connection(request, device_id):
 
     try:
         active_device = BrewPiDevice.objects.get(id=device_id)
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, "Unable to load device with ID {}".format(device_id))
         return redirect('siteroot')
 
