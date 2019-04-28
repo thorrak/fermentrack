@@ -328,7 +328,10 @@ class TempControlForm(forms.Form):
             elif cleaned_data['temp_control'] == 'beer_constant' or cleaned_data['temp_control'] == 'fridge_constant':
                 # For constant modes, we must have a temperature setting
                 if 'temperature_setting' in cleaned_data:
-                    return cleaned_data
+                    if 'temperature_setting' is None:
+                        raise forms.ValidationError("A temperature setting must be provided for 'constant' modes")
+                    else:
+                        return cleaned_data
                 else:
                     raise forms.ValidationError("A temperature setting must be provided for 'constant' modes")
             elif cleaned_data['temp_control'] == 'beer_profile':
