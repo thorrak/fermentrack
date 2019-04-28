@@ -269,9 +269,14 @@ class SensorDevice(models.Model):
         all_devices = []
 
         for this_device in device_list:
-            next_device = cls.create_from_dict(this_device, pinlist_dict)
-            next_device.controller = controller
-            all_devices.append(next_device)
+            # This gets wrapped in a try/except block as if the controller returns a malformed device list (e.g. missing
+            # one of the required parameters, like 'h') we want to skip it.
+            try:
+                next_device = cls.create_from_dict(this_device, pinlist_dict)
+                next_device.controller = controller
+                all_devices.append(next_device)
+            except:
+                pass
 
         return all_devices
 
