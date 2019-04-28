@@ -75,20 +75,19 @@ def error_notifications(request):
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
-
     # In addition to requiring the site to be configured, we require that there be a user account. Due to the
     # setup workflow, the user will generally be created before constance configuration takes place, but if
     # the user account gets deleted (for example, in the admin) we want the user to go through that portion
     # of account setup.
     num_users=User.objects.all().count()
 
-    # Notify the user of things like git being out of date, issues with SSH, etc.
-    error_notifications(request)
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
         # If things aren't configured, redirect to the guided setup workflow
         return redirect('setup_splash')
     else:
+        # Notify the user of things like git being out of date, issues with SSH, etc.
+        error_notifications(request)
         # The default screen is the "lcd list" screen
         return render(request, template_name="siteroot.html")
         # return device_lcd_list(request=request)

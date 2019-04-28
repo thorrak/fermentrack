@@ -16,7 +16,7 @@ class ispindelConfigurationAdmin(admin.ModelAdmin):
 
 @admin.register(TiltBridge)
 class tiltBridgeConfigurationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'api_key', )
+    list_display = ('name', 'mdns_id', )
 
 
 # @admin.register(IspindelGravityCalibrationPoint)

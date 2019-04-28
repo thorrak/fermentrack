@@ -110,14 +110,15 @@ class TiltHydrometer(object):
         if self.obj is None:
             # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
             self.gravity = self.raw_gravity
+            self.raw_temp = sensor_temp
         else:
             # Otherwise, apply the calibration
             self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
 
-        # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
-        # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
-        self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(sensor_temp,
-                                                                         GravitySensor.TEMP_FAHRENHEIT)
+            # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
+            # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
+            self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(sensor_temp,
+                                                                             GravitySensor.TEMP_FAHRENHEIT)
         self.temp = self.raw_temp
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)

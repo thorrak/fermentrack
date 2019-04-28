@@ -5,11 +5,11 @@ pytz            # required by manage.py migrate
 raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
-zeroconf<0.20   # for locating ESP8266 devices - Versions over 0.20 are Python 3 only
+zeroconf        # for locating ESP8266 devices
 circus          # for managing Fermentrack wsgi & brewpi.py processes
 #circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
-huey            # asynchronous task queue
+huey>=2.0       # asynchronous task queue
 pid             # for pid-file handling
 pyserial        # for serial interaction
 

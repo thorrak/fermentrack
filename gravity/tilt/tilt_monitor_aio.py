@@ -118,11 +118,20 @@ def processBLEBeacon(data):
     xx = ev.decode(data)
 
     # To make things easier, let's convert the byte string to a hex string first
+    if ev.raw_data is None:
+        if verbose:
+            print("Event has no raw_data\r\n")
+        return False
+
     raw_data_hex = ev.raw_data.hex()
 
     if len(raw_data_hex) < 80:  # Very quick filter to determine if this is a valid Tilt device
+        if verbose:
+            print("Small raw_data_hex: {}\r\n".format(raw_data_hex))
         return False
     if "1370f02d74de" not in raw_data_hex:  # Another very quick filter (honestly, might not be faster than just looking at uuid below)
+        if verbose:
+            print("Missing key in raw_data_hex: {}\r\n".format(raw_data_hex))
         return False
 
     # For testing/viewing raw announcements, uncomment the following
@@ -144,7 +153,7 @@ def processBLEBeacon(data):
         return
 
     if verbose:
-        print("Tilt Payload (hex): {}".format(payload))
+        print("Tilt Payload (hex): {}\r\n".format(payload))
 
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
     tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
@@ -154,7 +163,7 @@ def processBLEBeacon(data):
     if datetime.datetime.now() > reload_objects_at:
         # Doing this so that as time passes while we're polling objects, we still end up reloading everything
         reload = True
-        reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=15)
+        reload_objects_at = datetime.datetime.now() + datetime.timedelta(seconds=30)
 
     for this_tilt in tilts:
         if tilts[this_tilt].should_save():
@@ -181,10 +190,10 @@ try:
     event_loop.run_forever()
 except KeyboardInterrupt:
     if verbose:
-        print('Keyboard interrupt')
+        print('Keyboard interrupt\r\n')
 finally:
     if verbose:
-        print('Closing event loop')
+        print('Closing event loop\r\n')
     btctrl.stop_scan_request()
     command = aiobs.HCI_Cmd_LE_Advertise(enable=False)
     btctrl.send_command(command)

@@ -12,6 +12,8 @@ import telnetlib
 
 def dns_lookup(hostname):
     try:
+        if ":" in hostname:
+            hostname = hostname[:hostname.find(":")]
         ip_list = []
         ais = socket.getaddrinfo(hostname, 0, 0, 0, 0)
         for result in ais:

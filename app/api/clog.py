@@ -16,14 +16,6 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
             # Unable to load the device
             raise ValueError("No brewpi device with id {}".format(device_id))
 
-    elif device_type == "gravity":
-        try:
-            device = GravitySensor.objects.get(id=device_id)
-            log_filename = '{}-{}.log'.format(device.daemon_log_prefix(), logfile)
-        except:
-            # Unable to load the device
-            raise ValueError("No gravity device with id {}".format(device_id))
-
     elif device_type == "spawner":
         log_filename = 'fermentrack-processmgr.log'
     elif device_type == "fermentrack":

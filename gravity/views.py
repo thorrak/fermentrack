@@ -60,13 +60,13 @@ def gravity_add_board(request):
                 if tilt_form.cleaned_data['connection_type'] == TiltConfiguration.CONNECTION_BRIDGE:
                     if tilt_form.cleaned_data['tiltbridge'] == '+':
                         tilt_bridge = TiltBridge(
-                            api_key=tilt_form.cleaned_data['tiltbridge_api_key'],
+                            mdns_id=tilt_form.cleaned_data['tiltbridge_mdns_id'],
                             name=tilt_form.cleaned_data['tiltbridge_name']
                         )
                         tilt_bridge.save()
                         messages.success(request, 'New TiltBridge created')
                     else:
-                        tilt_bridge = TiltBridge.objects.get(api_key=tilt_form.cleaned_data['tiltbridge'])
+                        tilt_bridge = TiltBridge.objects.get(mdns_id=tilt_form.cleaned_data['tiltbridge'])
                 else:
                     # We don't need to link to a bridge, so leave it null
                     tilt_bridge = None
@@ -185,7 +185,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
         return redirect('gravity_list')
 
     if active_device.sensor_type == GravitySensor.SENSOR_TILT:
-        if not bluetooth_loaded:
+        if not bluetooth_loaded and active_device.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BLUETOOTH:
             messages.warning(request,
                              'Bluetooth packages for python have not been installed. Tilt support will not work. '
                              'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
@@ -467,7 +467,6 @@ def gravity_uninstall(request, sensor_id):
         messages.error(request, "To uninstall a device, use the form on the 'Manage Sensor' page.")
         return redirect("gravity_manage", sensor_id=sensor_id)
 
-
 @login_required
 @site_is_configured
 def gravity_manage(request, sensor_id):
@@ -486,12 +485,19 @@ def gravity_manage(request, sensor_id):
 
     if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {
-            'a': sensor.ispindel_configuration.third_degree_coefficient,
-            'b': sensor.ispindel_configuration.second_degree_coefficient,
-            'c': sensor.ispindel_configuration.first_degree_coefficient,
-            'd': sensor.ispindel_configuration.constant_term,
-        }
+        try:
+            initial = {
+                'a': sensor.ispindel_configuration.third_degree_coefficient,
+                'b': sensor.ispindel_configuration.second_degree_coefficient,
+                'c': sensor.ispindel_configuration.first_degree_coefficient,
+                'd': sensor.ispindel_configuration.constant_term,
+            }
+        except ObjectDoesNotExist:
+            # The sensor is in an inconsistent state. Delete it.
+            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            sensor.delete()
+            return redirect("siteroot")
+
         ispindel_coefficient_form = forms.IspindelCoefficientForm(initial=initial)
         context['ispindel_coefficient_form'] = ispindel_coefficient_form
 
@@ -500,13 +506,23 @@ def gravity_manage(request, sensor_id):
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
 
-    if sensor.sensor_type == GravitySensor.SENSOR_TILT:
+        return render(request, template_name='gravity/gravity_manage_ispindel.html', context=context)
+
+    elif sensor.sensor_type == GravitySensor.SENSOR_TILT:
         # I am sure there is an easier way to do this, I just can't think of it at the moment
-        initial = {
-            'b': sensor.tilt_configuration.grav_second_degree_coefficient,
-            'c': sensor.tilt_configuration.grav_first_degree_coefficient,
-            'd': sensor.tilt_configuration.grav_constant_term,
-        }
+        try:
+            initial = {
+                'b': sensor.tilt_configuration.grav_second_degree_coefficient,
+                'c': sensor.tilt_configuration.grav_first_degree_coefficient,
+                'd': sensor.tilt_configuration.grav_constant_term,
+            }
+        except ObjectDoesNotExist:
+            # The sensor is in an inconsistent state. Delete it.
+            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            sensor.delete()
+            return redirect("siteroot")
+
+
         tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
         context['tilt_coefficient_form'] = tilt_coefficient_form
 
@@ -515,7 +531,9 @@ def gravity_manage(request, sensor_id):
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
 
-    return render(request, template_name='gravity/gravity_manage.html', context=context)
+        return render(request, template_name='gravity/gravity_manage_tilt.html', context=context)
+    else:
+        return render(request, template_name='gravity/gravity_manage.html', context=context)
 
 
 # So here's the deal -- If we want to write json files sequentially, we have to skip closing the array. If we want to

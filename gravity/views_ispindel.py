@@ -51,6 +51,8 @@ def gravity_ispindel_setup(request, sensor_id):
     # hostname, port, and IP address here so we can provide it to the user to enter.
     fermentrack_host = request.META['HTTP_HOST']
     try:
+        if ":" in fermentrack_host:
+            fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
         ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
         ip_list = [result[-1][0] for result in ais]
         ip_list = list(set(ip_list))
