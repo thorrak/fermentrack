@@ -2,6 +2,7 @@ from django import forms
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, SensorDevice, FermentationProfile, FermentationProfilePoint
 from django.core import validators
 import fermentrack_django.settings as settings
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.forms import ModelForm
 from . import udev_integration
@@ -69,6 +70,21 @@ class DeviceForm(forms.Form):
     prefer_connecting_via_udev = forms.BooleanField(initial=True, required=False,
                                                     help_text="Whether to autodetect the appropriate serial port " +
                                                               "using the device's USB serial number")
+
+    # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
+    def clean_device_name(self):
+        if 'device_name' not in self.cleaned_data:
+            raise forms.ValidationError("A device name must be specified")
+        else:
+            device_name = self.cleaned_data['device_name']
+
+        try:
+            existing_device = BrewPiDevice.objects.get(device_name=device_name)
+            raise forms.ValidationError("A device already exists with the name {}".format(device_name))
+
+        except ObjectDoesNotExist:
+            # There was no existing device - we're good.
+            return device_name
 
     def clean(self):
         cleaned_data = self.cleaned_data
