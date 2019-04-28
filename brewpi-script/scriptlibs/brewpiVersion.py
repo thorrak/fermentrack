@@ -148,7 +148,7 @@ class AvrInfo:
         j = None
         try:
             j = json.loads(s)
-        except (json.decoder.JSONDecodeError) as e:
+        except (json.JSONDecodeError) as e:
             print("JSON decode error: %s" % str(e), file=sys.stderr)
             print("Could not parse version number: " + s, file=sys.stderr)
         except (UnicodeDecodeError) as e:
