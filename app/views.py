@@ -848,9 +848,13 @@ def device_uninstall(request, device_id):
 # wrap the json file and append the closing bracket after dumping its contents to the browser.
 def almost_json_view(request, device_id, beer_id):
     json_close = "\r\n]"
+    empty_array = []
 
-    # beer_obj = Beer.objects.get(id=beer_id, device_id=device_id)
-    beer_obj = Beer.objects.get(id=beer_id)
+    try:
+        beer_obj = Beer.objects.get(id=beer_id)
+    except ObjectDoesNotExist:
+        # The beer doesn't exist. Return nothing.
+        return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
     filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
 
@@ -861,7 +865,6 @@ def almost_json_view(request, device_id, beer_id):
         response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response
     else:
-        empty_array = []
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
 
