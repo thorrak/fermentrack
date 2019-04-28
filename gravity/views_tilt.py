@@ -370,6 +370,11 @@ def tiltbridge_handler(request):
         return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
                             json_dumps_params={'indent': 4})
 
+    if tiltbridge_data['tilts'] is None:
+        # The TiltBridge has no connected Tilts. Return success (but note as such)
+        return JsonResponse({'status': 'success', 'message': "No Tilts in TiltBridge data to process"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
     for this_tilt in tiltbridge_data['tilts']:
         try:
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
