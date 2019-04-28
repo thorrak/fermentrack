@@ -297,12 +297,18 @@ def sensor_config(request, device_id):
             # OK. Here is where things get a bit tricky - We can't just rely on the form to generate the sensor object
             # as all the form really does is specify what about the sensor to change. Let's locate the sensor we need
             # to update, then adjust it based on the sensor (device) type.
-            if form.data['installed']:
-                sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.installed_devices,
-                                                                                address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
-            else:
-                sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.available_devices,
-                                                                                address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+            try:
+                if form.data['installed']:
+                    sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.installed_devices,
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                else:
+                    sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.available_devices,
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+            except ValueError:
+                messages.error(request, "Unable to confirm the pin/address on your controller. Check to ensure that " +
+                               "your controller is properly connected, and reattempt assignment.")
+                return redirect('sensor_list', device_id=device_id)
+
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
             sensor_to_adjust.invert = form.cleaned_data['invert']
             sensor_to_adjust.calibrate_adjust = form.cleaned_data['calibration']
