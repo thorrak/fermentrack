@@ -1170,6 +1170,15 @@ class Beer(models.Model):
     def full_csv_url(self):
         return self.data_file_url('full_csv')
 
+    def can_log_gravity(self):
+        if self.gravity_enabled is False:
+            return False
+        if self.device.gravity_sensor is None:
+            return False
+
+        return True
+
+
     # def base_csv_url(self):
     #     return self.data_file_url('base_csv')
 
@@ -1243,7 +1252,7 @@ class BeerLogPoint(models.Model):
     def has_gravity_enabled(self):
         # Just punting this upstream
         if self.associated_beer_id is not None:
-            return self.associated_beer.gravity_enabled
+            return self.associated_beer.can_log_gravity()
         else:
             return False
 
