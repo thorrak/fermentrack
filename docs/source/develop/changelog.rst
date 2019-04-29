@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unversioned] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fixed
+---------------------
+
+- Prompt for reconfiguration if pin/address assignment fails on BrewPi Controller
+- Validate device name uniqueness when adding a new BrewPi Controller
+- Warn user when empty temperature is submitted alongside Fridge or Beer Constant mode
+- Return debugging info when a connection to a WiFi BrewPi Controller is refused
+- Properly handle errors in the first step of the firmware flash process
+- When logging beer points on a gravity-enabled log, make sure the gravity sensor exists (or stop logging)
+- Properly handle empty TiltBridge check-ins
+- Before adding a Tilt that uses a TiltBridge, make sure the TiltBridge exists
+- Return an error if a TiltBridge doesn't pass properly formed JSON
+- Enforce uniqueness of a Beer name/logging device combination when the Beer is created
+- Cause brewpi-script to terminate if the controller returns invalid control settings
+- Return empty JSON for annotations if Beer doesn't exist
+
+
 [2019-03-31] - TiltBridge Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
