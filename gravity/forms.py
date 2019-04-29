@@ -227,6 +227,21 @@ class TiltCreateForm(forms.Form):
                                             'cannot be connected via Bluetooth.')
         return self.cleaned_data['connection_type']
 
+    def clean(self):
+        cleaned_data = self.cleaned_data
+
+        if self.cleaned_data.get('connection_type'):
+            if self.cleaned_data.get('connection_type') == TiltConfiguration.CONNECTION_BRIDGE:
+                # We're connecting via a TiltBridge. Make sure we have a valid TiltBridge object.
+                # NOTE - As written, this doesn't work with the "+" option available in the form handler to add a
+                # TiltBridge object at the same time as a Tilt
+                try:
+                    tilt_bridge = TiltBridge.objects.get(mdns_id=cleaned_data['tiltbridge'])
+                except ObjectDoesNotExist:
+                    raise forms.ValidationError("When choosing the TiltBridge connection type, you must specify the " +
+                                                "specific TiltBridge through which this Tilt connects")
+
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super(TiltCreateForm, self).__init__(*args, **kwargs)

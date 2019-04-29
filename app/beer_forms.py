@@ -1,6 +1,7 @@
 from django import forms
 from app.models import Beer, BrewPiDevice
 from django.core import validators
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class BeerCreateForm(forms.Form):
@@ -43,6 +44,13 @@ class BeerCreateForm(forms.Form):
             cleaned_data['device'] = linked_device
         except:
             raise forms.ValidationError("Invalid device ID specified!")
+
+        try:
+            # Beer/Device combinations must be unique. Check that this is the case.
+            existing_beer = Beer.objects.get(name=beer_name, device=linked_device)
+            raise forms.ValidationError("A beer already exists with that combination of beer name/device ID!")
+        except ObjectDoesNotExist:
+            pass
 
         return cleaned_data
 
