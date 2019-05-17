@@ -215,7 +215,7 @@ def firmware_flash_serial_autodetect(request, board_id):
         if 'step' not in request.POST:
             # We received a form, but not the right form. Redirect to the start of the autodetection flow.
             return render(request, template_name='firmware_flash/serial_autodetect_1.html',
-                                       context={'board_id': board_id})
+                                       context={'board_id': board_id, 'board': board_obj})
         elif request.POST['step'] == "2":
             # Step 2 - Cache the current devices & present the next set of instructions to the user
             current_devices = serial_integration.cache_current_devices()

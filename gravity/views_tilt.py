@@ -13,6 +13,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravityCalibrationPoint, TiltBridge, TiltConfiguration
 
+from gravity import mdnsLocator
+
+import csv
+
 try:
     import numpy
     NUMPY_ENABLED = True
@@ -346,31 +350,34 @@ def tiltbridge_handler(request):
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    import pprint
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_raw_output.log'), 'w') as logFile:
-        pprint.pprint(request.body.decode('utf-8'), logFile)
-
-    # This should look like this (while testing only):
+    # This should look like this:
     # {
-    #   'api_key': 'Key Goes Here',
+    #   'mdns_id': 'mDNS ID goes here',
     #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
     #            {'color': 'Orange', 'temp': 66, 'gravity': 1.001}
     # }
 
-    tiltbridge_data = json.loads(request.body.decode('utf-8'))
-    with open(os.path.join(settings.BASE_DIR, "log", 'tiltbridge_json_output.log'), 'w') as logFile:
-        pprint.pprint(tiltbridge_data, logFile)
+    try:
+        tiltbridge_data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'failed', 'message': "Malformed JSON - Unable to parse!"}, safe=False,
+                            json_dumps_params={'indent': 4})
 
     try:
-        if 'api_key' in tiltbridge_data:
-            tiltbridge_obj = TiltBridge.objects.get(api_key=tiltbridge_data['api_key'])
+        if 'mdns_id' in tiltbridge_data:
+            tiltbridge_obj = TiltBridge.objects.get(mdns_id=tiltbridge_data['mdns_id'])
         else:
-            logger.error(u"Malformed TiltBridge JSON - No key provided!")
-            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No api_key provided!"}, safe=False,
+            logger.error(u"Malformed TiltBridge JSON - No mdns ID provided!")
+            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No mDNS ID provided!"}, safe=False,
                                 json_dumps_params={'indent': 4})
     except ObjectDoesNotExist:
-        logger.error(u"Unable to load TiltBridge with key {}".format(tiltbridge_data['api_key']))
-        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that name"}, safe=False,
+        logger.error(u"Unable to load TiltBridge with mDNS ID {}".format(tiltbridge_data['mdns_id']))
+        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
+    if tiltbridge_data['tilts'] is None:
+        # The TiltBridge has no connected Tilts. Return success (but note as such)
+        return JsonResponse({'status': 'success', 'message': "No Tilts in TiltBridge data to process"}, safe=False,
                             json_dumps_params={'indent': 4})
 
     for this_tilt in tiltbridge_data['tilts']:
@@ -378,10 +385,10 @@ def tiltbridge_handler(request):
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
                                                      tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
 
-            raw_temp = tiltbridge_data['tilts'][this_tilt]['temp']
+            raw_temp = int(tiltbridge_data['tilts'][this_tilt]['temp'])
             converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
 
-            raw_gravity = tiltbridge_data['tilts'][this_tilt]['gravity']
+            raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
             normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
 
             new_point = GravityLogPoint(
@@ -411,3 +418,74 @@ def tiltbridge_handler(request):
 
     return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
                         json_dumps_params={'indent': 4})
+
+
+
+@login_required
+@site_is_configured
+def gravity_tiltbridge_add(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+    installed_devices, available_devices = mdnsLocator.find_mdns_tiltbridge_devices()
+
+
+    if request.POST:
+        form = forms.TiltBridgeForm(request.POST)
+        if form.is_valid():
+            new_tiltbridge = form.save()
+            messages.success(request, u"TiltBridge '{}' created".format(new_tiltbridge.name))
+
+            fermentrack_host = request.META['HTTP_HOST']
+
+            if new_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
+                messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(new_tiltbridge.name))
+                return redirect("gravity_add_board")
+            else:
+                messages.error(request, u"Unable to automatically update Fermentrack URL on TiltBridge {}".format(new_tiltbridge.name))
+                return redirect("gravity_tiltbridge_urlerror", tiltbridge_id=new_tiltbridge.mdns_id)
+
+        else:
+            messages.error(request, u"Invalid TiltBridge specification")
+
+    else:
+        form = forms.TiltBridgeForm()
+
+    return render(request, template_name='gravity/gravity_tiltbridge_add.html',
+                  context={'form': form, 'available_devices': available_devices,})
+
+
+@login_required
+@site_is_configured
+def gravity_tiltbridge_urlerror(request, tiltbridge_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        selected_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
+    except:
+        messages.error(request, u"Unable to load TiltBridge with mDNS ID '{}'".format(tiltbridge_id))
+        return redirect("gravity_add_board")
+
+    # In order to tell the user what to do, we need to look up Fermentrack's IP address. Attempt it here, and send back
+    # an error if this fails.
+    try:
+        fermentrack_host = request.META['HTTP_HOST']
+        if ":" in fermentrack_host:
+            fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
+        ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+        ip_list = [result[-1][0] for result in ais]
+        ip_list = list(set(ip_list))
+        resolved_address = ip_list[0]
+        fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
+
+    except:
+        # For some reason we failed to resolve the IP address of Fermentrack. Return an error.
+        messages.error(request, u"Unable to identify Fermentrack's IP Address ")
+        return redirect("gravity_add_board")
+
+    return render(request, template_name='gravity/gravity_tiltbridge_urlerror.html',
+                  context={'tiltbridge': selected_tiltbridge, 'fermentrack_url': fermentrack_url,})

@@ -42,7 +42,7 @@ gravity_urlpatterns = [
     url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_ispindel_extras, name="get_ispindel_extras"),  # Specific to iSpindel devices, allows for easy calibration
     url(r'^api/gravity/tilt/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_tilt_extras, name="get_tilt_extras"),  # Specific to Tilt Hydrometers, allows for easy calibration
 
-    # iSpindel-specific Views
+    # iSpindel specific Views
     url(r'^i[sS]{1}pind[el]{2}/?$', gravity.views_ispindel.ispindel_handler, name="gravity_ispindel"),  # Handler for ispindel gravity readings
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/setup/$', gravity.views_ispindel.gravity_ispindel_setup, name='gravity_ispindel_setup'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/coefficients/$', gravity.views_ispindel.gravity_ispindel_coefficients, name='gravity_ispindel_coefficients'),
@@ -51,7 +51,7 @@ gravity_urlpatterns = [
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/calibrate/$', gravity.views_ispindel.gravity_ispindel_calibrate, name='gravity_ispindel_calibrate'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/ispindel/calibration/guided/(?P<step>[A-Za-z0-9]{1,20})$', gravity.views_ispindel.gravity_ispindel_guided_calibration, name='gravity_ispindel_guided_calibration'),
 
-    # Tilt-specific Views
+    # Tilt specific Views
     url(r'^[tT]{1}ilt[bB]{1}ridge/?$', gravity.views_tilt.tiltbridge_handler, name="gravity_tiltbridge"), # Handler for tiltbridge gravity readings
     # url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/tilt/setup/$', gravity.views_tilt.gravity_tilt_setup, name='gravity_tilt_setup'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/tilt/coefficients/gravity/$', gravity.views_tilt.gravity_tilt_coefficients, name='gravity_tilt_coefficients'),
@@ -60,5 +60,8 @@ gravity_urlpatterns = [
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/tilt/calibration/gravity/calibrate/$', gravity.views_tilt.gravity_tilt_calibrate, name='gravity_tilt_calibrate'),
     url(r'^gravity/sensor/(?P<sensor_id>[A-Za-z0-9]{1,20})/tilt/calibration/gravity/guided/(?P<step>[A-Za-z0-9]{1,20})$', gravity.views_tilt.gravity_tilt_guided_calibration, name='gravity_tilt_guided_calibration'),
 
+    # TiltBridge specific views
+    url(r'^gravity/tiltbridge/add/$', gravity.views_tilt.gravity_tiltbridge_add, name='gravity_tiltbridge_add'),
+    url(r'^gravity/tiltbridge/urlerror/(?P<tiltbridge_id>[A-Za-z0-9]+)/$', gravity.views_tilt.gravity_tiltbridge_urlerror, name='gravity_tiltbridge_urlerror'),
 
 ]

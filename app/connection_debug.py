@@ -12,6 +12,8 @@ import telnetlib
 
 def dns_lookup(hostname):
     try:
+        if ":" in hostname:
+            hostname = hostname[:hostname.find(":")]
         ip_list = []
         ais = socket.getaddrinfo(hostname, 0, 0, 0, 0)
         for result in ais:
@@ -29,6 +31,8 @@ def test_telnet(hostname, port):
     try:
         tn = telnetlib.Telnet(host=hostname, port=port, timeout=3)
     except socket.timeout:
+        return False, False, None
+    except ConnectionRefusedError:
         return False, False, None
 
     try:

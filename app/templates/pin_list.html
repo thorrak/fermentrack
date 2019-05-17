@@ -72,7 +72,7 @@
                 </span>
             </div>
             <div class="row">
-                Chamber sensor set to address {{ chamber_sensor.addresss }}
+                Chamber sensor set to address {{ active_device.chamber_sensor.address }}
         {% else %}
                 <span class="fa-stack fa-5x">
                   <i class="fa fa-square-o fa-stack-2x text-error" style="color: #d43f3a;"></i>
@@ -98,7 +98,7 @@
                 </span>
             </div>
             <div class="row">
-                Beer sensor set to pin {{ active_device.beer_sensor.pin }}
+                Beer sensor set to address {{ active_device.beer_sensor.address }}
         {% else %}
                 <span class="fa-stack fa-5x">
                   <i class="fa fa-square-o fa-stack-2x text-warn"></i>

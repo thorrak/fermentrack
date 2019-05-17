@@ -51,14 +51,14 @@
     <tr><td>Active Branch:</td> <td>{{ commit_info.local_branch }}</td></tr>
     <tr><td>Commit Date:</td> <td>{{ commit_info.local.committed_datetime|timezone:preferred_tz }}</td></tr>
     <tr><td>Commit Message:</td> <td><pre>{{ commit_info.local.message }}</pre></td></tr>
-    <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.local.hexsha }}</td></tr>
+{#    <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.local.hexsha }}</td></tr>#}
 </table>
 
 <h4>Remote Commit Info:</h4>
 <table>
     <tr><td>Commit Date:</td> <td>{{ commit_info.remote.committed_datetime|timezone:preferred_tz }}</td></tr>
     <tr><td>Commit Message:</td> <td><pre>{{ commit_info.remote.message }}</pre></td></tr>
-    <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.remote.hexsha }}</td></tr>
+{#    <tr><td>Commit Hex SHA:</td> <td>{{ commit_info.remote.hexsha }}</td></tr>#}
 </table>
 
 {% if not app_is_current %}

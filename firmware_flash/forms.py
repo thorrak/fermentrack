@@ -26,8 +26,7 @@ class FirmwareFamilyForm(forms.Form):
         for this_field in self.fields:
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
-        # TODO - Remove the exclusion when ESP32 support is tested/live
-        family_choices = [(fam.id, fam.name) for fam in DeviceFamily.objects.exclude(detection_family=DeviceFamily.DETECT_ESP32)]
+        family_choices = [(fam.id, fam.name) for fam in DeviceFamily.objects.all()]
 
         self.fields['device_family'].choices = family_choices
 
