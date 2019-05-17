@@ -21,9 +21,11 @@ Create Users
     
 ### Endpoints
 
-POST - http://your-url/api-v1/create_user - Create Users
-Mandatory Parameters in header : **username**, **password** and **email**.
-Optional Parameters in header: **first_name**,  **last_name**, 
+> POST - http://your-url/api-v1/create_user - **Create Users** 
+> 
+> Mandatory Parameters in header : **username**, **password** and **email**.
+> 
+> Optional Parameters in header: **first_name**,  **last_name**,
 
 ###  Request example
 
@@ -44,10 +46,12 @@ Tokens has as expiration time of 10.000 seconds and non-expired tokens can be "r
   
 ### Endpoints
 
-POST - http://your-url/api-token-auth/ - Create tokens
-Mandatory Parameters in header : **username** and **password** 
-POST - http://your-url/api-token-refresh/ - Refresh Tokens
-Mandatory Parameters in header : **token** 
+> POST - http://your-url/api-token-auth/ - **Create tokens** 
+
+> Mandatory Parameters in header : **username** and **password**  POST - http://your-url/api-token-refresh/ - **Refresh Tokens** 
+
+> Mandatory Parameters in header : **token**
+
     
 ###  Request example (Create tokens)
 
@@ -66,11 +70,16 @@ List Devices and Create new Devices
 
 ### Endpoints
 
-POST - http://your-url/devices/ (Create new Device)
-Mandatory Parameters in header : **token**  
-Mandatory Parameters in body : **device_name** and  **wifi_host_ip**
-GET - http://your-url/devices/ (List all devices)
-GET - http://your-url/devices/device_id (List a device)
+> POST - http://your-url/devices/  - **Create new Device**
+
+> Mandatory Parameters in header : **token**  
+
+> Mandatory Parameters in body : **device_name** and  **wifi_host_ip**
+
+> GET - http://your-url/devices/ - **List all devices**
+
+> GET - http://your-url/devices/device_id - **List a device**
+
  
 ### Request example (Create new Device)
 
@@ -97,12 +106,17 @@ List Beers and Create new beer
     
 ### Endpoints
 
-POST - http://your-url/api-v1/beers/ - Create new beer
-Mandatory Parameters in header : **token** 
-Mandatory Parameters in body : **name** and **device_id** (int)
-Optional Parameters in body : **format** ("F" or "C")
-GET - http://your-url/api-v1/beers/  - List all beers
-GET - http://your-url/api-v1/beers/beer_id - List a beer
+> POST - http://your-url/api-v1/beers/ - **Create new beer**
+
+> Mandatory Parameters in header : **token** 
+
+> Mandatory Parameters in body : **name** and **device_id** (int)
+
+> Optional Parameters in body : **format** ("F" or "C")
+
+> GET - http://your-url/api-v1/beers/  - **List all beers**
+
+> GET - http://your-url/api-v1/beers/beer_id - **List a beer**
 
 
 ### Request example (List all beers)
@@ -126,6 +140,5 @@ curl -H "Authorization: JWT
  ##  Profiles
  
 ## Profiles Points
-
 
 
