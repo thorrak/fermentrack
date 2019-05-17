@@ -6,6 +6,7 @@ from datetime import datetime
 from rest_framework_jwt.settings import api_settings
 from calendar import timegm
 
+import json
 
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,14 +36,26 @@ class BeerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BrewPiDeviceSerializer(serializers.ModelSerializer):
+    active_beer_name = serializers.SerializerMethodField()
+    controller_data = serializers.SerializerMethodField()
+    
     class Meta:
         model = BrewPiDevice
-        fields = '__all__'
+        fields = ('id', 'device_name', 'active_beer', 'active_beer_name', 'controller_data')
+    
+    def get_active_beer_name(self, obj):
+        if obj.active_beer:   
+            return obj.active_beer.name
+        else:
+            return ""
 
-class FermentationProfilePointSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FermentationProfilePoint
-        fields = '__all__'
+    def get_controller_data(self, obj):
+        try:  
+            return json.loads(obj.send_message("getDashInfo", read_response=True))
+        except TypeError:
+            return None    
+
+
 
 class BeerLogPointSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,6 +67,10 @@ class FermentationProfileSerializer(serializers.ModelSerializer):
         model = FermentationProfile
         fields = '__all__'
 
+class FermentationProfilePointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FermentationProfilePoint
+        fields = '__all__'
 
 # custom payload for JWT token response 
 

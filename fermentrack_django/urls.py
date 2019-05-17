@@ -30,8 +30,8 @@ admin.autodiscover()
 #  Django Rest Framework
 #  Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
 router.register(r'beers', BeerViewSet)
+router.register(r'users', UserViewSet)
 router.register(r'create_user', CreateUserViewSet)
 router.register(r'devices', BrewPiDeviceViewSet)
 router.register(r'profiles', FermentationProfileViewSet)

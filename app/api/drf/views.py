@@ -20,14 +20,13 @@ class CreateUserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed 
+    API endpoint that allows users to be viewed or edited.
     """
-    
-    queryset = User.objects.all().order_by('-date_joined')
+    permission_classes = [IsAuthenticated,]
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
@@ -38,6 +37,14 @@ class BeerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated,]
     queryset = Beer.objects.all()
     serializer_class = BeerSerializer
+    http_method_names = ['get', 'post']
+
+   # def post(self, request, format=None):
+    #    serializer = BeerSerializer(data=request.data)
+     #   if serializer.is_valid():
+      #      serializer.save()
+       #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+       # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class BrewPiDeviceViewSet(viewsets.ModelViewSet):
     """
@@ -46,6 +53,14 @@ class BrewPiDeviceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated,]
     queryset = BrewPiDevice.objects.all()
     serializer_class = BrewPiDeviceSerializer
+    http_method_names = ['get', 'post']
+ 
+    def post(self, request, format=None):
+        serializer = BrewPiDeviceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FermentationProfileViewSet(viewsets.ModelViewSet):
     """
