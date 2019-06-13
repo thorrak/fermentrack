@@ -174,9 +174,11 @@ class Firmware(models.Model):
     checksum_spiffs = models.CharField(max_length=64, help_text="SHA256 checksum of the SPIFFS file (for checking validity)",
                                        default="", blank=True)
 
-
     def __str__(self):
-        return self.name + " - " + self.version + " - " + self.revision + " - " + self.variant
+        name = self.name + " - " + self.version + " - " + self.revision
+        if len(self.variant) > 0:
+            name += " - " + self.variant
+        return name
 
     def __unicode__(self):
         return self.__str__()
@@ -250,6 +252,9 @@ class Firmware(models.Model):
                 # The checksum check failed - Kill the file
                 os.remove(full_path)
 
+        if len(url) < 12:  # If we don't have a URL, we can't download anything
+            return False
+
         # So either we don't have a downloaded copy (or it's invalid). Let's download a new one.
         r = requests.get(url, stream=True)
 
@@ -271,12 +276,12 @@ class Firmware(models.Model):
 
     def download_to_file(self, check_checksum=True, force_download=False):
         # If this is a multi-part firmware (ESP32, with partitions or SPIFFS) then download the additional parts.
-        if len(self.download_url_partitions) > 12 and len(self.checksum_partitions) > 0:
+        if len(self.download_url_partitions) > 12:
             if not self.download_file(self.full_filepath("partitions"), self.download_url_partitions,
                                       self.checksum_partitions, check_checksum, force_download):
                 return False
 
-        if len(self.download_url_spiffs) > 12 and len(self.checksum_spiffs) > 0 and len(self.spiffs_address) > 2:
+        if len(self.download_url_spiffs) > 12 and len(self.spiffs_address) > 2:
             if not self.download_file(self.full_filepath("spiffs"), self.download_url_spiffs,
                                       self.checksum_spiffs, check_checksum, force_download):
                 return False

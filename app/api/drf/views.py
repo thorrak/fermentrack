@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from app.api.drf.serializers import CreateUserSerializer, UserSerializer, BeerSerializer, BrewPiDeviceSerializer, FermentationProfileSerializer, FermentationProfilePointSerializer, BeerLogPointSerializer
 from app.models import Beer, BrewPiDevice, FermentationProfile, FermentationProfilePoint, BeerLogPoint
@@ -37,30 +38,45 @@ class BeerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated,]
     queryset = Beer.objects.all()
     serializer_class = BeerSerializer
-    http_method_names = ['get', 'post']
+    http_method_names = ['get','update', 'post']
+    
 
-   # def post(self, request, format=None):
-    #    serializer = BeerSerializer(data=request.data)
-     #   if serializer.is_valid():
-      #      serializer.save()
-       #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-       # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    	#if request.method == 'POST':
+
+    #@api_view(['GET', 'POST'])
+    #def hello_world(request):
+    #	if request.method == 'POST':
+    #    	return Response({"message": "Got some data!", "data": request.data})
+    #	return Response({"message": "Hello, world!"})
+
 
 class BrewPiDeviceViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows brewpidevices to be viewd and created.
     """
     permission_classes = [IsAuthenticated,]
     queryset = BrewPiDevice.objects.all()
     serializer_class = BrewPiDeviceSerializer
-    http_method_names = ['get', 'post']
+    http_method_names = ['get','update', 'put', 'post']
  
-    def post(self, request, format=None):
-        serializer = BrewPiDeviceSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #def post(self, request, format=None):
+    #    serializer = BrewPiDeviceSerializer(data=request.data)
+    #    if serializer.is_valid():
+    #        serializer.save()
+    #        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    #def update(self, request, *args, **kwargs):
+    #    instance = self.get_object()
+    #    instance.active_beer = request.data.get("active_beer")
+    #    instance.save()
+
+     #   serializer = self.get_serializer(instance)
+      #  serializer.is_valid(raise_exception=True)
+       # self.perform_update(serializer)
+
+        #return Response(serializer.data)
+
 
 class FermentationProfileViewSet(viewsets.ModelViewSet):
     """

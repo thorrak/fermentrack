@@ -46,7 +46,7 @@ def flash_firmware(flash_request_id):
         if len(flash_request.firmware_to_flash.download_url_partitions) > 0 and len(flash_request.firmware_to_flash.checksum_partitions) > 0:
             # We need to flash partitions. Partitions are (currently) always at 0x8000
             flash_cmd.append("0x8000")
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("firmware"))
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("partitions"))
 
         # Then, check for SPIFFS
         if len(flash_request.firmware_to_flash.download_url_spiffs) > 0 and \
@@ -54,7 +54,7 @@ def flash_firmware(flash_request_id):
                  len(flash_request.firmware_to_flash.spiffs_address) > 2:
             # We need to flash SPIFFS. The location is dependent on the partition scheme, so we need to use the address
             flash_cmd.append(flash_request.firmware_to_flash.spiffs_address)
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("firmware"))
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("spiffs"))
 
 
     # TODO - Explicitly need to disable any device on that port
@@ -75,8 +75,9 @@ def flash_firmware(flash_request_id):
 
     # And now, let's call the actual flasher
     try:
-        output_text = subprocess.check_output(flash_cmd)
-    except (subprocess.CalledProcessError) as e:
+        output_text = "Flash Command: " + " ".join(flash_cmd) + "\r\n\r\n"
+        output_text += subprocess.check_output(flash_cmd).decode(encoding="cp437")
+    except subprocess.CalledProcessError as e:
         flash_request.fail("Flash process returned code {}".format(e.returncode), e.output)
         return None
 

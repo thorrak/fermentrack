@@ -198,9 +198,15 @@ def save_beer_log_point(db_config_object, beer_row):
     new_log_point.temp_format = db_config_object.temp_format
     new_log_point.associated_beer = db_config_object.active_beer
 
-    new_log_point.enrich_gravity_data()  # If gravity sensing is turned on, this will capture & populate everything
+    try:
+        new_log_point.enrich_gravity_data()  # If gravity sensing is turned on, this will capture & populate everything
+    except RuntimeError:
+        # This gets tripped when there is an issue with enrich_gravity_data where the associated gravity sensor no longer
+        # exists. This shouldn't happen, but can if the user goes poking around. Don't log the point - just return.
+        return
 
     new_log_point.save()
+
 
 def printStdErr(*objs):
     print("", *objs, file=sys.stderr)

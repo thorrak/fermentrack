@@ -1,0 +1,85 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}{% load static %}
+
+{% block title %}Add TiltBridge{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="page-header">Add Tiltbridge</h1>
+
+    <p>
+        The <a href="https://www.tiltbridge.com/">TiltBridge</a> is a device that is designed to take the Bluetooth
+        signal that is transmitted by the Tilt Hydrometer and convert it to WiFi. Although Fermentrack natively supports
+        receiving Tilt readings via Bluetooth using the internal Bluetooth radio on your Raspberry Pi, a TiltBridge can
+        assist when either running Fermentrack on a device without a Bluetooth radio, or when your fermenters are far
+        away from the computer running Fermentrack.
+    </p>
+
+     {% if form.non_field_errors %}
+        <div class="alert alert-danger"> {% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+     {% endif %}
+
+    <h3>Available TiltBridges</h3>
+
+    <p>
+        The below TiltBridge devices are available on your network but are not currently set up in Fermentrack. To set
+        up one of these devices, enter the name you want the device known by in the text box next to its mDNS ID in the
+        table below, and click "Add to Fermentrack".
+    </p>
+
+    {% if available_devices %}
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>mDNS ID</th>
+                    <th>Name</th>
+                    <th>Add</th>
+                </tr>
+            </thead>
+        {% for this_device in available_devices %}
+            <tr>
+                <form action="{% url "gravity_tiltbridge_add" %}" class="form-horizontal" method="post">{% csrf_token %}
+                <td><input type="hidden" name="mdns_id" maxlength="64" required id="id_mdns_id" value="{{ this_device.mDNSname }}" />{{ this_device.mDNSname }}</td>
+                <td><input type="text" name="name" maxlength="64" required id="id_name" /></td>
+                <td><input type="submit" value="Add to Fermentrack" class="btn btn-sm btn-primary" /></td>
+                </form>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        No uninstalled mDNS TiltBridge devices{# TODO - Add some kind of popup or mouseover help text to this message #}
+    {% endif %}
+
+
+    <h3>Add TiltBridge Manually</h3>
+
+    <p>
+        If the TiltBridge device doesn't show up in the list above, it may not be responding to the mDNS query, or mDNS
+        queries may be blocked on your network. To add it manually, input the TiltBridge's mDNS ID and a name to identify
+        it within Fermentrack below, and click "Create TiltBridge".
+    </p>
+
+    <form action="{% url "gravity_tiltbridge_add" %}" class="form-horizontal" method="post">{% csrf_token %}
+        <div id="tiltBridgeAdvancedSection">
+            {% form_generic form.mdns_id %}
+            {% form_generic form.name %}
+            <div class="row col-xs-12"><input type="submit" value="Create TiltBridge" class="btn btn-primary" /></div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}

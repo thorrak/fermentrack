@@ -1,0 +1,181 @@
+{# This file contains the portions of the "manage sensor" page that are specific to the iSpindel #}
+{# They are broken out here to help reduce the size of the gravity_manage template a bit #}
+{% extends "gravity/gravity_manage.html" %}
+{% load custom_tags %}
+{% load static %}
+{% load tz %}
+
+
+{% block sensor_specific_config %}
+
+        <h2>Configuration Options</h2>
+
+            <div class="row">
+                <div class="col-lg-5 col-sm-9 col-xs-12">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+
+                        <tr>
+                            <td>Tilt Color</td>
+                            <td>{{ active_device.tilt_configuration.color }}</td>
+                        </tr>
+                        <tr>
+                            <td>Connection Type</td>
+                            <td>{{ active_device.tilt_configuration.connection_type }}</td>
+                        </tr>
+                        <tr>
+                            <td>Smoothing Window (Readings)</td>
+                            <td>{{ active_device.tilt_configuration.smoothing_window_vals }}</td>
+                        </tr>
+                        <tr>
+                            <td>Logging Frequency</td>
+                            <td>{{ active_device.tilt_configuration.polling_frequency }}</td>
+                        </tr>
+
+                        {% if active_device.tilt_configuration.connection_type == "TiltBridge" %}
+                            <tr>
+                                <td>TiltBridge Name</td>
+                                <td>{{ active_device.tilt_configuration.tiltbridge.name }}</td>
+                            </tr>
+                            <tr>
+                                <td>TiltBridge mDNS ID</td>
+                                <td>{{ active_device.tilt_configuration.tiltbridge.mdns_id }}</td>
+                            </tr>
+                        {% endif %}
+                </table>
+
+                </div>
+            </div>
+
+        <h2>Tilt-to-Gravity Equation</h2>
+
+        <p>
+            Tilt Hydrometers measure & transmit a specific gravity directly, but this measurement can be slightly off
+            from what the specific gravity actually is. Using a handful of calibration points, we fit an equation that
+            can be used to convert the Tilt-measured gravity to what we expect the actual gravity to be.
+        </p>
+
+        <p>
+            Current Formula: gravity = {{ active_device.tilt_configuration.grav_second_degree_coefficient }}x^2 +
+            {{ active_device.tilt_configuration.grav_first_degree_coefficient }}x +
+            {{ active_device.tilt_configuration.grav_constant_term }}
+        </p>
+
+        <p>
+            You can update the coefficients of this formula below manually, or enter gravity & tilt calibration points
+            and have Fermentrack calculate the coefficients automatically.
+        </p>
+
+        <form action="{% url "gravity_tilt_coefficients" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.b %}</div>
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.c %}</div>
+            <div class="row col-xs-12">{% form_generic tilt_coefficient_form.d %}</div>
+            <div class="row col-xs-12"><input type="submit" value="Update Coefficients" class="btn btn-primary" /></div>
+        </form>
+
+
+
+        <h2>Calibration Points</h2>
+
+        <p>
+            After entering a handful of measured/expected gravity readings, Fermentrack can automatically determine the
+            proper coefficients for correcting specific gravity.
+        </p>
+
+
+        {% if tilt_calibration_points %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tilt Gravity</th>
+                    <th>Actual Gravity</th>
+                    <th>Entered</th>
+                    <th>Remove Point</th>
+                </tr>
+            </thead>
+
+            {% for this_point in tilt_calibration_points %}
+                <tr>
+                    <td>{{ this_point.tilt_measured_gravity }}</td>
+                    <td>{{ this_point.actual_gravity }}</td>
+                    {# TODO - fix so the date is formatted correctly we use RFC 5322 formatted date #}
+                    <td>{{ this_point.created | timezone:preferred_tz | date:"r" }}</td>
+                    <td><a href="{% url 'gravity_tilt_delete_gravity_calibration_point' active_device.id this_point.id %}" class="text-danger"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% if tilt_calibration_points|length >= 2 %}
+        <div class="row">
+            <div class="col-xs-12">
+                <a href="{% url "gravity_tilt_calibrate" active_device.id %}" class="btn btn-primary">Perform Calibration with Above Points</a>
+        {% else %}
+        <div class="row">
+            <div class="col-xs-12">
+
+        {% endif %}
+
+
+    {% else %}
+        <h5>There are no calibration points saved for this sensor</h5>
+        <div class="row">
+            <div class="col-xs-12">
+    {% endif %}
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calibrationModal">Add Calibration Point</button>
+                <a href="{% url "gravity_tilt_guided_calibration" active_device.id 0 %}" class="btn btn-primary">Perform Guided Calibration</a>
+
+            </div>
+        </div>
+
+
+    {% if active_device.tilt_configuration.connection_type == "Bluetooth" %}
+        <h2>Extra Data from Device</h2>
+
+        <div class="row"> {# TODO - Make this actually useful to an end user (right now it's just the straight signal # which isn't meaningful) #}
+            <div class="col-sm-4">Current Signal Strength</div>
+            <div class="col-sm-8" id="tiltRSSIFeed"></div>
+        </div>
+    {% endif %}
+
+
+
+
+{% endblock %}
+
+
+
+{% block sensor_specific_scripts %}
+
+    {# This script pulls in the "extra data" that the Tilt saves & populates it on the manage page #}
+    {# Since this is currently only used for RSSI (and that doesn't apply to TiltBridge) only show for Bluetooth #}
+    {% if active_device.tilt_configuration.connection_type == "Bluetooth" %}
+        <script type="text/javascript">
+            (function tilt_worker() {
+                $.ajax({
+                    type: 'GET',
+                    async: true,
+                    beforeSend: function (xhr) {
+                        if (xhr && xhr.overrideMimeType) {
+                            xhr.overrideMimeType('application/json;charset=utf-8');
+                        }
+                    },
+                    dataType: 'json',
+                    url: '{% url 'get_tilt_extras' active_device.id %}',
+                    success: function(data) {
+                        $('#tiltRSSIFeed').html(data.rssi);
+                    },
+                    complete: function() {
+                    // Schedule the next request when the current one's complete
+                    setTimeout(tilt_worker, 2000);
+                    }
+                });
+            })();
+        </script>
+    {% endif %}
+
+{% endblock %}

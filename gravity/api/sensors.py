@@ -38,7 +38,6 @@ def getGravitySensors(req, device_id=None):
         else:
             grav_string = "{:05.3f}".format(gravity)
 
-
         bound_device = {}
         if dev.assigned_brewpi_device is not None:
             bound_device['id'] = dev.assigned_brewpi_device_id
@@ -54,8 +53,6 @@ def getGravitySensors(req, device_id=None):
 
 
 def get_ispindel_extras(req, device_id):
-    ret = []
-
     try:
         device = GravitySensor.objects.get(id=device_id)
     except ObjectDoesNotExist:
@@ -73,8 +70,6 @@ def get_ispindel_extras(req, device_id):
 
 
 def get_tilt_extras(req, device_id):
-    ret = []
-
     try:
         device = GravitySensor.objects.get(id=device_id)
     except ObjectDoesNotExist:

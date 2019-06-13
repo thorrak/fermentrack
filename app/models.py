@@ -269,9 +269,14 @@ class SensorDevice(models.Model):
         all_devices = []
 
         for this_device in device_list:
-            next_device = cls.create_from_dict(this_device, pinlist_dict)
-            next_device.controller = controller
-            all_devices.append(next_device)
+            # This gets wrapped in a try/except block as if the controller returns a malformed device list (e.g. missing
+            # one of the required parameters, like 'h') we want to skip it.
+            try:
+                next_device = cls.create_from_dict(this_device, pinlist_dict)
+                next_device.controller = controller
+                all_devices.append(next_device)
+            except:
+                pass
 
         return all_devices
 
@@ -1170,6 +1175,14 @@ class Beer(models.Model):
     def full_csv_url(self):
         return self.data_file_url('full_csv')
 
+    def can_log_gravity(self):
+        if self.gravity_enabled is False:
+            return False
+        if self.device.gravity_sensor is None:
+            return False
+        return True
+
+
     # def base_csv_url(self):
     #     return self.data_file_url('base_csv')
 
@@ -1247,11 +1260,22 @@ class BeerLogPoint(models.Model):
         else:
             return False
 
+    def can_log_gravity(self):
+        if self.associated_beer_id is not None:
+            return self.associated_beer.can_log_gravity()
+        else:
+            return False
+
 
     def enrich_gravity_data(self):
         # enrich_graity_data is called to enrich this data point with the relevant gravity data
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
         if self.has_gravity_enabled():
+            if not self.can_log_gravity():
+                # We have gravity enabled, but we can't actually log gravity. Stop logging, as this is an issue.
+                self.associated_beer.device.manage_logging(status='stop')
+                raise RuntimeError("Gravity enabled, but gravity sensor doesn't exist")
+
             self.gravity = self.associated_beer.device.gravity_sensor.retrieve_loggable_gravity()
             temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
