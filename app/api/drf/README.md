@@ -1,56 +1,154 @@
-# Fermentrack
+﻿
+# Django Rest Framework Endpoints
 
-[![Fermentrack Logo](http://www.fermentrack.com/static/img/fermentrack_logo.png "Fermentrack")](http://www.fermentrack.com/)
+Additional endpoints for accesing and creating fermentrack resources
 
-[![Documentation Status](https://readthedocs.org/projects/fermentrack/badge/?version=master)](http://fermentrack.readthedocs.io/en/master/?badge=master)
-                
-#### A replacement web interface for BrewPi
+## All Resources
+List all Endpoints
 
-Fermentrack is an application designed to manage and log fermentation temperatures and specific gravity. It acts as a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It also can track Tilt Hydrometers and iSpindel specific gravity sensors - both alongside BrewPi controllers as well as by themselves.
+*http://your-url/api-v1/*
 
-Fermentrack is Python-based, does not require PHP5, and works with Raspbian Stretch or later including on Raspberry Pi 3 B+. Fermentrack is intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same device. 
+    Response format:  JSON 
+    Requires authentication? No
 
-Want to see it in action? See videos of key Fermentrack features on [YouTube](https://www.youtube.com/playlist?list=PLCs4FqrNRHd00wsfsP7cTs83e19S2-Atf)!
+##  Users (POST)
+
+Create Users
+
+    Response format:  JSON 
+    Requires authentication? No
+    Accept: application/json
+    
+### Endpoints
+
+> POST - http://your-url/api-v1/create_user - **Create Users** 
+
+> Mandatory Parameters in header : **username**, **password** and **email**.
+
+> Optional Parameters in header: **first_name**,  **last_name**,
+
+###  Request example
+
+    curl -X POST -H "Content-Type: application/json" -d '{"first_name": "Joe", "last_name":"Doe", "username": "joe", "password": "mypass", "email": "joedoe@riseup.net"}' http://your-url/api-v1/create_user/
+
+### Response Example
+
+    {"id":14,"username":"joe","first_name":"Joe","last_name":"Doe","email":"joedoe@riseup.net"}
+
+## Tokens (POST)
+
+This implementation uses  Django Rest Framework JWT Auth https://getblimp.github.io/django-rest-framework-jwt/ for authentications and token management. It also send user data along with token response.
+Tokens has as expiration time of 10.000 seconds and non-expired tokens can be "refreshed" to obtain a brand new token with renewed expiration time.
+
+    Response format: JSON 
+    Requires authentication? Yes, user password 
+    Accept: application/json
+  
+### Endpoints
+
+> POST - http://your-url/api-token-auth/ - **Create tokens** 
+
+> Mandatory Parameters in header : **username** and **password**  POST - http://your-url/api-token-refresh/ - **Refresh Tokens**
+ 
+> Mandatory Parameters in header : **token**
+
+    
+###  Request example (Create tokens)
+
+curl -X POST -d "username=joe&password=mypass" http://lyour-url/api-token-auth/
+
+### Response Example
+   
+
+    {"email":"joedoe@riseup.net","last_name":"Doe","id":14,"first_name":"Joe","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRhbmllbCIsImVtYWlsIjoiZGFuaWZlcm5hbmRvQGdtYWlsLmNvbSIsInVzZXJfaWQiOjEsIm9yaWdfaWF0IjoxNTU3OTUwNDk0LCJleHAiOjE1NTc5NjA0OTR9.TU983_AcLZxzD8UiEBb0uEII35fl5TGPh9wxwM_I2yU"}
+
+## Device (GET/PUT/POST)
+List, Update (set active_beer) and Create Devices
+
+    Response format:  JSON 
+    Requires authentication? Yes
+
+### Endpoints
+
+> POST - http://your-url/devices/  - **Create new Device**
+
+> Mandatory Parameters in header : **token** 
+
+> Mandatory Parameters in body : **device_name** and  **wifi_host_ip**
+
+> PUT - http://your-url/devices/  - **Create new Device**
+
+> Mandatory Parameters in header : **token** 
+
+> Mandatory Parameters in body : **device_name** and  **active_beer**
+
+> GET - http://your-url/devices/ - **List all devices**
+
+> GET - http://your-url/devices/device_id - **List a device**
+
+ 
+### Request example (Create new Device)
+
+    curl -H "Content-Type: application/json" -X POST -H "Authorization: JWT  <valid_token>" -d '{"device_name" : "brewpi4", "wifi_host_ip":"192.168.1.100"}'  http://your-url/devices/
+    
+### Response Example
+
+    {"id":4,"device_name":"brewpi4","status":"active","active_profile":null,"temp_format":"C","active_beer_name":"","beer_data":null}
+
+### Request example (List all Devices)
+
+curl -H "Authorization: JWT 
+<valid_token>" http://your-url/api-v1/devices/
+
+### Response example 
+
+    [{"id":1,"device_name":"brewpi1","status":"active","active_profile":null,"temp_format":"C","active_beer_name":"Amber Ale","beer_data":null},{"id":2,"device_name":"brewpi2","status":"active","active_profile":1,"temp_format":"C","active_beer_name":"brown ale maturacao","beer_data":null},{"id":3,"device_name":"brewpi3","status":"active","active_profile":null,"temp_format":"C","active_beer_name":"","beer_data":null},{"id":4,"device_name":"brewpi4","status":"active","active_profile":null,"temp_format":"C","active_beer_name":"","beer_data":null}]
+
+### Request example (Update Device)
+
+    curl -H "Content-Type: application/json" -X PUT -H "Authorization: JWT <valid_token>"  -d '{"device_name" : "my_device", "active_beer":1}' http://your-url/api-v1/devices/<device_id>/
+
+## Beers (GET/POST)
+List Beers and Create new beer
+
+    Response format:  JSON 
+    Requires authentication? Yes
+    
+### Endpoints
+
+> POST - http://your-url/api-v1/beers/ - **Create new beer**
+
+> Mandatory Parameters in header : **token** 
+
+> Mandatory Parameters in body : **name** and **device_id** (int)
+
+> Optional Parameters in body : **format** ("F" or "C")
+
+> GET - http://your-url/api-v1/beers/  - **List all beers**
+
+> GET - http://your-url/api-v1/beers/beer_id - **List a beer**
 
 
-### Included with Fermentrack
+### Request example (List all beers)
 
-* **Fermentrack** - Django-based fermentation tracking and control interface. Replaces brewpi-www. Licensed under MIT license.
-* **brewpi-script** - Installed alongside Fermentrack to control BrewPi controllers. Licensed under GPL v3.
-* **nginx** - A reverse proxy/webserver. Licensed under 2-Clause BSD-like license.
-* **circusd** - A python-based process manager. Licensed under the Apache license, v2.0.
-* **chaussette** - A wsgi server. Licensed under the Apache license, v2.0.
+curl -H "Authorization: JWT 
+<valid_token>" http://your-url/api-v1/beers/
 
-## New Features
+### Response example 
 
-One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
+    [{"id":2,"name":"brown ale","created":"2019-04-02T18:29:13Z","format":"C","model_version":2,"gravity_enabled":false,"device":1},{"id":5,"name":"Amber Ale","created":"2019-04-02T18:31:05.640886Z","format":"C","model_version":2,"gravity_enabled":false,"device":1},{"id":6,"name":"brown ale maturacao","created":"2019-04-02T18:48:13.308236Z","format":"C","model_version":2,"gravity_enabled":false,"device":1}]
+    
+### Request example (Create new beer)
 
-* Native multi-chamber support
-* Cleaner, more intuitive controller setup
-* Integrated support for ESP8266-based controllers
-* Official support for "legacy" controllers
-* Native support (including mDNS autodetection) for WiFi controllers
-* Integrated specific gravity sensor support, including for Tilt Hydrometers and iSpindel devices
+    curl -H "Content-Type: application/json" -X POST -H "Authorization: JWT  <valid_token>" -d '{"name" : "brazilian_fruit_beer", "format":"C","device" : 1}'  http://your-url/api-v1/beers/
 
-A full table of controllers/expected hardware availability is available [https://fermentrack.readthedocs.io/](https://fermentrack.readthedocs.io/).
+### Response example 
 
-## Installation & Documentation
+    {"id":10,"name":"brazilian_fruit_beer","created":"2019-05-15T21:46:13.403686Z","format":"C","model_version":2,"gravity_enabled":false,"device":1}
 
-Full documentation for Fermentrack (including complete installation instructions) is available at [https://docs.fermentrack.com/](https://docs.fermentrack.com/).
+ 
+ ##  Profiles
+ 
+## Profiles Points
 
-
-### Quick Installation Instructions
-
-1. Set up your Raspberry Pi (Install Raspbian, enable SSH)
-2. Log into your Raspberry Pi via the terminal or SSH and run `curl -L install.fermentrack.com | sudo bash`
-3. Wait for the installation to complete (can take ~45 mins) and log into Fermentrack 
-
-
-## Requirements
-
-* Raspberry Pi Zero, 2 B, or 3 /w Internet Connection
-* Fresh Raspbian install (Stretch or later preferred, Jessie supported)
-* 1GB of free space available
-
-**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs. 
 
