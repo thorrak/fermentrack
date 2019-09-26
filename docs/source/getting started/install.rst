@@ -69,11 +69,11 @@ brief description of what the command seeks to accomplish in the left.
     * - Clone the Fermentrack repo
       - ``sudo -u fermentrack -H git clone https://github.com/thorrak/fermentrack.git "/home/fermentrack/fermentrack"``
     * - Create the virtualenv for launching fermentrack
-      - ``sudo -u fermentrack -H git clone https://github.com/thorrak/fermentrack.git "/home/fermentrack/fermentrack"``
-    * - Manually link numpy into the virtualenv
-      - ``sudo -u fermentrack -H git clone https://github.com/thorrak/fermentrack.git "/home/fermentrack/fermentrack"``
+      - ``sudo -u fermentrack -H python3 -m venv /home/fermentrack/venv``
     * - Manually link scipy into the virtualenv
-      - ``sudo -u fermentrack -H git clone https://github.com/thorrak/fermentrack.git "/home/fermentrack/fermentrack"``
+      - ``sudo -u fermentrack -H ln -s /usr/lib/python3/dist-packages/scipy* /home/fermentrack/venv/lib/python*/site-packages``
+    * - Manually link numpy into the virtualenv
+      - ``sudo -u fermentrack -H ln -s /usr/lib/python3/dist-packages/numpy* /home/fermentrack/venv/lib/python*/site-packages``
     * - Enable Python to interact with bluetooth
       - (See appropriate section below for instructions)
 
