@@ -29,4 +29,4 @@ Flashing a Controller
 #. Review the "Preexisting Devices" list to ensure that the device you want to flash is *not* listed. Assuming this is the case, connect the device you want to flash to the device running Fermentrack via a USB cable. Click "Scan for New Devices"
 #. Your device should now be detected and displayed in the list. If it isn't, return to an earlier step and restart the process. Click the "Set Up" button next to your device.
 #. On the following screen, select the firmware you want to flash to the device. Click "Flash to Device".
-#. Once the firmware has flashed successfully, your device is ready to use!
+#. You will be redirected to a page that tracks the status of your flash. Once the most recent status changes from 'running' to 'finished, the flashing of your device is complete. Your device is ready to use!

@@ -36,6 +36,7 @@ configuration options:
 * **Temperature format** - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.
 * **Preferred timezone** - The preferred timezone you would like graphs displayed in. *Note* - All data is stored in UTC (GMT) - you are only selecting how the data will be *displayed*. Feel free to change this at any time with no issues.
 * **Git Update Type** - Which releases you will be prompted to upgrade to. Can be set to "tagged versions" (which will generally be tested and stable), "all commits" which will include all new code releases, and "None".
+* **Sentry mode** - Collect code-related information from crashes and send to the developer for fixing.
 
 All of these can be updated at any time by clicking on the "gear" icon in the upper right of any Fermentrack page.
 

@@ -28,22 +28,22 @@ whether or not your relay requires the pin to be inverted (for most mechanical r
     you have an actual door sensor connected to your controller. If you set this up incorrectly your controller may think
     the door to your fermentation chamber is always open, and fail to trigger heating/cooling as expected.
 
-
 Temperature Sensors
 ---------------------------
 
-OneWire temperature sensors are configured by device address rather than the pin they are connected to. Connect your
-OneWire sensors to your BrewPi controller, wait a few seconds, and refresh the page. You should see all connected
-sensors listed under either Available Devices or Installed Devices.
+Fermentrack supports the DS18B20 temperature sensors, which use the OneWire protocol. This allows multiple sensors to be connected via a single pin on the controller board. For the ESP8622 board, this is the D6 pin. To ensure stable data transfers, you will also want to include a 4.7K resistor between the voltage source and the data pin. An example of how to gang multiple temperature sensors together, with resistor, looks like this:
+
+.. image:: https://www.microcontroller-project.com/uploads/2/2/1/5/22159166/nodemcu-esp8266-with-multiple-ds18b20-sensors_orig.png
+
+Again, for the ESP8622, you will want to connect the data wire to pin D6.
+
+Each temperature sensor will be configured by its own hard-coded device address once it is connected to Fermentrack. You should see all connected temperature sensors listed under either Available Devices or Installed Devices.
 
 To install an available temperature sensor, simply choose the device function (Chamber Temp, Room Temp, Beer Temp,
 etc.) and click "Assign". Your BrewPi controller will configure the device appropriately.
-
-
 
 Other Options (Chamber fan, chamber light, etc.)
 ------------------------------------------------------
 
 While the BrewPi controller firmware allows for other options to be selected such as chamber fan, chamber light, etc.
 these options don't actually do anything and should be ignored.
-
