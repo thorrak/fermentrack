@@ -30,7 +30,7 @@ Supports the following arguments: *{start|stop|status|startifstopped|add2cron}* 
 * *startifstopped* - will start the process manager if stopped (called from cron every 10 minutes)
 * *add2cron* - if crontab entries are missing, it will add them back.
 
-Crontab entries added with *add2cron*:
+Crontab entries added with *add2cron*::
 
     @reboot ~/fermentrack/brewpi-script/utils/updateCronCircus.sh start
     */10 * * * * ~/fermentrack/brewpi-script/utils/updateCronCircus.sh startifstopped
@@ -55,7 +55,7 @@ all the different processes needed by Fermentrack.
 * **circusd-stats** - An Internal circus process for stats, not used yet.
 * **dev-brewpi1** - Is a controller script spawned by brewpi-spawner, handing a controller.
 
-Circus documentation can be found [here](https://circus.readthedocs.io/en/latest/).
+Circus documentation can be found `here <https://circus.readthedocs.io/en/latest/>`_.
 
 ## Logging
 
