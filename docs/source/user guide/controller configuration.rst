@@ -35,8 +35,6 @@ Fermentrack supports the DS18B20 temperature sensors, which use the OneWire prot
 
 .. image:: https://www.microcontroller-project.com/uploads/2/2/1/5/22159166/nodemcu-esp8266-with-multiple-ds18b20-sensors_orig.png
 
-Again, for the ESP8622, you will want to connect the data wire to pin D6.
-
 Each temperature sensor will be configured by its own hard-coded device address once it is connected to Fermentrack. You should see all connected temperature sensors listed under either Available Devices or Installed Devices.
 
 To install an available temperature sensor, simply choose the device function (Chamber Temp, Room Temp, Beer Temp,

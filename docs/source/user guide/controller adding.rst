@@ -23,8 +23,8 @@ If you have an ESP8622 controller and wish to connect to Fermentrack via WiFi, f
 #. Select your LAN wifi network from the networks identified, as well as your wifi password and mDNS name (a text string to identify your ESP8622 board by)
 #. Click 'Save'. The ESP8622 will reboot and then connect to your LAN wifi network.
 
-Adding a WiFi-configured controller to Fermentrack
---------------------------------------------------
+Adding a WiFi-configured ESP8266 controller to Fermentrack using the Guided Workflow
+------------------------------------------------------------------------------------
 
 Follow these steps if you wish to add a BrewPi controller that supports WiFi.
 
