@@ -8,7 +8,7 @@ way. If you prefer to jump straight in and set the controller up manually, Ferme
 to :ref:`manual_workflow`.
 
 All of these instructions assume that you have already flashed the relevant firmware to your controller. If you just
-built it and need to flash it, read :doc:`controller flashing` and complete that process before continuing.
+built it and need to flash it, read :doc:`controller_flashing` and complete that process before continuing.
 
 .. warning:: Prior to setting up a controller with Fermentrack, please read any notes specific to your controller's hardware on the :doc:hardware page.
 
@@ -30,7 +30,7 @@ Follow these steps if you wish to add a BrewPi controller that supports WiFi.
 
 #. With the controller disconnected from the Raspberry Pi, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown
 #. Select the correct board type from the dropdown and click "Submit"
-#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller flashing` before continuing.
+#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller_flashing` before continuing.
 #. Select the correct board type (ESP8266) from the dropdown and click "Submit"
 #. Select "WiFi" on the left, and then click "Scan WiFi via mDNS"
 #. Select the appropriate device from the "Available (Uninstalled) Devices" list, and click "Set Up"
@@ -46,7 +46,7 @@ Follow these steps if you wish to add a BrewPi controller via a serial (USB) con
 
 #. With the controller disconnected from the Raspberry Pi, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown
 #. Select the correct board type from the dropdown and click "Submit"
-#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller flashing` before continuing.
+#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller_flashing` before continuing.
 #. If setting up any device other than an ESP8266 click "Begin Serial Autodetection". If setting up an ESP8266, select "Serial" on the left, and then click "Begin Serial Autodetection"
 #. Ensure that the controller **is not** connected to the Raspberry Pi, and click "Scan Devices"
 #. Connect the controller to the Raspberry Pi
