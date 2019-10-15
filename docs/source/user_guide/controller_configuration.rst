@@ -33,7 +33,9 @@ Temperature Sensors
 
 Fermentrack supports the DS18B20 temperature sensors, which use the OneWire protocol. This allows multiple sensors to be connected via a single pin on the controller board. For the ESP8622 board, this is the D6 pin. To ensure stable data transfers, you will also want to include a 4.7K resistor between the voltage source and the data pin. An example of how to gang multiple temperature sensors together, with resistor, looks like this:
 
-.. image:: https://www.microcontroller-project.com/uploads/2/2/1/5/22159166/nodemcu-esp8266-with-multiple-ds18b20-sensors_orig.png
+.. figure:: ds18b20-normal-power.jpg
+
+    Image courtesy of http://www.tweaking4all.com
 
 Each temperature sensor will be configured by its own hard-coded device address once it is connected to Fermentrack. You should see all connected temperature sensors listed under either Available Devices or Installed Devices.
 
