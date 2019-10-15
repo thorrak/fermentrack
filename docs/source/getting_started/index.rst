@@ -6,7 +6,6 @@ Getting Started with Fermentrack
 .. toctree::
     :maxdepth: 1
     :caption: Contents:
-    :numbered:
 
     Raspi_Setup
     install

@@ -33,12 +33,12 @@ Fermentrack
 .. toctree::
     :maxdepth: 2
     :caption: Contents:
+    :numbered:
 
     about
     getting_started/index
     user_guide/index
     develop/index
-    develop/components
     hardware
     faq
     todo
