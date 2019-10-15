@@ -35,8 +35,8 @@ Fermentrack
     :caption: Contents:
 
     about
-    getting started/index
-    user guide/index
+    getting_started/index
+    user_guide/index
     develop/index
     develop/components
     hardware

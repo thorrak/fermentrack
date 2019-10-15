@@ -8,9 +8,9 @@ Getting Started with Fermentrack
     :caption: Contents:
     :numbered:
 
-    Raspi Setup
+    Raspi_Setup
     install
     configuration
-    Apache and PHP Support
-    Raspi Setup Windows
+    Apache_and_PHP_Support
+    Raspi_Setup_Windows
 

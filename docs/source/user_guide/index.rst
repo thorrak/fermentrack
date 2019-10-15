@@ -8,8 +8,8 @@ User Guide
     :caption: Contents:
     :numbered:
 
-    controller flashing
-    controller adding
-    controller configuration
-    gravity sensor setup
+    controller_flashing
+    controller_adding
+    controller_configuration
+    gravity_sensor_setup
 
