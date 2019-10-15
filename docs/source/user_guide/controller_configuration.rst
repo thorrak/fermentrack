@@ -35,7 +35,7 @@ Fermentrack supports the DS18B20 temperature sensors, which use the OneWire prot
 
 .. figure:: ds18b20-normal-power.jpg
 
-    Image courtesy of http://www.tweaking4all.com
+    Image courtesy of https://www.tweaking4all.com/hardware/arduino/arduino-ds18b20-temperature-sensor/
 
 Each temperature sensor will be configured by its own hard-coded device address once it is connected to Fermentrack. You should see all connected temperature sensors listed under either Available Devices or Installed Devices.
 
