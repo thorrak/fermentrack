@@ -1,7 +1,7 @@
 .. include:: ../global.rst
 
-User Guide
-=============
+Adding a BrewPi Controller
+==========================
 
 .. toctree::
     :maxdepth: 1
@@ -10,5 +10,3 @@ User Guide
     controller_flashing
     controller_adding
     controller_configuration
-    gravity_sensor_setup
-

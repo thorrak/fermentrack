@@ -36,7 +36,7 @@ Why Use Fermentrack? (New Features)
 
 One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
 
-* Single Command Installation (See: :doc:`getting_started/install`)
+* Single Command Installation (See: :doc:`installing/install`)
 * Native multi-chamber support
 * Cleaner, more intuitive controller setup
 * Integrated support for ESP8266-based controllers
@@ -69,7 +69,7 @@ Getting started with Fermentrack is incredibly easy! All you need to do is:
 #. Connect & configure your BrewPi temperature controllers or specific gravity sensors
 
 It can be done from start to finish in a bit under an hour, assuming all your hardware is assembled & ready to go. To
-learn how, read :doc:`getting_started/index`.
+learn how, read :doc:`installing/index`.
 
 
 Other Notes
@@ -84,6 +84,6 @@ A full table of controllers/expected hardware availability is available in :doc:
 .. warning:: Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not**
     intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs.
     If you intend to use Fermentrack alongside an installation of Raspberry Pints or another PHP-based application,
-    read :doc:`getting_started/Apache_and_PHP_Support`.
+    read :doc:`installing/Apache_and_PHP_Support`.
 
 

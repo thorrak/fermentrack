@@ -1,7 +1,7 @@
 .. include:: ../global.rst
 
-Getting Started with Fermentrack
-====================================
+Installing Fermentrack
+======================
 
 .. toctree::
     :maxdepth: 1
@@ -9,7 +9,6 @@ Getting Started with Fermentrack
 
     Raspi_Setup
     install
-    configuration
     Apache_and_PHP_Support
     Raspi_Setup_Windows
 

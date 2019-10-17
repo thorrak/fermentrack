@@ -36,8 +36,10 @@ Fermentrack
     :numbered:
 
     about
-    getting_started/index
-    user_guide/index
+    installing/index
+    configuration.rst
+    controllers/index
+    gravitysensors/index
     develop/index
     hardware
     faq

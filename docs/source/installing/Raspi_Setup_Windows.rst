@@ -1,5 +1,5 @@
-Installing Raspbian to a Raspberry Pi using Windows 7
-=======================================================
+Installing Raspbian from Windows 7
+==================================
 
 `here <https://www.raspberrypi.org/downloads/raspbian/>`__
 
