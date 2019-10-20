@@ -15,7 +15,7 @@ Changelog, Licensing, and Development
     changelog
     components
     contribute
-    push support
+    push_support
     license
 
 

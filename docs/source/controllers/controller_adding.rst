@@ -8,38 +8,51 @@ way. If you prefer to jump straight in and set the controller up manually, Ferme
 to :ref:`manual_workflow`.
 
 All of these instructions assume that you have already flashed the relevant firmware to your controller. If you just
-built it and need to flash it, read :doc:`controller flashing` and complete that process before continuing.
+built it and need to flash it, read :doc:`controller_flashing` and complete that process before continuing.
 
 .. warning:: Prior to setting up a controller with Fermentrack, please read any notes specific to your controller's hardware on the :doc:hardware page.
 
 
-Setting up a WiFi-connected controller using the Guided Workflow
----------------------------------------------------------------------
+Configuring an ESP8622 controller for WiFi
+------------------------------------------
 
-#. After the controller is powered on and connected to your network, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown
+If you have an ESP8622 controller and wish to connect to Fermentrack via WiFi, follow these steps to associate the ESP8622 board with your LAN wifi network.
+
+#. After flashing an ESP8622, open your host computer's WiFi network selector and look for an access point that begins with "ESP\_" and then a string of numbers.
+#. Connect to this access point and navigate to any web page- you should be automatically redirected to the ES8266 configuration web page (If not, the configuration page usually runs at http://192.168.4.1).
+#. Select your LAN wifi network from the networks identified, as well as your wifi password and mDNS name (a text string to identify your ESP8622 board by)
+#. Click 'Save'. The ESP8622 will reboot and then connect to your LAN wifi network.
+
+Adding a WiFi-configured ESP8266 controller to Fermentrack using the Guided Workflow
+------------------------------------------------------------------------------------
+
+Follow these steps if you wish to add a BrewPi controller that supports WiFi.
+
+#. With the controller disconnected from the Raspberry Pi, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown
+#. Select the correct board type from the dropdown and click "Submit"
+#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller_flashing` before continuing.
 #. Select the correct board type (ESP8266) from the dropdown and click "Submit"
-#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller flashing` before continuing.
 #. Select "WiFi" on the left, and then click "Scan WiFi via mDNS"
 #. Select the appropriate device from the "Available (Uninstalled) Devices" list, and click "Set Up"
 #. Enter a name for the device, adjust settings as needed, and click "Submit"
 
 
-
-Setting up a serial-connected controller using the Guided Workflow
-----------------------------------------------------------------------
+Adding a serial-connected controller using the Guided Workflow
+--------------------------------------------------------------
 
 .. note:: When setting up a controller to connect via serial, the selected "port" is incredibly important, but is prone to change on reboot or as other devices are connected. Please read :ref:`serial_port_autodetection` for information on how Fermentrack handles this issue.
 
+Follow these steps if you wish to add a BrewPi controller via a serial (USB) connection.
+
 #. With the controller disconnected from the Raspberry Pi, launch guided setup and select "Add New Device (Guided)" from the "Select Device to Control" dropdown
 #. Select the correct board type from the dropdown and click "Submit"
-#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller flashing` before continuing.
+#. If your device is already flashed, choose "Yes - Already Flashed". If it isn't, read :doc:`controller_flashing` before continuing.
 #. If setting up any device other than an ESP8266 click "Begin Serial Autodetection". If setting up an ESP8266, select "Serial" on the left, and then click "Begin Serial Autodetection"
 #. Ensure that the controller **is not** connected to the Raspberry Pi, and click "Scan Devices"
 #. Connect the controller to the Raspberry Pi
 #. Click "Scan for New Devices"
 #. Choose the device that corresponds to your Arduino and click "Set Up"
 #. Enter a name for the device, adjust settings as needed, and click "Submit"
-
 
 .. _serial_port_autodetection:
 
@@ -63,7 +76,6 @@ Fermentrack is installed on a Mac or Windows-based computer.
 
 Setting up a controller using the Advanced (Manual) Workflow
 --------------------------------------------------------------------
-
 
 .. note:: When setting up a controller to connect via serial, the selected "port" is incredibly important, but is prone to change on reboot or as other devices are connected. Please read :ref:`serial_port_autodetection` for information on how Fermentrack handles this issue.
 

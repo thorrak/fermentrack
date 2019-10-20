@@ -1,5 +1,5 @@
-Installing Raspbian to a Raspberry Pi using Windows 7
-=======================================================
+Installing Raspbian from Windows 7
+==================================
 
 `here <https://www.raspberrypi.org/downloads/raspbian/>`__
 
@@ -7,28 +7,31 @@ Installing Raspbian to a Raspberry Pi using Windows 7
 Download and Install Raspbian
 *******************************
 
-1.	Download the latest version of Raspbian `here <https://www.raspberrypi.org/downloads/raspbian/>`__. You can download either the Lite or Full version - the Lite version is good for "headless" setups where you won't have a monitor & keyboard hooked up to your Raspberry Pi, the full version includes a graphical interface for use with a monitor/keyboard.
+#.  Download the latest version of Raspbian `here <https://www.raspberrypi.org/downloads/raspbian/>`__. You can download either the Lite or Full version - the Lite version is good for "headless" setups where you won't have a monitor & keyboard hooked up to your Raspberry Pi, the full version includes a graphical interface for use with a monitor/keyboard.
 
-2.	Download and install `Etcher <https://etcher.io/>`__ as recommended `here <http://www.raspberrypi.org/documentation/installation/installing-images/windows.md>`__.
+#.  Download and install `Etcher <https://etcher.io/>`__ as recommended `here <http://www.raspberrypi.org/documentation/installation/installing-images/windows.md>`__.
 
-3.	Burn Raspbian to your SD card using Etcher:
-3.1 Connect the SD card you will be installing Raspbian onto to your Windows PC using a removable SD card adaptor
-3.2 Select the proper Raspbian .zip file
-3.3 Select the proper removable drive to flash (Etcher only allows you to select removable drives)
-3.4 Flash to the SD Card
-3.5 Navigate to and open the SD Card to verify files were flashed
+#.  Burn Raspbian to your SD card using Etcher:
 
-4. Enable SSH on your Raspberry Pi by writing an empty file named “ssh” to the root of the SD card via the Notepad Windows Program:
-4.1 Run Notepad
-4.2 In a new file, put in one space and nothing else
-4.3 Click File > Save As, and save the file to the root (lowest level) directory on the SD Card:
-4.3.1 Name the file ``ssh``
-4.3.2 NOTE - Be certain to Save as type: All Types (* *)
-4.4 Close the file
+    * Connect the SD card you will be installing Raspbian onto to your Windows PC using a removable SD card adaptor
+    * Select the proper Raspbian .zip file
+    * Select the proper removable drive to flash (Etcher only allows you to select removable drives)
+    * Flash to the SD Card
+    * Navigate to and open the SD Card to verify files were flashed
 
-5. Configure WiFi (Optional, but required if running the Lite/Headless Version and you do not plan to connect the Raspberry Pi via Ethernet Cable):
-5.1 Run Notepad
-5.2 In a new file, paste the contents below. (Inserting the proper country code, network name, and network password) Network Names with some symbols may be problematic. If you have issues connecting, eliminate your SSID from having any unusual symbols. When entering your network name and password include the Quotes.
+#.  Enable SSH on your Raspberry Pi by writing an empty file named “ssh” to the root of the SD card via the Notepad Windows Program:
+
+    * Run Notepad
+    * In a new file, put in one space and nothing else
+    * Click File > Save As, and save the file to the root (lowest level) directory on the SD Card:
+    * Name the file ``ssh``
+    * NOTE - Be certain to Save as type: All Types (\* \*)
+    * Close the file
+
+#.  Configure WiFi (Optional, but required if running the Lite/Headless Version and you do not plan to connect the Raspberry Pi via Ethernet Cable):
+
+    * Run Notepad
+    * In a new file, paste the contents below. (Inserting the proper country code, network name, and network password) Network Names with some symbols may be problematic. If you have issues connecting, eliminate your SSID from having any unusual symbols. When entering your network name and password include the Quotes.
 
 ::
 
@@ -41,20 +44,19 @@ Download and Install Raspbian
         psk="NETWORK-PASSWORD"
     }
 
-5.3 Click File > Save As, and save the file to the root (lowest level) directory on the SD Card:
-5.3.1 Name the file ``wpa_supplicant.conf``
-5.3.2 Be certain to Save as type: All Types (* *)
-5.4 Close the file
+    * Click File > Save As, and save the file to the root (lowest level) directory on the SD Card:
+    * Name the file ``wpa_supplicant.conf``
+    * Be certain to Save as type: All Types (* *)
+    * Close the file
 
-6. Verify that the ``ssh`` and ``wpa_supplicant.conf`` files were created in the Root Directory.
-6.1 Open My Computer (File Explorer)
-6.2 Navigate and open the removable SD Card containing Raspbian
-6.3 Confirm that the ssh file and the wpa_supplicant.conf file can be seen
-6.4 Navigate off the SD Card file.
-6.5 Eject SD Card properly.
+#. Verify that the ``ssh`` and ``wpa_supplicant.conf`` files were created in the Root Directory.
+    * Open My Computer (File Explorer)
+    * Navigate and open the removable SD Card containing Raspbian
+    * Confirm that the ssh file and the wpa_supplicant.conf file can be seen
+    * Navigate off the SD Card file.
+    * Eject SD Card properly.
 
-7. Remove the SD Card and plug the SD Card into your Raspberry Pi and plug in power to the Raspberry Pi. (If you did not configure WiFi, connect the Pi to Ethernet, plug in power ) **NOTE - Give time to boot, this can take 60 seconds or longer**
-
+#. Remove the SD Card and plug the SD Card into your Raspberry Pi and plug in power to the Raspberry Pi. (If you did not configure WiFi, connect the Pi to Ethernet, plug in power ) **NOTE - Give time to boot, this can take 60 seconds or longer**
 
 Configure your Raspberry Pi
 ****************************
@@ -138,21 +140,19 @@ If you move your Raspberry Pi around often, or potentially need to connect to mu
         priority=1
     }
 
-4.4 Add additional Networks under your main and set priority.
+4.4 Add additional Networks under your main and set priority::
 
-::
-    network={
-        ssid="additional-network-name"
-        psk="additional-network-password"
-        priority=2
-    }
+  network={
+      ssid="additional-network-name"
+      psk="additional-network-password"
+      priority=2
+  }
 
-    network={
-        ssid="Secondary-Network-Name"
-        psk="Secondary-Network-Password"
-        priority=3
-    }
-
+  network={
+      ssid="Secondary-Network-Name"
+      psk="Secondary-Network-Password"
+      priority=3
+  }
 
 4.5 Save your New Network Configuration. (Press the following)
 •	Ctrl + x

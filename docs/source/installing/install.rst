@@ -8,7 +8,7 @@ There are three main ways to install Fermentrack:
 * Manual
 
 Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working
-copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi Setup`
+copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi_Setup`
 
 Fully Automated
 -----------------

@@ -1,13 +1,13 @@
 .. include:: ../global.rst
 
-Configuring Fermentrack
-==================================
+Setting up Fermentrack
+======================
 
 Once you have finished installing Fermentrack, you are ready to configure it. You will be guided through the
 configuration process when you first connect to Fermentrack. An overview of this configuration procedure is below.
 
 User Setup
-----------------
+----------
 
 When you first access a new installation of Fermentrack you will be asked to set up a user account. This account will
 enable you to configure devices, configure the Fermentrack application, and view brew logs.
@@ -25,7 +25,7 @@ Setting up the user account is extremely straightforward:
 You're now ready to move on to configuring the site settings.
 
 Site Settings
-----------------
+-------------
 
 After configuring a user account, the next step is to configure Fermentrack. The following are the available
 configuration options:
@@ -36,15 +36,16 @@ configuration options:
 * **Temperature format** - The preferred (default) temperature format. Used when setting fermentation temperature profiles. Can be overridden per device.
 * **Preferred timezone** - The preferred timezone you would like graphs displayed in. *Note* - All data is stored in UTC (GMT) - you are only selecting how the data will be *displayed*. Feel free to change this at any time with no issues.
 * **Git Update Type** - Which releases you will be prompted to upgrade to. Can be set to "tagged versions" (which will generally be tested and stable), "all commits" which will include all new code releases, and "None".
+* **Sentry mode** - Collect code-related information from crashes and send to the developer for fixing.
 
 All of these can be updated at any time by clicking on the "gear" icon in the upper right of any Fermentrack page.
 
 
 Notes for Advanced Users
---------------------------------
+------------------------
 
 User Accounts
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 Currently, Fermentrack has limited access control implemented, and is not yet designed for multiple user installations.
 This feature is planned for a later release - once it becomes available, different levels of access will be able to be
@@ -57,7 +58,7 @@ implemented, any users created previously through this method will retain full a
 
 
 Advanced Site Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 There are a handful of additional site settings which are intended for advanced users and developers only. These
 settings can only be accessed via the Django admin. These settings include:
@@ -73,5 +74,3 @@ Additionally, graph colors can be configured via the Django admin. The graph col
 * **Graph Fridge Temp Color** - The color of the "Fridge Temp" line
 * **Graph Room Temp Color** - The color of the "Room Temp" line
 * **Graph Gravity Color** - The color of the "Specific Gravity" line
-
-
