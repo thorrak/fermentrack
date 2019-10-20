@@ -4,9 +4,9 @@ Adding a Gravity Sensor
 =======================
 
 .. toctree::
-    :maxdepth: 1
-    :caption: Contents:
+   :maxdepth: 1
+   :caption: Contents:
 
-    tilt
-    ispindel
-    manual
+   tilt
+   ispindel
+   manual
