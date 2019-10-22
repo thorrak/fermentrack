@@ -73,4 +73,4 @@ To integrate your Tilt logging with a BrewPi controller:
 #. From the dropdown list, select the name of the controller you wish to associate the Tilt sensor with
 #. Click "Attach sensor to controller"
 
-Now, to view your Tilt sensor readings, navigate to the BrewPi controller dashboard. You will have to restart a log if you had one running before associating the Tilt with the BrewPi sensor. Now, any wort you ferment with this controller will incorporate the Tilt's temperature and gravity readings onto your graph.
+Now, to view your Tilt sensor readings, navigate to the BrewPi controller dashboard. You will have to restart a log if you had one running before associating the Tilt with the BrewPi sensor. Now, any wort you ferment with this controller will incorporate the Tilt's temperature and gravity readings onto your graph. Once the Tilt (or any gravity sensor) is attached to a BrewPi controller, that controller dashboard will become the main method with which to interact with the Tilt, specifically for things like logging.
