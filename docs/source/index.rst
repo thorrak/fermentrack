@@ -37,9 +37,10 @@ Fermentrack
 
     about
     installing/index
-    configuration.rst
+    configuration
     controllers/index
     gravitysensors/index
+    tiltbridge
     develop/index
     hardware
     faq
