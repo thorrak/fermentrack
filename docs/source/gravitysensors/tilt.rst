@@ -3,11 +3,11 @@
 Tilt Setup
 ==========
 
-To associate your a Tilt with Fermentrack, simply place the Tilt near the Raspberry Pi you are using at an angle (not vertical or horizontal) and it will automatically detect it (The Tilt enters a sleep mode when horizontal or vertical).
+To associate your a Tilt with Fermentrack, simply place the Tilt near a Raspberry Pi 3B or newer, running Fermentrack. Place the Tilt at an angle (not vertical or horizontal) to wake it up and the Pi running Fermentrack will automatically detect the Tile (The Tilt enters a sleep mode when horizontal or vertical).
 
 #. From the main Fermentrack dashboard, click on "Add new gravity sensor"
 #. Click on the Tilt icon
-#. Name the Tilt hydrometer you are adding, select the temperature units you wish to use, and as select the color for easy identification. You also want to specify if you are using a direct Bluetooth connection to your Pi, or using a TiltBridge bluetooth to WiFi adapter.
+#. Enter a name for the Tilt hydrometer you are adding, select the temperature units you wish to use, and select the color of the circuit board on the Tilt. You also want to specify if you are using a direct Bluetooth connection (default, included) to your Pi, or using a TiltBridge bluetooth to WiFi adapter (requires additional hardware).
 
 You will return to the Dashboard and Fermentrack will notify you that a new tilt sensor was added.
 
