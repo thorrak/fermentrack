@@ -19,7 +19,7 @@ After adding the Tilt to Fermentrack, you are returned to the Gravity Sensors da
 Manage Sensor
 ~~~~~~~~~~~~~
 
-From the sensor dashabord, click on Manage Sensor. This page will show you the current settings running on the Tilt sensor, allow you to add manual calibration points, as well as allow you to perform a `Guided Calibration`_. The B, C, and D coefficients shown are automatically applied/updated after running a guided calibration. You can also remove this sensor from Fermentrack at the bottom of the page.
+From the sensor dashboard, click on Manage Sensor. This page will show you the current settings running on the Tilt sensor, allow you to add manual calibration points, as well as allow you to perform a `Guided Calibration`_. The B, C, and D coefficients shown are automatically applied/updated after running a guided calibration. You can also remove this sensor from Fermentrack at the bottom of the page.
 
 Load Prior Log
 ~~~~~~~~~~~~~~
@@ -38,9 +38,7 @@ To start logging data points from your Tilt, click below the device name in the 
 Add Data Point
 ~~~~~~~~~~~~~~
 
-This button allows you to manually add a data point to the graph. What you enter here will appear on the graph at the time you enter it.
-
-.. todo:: Where does 'extra data' get displayed?
+This button allows you to manually add a data point to the graph. What you enter here will appear on the graph at the time you enter it. You can use these data points to annotate times that you perform specific actions, such as racking to secondary, adding dry hops, etc.
 
 Control Logging
 ~~~~~~~~~~~~~~~
@@ -50,9 +48,13 @@ This button will give you the option to stop logging data and return you to the 
 Guided Calibration
 ------------------
 
-Although Tilt devices seem to output specific gravity readings, they work by internally measuring the angle (tilt) of the device and applying an equation to convert this angle to the expected specific gravity. Although we do not have the ability to edit or calibrate this conversion equation directly, we can apply a correction factor to the readings it provides to add additional accuracy to the specific gravity we log.
+This section should be prefixed by stating that the Tilt sensor is very well calibrated out of the box and these steps are completely optional. This could be useful if you suspect your Tilt of falling out of calibration and want to reconfirm accuracy.
 
-This process will guide you through creating sugar/water mixtures of known specific gravity and then seeing what specific gravity the Tilt reports from each. By the end of this process you will have collected 5 data points which Fermentrack will then use to derive your Tilt's conversion function. You will need a few pieces of equipment to complete this process:
+Although Tilt devices seem to output specific gravity readings, they work by internally measuring the angle (tilt) of the device and applying an equation to convert this angle to the expected specific gravity. While we do not have the ability to edit or calibrate this conversion equation directly, we can apply a correction factor to the readings it provides to add additional accuracy to the specific gravity we log. For the mathematically inclined, this is done by determining the coefficients for an equation of a line that best fits your Tilt's measurements (bx^2 + cx + d). 
+
+This process will guide you through creating sugar/water mixtures of known specific gravity and then seeing what specific gravity the Tilt reports from each. By the end of this process you will have collected 5 data points which Fermentrack will then use to derive your Tilt's conversion function. This data will be used to mathematically determine a coefficient to apply to your Tilt which result in the most accurate reading possible for future use. 
+
+You will need a few pieces of equipment to complete this process:
 
 * 4 lbs (2 kg) White Table Sugar
 * Water
@@ -62,8 +64,6 @@ This process will guide you through creating sugar/water mixtures of known speci
 * Gram scale
 
 Once you have assembled these supplies, click "Begin guided calibration".
-
-Follow the steps in the wizard. You will be creating a liquid with varying levels of known gravities, and then comparing it to the actual measurements reported by the Tilt sensor. This data will be used to mathematically determine a coefficient to apply to your Tilt which result in the most accurate reading possible for future use.
 
 Integrating with BrewPi
 -----------------------
