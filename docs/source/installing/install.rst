@@ -8,7 +8,7 @@ There are three main ways to install Fermentrack:
 * Manual
 
 Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working
-copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi Setup`
+copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi_Setup`
 
 Fully Automated
 -----------------
@@ -74,6 +74,7 @@ brief description of what the command seeks to accomplish in the left.
       - ``sudo -u fermentrack -H ln -s /usr/lib/python3/dist-packages/scipy* /home/fermentrack/venv/lib/python*/site-packages``
     * - Manually link numpy into the virtualenv
       - ``sudo -u fermentrack -H ln -s /usr/lib/python3/dist-packages/numpy* /home/fermentrack/venv/lib/python*/site-packages``
+
     * - Enable Python to interact with bluetooth
       - (See appropriate section below for instructions)
 

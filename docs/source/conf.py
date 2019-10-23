@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Fermentrack'
-copyright = '2018, John Beeler'
+copyright = '2019, John Beeler'
 author = 'John Beeler'
 
 # The short X.Y version

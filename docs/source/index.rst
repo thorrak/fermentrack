@@ -33,12 +33,14 @@ Fermentrack
 .. toctree::
     :maxdepth: 2
     :caption: Contents:
+    :numbered:
 
     about
-    getting started/index
-    user guide/index
+    installing/index
+    configuration.rst
+    controllers/index
+    gravitysensors/index
     develop/index
-    develop/components
     hardware
     faq
     todo
