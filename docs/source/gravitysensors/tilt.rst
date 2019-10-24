@@ -3,7 +3,7 @@
 Tilt Setup
 ==========
 
-To associate your a Tilt with Fermentrack, simply place the Tilt near a Raspberry Pi 3B or newer, running Fermentrack. Place the Tilt at an angle (not vertical or horizontal) to wake it up and the Pi running Fermentrack will automatically detect the Tile (The Tilt enters a sleep mode when horizontal or vertical).
+To associate your a Tilt with Fermentrack, simply place the Tilt near a Raspberry Pi 3B or newer, running Fermentrack. Place the Tilt at an angle (not vertical or horizontal) to wake it up and the Pi running Fermentrack will automatically detect the Tilt (The Tilt enters a sleep mode when horizontal or vertical).
 
 #. From the main Fermentrack dashboard, click on "Add new gravity sensor"
 #. Click on the Tilt icon
