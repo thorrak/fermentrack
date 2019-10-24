@@ -32,6 +32,8 @@ def test_telnet(hostname, port):
         tn = telnetlib.Telnet(host=hostname, port=port, timeout=3)
     except socket.timeout:
         return False, False, None
+    except ConnectionRefusedError:
+        return False, False, None
 
     try:
         tn.write("n\r\n")

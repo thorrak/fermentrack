@@ -1,4 +1,4 @@
-{# This file contains the portions of the "manage sensor" page that are specific to the iSpindel #}
+{# This file contains the portions of the "manage sensor" page that are specific to the Tilt #}
 {# They are broken out here to help reduce the size of the gravity_manage template a bit #}
 {% extends "gravity/gravity_manage.html" %}
 {% load custom_tags %}
@@ -142,6 +142,67 @@
         </div>
     {% endif %}
 
+
+    <!-- Modal -->
+    <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" style="color: #000;">Add calibration point to {{ active_device.name }}</h4>
+          </div>
+
+
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                    {# Fridge Constant Form #}
+                    <div class="col-md-12">
+
+{#                        <div class="row col-xs-12">#}
+{#                            <h5>Data from Sensor:</h5>#}
+{#                        </div>#}
+{##}
+{#                        <div class="row">#}
+{#                            <div class="col-sm-4">Reported Gravity</div>#}
+{#                            <div class="col-sm-8" id="tiltGravityFeed"></div>#}
+{#                        </div>#}
+
+
+                        <form action="{% url "gravity_tilt_add_gravity_calibration_point" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+                            <input type="hidden" value="{{ tilt_calibration_form.sensor.value }}" name="{{ tilt_calibration_form.sensor.name }}">
+                                <div class="row col-xs-12">
+                                    <h5>New Calibration Point:</h5>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">Tilt Measured Gravity</div>
+                                    <div class="col-sm-8">{{ tilt_calibration_form.tilt_measured_gravity }}</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">Actual (Correct) Gravity</div>
+                                    <div class="col-sm-8">{{ tilt_calibration_form.actual_gravity }}</div>
+                                </div>
+
+                            <div class="row"><input type="submit" value="Add Calibration Point" class="btn btn-primary" /></div>
+
+                        </form>
+
+
+                    </div>
+                </div>
+              </div>
+            </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal -->
 
 
 

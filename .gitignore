@@ -178,3 +178,7 @@ config.ini
 # Ignore downloaded firmware files
 *.bin
 *.hex
+
+
+#ignore generated files
+collected_static/*

@@ -48,6 +48,8 @@
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
                 <div class="dashpanel-title">Specific Gravity</div>
                 <div class="dash-data" id="dashGravity">--</div>
+                <div class="dashpanel-title" id="dashMinMaxGravity">--</div>
+                
                 <div class="dashpanel-divider"></div>
                 {% if active_device.sensor_type == "manual" %}
                 <a href="#" data-toggle="modal" data-target="#manualPointModal">
@@ -70,10 +72,31 @@
         </div>
 
         <div class="col-md-4 col-xs-6">
+            <div class="dashpanel dashpanel-top bg-wet-asphalt" id="gravABVPanel">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
+                <div class="dashpanel-title">Current ABV</div>
+                <div class="dash-data" id="dashABV">--%</div>
+                <div class="dashpanel-title" id="dashMaxABV">--%</div>
+
+                <div class="dashpanel-divider"></div>
+                <a href="#" data-toggle="modal" data-target="#beerLogModal">
+                    <div class="dash-desc" id="gravTempToggle">
+                        <div class="pull-left">Load Prior Log</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+
+            </div>
+        </div>        
+
+        <div class="col-md-4 col-xs-6">
             <div class="dashpanel dashpanel-top bg-petermann" id="gravTempPanel">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-thermometer-full fa-fw"></i></div>
                 <div class="dashpanel-title">Temperature</div>
                 <div class="dash-data" id="dashTemp">--&deg; -</div>
+                <div class="dashpanel-title" id="dashTempMinMax">--</div>
+
                 <div class="dashpanel-divider"></div>
                 <a href="#" data-toggle="modal" data-target="#beerLogModal">
                     <div class="dash-desc" id="gravTempToggle">
@@ -83,7 +106,6 @@
                     </div>
                 </a>
             </div>
-
         </div>
 
         <div class="col-md-4 col-xs-6">
@@ -494,7 +516,7 @@ function updateLegend(e, x, pts, row) {
     }
 }
 
-
+var g_currentGravity = 0;
 g2 = new Dygraph(
     document.getElementById("graphdiv2"),
     {#  TODO - Something here if active log isn't set #}
@@ -530,6 +552,38 @@ g2 = new Dygraph(
     }  // options
 );
 
+function update_ABV() {
+    var packed = g2.gatherDatasets_(g2.rolledSeries_, null); 
+    var extremes = packed.extremes; 
+    var tempExtremes = extremes["temp"];
+    var gravityExtremes = extremes["gravity"];
+
+    var gravityMin = gravityExtremes[0]
+    var gravityMax = gravityExtremes[1];
+    // show the min/max
+    $('#dashMinMaxGravity').html("low: " + gravityMin.toFixed(3) + " high: " + gravityMax.toFixed(3));
+    
+    // Calculate ABV based on this min max. It looks like Tilt's google spreadsheet does it by taking the current gravity and comparing it to the max. Not sure which is best...
+    if (g_currentGravity > 0) {
+        var abv = (gravityMax - g_currentGravity)*1.3125*100.0;
+        $('#dashABV').html(abv.toFixed(1) + "%");
+    } else {
+        $('#dashABV').html("-%");
+    }
+    var maxAbv = (gravityMax - gravityMin)*1.3125*100.0;
+
+    if (maxAbv > 0) {
+        // add the apparent attenuation too
+        var aa = (gravityMax - g_currentGravity) / (gravityMax - 1.0) * 100;
+        $('#dashMaxABV').html("aa: " + aa.toFixed(2) + "% high: " + maxAbv.toFixed(1) + "% ABV");
+    } else {        
+        $('#dashMaxABV').html("");
+    }
+
+    $('#dashTempMinMax').html("min: " + tempExtremes[0].toFixed(2) + " max: " + tempExtremes[1].toFixed(2))
+
+}
+
 function pull_and_update_annotations() {
      $.ajax({
         type: 'GET',
@@ -543,13 +597,20 @@ function pull_and_update_annotations() {
         url: '{% if active_log %}{% url 'gravity_almost_json_view' active_device.id active_log.id %}{% else %}fake.json{% endif %}', {# Load the json for the annotations from the helper-wrapper #}
         success: function(data) {
             g2.setAnnotations(data);
+            update_ABV();
         },
     });
+
+
+
+
+
 };
 
 
 g2.ready(function () {
     pull_and_update_annotations();
+    update_ABV();
 });
 
 var gravity_visible = true;
@@ -588,13 +649,16 @@ function toggle_graph_visibility(el) {
         url: '/api/gravity/{{ active_device.id }}/',
         success: function(data) {
             // Update the gravity reading in the dashboard as new readings are available
-            if(data[0].current_gravity>0) {
-                $('#dashGravity').html(data[0].current_gravity);
+            g_currentGravity = data[0].current_gravity;
+            if(g_currentGravity>0) {
+                $('#dashGravity').html(g_currentGravity);
             } else {
                 $('#dashGravity').html("-.---");
             }
             // Also update the temperature
             $('#dashTemp').html(data[0].temp_string);
+
+            update_ABV();
         },
         complete: function() {
         // Schedule the next request when the current one's complete
