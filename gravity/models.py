@@ -613,7 +613,7 @@ class TiltConfiguration(models.Model):
     connection_type = models.CharField(max_length=32, choices=CONNECTION_CHOICES, default=CONNECTION_BLUETOOTH,
                                        help_text="How should Fermentrack connect to this Tilt?")
 
-    tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, default=None,
+    tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, blank=True, default=None,
                                    help_text="TiltBridge device to use (if any)")
 
     # Switching calibration to use the same equation-based approach as used on iSpindel. For now, going to start out
