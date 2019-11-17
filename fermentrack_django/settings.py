@@ -1,4 +1,4 @@
-import os
+import os, sys
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
 from git import Repo
@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'constance.backends.database',
     'huey.contrib.djhuey',
 ]
+
+if sys.platform == "darwin":
+    INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
+
 
 if ENABLE_SENTRY:
     import raven
