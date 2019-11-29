@@ -61,6 +61,7 @@ def external_push_generic_target_add(request):
 
             # Update last triggered to force a refresh in the next cycle
             new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+            new_push_target.save()
 
             return redirect('external_push_list')
 
@@ -143,6 +144,7 @@ def external_push_brewers_friend_target_add(request):
 
             # Update last triggered to force a refresh in the next cycle
             new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+            new_push_target.save()
 
             return redirect('external_push_list')
 
@@ -225,6 +227,7 @@ def external_push_brewfather_target_add(request):
 
             # Update last triggered to force a refresh in the next cycle
             new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+            new_push_target.save()
 
             return redirect('external_push_list')
 
