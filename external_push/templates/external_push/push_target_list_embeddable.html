@@ -1,0 +1,47 @@
+{# This contains the external push targets list, which can then be embedded in multiple pages #}
+{# It is broken out here so we can reuse it both in app/templates/site_config.html as well as in #}
+{# external_push/templates/push_target_list.html #}
+{% load custom_tags %}
+
+    <h3 class="form-header">External Push Targets</h3>
+
+    {#  List the generic push targets first #}
+    {% if all_push_targets.count > 0 %}
+        <h4>Generic Push Targets</h4>
+        <ul class="list-group list-group-flush">
+        {% for push_target in all_push_targets %}
+            <!-- GenericPushTarget Line -->
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6"><a href="{% url "external_push_view" push_target.id %}">{{ push_target.name }}</a></div>
+                    <div class="col-sm-2 col-md-2">{{ push_target.status }}</div>  {#  TODO - Make this display an error if applicable #}
+                    <div class="col-sm-10 col-md-4">{{ push_target.target_host }}</div>
+                </div>
+            </li>
+            <!-- End GenericPushTarget Line -->
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {#  List the Brewer's Friend push targets next #}
+    {% if brewers_friend_push_targets.count > 0 %}
+        <h4>Generic Push Targets</h4>
+        <ul class="list-group list-group-flush">
+        {% for push_target in brewers_friend_push_targets %}
+            <!-- GenericPushTarget Line -->
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6"><a href="{% url "external_push_brewers_friend_view" push_target.id %}">{{ push_target }}</a></div>
+                    <div class="col-sm-2 col-md-2">{{ push_target.status }}</div> {#  TODO - Make this display an error if applicable #}
+                </div>
+            </li>
+            <!-- End GenericPushTarget Line -->
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+
+    <p>
+    <a href="{% url 'external_push_generic_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Generic Push Target</a>
+    <a href="{% url 'external_push_brewers_friend_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Brewer's Friend Push Target</a>
+    </p>

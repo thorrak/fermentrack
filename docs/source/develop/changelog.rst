@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 [Unversioned] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Added
+---------------------
+
+- Added support for pushing gravity sensor data to Brewer's Friend
+
 Fixed
 ---------------------
 

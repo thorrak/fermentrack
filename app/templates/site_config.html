@@ -18,28 +18,8 @@
 {# Setting this as an include so we can reuse it on our site settings page #}
 {% include 'setup/constance_app_configuration.html' %}
 
-    <h3 class="form-header">External Push Targets</h3>
-
-    {% if all_push_targets.count > 0 %}
-        <ul class="list-group list-group-flush">
-        {% for push_target in all_push_targets %}
-            <!-- GenericPushTarget Line -->
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-sm-12 col-md-6"><a href="{% url "external_push_view" push_target.id %}">{{ push_target.name }}</a></div>
-                    <div class="col-sm-2 col-md-2">{{ push_target.status }}</div>
-                    <div class="col-sm-10 col-md-4">{{ push_target.target_host }}</div>
-                </div>
-            </li>
-            <!-- End GenericPushTarget Line -->
-        {% endfor %}
-    </ul>
-    {% endif %}
-
-    <p>
-    <a href="{% url 'external_push_generic_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Push Target</a>
-    </p>
-
+{# Load the push targets list template from the external_push app #}
+{% include 'external_push/push_target_list_embeddable.html' %}
 
 
 {% endblock %}

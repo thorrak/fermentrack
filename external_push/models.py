@@ -38,19 +38,19 @@ class GenericPushTarget(models.Model):
 
     STATUS_ACTIVE = 'active'
     STATUS_DISABLED = 'disabled'
+    STATUS_ERROR = 'error'
 
     STATUS_CHOICES = (
         (STATUS_ACTIVE, 'Active'),
         (STATUS_DISABLED, 'Disabled'),
+        (STATUS_ERROR, 'Error'),
     )
 
     DATA_FORMAT_GENERIC = 'generic'
     DATA_FORMAT_TILTBRIDGE = 'tiltbridge'
-    DATA_FORMAT_BREWERSFRIEND = 'brewersfriend'
 
     DATA_FORMAT_CHOICES = (
         (DATA_FORMAT_GENERIC, 'All Data (Generic)'),
-        (DATA_FORMAT_BREWERSFRIEND, 'Brewers Friend'),
         # (DATA_FORMAT_TILTBRIDGE, 'TiltBridge Device'),
     )
 
@@ -95,6 +95,10 @@ class GenericPushTarget(models.Model):
 
     data_format = models.CharField(max_length=24, help_text="The data format to send to the push target",
                                    choices=DATA_FORMAT_CHOICES, default=DATA_FORMAT_GENERIC)
+
+    error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
+                                                                               "last push attempt")
+
     last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
@@ -219,10 +223,6 @@ class GenericPushTarget(models.Model):
                     to_send['gravity_sensors'].append(grav_dict)
 
             string_to_send = json.dumps(to_send)
-        elif self.data_format == self.DATA_FORMAT_BREWERSFRIEND:
-            # For Brewers Friend, we're just cascading the gravity sensors downstream to the app
-            raise NotImplementedError("Brewers Friend coming (very) soon")
-            pass
 
         else:
             raise ValueError("Invalid data format specified for push target")
@@ -247,3 +247,92 @@ class GenericPushTarget(models.Model):
             raise ValueError("Invalid target type specified for push target")
 
         return False  # Should never get here, but just in case something changes later
+
+
+class BrewersFriendPushTarget(models.Model):
+    class Meta:
+        verbose_name = "Brewers Friend Push Target"
+        verbose_name_plural = "Brewers Friend Push Targets"
+
+    STATUS_ACTIVE = 'active'
+    STATUS_DISABLED = 'disabled'
+    STATUS_ERROR = 'error'
+
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_DISABLED, 'Disabled'),
+        (STATUS_ERROR, 'Error'),
+    )
+
+    PUSH_FREQUENCY_CHOICES = (
+        # (30-1,    '30 seconds'),
+        (60 - 1, '1 minute'),
+        (60 * 2 - 1, '2 minutes'),
+        (60 * 5 - 1, '5 minutes'),
+        (60 * 10 - 1, '10 minutes'),
+        (60 * 15 - 1, '15 minutes'),
+        (60 * 30 - 1, '30 minutes'),
+        (60 * 60 - 1, '1 hour'),
+    )
+
+    status = models.CharField(max_length=24, help_text="Status of this push target", choices=STATUS_CHOICES,
+                              default=STATUS_ACTIVE)
+    push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60 * 15,
+                                         help_text="How often to push data to the target")
+    api_key = models.CharField(max_length=256, help_text="Brewers Friend API Key", default="")
+
+    gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="push_target", on_delete=models.CASCADE,
+                                               help_text="Gravity Sensor to push (create one push target per "
+                                                         "sensor to push)")
+
+    error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
+                                                                               "last push attempt")
+
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+
+    # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
+    # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
+    # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
+
+    def __str__(self):
+        return self.gravity_sensor_to_push.name
+
+    def data_to_push(self):
+        # For Brewers Friend, we're just cascading a single gravity sensor downstream to the app
+        to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name}
+
+        latest_log_point = self.gravity_sensor_to_push.retrieve_latest_point()
+
+        if latest_log_point is None:  # If there isn't an available log point, return nothing
+            return {}
+
+        # For now, if we can't get a latest log point, let's default to just not sending anything.
+        if latest_log_point.gravity != 0.0:
+            to_send['gravity'] = float(latest_log_point.gravity)
+            to_send['gravity_unit'] = "G"
+        else:
+            return {}  # Also return nothing if there isn't an available gravity
+
+        # For now all gravity sensors have temp info, but just in case
+        if latest_log_point.temp is not None:
+            to_send['temp'] = float(latest_log_point.temp)
+            to_send['temp_unit'] = latest_log_point.temp_format
+
+        string_to_send = json.dumps(to_send)
+
+        # We've got the data (in a json'ed string) - lets send it
+        return string_to_send
+
+    def send_data(self):
+        # self.data_to_push() returns a JSON-encoded string which we will push directly out
+        json_data = self.data_to_push()
+
+        if len(json_data) <= 2:
+            # There was no data to push - do nothing.
+            return False
+
+        headers = {'Content-Type': 'application/json', 'X-API-KEY': self.api_key}
+        brewers_friend_url = "https://log.brewersfriend.com/stream/" + self.api_key
+
+        r = requests.post(brewers_friend_url, data=json_data, headers=headers)
+        return True  # TODO - Check if the post actually succeeded & react accordingly
