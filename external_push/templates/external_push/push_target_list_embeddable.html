@@ -25,17 +25,34 @@
 
     {#  List the Brewer's Friend push targets next #}
     {% if brewers_friend_push_targets.count > 0 %}
-        <h4>Generic Push Targets</h4>
+        <h4>Brewer's Friend Push Targets</h4>
         <ul class="list-group list-group-flush">
         {% for push_target in brewers_friend_push_targets %}
-            <!-- GenericPushTarget Line -->
+            <!-- BrewersFriendPushTarget Line -->
             <li class="list-group-item">
                 <div class="row">
                     <div class="col-sm-12 col-md-6"><a href="{% url "external_push_brewers_friend_view" push_target.id %}">{{ push_target }}</a></div>
                     <div class="col-sm-2 col-md-2">{{ push_target.status }}</div> {#  TODO - Make this display an error if applicable #}
                 </div>
             </li>
-            <!-- End GenericPushTarget Line -->
+            <!-- End BrewersFriendPushTarget Line -->
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {#  Then list the Brewfather push targets #}
+    {% if brewfather_push_targets.count > 0 %}
+        <h4>Brewfather Push Targets</h4>
+        <ul class="list-group list-group-flush">
+        {% for push_target in brewfather_push_targets %}
+            <!-- BrewfatherPushTarget Line -->
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6"><a href="{% url "external_push_brewfather_view" push_target.id %}">{{ push_target }}</a></div>
+                    <div class="col-sm-2 col-md-2">{{ push_target.status }}</div> {#  TODO - Make this display an error if applicable #}
+                </div>
+            </li>
+            <!-- End BrewfatherPushTarget Line -->
         {% endfor %}
     </ul>
     {% endif %}
@@ -44,4 +61,5 @@
     <p>
     <a href="{% url 'external_push_generic_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Generic Push Target</a>
     <a href="{% url 'external_push_brewers_friend_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Brewer's Friend Push Target</a>
+    <a href="{% url 'external_push_brewfather_target_add' %}" class="btn btn-large btn-lg btn-primary">Add Brewfather Push Target</a>
     </p>

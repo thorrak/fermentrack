@@ -1,0 +1,41 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Add Brewfather Push Target{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Add Brewfather Push Target</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+<p>
+    <form action="{% url "external_push_brewfather_target_add" %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Push Target Settings</h3>
+            {% form_generic form.push_frequency %}
+            {% form_generic form.logging_url %}
+            {% form_generic form.gravity_sensor_to_push %}
+        </div>
+
+        <input type="submit" value="Add Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
+
