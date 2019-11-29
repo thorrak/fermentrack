@@ -12,9 +12,11 @@ future - support pushing via TCP (sockets)).
 Supported "Push" Targets
 ------------------------------
 
-Fermentrack currently supports one push target, though more are likely to be added in the near future:
+Fermentrack currently supports three push targets:
 
-- "Generic" Push Target - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
+- **"Generic" Push Target** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
+- **Brewer's Friend** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
+- **Brewfather** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 
 
 
@@ -54,6 +56,42 @@ testing/development purposes.
                           'temp': 86.225,
                           'temp_format': 'F'}],
      'version': '1.0'}
+
+
+
+Brewer's Friend Support
+***********************
+
+Fermentrack supports pushing data from specific gravity sensors to `Brewer's Friend <https://www.brewersfriend.com/>`_ using the "Device Stream" API. To configure:
+
+
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add Brewer's Friend Push Target" at the bottom of the page
+#. Log into your Brewer's Friend acount and go to `Profile > Integrations <https://www.brewersfriend.com/homebrew/profile/integrations>`_
+#. Copy the API key listed at the top of the page in Brewer's Friend (the string of letters/numbers)
+#. Within Fermentrack, paste the API key you just copied into the "Api key" field
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewer's Friend. This data can be seen on the `Device Settings <https://www.brewersfriend.com/homebrew/profile/device_settings>`_ page. (*Note* - You may need to click "Show All" on the right of this page to see the data for newly added devices)
+
+
+Brewfather Support
+***********************
+
+Fermentrack supports pushing data from specific gravity sensors to Brewfather using the "Custom Stream" API. To configure:
+
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add Brewfather Push Target" at the bottom of the page
+#. Log into your Brewfather acount and go to `Settings <https://web.brewfather.app/#/tabs/settings/settings>`_
+#. At the bottom of the page, under "Power-ups" click the "switch" next to "Custom Stream"
+#. Copy the Logging URL (starting with http and ending with a string of letters/numbers) listed under "Custom Stream"
+#. Within Fermentrack, paste the Logging URL you just copied into the "Logging URL" field
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewfather. This data can be seen on the `Devices <https://web.brewfather.app/#/tabs/devices/devices>`_ page.
+
 
 
 Implementation Notes
