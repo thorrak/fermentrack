@@ -128,6 +128,26 @@ class GuidedSetupConfigForm(forms.Form):
         else:
             raise forms.ValidationError("Must be either True or False (Yes or No)")
 
+    def clean_enable_gravity_support(self):
+        enabled = self.cleaned_data.get('enable_gravity_support')
+
+        if enabled == 'True':
+            return True
+        elif enabled == 'False':
+            return False
+        else:
+            raise forms.ValidationError("Must be either True or False (Yes or No)")
+
+    def clean_require_login_for_dashboard(self):
+        enabled = self.cleaned_data.get('require_login_for_dashboard')
+
+        if enabled == 'True':
+            return True
+        elif enabled == 'False':
+            return False
+        else:
+            raise forms.ValidationError("Must be either True or False (Yes or No)")
+
 
 
 
