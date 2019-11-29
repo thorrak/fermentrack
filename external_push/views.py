@@ -58,6 +58,10 @@ def external_push_generic_target_add(request):
         if form.is_valid():
             new_push_target = form.save()
             messages.success(request, 'Successfully added push target')
+
+            # Update last triggered to force a refresh in the next cycle
+            new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+
             return redirect('external_push_list')
 
         messages.error(request, 'Unable to add new push target')
@@ -136,6 +140,10 @@ def external_push_brewers_friend_target_add(request):
         if form.is_valid():
             new_push_target = form.save()
             messages.success(request, 'Successfully added push target')
+
+            # Update last triggered to force a refresh in the next cycle
+            new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+
             return redirect('external_push_list')
 
         messages.error(request, 'Unable to add new push target')
@@ -214,6 +222,10 @@ def external_push_brewfather_target_add(request):
         if form.is_valid():
             new_push_target = form.save()
             messages.success(request, 'Successfully added push target')
+
+            # Update last triggered to force a refresh in the next cycle
+            new_push_target.last_triggered = new_push_target.last_triggered - datetime.timedelta(seconds=new_push_target.push_frequency)
+
             return redirect('external_push_list')
 
         messages.error(request, 'Unable to add new push target')

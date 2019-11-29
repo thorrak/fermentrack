@@ -301,6 +301,16 @@ class BrewersFriendPushTarget(models.Model):
         # For Brewers Friend, we're just cascading a single gravity sensor downstream to the app
         to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name}
 
+        if self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_TILT:
+            to_send['device_source'] = "Tilt"
+        elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+            to_send['device_source'] = "iSpindel"
+        elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_MANUAL:
+            to_send['device_source'] = "Manual"
+        else:
+            to_send['device_source'] = "Unknown"
+
+
         latest_log_point = self.gravity_sensor_to_push.retrieve_latest_point()
 
         if latest_log_point is None:  # If there isn't an available log point, return nothing
