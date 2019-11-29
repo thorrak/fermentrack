@@ -285,8 +285,14 @@ class GravityLog(models.Model):
     def full_csv_url(self) -> str:
         return self.data_file_url('full_csv')
 
-        # def base_csv_url(self):
-        #     return self.data_file_url('base_csv')
+    def full_csv_exists(self) -> bool:
+        # This is so that we can test if the log exists before presenting the user the option to download it
+        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
+        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        return os.path.isfile(full_csv_file)
+
+    # def base_csv_url(self):
+    #     return self.data_file_url('base_csv')
 
     # TODO - Add function to allow conversion of log files between temp formats
 
