@@ -1,0 +1,55 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Add Brewfather Push Target{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">Add Brewfather Push Target</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+    <p>
+        Brewfather is a web-based app that allows for creating brewing recipes, tracking fermentation status, and
+        much more. With a premium Brewfather account you can log data from your gravity sensors and attach them to
+        your brews.
+    </p>
+
+    <p>
+        To set up Brewer's Friend integration, you will need your Custom Stream Logging URL from the
+        <a href="https://web.brewfather.app/#/tabs/settings/settings">Settings</a> page of your Brewfather account.
+        Make sure the switch is toggled next to "Custom Stream", and then copy the "Logging URL" that appears. Paste
+        this URL into the corresponding field below.
+    </p>
+
+
+<p>
+    <form action="{% url "external_push_brewfather_target_add" %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Push Target Settings</h3>
+            {% form_generic form.push_frequency %}
+            {% form_generic form.logging_url %}
+            {% form_generic form.gravity_sensor_to_push %}
+        </div>
+
+        <input type="submit" value="Add Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
+

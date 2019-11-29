@@ -11,6 +11,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 [Unversioned] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Added
+---------------------
+
+- Added support for pushing gravity sensor data to Brewer's Friend
+- Added support for pushing gravity sensor data to Brewfather
+
+Changed
+---------------------
+
+- Adding an external push target now triggers data to always be sent within 60 seconds regardless of push frequency
+
 Fixed
 ---------------------
 
