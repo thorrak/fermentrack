@@ -73,6 +73,8 @@ class DeviceForm(forms.Form):
 
     # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
     def clean_device_name(self):
+        # Removing the "uniqueness" check here and moving it to the processor in views so that we can check if the name
+        # actually changed
         if 'device_name' not in self.cleaned_data:
             raise forms.ValidationError("A device name must be specified")
         else:
