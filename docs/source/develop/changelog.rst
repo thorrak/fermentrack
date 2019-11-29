@@ -7,8 +7,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+
 [Unversioned] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fixed
+---------------------
+
+- Disable "View Full CSV" button if gravity/beer logs don't exist
+- Properly cleanse booleans when changing site settings for Constance
+- Allow updates to controller settings when controller name isn't changing
+- Remove requirement for TiltBridge value in the TiltBridge model definition
+
+
+
+[2019-10-24] - Miscellaneous Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fixed
 ---------------------
