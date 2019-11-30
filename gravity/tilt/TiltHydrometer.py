@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Dict, TYPE_CHECKING
-# from beacontools import IBeaconAdvertisement
+
 from collections import deque
 
 from gravity.models import TiltConfiguration, GravityLogPoint, GravitySensor
