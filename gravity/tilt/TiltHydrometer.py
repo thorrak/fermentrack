@@ -106,7 +106,7 @@ class TiltHydrometer(object):
     #     self._add_to_list(self.gravity, self.temp)
 
     def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi):
-        if self.raw_temp == 999:
+        if sensor_temp >= 999:
             # For the latest Tilts, this is now actually a special code indicating that the gravity is the version info.
             # Regardless of whether or not we end up doing anything with that information, we definitely do not want to
             # add it to the list
