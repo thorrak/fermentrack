@@ -8,14 +8,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Bugfixes
-~~~~~~~~~~~~~~~~~~~~~~~~
+[Unversioned] - Brewer's Friend, Brewfather, and MacOS BLE Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
 
 - Added support for pushing gravity sensor data to Brewer's Friend
 - Added support for pushing gravity sensor data to Brewfather
+- Added BLE support for MacOS (thanks corbinstreehouse!)
 
 Changed
 ---------------------

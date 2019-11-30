@@ -15,7 +15,7 @@ from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTem
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
-import os, subprocess, datetime, pytz, json, logging
+import os, subprocess, datetime, pytz, json, logging, sys
 
 import gravity.forms as forms
 
@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import aioblescan
+    if sys.platform != "darwin":
+        import aioblescan
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False

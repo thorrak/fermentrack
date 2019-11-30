@@ -33,8 +33,16 @@ LOG.setLevel(logging.INFO)
 SLEEP_INTERVAL = 15
 
 
+process_mgr_location = os.path.dirname(os.path.realpath(__file__))
+# remove the utils folder from the end of the path
+fermentrack_install_location = os.path.split(process_mgr_location)[0]
+
+fermentrack_log_path = os.path.join(fermentrack_install_location, "log")
+
+brewpi_script_path = os.path.join(fermentrack_install_location, "brewpi-script/brewpi.py")
+
 ########## BrewPi Script Configuration
-BREWPI_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/brewpi-script/brewpi.py") + ' --dbcfg "%s"'
+BREWPI_SCRIPT_CMD_TEMPLATE = "python -u " + brewpi_script_path + ' --dbcfg "%s"'
 
 
 def BrewPiDevice_query_db(self):
@@ -49,7 +57,12 @@ def BrewPiDevice_query_db(self):
 
 
 ########## Tilt Hydrometer Script Configuration
-TILT_SCRIPT_CMD_TEMPLATE = "python -u " + os.path.expanduser("~/fermentrack/gravity/tilt/tilt_monitor_aio.py")
+
+if sys.platform != "darwin":
+    tilt_monitor_script_path = os.path.join(fermentrack_install_location, "gravity/tilt/tilt_monitor_aio.py")
+else:
+    tilt_monitor_script_path = os.path.join(fermentrack_install_location, "gravity/tilt/tilt_monitor_macos.py")
+TILT_SCRIPT_CMD_TEMPLATE = "python -u " + tilt_monitor_script_path
 
 
 def TiltConfiguration_query_db(self):
@@ -93,7 +106,7 @@ def run():
         device_type="BrewPi",
         command_tmpl=BREWPI_SCRIPT_CMD_TEMPLATE,
         circus_endpoint=DEFAULT_ENDPOINT_DEALER,
-        logfilepath=os.path.expanduser("~/fermentrack/log"),
+        logfilepath=fermentrack_log_path,
         log=LOG,
         query_db_func=BrewPiDevice_query_db,
         debug=args.debug,
@@ -105,7 +118,7 @@ def run():
         device_type="Tilt",
         command_tmpl=TILT_SCRIPT_CMD_TEMPLATE,
         circus_endpoint=DEFAULT_ENDPOINT_DEALER,
-        logfilepath=os.path.expanduser("~/fermentrack/log"),
+        logfilepath=fermentrack_log_path,
         log=LOG,
         query_db_func=TiltConfiguration_query_db,
         debug=args.debug,
