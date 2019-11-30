@@ -29,6 +29,7 @@ Fixed
 - Properly cleanse booleans when changing site settings for Constance
 - Allow updates to controller settings when controller name isn't changing
 - Remove requirement for TiltBridge value in the TiltBridge model definition
+- Ignore Tilt diagnostic codes that cause erroneous temperature/gravity readings
 
 
 
