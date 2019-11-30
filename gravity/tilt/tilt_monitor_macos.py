@@ -143,7 +143,6 @@ class TiltBluetoothScanner(object):
     def _user_thread_main(self):
         tiltScanner.startScanning()
 
+
 tiltScanner = TiltBluetoothScanner()
 tiltScanner._runMainRunLoop() # doesn't return
-
-
