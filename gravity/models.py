@@ -285,8 +285,14 @@ class GravityLog(models.Model):
     def full_csv_url(self) -> str:
         return self.data_file_url('full_csv')
 
-        # def base_csv_url(self):
-        #     return self.data_file_url('base_csv')
+    def full_csv_exists(self) -> bool:
+        # This is so that we can test if the log exists before presenting the user the option to download it
+        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
+        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        return os.path.isfile(full_csv_file)
+
+    # def base_csv_url(self):
+    #     return self.data_file_url('base_csv')
 
     # TODO - Add function to allow conversion of log files between temp formats
 
@@ -613,7 +619,7 @@ class TiltConfiguration(models.Model):
     connection_type = models.CharField(max_length=32, choices=CONNECTION_CHOICES, default=CONNECTION_BLUETOOTH,
                                        help_text="How should Fermentrack connect to this Tilt?")
 
-    tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, default=None,
+    tiltbridge = models.ForeignKey('TiltBridge', on_delete=models.SET_NULL, null=True, blank=True, default=None,
                                    help_text="TiltBridge device to use (if any)")
 
     # Switching calibration to use the same equation-based approach as used on iSpindel. For now, going to start out

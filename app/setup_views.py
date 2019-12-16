@@ -89,7 +89,8 @@ def setup_config(request):
                 # restarts.
                 # TODO - Queue a request to Huey to restart fermentrack
                 messages.warning(request, "Sentry status has changed - please restart Fermentrack for this to take "
-                                          "effect.")
+                                          "effect. (This is most easily accomplished by restarting the device running"
+                                          "Fermentrack)")
 
             # This sits outside the if check above in case the user updates the setting before Fermentrack was restarted
             if f['enable_sentry_support']:

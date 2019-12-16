@@ -6,11 +6,13 @@ from app.models import BrewPiDevice
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
 from django.core.exceptions import ObjectDoesNotExist
+import sys
 
 try:
     # Bluetooth support isn't always available as it requires additional work to install. Going to carve this out to
     # pop up an error message.
-    import aioblescan
+    if sys.platform != "darwin":
+        import aioblescan
     bluetooth_loaded = True
 except ImportError:
     bluetooth_loaded = False

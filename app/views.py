@@ -19,7 +19,7 @@ import fermentrack_django.settings as settings
 
 
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
-from external_push.models import GenericPushTarget
+from external_push.views import external_push_list
 from django.contrib.auth.models import User
 
 
@@ -598,8 +598,6 @@ def site_settings(request):
     if not config.USER_HAS_COMPLETED_CONFIGURATION:
         return redirect('siteroot')
 
-    all_push_targets = GenericPushTarget.objects.all()
-
     if request.POST:
         form = setup_forms.GuidedSetupConfigForm(request.POST)
         if form.is_valid():
@@ -629,14 +627,16 @@ def site_settings(request):
             messages.success(request, 'App configuration has been saved')
             return redirect('siteroot')
         else:
-            return render(request, template_name='site_config.html',
-                                       context={'form': form, 'all_push_targets': all_push_targets,
-                                                'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+            # If we received an invalid form, the form object is maintained and is passed to the "render" request
+            # broken out at the end of this function
+            pass
     else:
         form = setup_forms.GuidedSetupConfigForm()
-        return render(request, template_name='site_config.html',
-                                   context={'form': form, 'all_push_targets': all_push_targets,
-                                            'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION})
+
+    context = {'form': form, 'completed_config': config.USER_HAS_COMPLETED_CONFIGURATION}
+    context.update(external_push_list(request, context_only=True))  # Add in the "external push" object list
+
+    return render(request, template_name='site_config.html', context=context)
 
 
 
@@ -746,6 +746,17 @@ def device_manage(request, device_id):
 
         if form.is_valid():
             # Update the device settings based on what we were passed via the form
+            # Device name is a special case since it's the key for devices
+            if active_device.device_name != form.cleaned_data['device_name']:
+                try:
+                    existing_device = BrewPiDevice.objects.get(device_name=form.cleaned_data['device_name'])
+                    messages.error(request, u'A device already exists with the name {}'.format(
+                                         form.cleaned_data['device_name']))
+                    return render(request, template_name='device_manage.html',
+                                  context={'form': form, 'active_device': active_device})
+                except ObjectDoesNotExist:
+                    # There was no existing device - we're good. Set the new name.
+                    active_device.device_name = form.cleaned_data['device_name']
             active_device.device_name=form.cleaned_data['device_name']
             active_device.temp_format=form.cleaned_data['temp_format']
             active_device.data_point_log_interval=form.cleaned_data['data_point_log_interval']

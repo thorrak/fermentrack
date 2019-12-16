@@ -7,8 +7,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Bugfixes
-~~~~~~~~~~~~~~~~~~~~~~~~
+
+[2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for pushing gravity sensor data to Brewer's Friend
+- Added support for pushing gravity sensor data to Brewfather
+- Added BLE support for MacOS (thanks corbinstreehouse!)
+
+Changed
+---------------------
+
+- Adding an external push target now triggers data to always be sent within 60 seconds regardless of push frequency
+
+Fixed
+---------------------
+
+- Disable "View Full CSV" button if gravity/beer logs don't exist
+- Properly cleanse booleans when changing site settings for Constance
+- Allow updates to controller settings when controller name isn't changing
+- Remove requirement for TiltBridge value in the TiltBridge model definition
+- Ignore Tilt diagnostic codes that cause erroneous temperature/gravity readings
+
+
+
+[2019-10-24] - Miscellaneous Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fixed
 ---------------------

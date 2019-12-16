@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Dict, TYPE_CHECKING
-# from beacontools import IBeaconAdvertisement
+
 from collections import deque
 
 from gravity.models import TiltConfiguration, GravityLogPoint, GravitySensor
@@ -106,6 +106,12 @@ class TiltHydrometer(object):
     #     self._add_to_list(self.gravity, self.temp)
 
     def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi):
+        if sensor_temp >= 999:
+            # For the latest Tilts, this is now actually a special code indicating that the gravity is the version info.
+            # Regardless of whether or not we end up doing anything with that information, we definitely do not want to
+            # add it to the list
+            return
+
         self.raw_gravity = sensor_gravity / 1000
         if self.obj is None:
             # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
@@ -122,7 +128,6 @@ class TiltHydrometer(object):
         self.temp = self.raw_temp
         self.rssi = rssi
         self._add_to_list(self.gravity, self.temp)
-
 
     def smoothed_gravity(self):
         # Return the average gravity in gravity_list
