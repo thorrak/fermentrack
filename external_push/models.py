@@ -348,6 +348,18 @@ class BrewersFriendPushTarget(models.Model):
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
 
+# You think I would ahve done this before, but apparently not.
+# TODO - Refactor all of my temperature conversions to use this base formula
+def temp_convert(temp, from_units, to_units):
+    if from_units == to_units:
+        return temp
+    elif from_units == 'F' and to_units == 'C':
+        return (temp - 32) * 5 / 9
+    elif from_units == 'C' and to_units == 'F':
+        return (temp * 9 / 5) + 32
+    else:
+        # TODO - Figure out the proper error type for this
+        raise NotImplementedError
 
 class BrewfatherPushTarget(models.Model):
     class Meta:
@@ -424,17 +436,23 @@ class BrewfatherPushTarget(models.Model):
 
             if device_info is not None:
                 # We were able to load data from the controller.
+                # Cache the BrewPi's temp format as we want to convert to use the gravity sensor's format in case they
+                # happen to be different
+                brewpi_temp_format = latest_log_point.associated_device.assigned_brewpi_device.temp_format
                 if device_info['BeerTemp'] is not None:
                     if device_info['BeerTemp'] != 0:
                         # If we have an explicit beer temp from a BrewPi controller, we're going to use that instead
                         # of a temp from the gravity sensor.
-                        to_send['temp'] = float(device_info['BeerTemp'])
+                        to_send['temp'] = temp_convert(float(device_info['BeerTemp']), brewpi_temp_format,
+                                                       latest_log_point.temp_format)
                 if device_info['FridgeTemp'] is not None:
                     if device_info['FridgeTemp'] != 0:
-                        to_send['aux_temp'] = float(device_info['FridgeTemp'])
+                        to_send['aux_temp'] = temp_convert(float(device_info['FridgeTemp']),
+                                                           brewpi_temp_format, latest_log_point.temp_format)
                 if device_info['RoomTemp'] is not None:
                     if device_info['RoomTemp'] != 0:
-                        to_send['ext_temp'] = float(device_info['RoomTemp'])
+                        to_send['ext_temp'] = temp_convert(float(device_info['RoomTemp']),
+                                                           brewpi_temp_format, latest_log_point.temp_format)
 
         string_to_send = json.dumps(to_send)
 
