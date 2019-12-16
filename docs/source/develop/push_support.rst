@@ -92,6 +92,8 @@ Fermentrack supports pushing data from specific gravity sensors to Brewfather us
 
 Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewfather. This data can be seen on the `Devices <https://web.brewfather.app/#/tabs/devices/devices>`_ page.
 
+**NOTE** - If your gravity sensor is attached to a BrewPi controller, the temperature readings from that controller will be used instead of the ones from the gravity sensor.
+
 
 
 Implementation Notes
