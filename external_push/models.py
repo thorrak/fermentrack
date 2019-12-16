@@ -415,7 +415,26 @@ class BrewfatherPushTarget(models.Model):
             to_send['temp'] = float(latest_log_point.temp)
             to_send['temp_unit'] = latest_log_point.temp_format
 
-        # TODO - Add linked BrewPi temps if we have them
+        if latest_log_point.associated_device.assigned_brewpi_device is not None:
+            # We have a controller - try to load the data from it
+            try:
+                device_info = latest_log_point.associated_device.assigned_brewpi_device.get_dashpanel_info()
+            except:
+                device_info = None
+
+            if device_info is not None:
+                # We were able to load data from the controller.
+                if device_info['BeerTemp'] is not None:
+                    if device_info['BeerTemp'] != 0:
+                        # If we have an explicit beer temp from a BrewPi controller, we're going to use that instead
+                        # of a temp from the gravity sensor.
+                        to_send['temp'] = float(device_info['BeerTemp'])
+                if device_info['FridgeTemp'] is not None:
+                    if device_info['FridgeTemp'] != 0:
+                        to_send['aux_temp'] = float(device_info['FridgeTemp'])
+                if device_info['RoomTemp'] is not None:
+                    if device_info['RoomTemp'] != 0:
+                        to_send['ext_temp'] = float(device_info['RoomTemp'])
 
         string_to_send = json.dumps(to_send)
 
