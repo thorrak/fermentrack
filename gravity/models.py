@@ -125,9 +125,6 @@ class GravitySensor(models.Model):
         # TODO - Make this test if the name is unicode, and return a default name if that is the case
         return self.name
 
-    def __unicode__(self) -> str:
-        return self.name
-
     def is_gravity_sensor(self) -> bool:  # This is a hack used in the site template so we can display relevant functionality
         """Indicates that the object being examined is a gravity sensor
 
@@ -217,9 +214,6 @@ class GravityLog(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-    def __unicode__(self) -> str:
-        return self.__str__()
 
     @staticmethod
     def column_headers(which: str='base_csv', human_readable: bool=False) -> list or None:
@@ -660,9 +654,6 @@ class TiltConfiguration(models.Model):
     def __str__(self) -> str:
         return self.color
 
-    def __unicode__(self) -> str:
-        return str(self)
-
     def circus_parameter(self) -> str:
         """Returns the parameter used by Circus to track this device's processes"""
         # TODO - Check if this is still used
@@ -761,9 +752,6 @@ class TiltBridge(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def __unicode__(self) -> str:
-        return self.name
-
     def update_fermentrack_url_on_tiltbridge(self, fermentrack_host) -> bool:
         # fermentrack_host = request.META['HTTP_HOST']
         try:
@@ -823,9 +811,6 @@ class IspindelConfiguration(models.Model):
 
     def __str__(self) -> str:
         return self.name_on_device
-
-    def __unicode__(self) -> str:
-        return str(self)
 
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis

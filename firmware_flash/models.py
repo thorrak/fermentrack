@@ -71,9 +71,6 @@ class DeviceFamily(models.Model):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
-        return self.name
-
     @staticmethod
     def load_from_website():
         try:
@@ -179,9 +176,6 @@ class Firmware(models.Model):
         if len(self.variant) > 0:
             name += " - " + self.variant
         return name
-
-    def __unicode__(self):
-        return self.__str__()
 
     @staticmethod
     def load_from_website():
@@ -321,9 +315,6 @@ class Board(models.Model):
 
     def __str__(self):
         return self.name + " - " + str(self.family)
-
-    def __unicode__(self):
-        return self.name + " - " + unicode(self.family)
 
     @staticmethod
     def load_from_website():
