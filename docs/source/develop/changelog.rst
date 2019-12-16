@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Brewer's Friend, Brewfather, and MacOS BLE Support
+[2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
