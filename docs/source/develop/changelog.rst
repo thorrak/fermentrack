@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unversioned] - Fixes
+~~~~~~~~~~~~~~~~~~~~~
+
+Fixed
+---------------------
+
+- Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
+
+
 
 [Unversioned] - Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
