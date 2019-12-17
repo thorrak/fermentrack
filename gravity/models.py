@@ -184,12 +184,12 @@ class GravitySensor(models.Model):
         self.active_log = new_log
         self.save()
 
-    def convert_temp_to_sensor_format(self, temp: float, temp_format: str) -> (float, str):
-        if self.temp_format == temp_format:
+    def convert_temp_to_sensor_format(self, temp: float, received_temp_format: str) -> (float, str):
+        if self.temp_format == received_temp_format:
             return temp, self.temp_format
-        elif self.temp_format == 'F' and temp_format == 'C':
+        elif self.temp_format == self.TEMP_FAHRENHEIT and received_temp_format == 'C':
             return (temp*9/5) + 32, self.temp_format
-        elif self.temp_format == 'C' and temp_format == 'F':
+        elif self.temp_format == self.TEMP_CELSIUS and received_temp_format == 'F':
             return (temp-32) * 5 / 9, self.temp_format
         else:
             raise ValueError
