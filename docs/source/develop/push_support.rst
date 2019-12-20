@@ -17,6 +17,7 @@ Fermentrack currently supports three push targets:
 - **"Generic" Push Target** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 - **Brewer's Friend** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 - **Brewfather** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
+- **ThingSpeak** - Fermentrack's "native" push format - Pushes temperature data
 
 
 
@@ -92,8 +93,35 @@ Fermentrack supports pushing data from specific gravity sensors to Brewfather us
 
 Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewfather. This data can be seen on the `Devices <https://web.brewfather.app/#/tabs/devices/devices>`_ page.
 
-**NOTE** - If your gravity sensor is attached to a BrewPi controller, the temperature readings from that controller will be used instead of the ones from the gravity sensor.
+ThingSpeak Support
+***********************
 
+Fermentrack supports pushing data from specific sensors to a ThinkSpeak Channel. The Channel Speak API is fixed to receive fields in the channel, so the designation of each channel is already defined.  This means that Field 1 is always Beer Name, Field 2 is Sensor Name, etc. To configure:
+
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add ThingSpeak Push Target" at the bottom of the page
+#. Now log into your ThingSpeak acount and on the My Channels Page select New Channel
+#. Enter the data below in 
+::
+    Name - Give your Channel a Name
+    Description - Give your Channel a Description
+    Field 1 - Beer Name
+    Field 2 - Sensor Name
+    Field 3 - Temp Format
+    Field 4 - Beer Temp
+    Field 5 - Fridge Temp
+    Field 6 - Room Temp
+    Field 7 - Beer Gravity
+
+Feel free to fill out the optional elements but only the 'field' values above are sent.  The values entered are just labels for the data sent and can be customised. For example you can change 'Beer Temp' to 'My Beer (°C)'. 
+
+#. At the bottom of the page, select 'Save Channel'
+#. Copy the "Write API Key" from the "API Keys" section 
+#. Within Fermentrack, paste the API Key you just copied into the "API Key" field
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from to the ThingSpeak Channel. This data can be seen on the ThingSpeak 'Private View' tab in the channel page.
 
 
 Implementation Notes
