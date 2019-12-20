@@ -23,10 +23,6 @@ class Migration(migrations.Migration):
                 ('push_frequency', models.IntegerField(choices=[(901, '15 minutes'), (1801, '30 minutes'), (3601, '1 hour')], default=900, help_text='How often to push data to the target')),
                 ('api_key', models.CharField(default='', help_text='Brewers Friend API Key', max_length=256)),
                 ('brewpi_to_push_id', models.ForeignKey(blank=True, default=None, help_text="BrewPi Devices to push (ignored if 'all' devices selected)", related_name='push_targets', to='app.BrewPiDevice')),
-<<<<<<< HEAD
-=======
-                ('gravity_sensor_to_push_id', models.ForeignKey(blank=True, default=None, help_text='Gravity Sensor to push (create one push target per sensor to push)', on_delete=django.db.models.deletion.CASCADE, related_name='push_target', to='gravity.GravitySensor')),
->>>>>>> ea192972aa835b5cb5556c7d5b5414a7009d6856
                 ('error_text', models.TextField(blank=True, default='', help_text='The error (if any) encountered on the last push attempt', null=True)),
                 ('last_triggered', models.DateTimeField(auto_now_add=True, help_text='The last time we pushed data to this target')),
             ],
