@@ -1,0 +1,62 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}ThingSpeak Push Target {{ push_target }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">{{ push_target.name }}</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+    <p>
+        ThingSpeak for IoT Projects is a IOT data collection, analysis and Reaction Platform.  
+        This will send the data for your chosen device to ThingSpeak in the format that is required for channel integration
+        <h6>ThingSpeak Channel Settings</h6>
+        <ul>
+        <li>Field 1 - Beer Name</li>
+        <li>Field 2 - Sensor Name</li>
+        <li>Field 3 - Temp Format</li>
+        <li>Field 4 - Beer Temp</li>
+        <li>Field 5 - Fridge Temp</li>
+        <li>Field 6 - Room Temp</li>
+        <li>Field 7 - Beer Gravity</li>
+        </ul>
+    </p>
+<p>
+    <form action="{% url "external_push_thingspeak_view" push_target.id %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Push Target Settings</h3>
+            {% form_generic form.name %}
+            {% form_generic form.push_frequency %}
+            {% form_generic form.api_key %}
+            {% form_generic form.brewpi_to_push %}
+<!--            {% form_generic form.gravity_sensor_to_push %} -->
+        </div>
+
+        <input type="submit" value="Update Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+<p>
+    <a href="{% url 'external_push_thingspeak_delete' push_target.id %}" class="btn btn-large btn-lg btn-danger">Delete Push Target</a>
+</p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
+
