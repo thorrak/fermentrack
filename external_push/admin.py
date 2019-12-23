@@ -18,3 +18,4 @@ class BrewfatherPushTargetAdmin(admin.ModelAdmin):
 @admin.register(GrainfatherPushTarget)
 class GrainfatherPushTargetAdmin(admin.ModelAdmin):
     list_display = ('gravity_sensor_to_push', 'status', 'push_frequency')
+    
