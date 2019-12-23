@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget
+from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget, ThingSpeakPushTarget
 
 
 @admin.register(GenericPushTarget)
@@ -14,3 +14,7 @@ class BrewersFriendPushTargetAdmin(admin.ModelAdmin):
 @admin.register(BrewfatherPushTarget)
 class BrewfatherPushTargetAdmin(admin.ModelAdmin):
     list_display = ('gravity_sensor_to_push', 'status', 'push_frequency')
+    
+#@admin.register(ThingSpeakPushTarget)
+#class ThingSpeakPushTargetAdmin(admin.ModelAdmin):
+#    list_display = ('gravity_sensors_to_push', 'status', 'push_frequency', 'target_host')

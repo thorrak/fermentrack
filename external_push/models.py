@@ -471,3 +471,160 @@ class BrewfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
+
+        
+        
+        
+class ThingSpeakPushTarget(models.Model):
+    class Meta:
+        verbose_name = "ThingSpeak Push Target"
+        verbose_name_plural = "ThingSpeak Push Targets"
+
+    STATUS_ACTIVE = 'active'
+    STATUS_DISABLED = 'disabled'
+    STATUS_ERROR = 'error'
+
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_DISABLED, 'Disabled'),
+        (STATUS_ERROR, 'Error'),
+    )
+
+    SENSOR_SELECT_ALL = "all"
+    SENSOR_SELECT_LIST = "list"
+    SENSOR_SELECT_NONE = "none"
+
+    SENSOR_SELECT_CHOICES = (
+        (SENSOR_SELECT_ALL, "All Active Sensors/Devices"),
+        (SENSOR_SELECT_LIST, "Specific Sensors/Devices"),
+        (SENSOR_SELECT_NONE, "Nothing of this type"),
+    )
+
+    PUSH_FREQUENCY_CHOICES = (
+        # (30-1,    '30 seconds'),
+        (60 - 1, '1 minute'),
+        (60 * 2 - 1, '2 minutes'),
+        (60 * 5 - 1, '5 minutes'),
+        (60 * 10 - 1, '10 minutes'),
+        (60 * 15 - 1, '15 minutes'),
+        (60 * 30 - 1, '30 minutes'),
+        (60 * 60 - 1, '1 hour'),
+    )
+
+    name = models.CharField(max_length=48, help_text="Unique name for this push target", unique=True)
+    status = models.CharField(max_length=24, help_text="Status of this push target", choices=STATUS_CHOICES,
+                              default=STATUS_ACTIVE)
+    push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60 * 15,
+                                         help_text="How often to push data to the target")
+    api_key = models.CharField(max_length=256, help_text="ThingSpeak Channel API Key", default="")
+
+    brewpi_to_push = models.ForeignKey(to=BrewPiDevice, related_name="thingspeak_push_targets", blank=True, default=None, on_delete=models.CASCADE,
+                                            help_text="BrewPi Devices to push (ignored if 'all' devices selected)")
+
+#    gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="thingspeak_push_targets", blank=True, default=None, on_delete=models.CASCADE,
+#                                               help_text="Gravity Sensor to push (create one push target per "
+#                                                         "sensor to push)")
+
+    error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
+                                                                               "last push attempt")
+
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    
+#    def __str__(self):
+#        return self.gravity_sensor_to_push.name
+
+    def data_to_push(self):
+        brewpi_to_send = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
+#        grav_sensors_to_send = GravitySensor.objects.filter(status=GravitySensor.STATUS_ACTIVE)
+
+#       POST api.thingspeak.com/update.json
+#       Content-Type: application/json
+#        
+#       { 
+#               "api_key": "XXXXXXXXXXXXXXXX"  
+#               "created_at": "2018-04-23 21:36:20 +0200", 
+#               "field1": brewpi device_name, 
+#               "field2": brewpi temp_format, 
+#               "field3": Beer Name, 
+#               "field4": Beer Temp, 
+#               "field5": Fridge Temp,
+#               "field6": Room Temp, 
+#               "field7": brewpi Gravity, 
+#               "latitude": "", 
+#               "longitude": "", 
+#               "status": ""     
+#       }
+        # At this point we've obtained the list of objects to send - now we just need to format them.
+        string_to_send = ""  # This is what ultimately needs to be populated.
+        GENERIC_DATA_FORMAT_VERSION = "1.0"
+
+        data_to_send = {'api_key': self.api_key, 'version': GENERIC_DATA_FORMAT_VERSION}
+        if brewpi_to_send is not None:
+            for brewpi in brewpi_to_send:
+                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                # TODO - Make it so that this data is stored in/loaded from Redis
+                device_info = brewpi.get_dashpanel_info()
+                if device_info is None:
+                    continue
+
+                # Have to coerce temps to floats, as Decimals aren't json serializable
+                data_to_send['field1'] = str(brewpi.active_beer)
+                data_to_send['field2'] = brewpi.device_name
+                data_to_send['field3'] = brewpi.temp_format
+
+                # Because not every device will have temp sensors, only serialize the sensors that exist.
+                # Have to coerce temps to floats, as Decimals aren't json serializable
+                if device_info['BeerTemp'] is not None:
+                    if device_info['BeerTemp'] != 0:
+                        data_to_send['field4'] = float(device_info['BeerTemp'])
+                if device_info['FridgeTemp'] is not None:
+                    if device_info['FridgeTemp'] != 0:
+                        data_to_send['field5'] = float(device_info['FridgeTemp'])
+                if device_info['RoomTemp'] is not None:
+                    if device_info['RoomTemp'] != 0:
+                        data_to_send['field6'] = float(device_info['RoomTemp'])
+
+                # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
+                try:
+                    if brewpi.gravity_sensor is not None:
+                        gravity = brewpi.gravity_sensor.retrieve_latest_gravity()
+                        if gravity is not None:
+                            data_to_send['field7'] = float(gravity)
+                except:
+                    pass
+
+#        if grav_sensors_to_send is not None:
+#            for sensor in grav_sensors_to_send:
+#                data_to_send['field1'] = str(brewpi.active_beer)
+#                data_to_send['field2'] = sensor.device_name
+#
+#                latest_log_point = sensor.retrieve_latest_point()
+#                if latest_log_point is not None:
+#                    # For now, if we can't get a latest log point, let's default to just not sending anything.
+#                    if latest_log_point.gravity != 0.0:
+#                        data_to_send['field7'] = float(latest_log_point.gravity)
+#
+#                    # For now all gravity sensors have temp info, but just in case
+#                    if latest_log_point.temp is not None:
+#                        data_to_send['field4'] = float(latest_log_point.temp)
+#                        data_to_send['field3'] = latest_log_point.temp_format
+
+        string_to_send = json.dumps(data_to_send)
+
+        # We've got the data (in a json'ed string) - lets send it
+        return string_to_send
+
+    def send_data(self):
+        # self.data_to_push() returns a JSON-encoded string which we will push directly out
+        json_data = self.data_to_push()
+
+        if len(json_data) <= 2:
+            # There was no data to push - do nothing.
+            return False
+
+        headers = {'Content-Type': 'application/json', 'X-API-KEY': self.api_key}
+        thingspeak_url = "https://api.thingspeak.com/update.json" + self.api_key
+
+        r = requests.post(thingspeak_url, data=json_data, headers=headers)
+        return True  # TODO - Check if the post actually succeeded & react accordingly
+
