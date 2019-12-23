@@ -435,6 +435,8 @@ class BrewfatherPushTarget(models.Model):
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
+
+
 class GrainfatherPushTarget(models.Model):
     class Meta:
         verbose_name = "Grainfather Push Target"
@@ -461,6 +463,7 @@ class GrainfatherPushTarget(models.Model):
     push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60 * 15,
                                          help_text="How often to push data to the target")
     logging_url = models.CharField(max_length=256, help_text="Grainfather Logging URL", default="")
+    gf_name = models.CharField(max_length=256, help_text="Grainfather brew id (number)", default="")
 
     gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="grainfather_push_target", on_delete=models.CASCADE,
                                                help_text="Gravity Sensor to push (create one push target per "
@@ -480,18 +483,19 @@ class GrainfatherPushTarget(models.Model):
 
     def data_to_push(self):
         # For Grainfather, we're just cascading a single gravity sensor downstream to the app
-        to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name, 'token':"grainfather", 'ID':"",'angle':"0",'battery':"0", 'interval':"0",'RSSI':"0" }
+        #to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name, 'token':"grainfather", 'ID':0,'angle':0,'battery':0, 'interval':900,'RSSI':0 }
+        to_send = {'report_source': "Fermentrack", 'name': self.gf_name + ",SG", 'token':"grainfather", 'ID':0,'angle':0,'battery':0, 'interval':900,'RSSI':0 }
 
-#"name":"iSpindel001",
-#"ID":14421487,
-#"token":"fermentrack",
-#"angle":57.54898,
-#"temperature":24.1875,
-#"temp_units":"C",
-#"battery":4.103232,
-#"gravity":16.9741,
-#"interval":300,
-#"RSSI":-68}
+        #"name":"nnnn,SG",  // Ending with SG will force the use of our calculated gravity
+        #"ID":14421487,
+        #"token":"fermentrack",
+        #"angle":57.54898,
+        #"temperature":24.1875,
+        #"temp_units":"C",
+        #"battery":4.103232,
+        #"gravity":16.9741,
+        #"interval":300,
+        #"RSSI":-68}
 
         # TODO - Add beer name to what is pushed
 
@@ -503,7 +507,7 @@ class GrainfatherPushTarget(models.Model):
         # For now, if we can't get a latest log point, let's default to just not sending anything.
         if latest_log_point.gravity != 0.0:
             to_send['gravity'] = float(latest_log_point.gravity)
-#           to_send['gravity_unit'] = "G"
+            #to_send['gravity_unit'] = "G"
         else:
             return {}  # Also return nothing if there isn't an available gravity
 
@@ -531,3 +535,4 @@ class GrainfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
+

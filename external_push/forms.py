@@ -29,4 +29,4 @@ class BrewfatherPushTargetModelForm(ModelForm):
 class GrainfatherPushTargetModelForm(ModelForm):
     class Meta:
         model = GrainfatherPushTarget
-        fields = ['gravity_sensor_to_push', 'push_frequency', 'logging_url']
+        fields = ['gravity_sensor_to_push', 'push_frequency', 'logging_url', 'gf_name']
