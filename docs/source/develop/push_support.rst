@@ -12,12 +12,13 @@ future - support pushing via TCP (sockets)).
 Supported "Push" Targets
 ------------------------------
 
-Fermentrack currently supports three push targets:
+Fermentrack currently supports five push targets:
 
 - **"Generic" Push Target** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
-- **Brewer's Friend** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
-- **Brewfather** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
-- **ThingSpeak** - Fermentrack's "native" push format - Pushes temperature data
+- **Brewer's Friend** - Pushes both specific gravity & temperature data associated with gravty sensors
+- **Brewfather** - Pushes both specific gravity & temperature data associated with gravity sensors, as well as temperature data from BrewPi controllers with gravity sensors attached
+- **ThingSpeak** - Pushes temperature data
+- **Grainfather** - iSpindel push format - Pushes both specific gravity & temperature data from gravity sensors
 
 
 
@@ -93,6 +94,9 @@ Fermentrack supports pushing data from specific gravity sensors to Brewfather us
 
 Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewfather. This data can be seen on the `Devices <https://web.brewfather.app/#/tabs/devices/devices>`_ page.
 
+**NOTE** - If your gravity sensor is attached to a BrewPi controller, the temperature readings from that controller will be used instead of the ones from the gravity sensor.
+
+
 ThingSpeak Support
 ***********************
 
@@ -101,7 +105,7 @@ Fermentrack supports pushing data from specific sensors to a ThinkSpeak Channel.
 #. Log into Fermentrack and click the "gear" icon in the upper right
 #. Click "Add ThingSpeak Push Target" at the bottom of the page
 #. Now log into your ThingSpeak acount and on the My Channels Page select New Channel
-#. Enter the data below in 
+#. Enter the data below in
 ::
     Name - Give your Channel a Name
     Description - Give your Channel a Description
@@ -113,15 +117,48 @@ Fermentrack supports pushing data from specific sensors to a ThinkSpeak Channel.
     Field 6 - Room Temp
     Field 7 - Beer Gravity
 
-Feel free to fill out the optional elements but only the 'field' values above are sent.  The values entered are just labels for the data sent and can be customised. For example you can change 'Beer Temp' to 'My Beer (°C)'. 
+Feel free to fill out the optional elements but only the 'field' values above are sent.  The values entered are just labels for the data sent and can be customised. For example you can change 'Beer Temp' to 'My Beer (°C)'.
+
 
 #. At the bottom of the page, select 'Save Channel'
-#. Copy the "Write API Key" from the "API Keys" section 
+#. Copy the "Write API Key" from the "API Keys" section
 #. Within Fermentrack, paste the API Key you just copied into the "API Key" field
 #. Set the desired push frequency and select the gravity sensor from which you want to push data
 #. Click "Add Push Target"
 
 Within 60 seconds, Fermentrack will begin sending data from to the ThingSpeak Channel. This data can be seen on the ThingSpeak 'Private View' tab in the channel page.
+
+Grainfather Support
+***********************
+
+Fermentrack supports pushing data from specific gravity sensors (Gravity & Temperature) to Grainfather using the brew tracking API. To configure:
+
+#. Log into your Grainfather account and select Equipment.
+#. Add a Fermentation device and select iSpindel as device type. Fermentrack will push data in this format independant of what your device is. Copy the logging URL.
+#. The second thing you need to do is to go to an active brew and link the device to a brew session. This is done under the headline fermentration tracking and the function "Add Tracking Device". Make note of the Name value (this is the brew ID).
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add Grainfather Push Target" at the bottom of the page
+#. Within Fermentrack, paste the Logging URL you just copied into the "Logging URL" field and enter the name (brew id) under the "gf_name" field.
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Grainfather. This data can be seen in your Grainfather account under Equipment or the Brew Session.
+
+Grainfather Support
+***********************
+
+Fermentrack supports pushing data from specific gravity sensors (Gravity & Temperature) to Grainfather using the brew tracking API. To configure:
+
+#. Log into your Grainfather account and select Equipment.
+#. Add a Fermentation device and select iSpindel as device type. Fermentrack will push data in this format independant of what your device is. Copy the logging URL.
+#. The second thing you need to do is to go to an active brew and link the device to a brew session. This is done under the headline fermentration tracking and the function "Add Tracking Device". Make note of the Name value (this is the brew ID).
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add Grainfather Push Target" at the bottom of the page
+#. Within Fermentrack, paste the Logging URL you just copied into the "Logging URL" field and enter the name (brew id) under the "gf_name" field.
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Grainfather. This data can be seen in your Grainfather account under Equipment or the Brew Session.
 
 
 Implementation Notes

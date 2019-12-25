@@ -1,6 +1,6 @@
 from django import forms
 
-from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget, ThingSpeakPushTarget
+from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget, ThingSpeakPushTarget, GrainfatherPushTarget
 from django.core import validators
 import fermentrack_django.settings as settings
 
@@ -30,3 +30,9 @@ class ThingSpeakPushTargetModelForm(ModelForm):
         model = ThingSpeakPushTarget
         fields = ['name', 'push_frequency', 'api_key', 'brewpi_to_push']
 
+
+
+class GrainfatherPushTargetModelForm(ModelForm):
+    class Meta:
+        model = GrainfatherPushTarget
+        fields = ['gravity_sensor_to_push', 'push_frequency', 'logging_url', 'gf_name']
