@@ -471,3 +471,105 @@ class BrewfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
+
+
+
+class GrainfatherPushTarget(models.Model):
+    class Meta:
+        verbose_name = "Grainfather Push Target"
+        verbose_name_plural = "Grainfather Push Targets"
+
+    STATUS_ACTIVE = 'active'
+    STATUS_DISABLED = 'disabled'
+    STATUS_ERROR = 'error'
+
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_DISABLED, 'Disabled'),
+        (STATUS_ERROR, 'Error'),
+    )
+
+    PUSH_FREQUENCY_CHOICES = (
+        (60 * 15 + 1, '15 minutes'),
+        (60 * 30 + 1, '30 minutes'),
+        (60 * 60 + 1, '1 hour'),
+    )
+
+    status = models.CharField(max_length=24, help_text="Status of this push target", choices=STATUS_CHOICES,
+                              default=STATUS_ACTIVE)
+    push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60 * 15,
+                                         help_text="How often to push data to the target")
+    logging_url = models.CharField(max_length=256, help_text="Grainfather Logging URL", default="")
+    gf_name = models.CharField(max_length=256, help_text="Grainfather brew id (number)", default="")
+
+    gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="grainfather_push_target", on_delete=models.CASCADE,
+                                               help_text="Gravity Sensor to push (create one push target per "
+                                                         "sensor to push)")
+
+    error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
+                                                                               "last push attempt")
+
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+
+    # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
+    # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
+    # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
+
+    def __str__(self):
+        return self.gravity_sensor_to_push.name
+
+    def data_to_push(self):
+        # For Grainfather, we're just cascading a single gravity sensor downstream to the app
+        #to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name, 'token':"grainfather", 'ID':0,'angle':0,'battery':0, 'interval':900,'RSSI':0 }
+        to_send = {'report_source': "Fermentrack", 'name': self.gf_name + ",SG", 'token':"grainfather", 'ID':0,'angle':0,'battery':0, 'interval':900,'RSSI':0 }
+
+        #"name":"nnnn,SG",  // Ending with SG will force the use of our calculated gravity
+        #"ID":14421487,
+        #"token":"fermentrack",
+        #"angle":57.54898,
+        #"temperature":24.1875,
+        #"temp_units":"C",
+        #"battery":4.103232,
+        #"gravity":16.9741,
+        #"interval":300,
+        #"RSSI":-68}
+
+        # TODO - Add beer name to what is pushed
+
+        latest_log_point = self.gravity_sensor_to_push.retrieve_latest_point()
+
+        if latest_log_point is None:  # If there isn't an available log point, return nothing
+            return {}
+
+        # For now, if we can't get a latest log point, let's default to just not sending anything.
+        if latest_log_point.gravity != 0.0:
+            to_send['gravity'] = float(latest_log_point.gravity)
+            #to_send['gravity_unit'] = "G"
+        else:
+            return {}  # Also return nothing if there isn't an available gravity
+
+        # For now all gravity sensors have temp info, but just in case
+        if latest_log_point.temp is not None:
+            to_send['temperature'] = float(latest_log_point.temp)
+            to_send['temp_units'] = latest_log_point.temp_format
+
+        # TODO - Add linked BrewPi temps if we have them
+
+        string_to_send = json.dumps(to_send)
+
+        # We've got the data (in a json'ed string) - lets send it
+        return string_to_send
+
+    def send_data(self):
+        # self.data_to_push() returns a JSON-encoded string which we will push directly out
+        json_data = self.data_to_push()
+
+        if len(json_data) <= 2:
+            # There was no data to push - do nothing.
+            return False
+
+        headers = {'Content-Type': 'application/json'}
+
+        r = requests.post(self.logging_url, data=json_data, headers=headers)
+        return True  # TODO - Check if the post actually succeeded & react accordingly
+

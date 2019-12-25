@@ -12,11 +12,12 @@ future - support pushing via TCP (sockets)).
 Supported "Push" Targets
 ------------------------------
 
-Fermentrack currently supports three push targets:
+Fermentrack currently supports four push targets:
 
 - **"Generic" Push Target** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 - **Brewer's Friend** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
 - **Brewfather** - Fermentrack's "native" push format - Pushes both specific gravity & temperature data
+- **Grainfather** - ispindel push format - Pushes both specific gravity & temperature data
 
 
 
@@ -94,6 +95,22 @@ Within 60 seconds, Fermentrack will begin sending data from your gravity sensor 
 
 **NOTE** - If your gravity sensor is attached to a BrewPi controller, the temperature readings from that controller will be used instead of the ones from the gravity sensor.
 
+
+Grainfather Support
+***********************
+
+Fermentrack supports pushing data from specific gravity sensors (Gravity & Temperature) to Grainfather using the brew tracking API. To configure:
+
+#. Log into your Grainfather account and select Equipment.
+#. Add a Fermentation device and select iSpindel as device type. Fermentrack will push data in this format independant of what your device is. Copy the logging URL.
+#. The second thing you need to do is to go to an active brew and link the device to a brew session. This is done under the headline fermentration tracking and the function "Add Tracking Device". Make note of the Name value (this is the brew ID).
+#. Log into Fermentrack and click the "gear" icon in the upper right
+#. Click "Add Grainfather Push Target" at the bottom of the page
+#. Within Fermentrack, paste the Logging URL you just copied into the "Logging URL" field and enter the name (brew id) under the "gf_name" field.
+#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. Click "Add Push Target"
+
+Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Grainfather. This data can be seen in your Grainfather account under Equipment or the Brew Session.
 
 
 Implementation Notes

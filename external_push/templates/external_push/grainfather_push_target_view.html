@@ -1,0 +1,47 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+
+{% block title %}Grainfather Push Target {{ push_target }}{% endblock %}
+
+{% block content %}
+
+<h1 class="page-header">{{ push_target }}</h1>
+{% if form.errors %}
+   <div class="text-danger">Please correct the error {{ form.errors }} below.</div>
+{% endif %}
+<p>
+    <form action="{% url "external_push_grainfather_view" push_target.id %}" class="form-horizontal" method="post">
+        {% csrf_token %}
+
+        <div id="pushTargetSection">
+            <h3 class="form-header">Push Target Settings</h3>
+            {% form_generic form.push_frequency %}
+            {% form_generic form.logging_url %}
+            {% form_generic form.gf_name %}
+            {% form_generic form.gravity_sensor_to_push %}
+        </div>
+
+        <input type="submit" value="Update Push Target" class="btn btn-primary" />
+    </form>
+</p>
+
+
+<p>
+    <a href="{% url 'external_push_grainfather_delete' push_target.id %}" class="btn btn-large btn-lg btn-danger">Delete Push Target</a>
+</p>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+</script>
+
+{% endblock %}
+
