@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('gravity', '0004_BrewersFriend_Support'),
-        ('external_push', '0005_ThingSpeak_Support'),
+        ('external_push', '0004_Brewfather_Support'),
     ]
 
     operations = [
