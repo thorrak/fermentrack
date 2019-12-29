@@ -24,8 +24,5 @@ redis           # for huey & gravity sensor support
 #aioblescan      # Replacement for beacontools for Tilt support
 PyObjc # For bluetooth support
 
-# Requirements to make Circus work
-#pyzmq<17
-#tornado<5
 
 mod_wsgi # python in apache on macos
