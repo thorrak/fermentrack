@@ -15,10 +15,9 @@ class BrewersFriendPushTargetAdmin(admin.ModelAdmin):
 class BrewfatherPushTargetAdmin(admin.ModelAdmin):
     list_display = ('gravity_sensor_to_push', 'status', 'push_frequency')
 
-# TODO - Reenable this
-#@admin.register(ThingSpeakPushTarget)
-#class ThingSpeakPushTargetAdmin(admin.ModelAdmin):
-#    list_display = ('gravity_sensors_to_push', 'status', 'push_frequency', 'target_host')
+@admin.register(ThingSpeakPushTarget)
+class ThingSpeakPushTargetAdmin(admin.ModelAdmin):
+   list_display = ('name', 'status')
 
 @admin.register(GrainfatherPushTarget)
 class GrainfatherPushTargetAdmin(admin.ModelAdmin):
