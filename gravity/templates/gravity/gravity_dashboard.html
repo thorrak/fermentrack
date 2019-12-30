@@ -46,7 +46,13 @@
         <div class="col-md-4 col-xs-6">
             <div class="dashpanel dashpanel-top bg-amethyst">
                 <div class="dash-icon dash-icon-lg"><i class="fa fa-beer fa-fw"></i></div>
-                <div class="dashpanel-title">Specific Gravity</div>
+                <div class="dashpanel-title">
+                {% if gravity_format_display == "P" %}
+                    Plato
+                {% else %}
+                    Specific Gravity
+                {% endif %}
+                </div>
                 <div class="dash-data" id="dashGravity">--</div>
                 <div class="dashpanel-title" id="dashMinMaxGravity">--</div>
                 
@@ -457,6 +463,7 @@
 
 var temp_format = "{{ active_log.format }}";  // Used in formatTempText
 var temp_display_format = "{{ temp_display_format }}";  // Used in formatTimeText
+var gravity_format = "{{ gravity_format_display }}";  // Used to convert gravity to Plato for display
 
 function formatTempText(temp) {
     // This takes the temperature that we are passed from DyGraph below and formats it in accordance with what we
@@ -464,9 +471,18 @@ function formatTempText(temp) {
     return temp + " " + window.temp_format;
 }
 
+function convertGravity(gravity) {
+    // Convert to Plato from SG if this is configured
+    if( gravity_format == "P") {
+        return 259-(259/gravity);
+    }
+   
+    return gravity;
+}
+
 function formatGravText(gravity) {
     // This does nothing, but provides an easy place to change the format later if we want
-    return gravity
+    return convertGravity(gravity);
 }
 
 function formatTimeText(time_code) {
@@ -536,9 +552,21 @@ g2 = new Dygraph(
         },
         axes: {
             y: {
+                valueFormatter: function(y) {
+                  return convertGravity(y);
+                },
+                axisLabelFormatter: function(y) {
+                    return convertGravity(y);
+                },
                 digitsAfterDecimal: 3
             },
             y2: {
+                valueFormatter: function(y2) {
+                  return convertGravity(y2);
+                },
+                axisLabelFormatter: function(y2) {
+                    return convertGravity(y2);
+                },
                 digitsAfterDecimal: 1
             }
         },
@@ -561,7 +589,7 @@ function update_ABV() {
     var gravityMin = gravityExtremes[0]
     var gravityMax = gravityExtremes[1];
     // show the min/max
-    $('#dashMinMaxGravity').html("low: " + gravityMin.toFixed(3) + " high: " + gravityMax.toFixed(3));
+    $('#dashMinMaxGravity').html("low: " + convertGravity(gravityMin).toFixed(3) + " high: " + convertGravity(gravityMax).toFixed(3));
     
     // Calculate ABV based on this min max. It looks like Tilt's google spreadsheet does it by taking the current gravity and comparing it to the max. Not sure which is best...
     if (g_currentGravity > 0) {

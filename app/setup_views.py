@@ -83,6 +83,7 @@ def setup_config(request):
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
+            config.GRAVITY_FORMAT_DISPLAY = f['gravity_format_display']
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
