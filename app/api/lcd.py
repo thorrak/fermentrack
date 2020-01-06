@@ -33,7 +33,7 @@ def getPanel(req, device_id):
         if temp == 0:
             return "--&deg; {}".format(temp_format)
         else:
-            return "{}&deg; {}".format(temp, temp_format)
+            return "{:.1f}&deg; {}".format(temp, temp_format)
 
     ret = []
     try:

@@ -7,28 +7,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Fixes
-~~~~~~~~~~~~~~~~~~~~~
+[Unversioned] - ThingSpeak and Grainfather Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+- Added support for pushing data to ThingSpeak (thanks @johndoyle!)
+- Added support for pushing data to Grainfather (thanks @mp-se!)
+
+
+Changed
+---------------------
+- Gravity sensors attached to BrewPi controllers will now send those controller's temps to Brewfather
+
 
 Fixed
 ---------------------
 
 - Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
-
-
-
-[Unversioned] - Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Changed
----------------------
-
-- Gravity sensors attached to BrewPi controllers will now send those controller's temps to Brewfather
+- Lock temperature display on dashboard panels to one decimal place
 
 
 
 [2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
