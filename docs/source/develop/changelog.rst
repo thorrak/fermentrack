@@ -27,7 +27,7 @@ Fixed
 - Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
 - Lock temperature display on dashboard panels to one decimal place
 - Allow updates to controller settings when controller name isn't changing (for real this time)
-
+- Fix bug that would default all Tilts to 'Bluetooth' even when a TiltBridge was selected
 
 
 [2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
