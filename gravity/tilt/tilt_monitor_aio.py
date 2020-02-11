@@ -24,7 +24,7 @@ tilt_monitor_utils.process_monitor_options()
 verbose = tilt_monitor_utils.verbose
 mydev = tilt_monitor_utils.bluetooth_device
 
-LOG = logging.getLogger("tiltTest")
+LOG = logging.getLogger("tilt")
 LOG.setLevel(logging.INFO)
 
 #### The main loop
@@ -71,12 +71,8 @@ def processBLEBeacon(data):
         # Let's use some of the functions of aioblesscan to tease out the mfg_specific_data payload
 
         data = ev.retrieve("Manufacturer Specific Data")
-
         payload = data[0].payload
-
         payload = payload[1].val.hex()
-
-        #payload = ev.retrieve("Payload for mfg_specific_data")[0].val.hex()
 
         # ...and then dissect said payload into a UUID, temp, gravity, and rssi (which isn't actually rssi)
         uuid = payload[4:36]
