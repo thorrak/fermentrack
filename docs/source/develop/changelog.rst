@@ -7,15 +7,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Fixes
-~~~~~~~~~~~~~~~~~~~~~
+[Unversioned] - ThingSpeak and Grainfather Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Fixed
+Added
 ---------------------
 
-- Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
-- Fixed issue where Tilt readings were not being properly decoded (Thanks NecroBrews!)
-- Fixed issue where dashboard panels were not being updated (Thanks NecroBrews!)
+- Added support for pushing data to ThingSpeak (thanks @johndoyle!)
+- Added support for pushing data to Grainfather (thanks @mp-se!)
 
 
 Changed
@@ -25,9 +24,19 @@ Changed
 - An explicit error message will now be displayed when a user attempts to manually access the ispindel endpoint
 
 
+Fixed
+---------------------
+
+- Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
+- Lock temperature display on dashboard panels to one decimal place
+- Allow updates to controller settings when controller name isn't changing (for real this time)
+- Fix bug that would default all Tilts to 'Bluetooth' even when a TiltBridge was selected
+- Fixed issue where Tilt readings were not being properly decoded (Thanks NecroBrews!)
+- Fixed issue where dashboard panels were not being updated (Thanks NecroBrews!)
+
 
 [2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------

@@ -80,13 +80,14 @@ class DeviceForm(forms.Form):
         else:
             device_name = self.cleaned_data['device_name']
 
-        try:
-            existing_device = BrewPiDevice.objects.get(device_name=device_name)
-            raise forms.ValidationError("A device already exists with the name {}".format(device_name))
-
-        except ObjectDoesNotExist:
-            # There was no existing device - we're good.
-            return device_name
+        # try:
+        #     existing_device = BrewPiDevice.objects.get(device_name=device_name)
+        #     raise forms.ValidationError("A device already exists with the name {}".format(device_name))
+        #
+        # except ObjectDoesNotExist:
+        #     # There was no existing device - we're good.
+        #     return device_name
+        return device_name
 
     def clean(self):
         cleaned_data = self.cleaned_data
