@@ -14,16 +14,15 @@ Fixed
 ---------------------
 
 - Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
+- Fixed issue where Tilt readings were not being properly decoded (Thanks NecroBrews!)
+- Fixed issue where dashboard panels were not being updated (Thanks NecroBrews!)
 
-
-
-[Unversioned] - Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Changed
 ---------------------
 
 - Gravity sensors attached to BrewPi controllers will now send those controller's temps to Brewfather
+- An explicit error message will now be displayed when a user attempts to manually access the ispindel endpoint
 
 
 
