@@ -40,7 +40,9 @@ def flash_firmware(flash_request_id):
         flash_cmd.append(str(arg).replace("{serial_port}", flash_request.serial_port).replace("{firmware_path}",
                                                                                               firmware_path))
 
-    # For ESP32 devices only, we need to also check to see if we need to flash partitions or SPIFFS
+    # For ESP32 devices only, we need to check if we want to flash partitions or a bootloader. I may need to add
+    # ESP8266 support for flashing a bootloader later - if I do, the code for adding the bootloader command to the
+    # below needs to be moved to the SPIFFS/
     if flash_request.board_type.family.detection_family == models.DeviceFamily.DETECT_ESP32:
         # First, check if we have a partitions file to flash
         if len(flash_request.firmware_to_flash.download_url_partitions) > 0 and len(flash_request.firmware_to_flash.checksum_partitions) > 0:
@@ -48,13 +50,30 @@ def flash_firmware(flash_request_id):
             flash_cmd.append("0x8000")
             flash_cmd.append(flash_request.firmware_to_flash.full_filepath("partitions"))
 
-        # Then, check for SPIFFS
+        if len(flash_request.firmware_to_flash.download_url_bootloader) > 0 and \
+                 len(flash_request.firmware_to_flash.checksum_bootloader) > 0:
+            # The ESP32 bootloader is always flashed to 0x1000
+            flash_cmd.append("0x1000")
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("bootloader"))
+
+
+
+    # SPIFFS (and maybe otadata?) flashing can be done on either the ESP8266 or the ESP32
+    if flash_request.firmware_to_flash.family.flash_method == models.DeviceFamily.FLASH_ESP:
+        # Check for SPIFFS first
         if len(flash_request.firmware_to_flash.download_url_spiffs) > 0 and \
                  len(flash_request.firmware_to_flash.checksum_spiffs) > 0 and \
                  len(flash_request.firmware_to_flash.spiffs_address) > 2:
             # We need to flash SPIFFS. The location is dependent on the partition scheme, so we need to use the address
             flash_cmd.append(flash_request.firmware_to_flash.spiffs_address)
             flash_cmd.append(flash_request.firmware_to_flash.full_filepath("spiffs"))
+        # Then check for otadata
+        if len(flash_request.firmware_to_flash.download_url_otadata) > 0 and \
+                 len(flash_request.firmware_to_flash.checksum_otadata) > 0 and \
+                 len(flash_request.firmware_to_flash.otadata_address) > 2:
+            # We need to flash otadata. The location is dependent on the partition scheme, so we need to use the address
+            flash_cmd.append(flash_request.firmware_to_flash.otadata_address)
+            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("otadata"))
 
 
     # TODO - Explicitly need to disable any device on that port

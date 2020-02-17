@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[2019-02-17] - Improved ESP32 Flashing Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for flashing a bootloader and otadata partition to ESP32 devices
+
+
+Changed
+---------------------
+
+- SPIFFS partitions can now be flashed to ESP8266 devices
+
 
 [2019-02-15] - ThingSpeak and Grainfather Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

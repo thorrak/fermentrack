@@ -10,7 +10,7 @@ from django.utils import timezone
 from . import forms, tasks
 
 from app.models import BrewPiDevice
-from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version, FlashRequest
+from firmware_flash.models import DeviceFamily, Firmware, Board, get_model_version, check_model_version, FlashRequest, Project
 
 import app.serial_integration as serial_integration
 
@@ -150,7 +150,21 @@ def refresh_firmware(request=None):
         # And if that worked, load the firmware list
         board_loaded = Board.load_from_website()
         if board_loaded:
-            firmware_loaded = Firmware.load_from_website()
+            projects_loaded = Project.load_from_website()
+            if projects_loaded:
+                firmware_loaded = Firmware.load_from_website()
+                if firmware_loaded:
+                    # Success! Families, Boards, Projects, and Firmware are all loaded
+                    config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now()  # Update the "last refreshed" check
+                    return firmware_loaded
+                else:
+                    if request is not None:
+                        messages.error(request, "Unable to load firmware from fermentrack.com")
+                    return False
+            else:
+                if request is not None:
+                    messages.error(request, "Unable to load projects from fermentrack.com")
+                return False
         else:
             if request is not None:
                 messages.error(request, "Unable to load boards from fermentrack.com")
@@ -164,8 +178,6 @@ def refresh_firmware(request=None):
     # if request is not None:
     #     messages.success(request, "Firmware list was successfully refreshed from fermentrack.com")
 
-    config.FIRMWARE_LIST_LAST_REFRESHED = timezone.now()  # Update the "last refreshed" check
-    return firmware_loaded
 
 
 @login_required
