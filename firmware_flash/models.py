@@ -206,27 +206,21 @@ class Firmware(models.Model):
             Firmware.objects.all().delete()
             # Then loop through the data we received and recreate it again
             for row in data:
-                try:
-                    # This gets wrapped in a try/except as I don't want this failing if the local copy of Fermentrack
-                    # is slightly behind what is available at Fermentrack.com (eg - if there are new device families)
-                    newFirmware = Firmware(
-                        name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
-                        variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
-                        in_error=row['in_error'], description=row['description'],
-                        variant_description=row['variant_description'], download_url=row['download_url'],
-                        project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
-                        download_url_partitions=row['download_url_partitions'],
-                        download_url_spiffs=row['download_url_spiffs'], checksum=row['checksum'],
-                        checksum_partitions=row['checksum_partitions'], checksum_spiffs=row['checksum_spiffs'],
-                        spiffs_address=row['spiffs_address'], project_id=row['project_id'],
-                        download_url_bootloader=row['download_url_bootloader'],
-                        checksum_bootloader=row['checksum_bootloader'],
-                        download_url_otadata=row['download_url_otadata'],
-                        otadata_address=row['otadata_address'], checksum_otadata=row['checksum_otadata'],
-                    )
-                    newFirmware.save()
-                except:
-                    pass
+                newFirmware = Firmware(
+                    name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
+                    variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
+                    in_error=row['in_error'], description=row['description'],
+                    variant_description=row['variant_description'], download_url=row['download_url'],weight=row['weight'],
+                    download_url_partitions=row['download_url_partitions'],
+                    download_url_spiffs=row['download_url_spiffs'], checksum=row['checksum'],
+                    checksum_partitions=row['checksum_partitions'], checksum_spiffs=row['checksum_spiffs'],
+                    spiffs_address=row['spiffs_address'], project_id=row['project_id'],
+                    download_url_bootloader=row['download_url_bootloader'],
+                    checksum_bootloader=row['checksum_bootloader'],
+                    download_url_otadata=row['download_url_otadata'],
+                    otadata_address=row['otadata_address'], checksum_otadata=row['checksum_otadata'],
+                )
+                newFirmware.save()
 
             return True  # Firmware table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
