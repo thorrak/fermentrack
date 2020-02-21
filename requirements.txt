@@ -20,8 +20,8 @@ esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
 
-pybluez         # for gravity sensor support
-aioblescan      # Replacement for beacontools for Tilt support
+pybluez==0.23          # for gravity sensor support
+aioblescan==0.2.6      # Replacement for beacontools for Tilt support
 
 
 
