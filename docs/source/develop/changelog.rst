@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unversioned] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added explicit support for LBussy's BrewPi-Remix I2C Board
+- Exposed upgrade.log from the help screen
+- Store the exact last time that a message was received from a Tilt to Redis
+- Add sentry support to tilt_monitor_aio.py
+
+
+
+Changed
+---------------------
+
+- Removed legacy Python 2 code
+- Reduced gravity sensor temp precision to 0.1 degrees
+- Locked pybluez and aioblescan versions to prevent undesired format changes going forward
+
+
+
 [2019-02-17] - Improved ESP32 Flashing Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
