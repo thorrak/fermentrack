@@ -696,10 +696,13 @@ class TiltConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
+        datetime_string = datetime.datetime.strftime(timezone.now(), "%c")
+
         extras = {
             'rssi': getattr(self, 'rssi', None),
             'raw_gravity': getattr(self, 'raw_gravity', None),
-            'raw_temp': getattr(self, 'raw_temp', None)
+            'raw_temp': getattr(self, 'raw_temp', None),
+            'saved_at': datetime_string,
         }
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
@@ -725,6 +728,8 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_gravity']
         if 'raw_temp' in extras:
             self.raw_gravity = extras['raw_temp']
+        if 'saved_at' in extras:
+            self.saved_at = datetime.datetime.strptime(extras['saved_at'], "%c")
 
         return extras
 
