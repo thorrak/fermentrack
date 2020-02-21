@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+# Let's get sentry support going
+from raven import Client
+client = Client('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
+
+
 import os, sys
 import time, datetime, getopt, pid
 from typing import List, Dict
@@ -83,6 +88,7 @@ def processBLEBeacon(data):
         rssi = 0  # TODO - Fix this
     except  Exception as e:
         LOG.error(e)
+        client.captureException()
         return
 
     if verbose:
