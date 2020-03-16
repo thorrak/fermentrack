@@ -372,6 +372,3 @@ def device_guided_serial_autodetect(request, device_family):
             # The step number we received was invalid. Redirect to the start of the autodetection flow.
             return render(request, template_name='setup/device_guided_serial_autodetect_1.html',
                                        context={'device_family': device_family})
-
-
-
