@@ -22,5 +22,4 @@ redis           # for huey & gravity sensor support
 
 pybluez         # for gravity sensor support
 aioblescan      # Replacement for beacontools for Tilt support
-
-
+pillow          # Python Image Library to make User Image Uploads possible

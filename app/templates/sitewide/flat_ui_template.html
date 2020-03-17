@@ -66,10 +66,11 @@
             this is not how I want it to work
             the img src should be something like {{ image.url }} where it
             pulls images from the media_url (this is where I am
-            currently stumped) Once I figure this part out, I want a default
-            image to hold the place -->
+            currently stumped) Using onerror to redirect image. Not elegant, not
+            secure, but works for now -->
         <div class="container">
-    		<img src="/media/fermentrack_logo.png" class="transparent" style="width:25%; height:25%; margin-bottom:5px; margin-left:35%; margin-right:50%;" />
+          <img src="/media/Brewery_Logo.png" onerror="this.onerror=null;this.src='{% static "img/fermentrack_logo.png" %}';"
+          class="transparent" style="width:25%; height:25%; margin-bottom:5px; margin-left:35%; margin-right:50%;" />
     	  </div>
 
 
