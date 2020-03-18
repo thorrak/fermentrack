@@ -3,7 +3,8 @@ from django.db import models
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
-class Image (models.Model):
+
+class BreweryLogo(models.Model):
     name = models.CharField(max_length=50, blank=True)
     image = models.ImageField(null=True, blank=True, default='/static/img/fermentrack_logo.png')
     externalURL = models.URLField(blank=True)

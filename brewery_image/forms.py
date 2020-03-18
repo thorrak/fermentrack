@@ -1,14 +1,14 @@
 from django import forms
 
-from .models import Image
+from .models import BreweryLogo
 from django.core import validators
 import fermentrack_django.settings as settings
 
 from django.forms import ModelForm
 
 
-class ImageForm(forms.ModelForm):
+class BreweryLogoForm(forms.ModelForm):
 
     class Meta:
-        model = Image
+        model = BreweryLogo
         fields = ['name', 'image', 'externalURL']
