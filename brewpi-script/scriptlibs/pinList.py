@@ -158,6 +158,12 @@ def getPinList(boardType, shieldType):
                    {'val': 13, 'text': '  D7 (Door)', 'type': 'door'},
                    {'val': 12, 'text': 'D6 (OneWire)', 'type': 'onewire'},
                    {'val': 0, 'text': 'D3 (Buzzer)', 'type': 'beep'},]
+    elif (boardType == "esp32"):  # Note - Excluding shield definition for now
+        pinList = [{'val': 25, 'text': '  25 (Heat)', 'type': 'act'},
+                   {'val': 26, 'text': '  26 (Cool)', 'type': 'act'},
+                   {'val': 13, 'text': '  34 (Door)', 'type': 'door'},
+                   {'val': 13, 'text': '13 (OneWire)', 'type': 'onewire'}, ]
+        # {'val': 0, 'text': 'D3 (Buzzer)', 'type': 'beep'}, ]
     else:
         print('Unknown controller or board type')
         pinList = {}
