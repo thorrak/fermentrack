@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 
 from django.conf import settings
@@ -15,12 +15,13 @@ import app.circus_views
 import firmware_flash.urls
 import gravity.urls
 import external_push.urls
+import brewery_image.urls
 
 admin.autodiscover()
 
 # In addition to urlpatterns below, three paths are mapped by the nginx config file:
 # r'^static/' - Maps to collected_static/. Contains collected static files.
-# r'^media/' - Maps to media/. Contains uploaded files. Currently unused.
+# r'^media/' - Maps to media/. Contains uploaded files used for Personal Logo Incorporation.
 # r'^data/' - Maps to data/. Contains data points collected by brewpi.py.
 
 # Separately, all r'^firmware/' urls are contained in firmware_flash/urls.py
@@ -79,7 +80,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),
     url(r'^devices/(?P<device_id>\d{1,20})/proc/remove/$', app.circus_views.remove_brewpi_device, name='device_remove'),
     url(r'^devices/(?P<device_id>\d{1,20})/proc/status/$', app.circus_views.status_brewpi_device, name='device_status'),
-    
+
 
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),
@@ -120,6 +121,8 @@ urlpatterns = [
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
-              firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + \
+              firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + brewery_image.urls.brewery_image_urlpatterns + \
               external_push.urls.external_push_urlpatterns
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # TODO - Convert the above to be properly namespaced
