@@ -178,3 +178,4 @@ class GuidedDeviceFlashForm(forms.Form):
                                                                  'data-toggle': 'select'}),
                                       choices=DEVICE_FAMILY_CHOICES, required=True)
     should_flash_device = forms.BooleanField(widget=forms.HiddenInput, required=False, initial=False)
+

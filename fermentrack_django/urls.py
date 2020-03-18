@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
 from django.contrib import admin
 
 from django.conf import settings
@@ -123,6 +123,7 @@ urlpatterns = [
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
               firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + brewery_image.urls.brewery_image_urlpatterns + \
               external_push.urls.external_push_urlpatterns
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # TODO - Convert the above to be properly namespaced
+
+# TODO -- This line below doesn't sound right...
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

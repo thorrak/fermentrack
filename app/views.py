@@ -1037,3 +1037,5 @@ def debug_connection(request, device_id):
 
     return render(request, template_name='device_debug_connection.html',
                                context={'tests': tests, 'active_device': active_device})
+
+
