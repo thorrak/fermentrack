@@ -500,26 +500,14 @@ def github_trigger_upgrade(request, variant=""):
                 branch_to_use = request.POST.get('new_branch', "master")
 
             if variant == "":
-                if sys.version_info[0] < 3:
-                    # TODO - After April 2018, delete the Python 2 option here
-                    cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
-                else:
-                    cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
+                cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
+                messages.success(request, "Triggered an upgrade from GitHub")
 
             elif variant == "force":
-                if sys.version_info[0] < 3:
-                    # TODO - After April 2018, delete the Python 2 option here
-                    cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
-                else:
-                    cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
+                cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
+                messages.success(request, "Triggered an upgrade from GitHub")
 
             else:
                 cmds['tag'] = ""

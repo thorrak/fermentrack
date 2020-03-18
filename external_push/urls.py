@@ -24,4 +24,11 @@ external_push_urlpatterns = [
     url(r'^push/brewfather/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_brewfather_view, name='external_push_brewfather_view'),
     url(r'^push/brewfather/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_brewfather_delete, name='external_push_brewfather_delete'),
 
+    url(r'^push/thingspeak/add/$', external_push.views.external_push_thingspeak_target_add, name='external_push_thingspeak_target_add'),
+    url(r'^push/thingspeak/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_thingspeak_view, name='external_push_thingspeak_view'),
+    url(r'^push/thingspeak/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_thingspeak_delete, name='external_push_thingspeak_delete'),
+
+    url(r'^push/grainfather/add/$', external_push.views.external_push_grainfather_target_add, name='external_push_grainfather_target_add'),
+    url(r'^push/grainfather/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_grainfather_view, name='external_push_grainfather_view'),
+    url(r'^push/grainfather/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_grainfather_delete, name='external_push_grainfather_delete'),
 ]

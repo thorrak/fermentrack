@@ -6,7 +6,7 @@ raven           # OPTIONAL - used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices
-circus          # for managing Fermentrack wsgi & brewpi.py processes
+circus>=0.16.0,<0.17.0          # for managing Fermentrack wsgi & brewpi.py processes
 #circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
 huey>=2.0       # asynchronous task queue
@@ -20,10 +20,8 @@ esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
 
-pybluez         # for gravity sensor support
-aioblescan      # Replacement for beacontools for Tilt support
+pybluez==0.23          # for gravity sensor support
+aioblescan==0.2.6      # Replacement for beacontools for Tilt support
 
-# Requirements to make Circus work
-pyzmq<17
-tornado<5
+
 
