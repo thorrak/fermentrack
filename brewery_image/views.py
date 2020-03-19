@@ -3,24 +3,11 @@ from django.shortcuts import render, redirect
 from .forms import BreweryLogoForm
 from .models import BreweryLogo
 
-#This isn't working right
-def brewery_image(request):
-
-    if request.method == 'POST':
-        form = BreweryLogoForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            form.save()
-            return redirect('success')
-
-        else:
-            form = BreweryLogoForm()
-        return render(request, 'brewery_image_form.html', {'form' : form})
-
+#If someone navigates to http://ip/image this is what they get
 def index(request):
-        return HttpResponse ('successfully uploaded')
+        return HttpResponse ('Go to Django Admin Panel to upload Personal Logo Image')
 
-#The only view that works http://ip/brewery_image
+#The view that works http://ip/image/list
 def display_brewery_images(request):
 
     if request.method == 'GET':
