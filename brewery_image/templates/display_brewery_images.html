@@ -12,10 +12,7 @@
 
      {% for image in brewery_images %}
             <div class="container">
-                    {{ image.name }}
-                    {% if show.image %}
-                       {{ show.image.url }}
-                    {% endif %}
+                    {{ image.name }}<br>
                     <img src="{{ image.url }}" class="img-responsive" style: width="25%" height="25%"; float: left; margin-right: 10px;" />
 
             </div>

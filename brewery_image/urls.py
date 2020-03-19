@@ -12,16 +12,7 @@ import brewery_image.views
 # TODO - Convert this to be properly namespaced
 
 brewery_image_urlpatterns = [
-    ## Brewery Image Views (I have no idea what I'm doing)
-    url(r'^brewery_image', brewery_image.views.display_brewery_images, name='brewery_image'),
-    url(r'^image_upload', brewery_image.views.brewery_image, name = 'image_upload'),
-    url(r'^success', brewery_image.views.index, name = 'success'),
+    ## Brewery Image Views (I kinda have an idea what I'm doing)
+    url(r'^image/$', brewery_image.views.index, name = 'index'),
+    url(r'^image/list/', brewery_image.views.display_brewery_images, name='brewery_image'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-#urlpatterns+={
-#  path('',RedirectView.as_view(url='/brewery_image/',permanent=True))
-# }
-
-#if settings.DEBUG:
-    #urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
