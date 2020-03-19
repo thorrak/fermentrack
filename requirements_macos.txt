@@ -20,8 +20,6 @@ esptool         # for flashing ESP8266 devices
 
 redis           # for huey & gravity sensor support
 
-pillow          # Python Image Library to make User Image Uploads possible
-
 #pybluez         # for gravity sensor support
 #aioblescan      # Replacement for beacontools for Tilt support
 PyObjc # For bluetooth support

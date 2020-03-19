@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect
 from .forms import BreweryLogoForm
 from .models import BreweryLogo
 
-
 #If someone navigates to http://ip/image this is what they get
 def index(request):
         return HttpResponse ('Go to Django Admin Panel to upload Personal Logo Image')

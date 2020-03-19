@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'brewery_image.apps.BreweryImageConfig',
 ]
 
+# TODO - Check the below as I'm getting errors when running on MacOS w/o Apache
 if sys.platform == "darwin":
     INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
