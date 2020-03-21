@@ -27,7 +27,7 @@
 
     <!-- insert Fermentrack Logo -->
     <div class="container">
-  		<img src="{% static "fermentrack_banner.png" %}" class="transparent" style="width: 100%; float: left;" />
+  		<img src="{% static "fermentrack_banner.png" %}" class="transparent" style="width: 100%; float: left; border-radius: 8px;" />
   	</div>
 
 
@@ -69,8 +69,8 @@
             secure, but works for now -->
 
         <div class="container">
-          <img src="{{ image.url }}" onerror="this.onerror=null;this.src='{% static "img/fermentrack_logo.png" %}';"
-          class="transparent" style="width:25%; height:25%; margin-bottom:5px; margin-left:35%; margin-right:50%;" />
+          <img src="{ "media/" }{{brewerylogo.image}}" onerror="this.onerror=null;this.src='{% static "img/fermentrack_logo.png" %}';"
+          class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
     	  </div>
 
       <div class="row">
