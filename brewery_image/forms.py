@@ -12,3 +12,4 @@ class BreweryLogoForm(forms.ModelForm):
     class Meta:
         model = BreweryLogo
         fields = ['name', 'image', 'externalURL']
+        help_texts = ['image': "The file name of your image must be brewerylogo.png"]

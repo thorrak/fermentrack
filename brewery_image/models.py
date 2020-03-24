@@ -2,10 +2,12 @@ import os
 from django.db import models
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.db.models.signals import post_delete
+from django.dispatch.dispatcher import receiver
 
 class BreweryLogo (models.Model):
     name = models.CharField(max_length=50, blank=True)
-    image = models.ImageField(null=True, blank=True, default='/static/img/fermentrack_logo.png')
+    image = models.ImageField(null=True, blank=True, help_text="The file name of your image must be brewerylogo.png", default='/static/img/fermentrack_logo.png')
     externalURL = models.URLField(blank=True)
 
 # when uploading a new image through Admin, allows to pull image from external site
@@ -33,3 +35,7 @@ def image_url(self):
     if self.image:
         return self.image.url
     return '#'
+
+@receiver(post_delete, sender=BreweryLogo)
+def submission_delete(sender, instance, **kwargs):
+    instance.image.delete(False)
