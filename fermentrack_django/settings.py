@@ -79,6 +79,7 @@ TEMPLATES = [
                 'constance.context_processors.config',
                 'app.context_processors.preferred_tz',
                 'app.context_processors.devices',
+                'app.context_processors.logo',
                 # 'app.context_processors.devices',
             ],
         },
