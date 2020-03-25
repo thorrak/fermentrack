@@ -7,7 +7,7 @@ from django.dispatch.dispatcher import receiver
 
 class BreweryLogo (models.Model):
     name = models.CharField(max_length=50, blank=True)
-    image = models.ImageField(null=True, blank=True, help_text="The file name of your image must be brewerylogo.png", default='/static/img/fermentrack_logo.png')
+    image = models.ImageField(null=True, blank=True, help_text="The file name of your image must be brewerylogo.png", default='/media/generic_logo.png')
     externalURL = models.URLField(blank=True)
 
 # when uploading a new image through Admin, allows to pull image from external site
@@ -20,8 +20,8 @@ class BreweryLogo (models.Model):
             # is this the best way to do this??
             return os.path.join('/',settings.MEDIA_URL, os.path.basename(str(self.image)))
 
+# used in the admin site model as a "thumbnail"
     def image_tag(self):
-        # used in the admin site model as a "thumbnail"
         return mark_safe('<img src="{}" width="25%" height="25%" />'.format(self.url()) )
     image_tag.short_description = 'Image'
 
@@ -36,6 +36,7 @@ def image_url(self):
         return self.image.url
     return '#'
 
+#Deletes user uploaded file in Media Directory
 @receiver(post_delete, sender=BreweryLogo)
 def submission_delete(sender, instance, **kwargs):
     instance.image.delete(False)

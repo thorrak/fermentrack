@@ -182,6 +182,3 @@ config.ini
 
 #ignore generated files
 collected_static/*
-
-#ignore any media files
-media/*

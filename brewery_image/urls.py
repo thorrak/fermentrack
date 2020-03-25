@@ -13,6 +13,5 @@ import brewery_image.views
 
 brewery_image_urlpatterns = [
     ## Brewery Image Views (I kinda have an idea what I'm doing)
-    url(r'^image/$', brewery_image.views.index, name = 'index'),
-    url(r'^image/list/', brewery_image.views.display_brewery_images, name='brewery_image'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    url(r'^image/$', brewery_image.views.display_brewery_images, name='brewery_images'),
+]
