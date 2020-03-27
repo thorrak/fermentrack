@@ -4,11 +4,15 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.db.models.signals import post_delete
 from django.dispatch.dispatcher import receiver
+from django.db.models import DateTimeField
 
 class BreweryLogo (models.Model):
     name = models.CharField(max_length=50, blank=True)
-    image = models.ImageField(null=True, blank=True, help_text="The file name of your image must be brewerylogo.png", default='/media/generic_logo.png')
+    image = models.ImageField(null=True, blank=True, default='/media/generic_logo.png')
+    date = models.DateTimeField(auto_now=True)
     externalURL = models.URLField(blank=True)
+
+#BreweryLogo.objects.order_by('-date')
 
 # when uploading a new image through Admin, allows to pull image from external site
 # default Fermentrack logo is displayed as image

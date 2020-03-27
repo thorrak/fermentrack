@@ -40,5 +40,6 @@ def logo(request):
         """
         Simple context processor that displays the last User Uploaded Image into Fermentrack
         """
+
         logo = BreweryLogo.objects.all()
         return {'logo': logo}

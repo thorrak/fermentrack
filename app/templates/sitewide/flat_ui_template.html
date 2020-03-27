@@ -61,18 +61,17 @@
         </div>
       </div> <!-- /row -->
 
-      <!-- /banner insert
-            this is not how I want it to work
-            the img src should be something like { image.url } where it
-            pulls images from the media_url (this is where I am
-            currently stumped) Using onerror to redirect image. Not elegant, not
-            secure, but works for now -->
+{% if logo %}
     {% for image in logo %}
         <div class="container">
-          <img src="{{ image.url }}" onerror="this.onerror=null;this.src='{% static "img/fermentrack_logo.png" %}';"
-          class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
+          <img src="{{ image.url }}" alt="User Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
     	  </div>
     {% endfor %}
+{% else %}
+        <div class="container">
+          <img src='{% static "img/fermentrack_logo.png" %}' alt="Placement Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
+        </div>
+{% endif %}
 
       <div class="row">
         <div class="col-xs-12">
