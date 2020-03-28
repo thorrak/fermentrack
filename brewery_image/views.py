@@ -11,4 +11,3 @@ def display_brewery_images(request):
         # getting all the objects of image
         Images = BreweryLogo.objects.all()
         return render(request, 'display_brewery_images.html', {'brewery_images' : Images})
-        

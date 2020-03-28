@@ -12,8 +12,6 @@ class BreweryLogo (models.Model):
     date = models.DateTimeField(auto_now=True)
     externalURL = models.URLField(blank=True)
 
-#BreweryLogo.objects.order_by('-date')
-
 # when uploading a new image through Admin, allows to pull image from external site
 # default Fermentrack logo is displayed as image
     def url(self):

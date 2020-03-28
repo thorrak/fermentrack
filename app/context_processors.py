@@ -37,9 +37,9 @@ def devices(request):
 
 
 def logo(request):
-        """
-        Simple context processor that displays the last User Uploaded Image into Fermentrack
-        """
+    """
+    Simple context processor that displays the last User Uploaded Image into Fermentrack
+    """
 
-        logo = BreweryLogo.objects.all()
-        return {'logo': logo}
+    logo = BreweryLogo.objects.order_by('-date')[:1]
+    return {'logo' : logo}
