@@ -11,13 +11,25 @@
 <body>
 <h1 class="page-header">Uploaded Logo Images</h1>
 
+{% if brewery_images %}
      {% for image in brewery_images %}
             <div class="container">
                     <center>{{ image.name }}</center><br>
+                    <center>{{ image.date }}</center><br>
                     <img src="{{ image.url }}" class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:400px; max-height:400px; margin-bottom:5px;" />
-
+    {% endfor %}
+{% else %}
+<div style = "padding-left: 20px; padding-bottom: 50px;">
+  <p> You do not have any uploaded images to display. If you would like to upload a personalized<br>
+  Logo of your Brewery to be displayed in Fermentrack, please go to <a href="{% url 'site_settings' %}">Sight Settings</a><br>
+  and navigate to the <b>Django Admin Panel</b> where you can add your image to Brewery logos.<br>
+  <br>
+  You may upload as many images as you want, but only the latest uploaded image will be displayed.<br>
+  If you would like to make a previusly uploaded image to be displayed again in Fermentrack. <br>
+  Simply navigate to the logo through the Django Admin Panel and click <b>SAVE</b><br>
+</div>
+{% endif %}
             </div>
-      {% endfor %}
 
       </body>
 </html>

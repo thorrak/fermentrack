@@ -25,11 +25,11 @@
     </head>
   <body>
 
-    <!-- insert Fermentrack Logo -->
+<!-- insert Fermentrack Logo -->
     <div class="container">
-  		<img src="{% static "fermentrack_banner.png" %}" class="transparent" style="width: 100%; float: left; border-radius: 8px;" />
+  		<img src="{% static "fermentrack_banner.png" %}" title="Fermentrack Web Interface", class="transparent" style="width: 100%; float: left; border-radius: 8px;" />
   	</div>
-
+<!-- end Fermentrack Logo -->
 
     <div class="container">
       <div class="row navbar-row">
@@ -61,17 +61,21 @@
         </div>
       </div> <!-- /row -->
 
+<!-- Insert User uploadable Logo Image -->
+<a href="{% url 'images' %}">{% spaceless %}
 {% if logo %}
     {% for image in logo %}
         <div class="container">
-          <img src="{{ image.url }}" alt="User Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
+          <img src="{{ image.url }}" title="User Uploaded Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:250px; max-height:155px; margin-bottom:5px;" />
     	  </div>
     {% endfor %}
 {% else %}
         <div class="container">
-          <img src='{% static "img/fermentrack_logo.png" %}' alt="Placement Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:200px; max-height:200px; margin-bottom:5px;" />
+          <img src='{% static "img/fermentrack_logo.png" %}' title="Temporary Placement Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:250px; max-height:155px; margin-bottom:5px;" />
         </div>
 {% endif %}
+{% endspaceless %}</a>
+<!-- End Logo Image -->
 
       <div class="row">
         <div class="col-xs-12">
