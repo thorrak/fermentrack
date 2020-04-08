@@ -120,7 +120,7 @@ urlpatterns = [
     url(r'site/settings/$', app.views.site_settings, name="site_settings"),
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
-] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
+] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + \
               firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + brewery_image.urls.brewery_image_urlpatterns + \
               external_push.urls.external_push_urlpatterns
 # TODO - Convert the above to be properly namespaced

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save, post_init, pre_save
 from django.dispatch import receiver
 
 import os.path, csv, logging, socket
@@ -560,8 +560,8 @@ class BrewPiDevice(models.Model):
 
     def __unicode__(self):
         return self.device_name
-    
-    
+
+
     def read_lcd_from_device(self):
         pass
 
@@ -1464,8 +1464,9 @@ class FermentationProfile(models.Model):
 
     # Fields
     name = models.CharField(max_length=128)
+    image = models.ImageField(null=True, blank=True, upload_to='beer_profile/')
     status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ACTIVE)
-    
+
     profile_type = models.CharField(max_length=32, default=PROFILE_STANDARD, help_text="Type of temperature profile")
 
 
@@ -1805,6 +1806,30 @@ class FermentationProfile(models.Model):
 
         return new_profile
 
+@receiver(models.signals.post_delete, sender=FermentationProfile)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    #"""
+    #Deletes image from filesystem
+    #when corresponding `FermentationProfile` object is deleted.
+    #"""
+    if instance.image:
+        if os.path.isfile(instance.image.path):
+            os.remove(instance.image.path)
+
+@receiver(post_init, sender= FermentationProfile)
+def backup_image_path(sender, instance, **kwargs):
+    instance._current_image_file = instance.image
+
+
+@receiver(post_save, sender=FermentationProfile)
+def delete_old_image(sender, instance, **kwargs):
+    if hasattr(instance, '_current_image_file'):
+        if instance.image:
+            if instance._current_image_file != instance.image.path:
+                instance._current_image_file.delete(save=False)
+        else:
+            if instance._current_image_file:
+                instance._current_image_file.delete()
 
 class FermentationProfilePoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
