@@ -49,7 +49,7 @@ def check_python_packages() -> (bool, list):
     if sys.platform == "darwin":
         # The MacOS support uses different packages from the support for Linux
         package_list = [
-            {'name': 'PyObjc', 'version': version.parse("6.2")},
+            {'name': 'pyobjc', 'version': version.parse("6.2")},
             {'name': 'redis', 'version': version.parse("3.4.1")},
         ]
     else:
@@ -73,7 +73,7 @@ def check_python_packages() -> (bool, list):
         for package in pkg_resources.working_set:
             if package.project_name == package_to_find['name']:
                 result_stub['installed_version'] = package.parsed_version
-                if result_stub['installed_version'] == result_stub['required_version']:
+                if result_stub['installed_version'].public == result_stub['required_version'].public:
                     result_stub['ok'] = True
 
         if result_stub['ok'] is False:
