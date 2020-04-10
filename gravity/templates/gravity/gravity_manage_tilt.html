@@ -37,7 +37,7 @@
                             <td>{{ active_device.tilt_configuration.polling_frequency }}</td>
                         </tr>
 
-                        {% if active_device.tilt_configuration.connection_type == "TiltBridge" %}
+                        {% if active_device.tilt_configuration.connection_type == "Bridge" %}
                             <tr>
                                 <td>TiltBridge Name</td>
                                 <td>{{ active_device.tilt_configuration.tiltbridge.name }}</td>
