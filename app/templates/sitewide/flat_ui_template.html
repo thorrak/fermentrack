@@ -10,6 +10,7 @@
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
+        <link href="{% static "css/user_upload.css" %}" rel="stylesheet">
         <link rel="shortcut icon" href="{% static "favicon.ico" %}">
         <link rel="icon" href="{% static "favicon.ico" %}">
         {% block header_scripts %}{% endblock %}
@@ -66,12 +67,12 @@
 {% if logo %}
     {% for image in logo %}
         <div class="container">
-          <img src="{{ image.url }}" title="User Uploaded Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:250px; max-height:155px; margin-bottom:5px;" />
+          <img src="{{ image.url }}" title="User Uploaded Logo", class="logoimage" />
     	  </div>
     {% endfor %}
 {% else %}
         <div class="container">
-          <img src='{% static "img/fermentrack_logo.png" %}' title="Temporary Placement Logo", class="transparent" style="display: block; margin-left: auto; margin-right: auto; max-width:250px; max-height:155px; margin-bottom:5px;" />
+          <img src='{% static "img/fermentrack_logo.png" %}' title="Temporary Placement Logo", class="logoimage" />
         </div>
 {% endif %}
 {% endspaceless %}</a>
