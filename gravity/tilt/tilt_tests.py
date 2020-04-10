@@ -54,7 +54,7 @@ def check_python_packages() -> (bool, list):
         ]
     else:
         package_list = [
-            {'name': 'pybluez', 'version': version.parse("0.23")},
+            {'name': 'PyBluez', 'version': version.parse("0.23")},
             {'name': 'aioblescan', 'version': version.parse("0.2.6")},
             {'name': 'redis', 'version': version.parse("3.4.1")},
         ]
