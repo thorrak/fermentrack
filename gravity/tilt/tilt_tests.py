@@ -73,8 +73,8 @@ def check_python_packages() -> (bool, list):
         for package in pkg_resources.working_set:
             if package.project_name == package_to_find['name']:
                 result_stub['installed_version'] = package.parsed_version
-                if result_stub['installed_version'] != result_stub['required_version']:
-                    result_stub['ok'] = False
+                if result_stub['installed_version'] == result_stub['required_version']:
+                    result_stub['ok'] = True
 
         if result_stub['ok'] is False:
             all_packages_ok = False
