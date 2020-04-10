@@ -54,7 +54,7 @@ def check_apt_packages() -> (bool, list):
 def check_python_packages() -> (bool, bool, list):
     # Returns has_packaging, all_packages_ok, test_results[]
     if not has_packaging:
-        return False, False, []
+        return has_packaging, False, []
 
     if sys.platform == "darwin":
         # The MacOS support uses different packages from the support for Linux
@@ -90,7 +90,7 @@ def check_python_packages() -> (bool, bool, list):
             all_packages_ok = False
         test_results.append(result_stub)
 
-    return all_packages_ok, test_results
+    return has_packaging, all_packages_ok, test_results
 
 
 # The following was used for testing during development
