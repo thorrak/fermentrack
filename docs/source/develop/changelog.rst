@@ -16,6 +16,7 @@ Added
 - Exposed upgrade.log from the help screen
 - Store the exact last time that a message was received from a Tilt to Redis
 - Add sentry support to tilt_monitor_aio.py
+- Added "debug" scripts for bluetooth Tilt connections
 
 
 
@@ -24,9 +25,13 @@ Changed
 
 - Removed legacy Python 2 code
 - Reduced gravity sensor temp precision to 0.1 degrees
-- Locked pybluez and aioblescan versions to prevent undesired format changes going forward
+- Locked pybluez, aioblescan, and redis versions to prevent undesired format changes going forward
 
 
+Fixed
+---------------------
+
+- Fix display of TiltBridge mDNS settings on Tilt settings page
 
 [2019-02-17] - Improved ESP32 Flashing Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
