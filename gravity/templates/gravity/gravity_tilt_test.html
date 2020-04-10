@@ -1,7 +1,7 @@
 {% extends "sitewide/flat_ui_template.html" %}{% load static %}
 {% load custom_tags %}
 
-{% block title %}Debug Tilt{% endblock %}
+{% block title %}Debug Tilt Support{% endblock %}
 
 {% block content %}
 
@@ -84,6 +84,32 @@
             <td>{% if test_result.ok %}OK{% else %}Not OK{% endif %}</td>
         </tr>
         {% endfor %}
+    </table>
+
+
+    <h3>Redis Connectivity</h3>
+
+    <p>
+    Fermentrack uses Redis to store datapoints received from the Tilt for futher processing within Fermentrack. If
+    Redis support isn't installed, the Redis server isn't running (or is otherwise inaccessible), or we cannot set or
+    retrieve keys from Redis, then the Tilt support will not function.
+    </p>
+
+    <table class="table table-hover">
+        <tr>
+            <td>Redis Support Installed?</td>
+            <td>{% if redis_installed %}Yes{% else %}Not Installed!{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td>Can Connect to Redis?</td>
+            <td>{% if able_to_connect_to_redis %}Yes{% else %}Cannot connect!{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td>Can Set/Retrieve Keys?</td>
+            <td>{% if redis_key_test %}Yes{% else %}Not able to set/retrieve keys!{% endif %}</td>
+        </tr>
     </table>
 
 

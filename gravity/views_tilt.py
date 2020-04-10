@@ -16,6 +16,7 @@ from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravi
 from gravity import mdnsLocator
 
 import gravity.tilt.tilt_tests as tilt_tests
+import gravity.gravity_debug as gravity_debug
 
 import csv
 
@@ -515,6 +516,11 @@ def gravity_tilt_test(request):
     # Next, check the python packages
     has_python_packages, python_test_results = tilt_tests.check_python_packages()
 
+    # Then check Redis support
+    redis_installed, able_to_connect_to_redis, redis_key_test = gravity_debug.try_redis()
+
     return render(request, template_name='gravity/gravity_tilt_test.html',
                   context={'has_apt': has_apt, 'has_apt_packages': has_apt_packages, 'apt_test_results': apt_test_results,
-                           'has_python_packages': has_python_packages, 'python_test_results': python_test_results,})
+                           'has_python_packages': has_python_packages, 'python_test_results': python_test_results,
+                           'redis_installed': redis_installed, 'able_to_connect_to_redis': able_to_connect_to_redis,
+                           'redis_key_test': redis_key_test})
