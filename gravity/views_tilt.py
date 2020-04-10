@@ -15,6 +15,8 @@ from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravi
 
 from gravity import mdnsLocator
 
+import gravity.tilt.tilt_tests as tilt_tests
+
 import csv
 
 try:
@@ -489,3 +491,30 @@ def gravity_tiltbridge_urlerror(request, tiltbridge_id):
 
     return render(request, template_name='gravity/gravity_tiltbridge_urlerror.html',
                   context={'tiltbridge': selected_tiltbridge, 'fermentrack_url': fermentrack_url,})
+
+
+
+
+@login_required
+@site_is_configured
+def gravity_tilt_test(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    # Check if we are on a system that actually has apt (e.g. Raspbian, Debian, Ubuntu, etc.)
+    has_apt = tilt_tests.has_apt()
+    if has_apt:
+        has_apt_packages, apt_test_results = tilt_tests.check_apt_packages()
+    else:
+        messages.error(request, u"Unable to locate dpkg - Cannot test for system packages")
+        has_apt_packages = False
+        apt_test_results = []
+
+    # Next, check the python packages
+    has_python_packages, python_test_results = tilt_tests.check_python_packages()
+
+    return render(request, template_name='gravity/gravity_tilt_test.html',
+                  context={'has_apt': has_apt, 'has_apt_packages': has_apt_packages, 'apt_test_results': apt_test_results,
+                           'has_python_packages': has_python_packages, 'python_test_results': python_test_results,})

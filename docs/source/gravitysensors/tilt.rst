@@ -74,3 +74,36 @@ To integrate your Tilt logging with a BrewPi controller:
 #. Click "Attach sensor to controller"
 
 Now, to view your Tilt sensor readings, navigate to the BrewPi controller dashboard. You will have to restart a log if you had one running before associating the Tilt with the BrewPi sensor. Now, any wort you ferment with this controller will incorporate the Tilt's temperature and gravity readings onto your graph. Once the Tilt (or any gravity sensor) is attached to a BrewPi controller, that controller dashboard will become the main method with which to interact with the Tilt, specifically for things like logging.
+
+
+Troubleshooting Tilt Support
+----------------------------
+
+Tilt Hydrometer support relies on a number of components beyond those used for other functions in Fermentrack, and as a result is particularly sensitive to changes in the program environment on the device on which Fermentrack is installed. Testing has been added to Fermentrack to help diagnose some of these environmental issues if they happen to impact an installation.
+
+
+Fixing Missing System Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If there are system packages missing, you will unfortunately need to fix them manually. For Raspberry Pis running
+Raspbian, here is how to fix this issue. For other OS's, please adapt these instructions as necessary
+
+#. Log into your Raspberry Pi via as the `pi` user
+#. Type `sudo apt-get update` and allow the package system to update
+#. Type `sudo-apt-get upgrade` and follow the prompts to upgrade all installed packages
+#. For each missing package identified by the test script, type `sudo apt-get install -y {package name}`
+#. Allow each package to install. Repeat the previous step for all missing packages.
+
+
+
+Fixing Missing/Incorrect Python Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Although all Python packages should be automatically installed as part of the installation script, it is possible that
+packages come out of sync for a variety of reasons. If you are missing packages they will need to be installed for
+Fermentrack to properly interface with your Tilt.
+
+.. todo:: Enrich this with steps for resolving missing Python packages
+
+
+

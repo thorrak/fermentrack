@@ -173,7 +173,9 @@ def getPinListJson(boardType, shieldType):
         return 0
 
 def pinListTest():
+    print(getPinListJson("leonardo", "revA"))
     print(getPinListJson("leonardo", "revC"))
+    print(getPinListJson("uno", "revA"))
     print(getPinListJson("uno", "revC"))
     print(getPinListJson("uno", "I2C"))
     print(getPinListJson("core", "V1"))
