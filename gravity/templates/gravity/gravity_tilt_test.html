@@ -61,31 +61,40 @@
     <b>Note - </b> The package list being tested below does not apply to installations on Windows.
     </p>
 
-    {% if has_python_packages %}
-        <h4>All necessary python packages are installed</h4>
+    {% if has_packaging %}
+
+        {% if has_python_packages %}
+            <h4>All necessary python packages are installed</h4>
+        {% else %}
+            <h4 style="color: darkred">Several python packages are missing. </h4>
+        {% endif %}{# has_python_packages #}
+
+
+        <table class="table table-hover">
+            <tr>
+                <td>Package Name</td>
+                <td>Required Version</td>
+                <td>Installed Version</td>
+                <td>OK?</td>
+            </tr>
+
+            {% for test_result in python_test_results %}
+            <tr>
+                <td>{{ test_result.package }}</td>
+                <td>{{ test_result.required_version }}</td>
+                <td>{{ test_result.installed_version }}</td>
+                <td>{% if test_result.ok %}OK{% else %}Not OK{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
     {% else %}
-        <h4 style="color: darkred">Several python packages are missing. </h4>
-    {% endif %}{# has_python_packages #}
+        <h4>Python 'packaging' module is not available - Test cannot run!</h4>
+        <p>
+            This is a fairly serious error, as it implies that your python packages are not being kept up-to-date.
+        Check the <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+        </p>
 
-
-    <table class="table table-hover">
-        <tr>
-            <td>Package Name</td>
-            <td>Required Version</td>
-            <td>Installed Version</td>
-            <td>OK?</td>
-        </tr>
-
-        {% for test_result in python_test_results %}
-        <tr>
-            <td>{{ test_result.package }}</td>
-            <td>{{ test_result.required_version }}</td>
-            <td>{{ test_result.installed_version }}</td>
-            <td>{% if test_result.ok %}OK{% else %}Not OK{% endif %}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
+    {% endif %}
 
     <h3>Redis Connectivity</h3>
 

@@ -1,6 +1,12 @@
 import os, subprocess, sys
 import pkg_resources
-from packaging import version
+
+try:
+    from packaging import version
+    has_packaging = True
+except:
+    has_packaging = False
+
 
 
 # This function is used ot check if an apt package is installed on Raspbian, Ubuntu, Debian, etc.
@@ -45,7 +51,11 @@ def check_apt_packages() -> (bool, list):
     return all_packages_ok, test_results
 
 
-def check_python_packages() -> (bool, list):
+def check_python_packages() -> (bool, bool, list):
+    # Returns has_packaging, all_packages_ok, test_results[]
+    if not has_packaging:
+        return False, False, []
+
     if sys.platform == "darwin":
         # The MacOS support uses different packages from the support for Linux
         package_list = [
