@@ -151,6 +151,31 @@
 
     {% endif %}
 
+    {% if active_device.tilt_configuration.connection_type == "Bridge" %}
+        <h2>TiltBridge Configuration</h2>
+
+        <p>
+        In order for your TiltBridge to communicate with Fermentrack, it needs to be told where Fermentrack can be
+        reached on  your network. If the mDNS ID specified above is correct, this can be done automatically by
+        Fermentrack, or you can set this manually on the TiltBridge's configuration page.
+        </p>
+
+        <div class="row">
+            <div class="col-lg-5 col-sm-9 col-xs-12">
+                <table class="table">
+                    <tr>
+                        <th>Fermentrack URL (copy to TiltBridge)</th>
+                        <td>{{ fermentrack_url }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <p>
+            <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
+        </p>
+    {% endif %}
+
 
     <!-- Modal -->
     <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
