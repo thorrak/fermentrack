@@ -24,10 +24,12 @@
         {% endif %}{# has_apt_packages #}
 
         <table class="table table-hover">
-            <tr>
-                <th>Package Name</th>
-                <th>OK?</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Package Name</th>
+                    <th>OK?</th>
+                </tr>
+            </thead>
 
             {% for test_result in apt_test_results %}
                 <tr>
@@ -86,12 +88,14 @@
 
 
         <table class="table table-hover">
-            <tr>
-                <th>Package Name</th>
-                <th>Required Version</th>
-                <th>Installed Version</th>
-                <th>OK?</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Package Name</th>
+                    <th>Required Version</th>
+                    <th>Installed Version</th>
+                    <th>OK?</th>
+                </tr>
+            </thead>
 
             {% for test_result in python_test_results %}
             <tr>
