@@ -229,7 +229,7 @@
                             {% if beer.gravity_enabled %}
                             <tr id="gravityRow">
                                 <td id="gravityLabel">
-                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
                                     Gravity
                                 </td>
                                 <td id="gravityValue"></td>
@@ -697,8 +697,3 @@ $(function() {
 </script>
 
 {% endblock %}
-
-
-
-
-
