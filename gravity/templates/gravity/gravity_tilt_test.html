@@ -104,13 +104,26 @@
         </table>
 
         {% if not has_python_packages %}
+
             <p>
-                <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Refresh Python Packages</a>
+                One or more of the Python packages required for Fermentrack's Tilt support to function are either
+                missing or at an incorrect version.
+                {% if not has_apt_packages %}
+                    This may be caused by missing system packages. Before proceeding, please ensure that all required
+                    system packages (see the earlier test) are installed.
+                {% endif %}
+                The easiest way to resolve this is to trigger a manual refresh of the Python requirements. To do this,
+                click the button below. If this does not resolve your missing packages check the
+                <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+            </p>
+
+            <p>
+                <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
             </p>
         {% endif %}
 
     {% else %}
-        <h4>Python 'packaging' module is not available - Test cannot run!</h4>
+        <h4 style="color: darkred">Python 'packaging' module is not available - Test cannot run!</h4>
         <p>
             This is a fairly serious error, as it implies that your python packages are not being kept up-to-date.
             If there are missing system packages (above) resolve those before proceeding. Next, attempt a
@@ -119,7 +132,7 @@
             <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
         </p>
         <p>
-            <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Refresh Python Packages</a>
+            <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
         </p>
 
     {% endif %}

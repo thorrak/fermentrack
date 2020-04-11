@@ -109,6 +109,6 @@ GitHub. To trigger a refresh:
 #. Log into Fermentrack
 #. Click the 'gear' icon in the upper right hand corner of the page
 #. Click 'Update from GitHub'
-#. Click the 'Refresh Python Packages' button
+#. Click the 'Update/Install Missing Python Packages' button
 
 
