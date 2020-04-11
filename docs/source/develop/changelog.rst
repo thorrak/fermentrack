@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unversioned] - Bugfixes
-~~~~~~~~~~~~~~~~~~~~~~~~
+[2020-04-11] - Bugfixes & Tilt Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -34,7 +34,7 @@ Fixed
 
 - Fix display of TiltBridge mDNS settings on Tilt settings page
 
-[2019-02-17] - Improved ESP32 Flashing Support
+[2020-02-17] - Improved ESP32 Flashing Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -49,7 +49,7 @@ Changed
 - SPIFFS partitions can now be flashed to ESP8266 devices
 
 
-[2019-02-15] - ThingSpeak and Grainfather Support
+[2020-02-15] - ThingSpeak and Grainfather Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
