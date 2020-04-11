@@ -178,7 +178,8 @@ class GravitySensor(models.Model):
         if point is None:
             return None, None
         else:
-            return None, None if point.temp is None else round(point.temp, 2), point.temp_format
+            # Changing to one degree of precision - more precise is nonsensical
+            return None, None if point.temp is None else round(point.temp, 1), point.temp_format
 
     def create_log_and_start_logging(self, name: str):
         # First, create the new gravity log
@@ -193,12 +194,12 @@ class GravitySensor(models.Model):
         self.active_log = new_log
         self.save()
 
-    def convert_temp_to_sensor_format(self, temp: float, temp_format: str) -> (float, str):
-        if self.temp_format == temp_format:
+    def convert_temp_to_sensor_format(self, temp: float, received_temp_format: str) -> (float, str):
+        if self.temp_format == received_temp_format:
             return temp, self.temp_format
-        elif self.temp_format == 'F' and temp_format == 'C':
+        elif self.temp_format == self.TEMP_FAHRENHEIT and received_temp_format == 'C':
             return (temp*9/5) + 32, self.temp_format
-        elif self.temp_format == 'C' and temp_format == 'F':
+        elif self.temp_format == self.TEMP_CELSIUS and received_temp_format == 'F':
             return (temp-32) * 5 / 9, self.temp_format
         else:
             raise ValueError
@@ -722,10 +723,13 @@ class TiltConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
+        datetime_string = datetime.datetime.strftime(timezone.now(), "%c")
+
         extras = {
             'rssi': getattr(self, 'rssi', None),
             'raw_gravity': getattr(self, 'raw_gravity', None),
-            'raw_temp': getattr(self, 'raw_temp', None)
+            'raw_temp': getattr(self, 'raw_temp', None),
+            'saved_at': datetime_string,
         }
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
@@ -751,6 +755,8 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_gravity']
         if 'raw_temp' in extras:
             self.raw_gravity = extras['raw_temp']
+        if 'saved_at' in extras:
+            self.saved_at = datetime.datetime.strptime(extras['saved_at'], "%c")
 
         return extras
 

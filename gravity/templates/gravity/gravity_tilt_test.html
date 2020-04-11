@@ -1,0 +1,175 @@
+{% extends "sitewide/flat_ui_template.html" %}{% load static %}
+{% load custom_tags %}
+
+{% block title %}Debug Tilt Support{% endblock %}
+
+{% block content %}
+
+    <h1>Debugging Tilt Support</h1>
+
+
+    <h3>System Packages</h3>
+
+    <p>
+        Fermentrack relies on several applications being installed on the system at the same time as Fermentrack. If any
+        of these packages are missing, it can impact the necessary Python packages from being installed or functioning
+        as expected.
+    </p>
+
+    {% if has_apt %}
+        {% if has_apt_packages %}
+            <h4>All necessary system packages are installed</h4>
+        {% else %}
+            <h4 style="color: darkred">Several system packages are missing. </h4>
+        {% endif %}{# has_apt_packages #}
+
+        <table class="table table-hover">
+            <tr>
+                <th>Package Name</th>
+                <th>OK?</th>
+            </tr>
+
+            {% for test_result in apt_test_results %}
+                <tr>
+                    <td>{{ test_result.package }}</td>
+                    <td>{% if test_result.result %}Installed{% else %}Not Installed{% endif %}</td>
+                </tr>
+            {% endfor %}
+
+        </table>
+
+        {% if not has_apt_packages %}
+            <h5 style="color: darkred">NOTE - Fix the above errors first and then re-run the tests before proceeding</h5>
+
+            <p>
+            Several of the system packages listed above are required for all of the Python packages to install. If you
+            do not first install the missing system packages you may be unable to fix other errors that appear on this
+            page. Thankfully, installing these missing packages is pretty simple. Information on how to resolve this
+            can be found in the <a href="http://docs.fermentrack.com/en/dev/gravitysensors/tilt.html#fixing-missing-system-packages">Fermentrack documentation.</a>
+            </p>
+        {% endif %}{# has_apt_packages #}
+
+
+    {% else %}
+            <h4>Unable to locate the software necessary to check system packages</h4>
+            <p>
+                This test only works for systems that use apt/dpkg, like Raspbian, Debian, or Ubuntu. If you are running
+                on another operating system, you're unfortunately on your own for this test.
+            </p>
+    {% endif %}{# has_apt #}
+
+
+
+
+    <h3>Python Packages</h3>
+
+    <p>
+    Fermentrack is a Python-based application, and requires a number of Python packages to be installed and at the
+    correct version in order for all of its features to work. That said - it is designed to fail (somewhat) gracefully,
+    and as such if certain packages are missing only those features that rely on those packages (e.g. Tilt support) will
+    stop working. This test checks to ensure that all packages required for Tilt support are installed and at the
+    required version.
+    </p>
+
+    <p>
+    {# TODO - Make this actually test the OS and hide the message for MacOS and Linux #}
+    <b>Note - </b> The package list being tested below does not apply to installations on Windows.
+    </p>
+
+    {% if has_packaging %}
+
+        {% if has_python_packages %}
+            <h4>All necessary python packages are installed</h4>
+        {% else %}
+            <h4 style="color: darkred">Several python packages are missing. </h4>
+        {% endif %}{# has_python_packages #}
+
+
+        <table class="table table-hover">
+            <tr>
+                <th>Package Name</th>
+                <th>Required Version</th>
+                <th>Installed Version</th>
+                <th>OK?</th>
+            </tr>
+
+            {% for test_result in python_test_results %}
+            <tr>
+                <td>{{ test_result.package }}</td>
+                <td>{{ test_result.required_version }}</td>
+                <td>{{ test_result.installed_version }}</td>
+                <td>{% if test_result.ok %}OK{% else %}Not OK{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% if not has_python_packages %}
+
+            <p>
+                One or more of the Python packages required for Fermentrack's Tilt support to function are either
+                missing or at an incorrect version.
+                {% if not has_apt_packages %}
+                    This may be caused by missing system packages. Before proceeding, please ensure that all required
+                    system packages (see the earlier test) are installed.
+                {% endif %}
+                The easiest way to resolve this is to trigger a manual refresh of the Python requirements. To do this,
+                click the button below. If this does not resolve your missing packages check the
+                <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+            </p>
+
+            <p>
+                <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
+            </p>
+        {% endif %}
+
+    {% else %}
+        <h4 style="color: darkred">Python 'packaging' module is not available - Test cannot run!</h4>
+        <p>
+            This is a fairly serious error, as it implies that your python packages are not being kept up-to-date.
+            If there are missing system packages (above) resolve those before proceeding. Next, attempt a
+            manual refresh (below) of the Python requirements to see if the 'packaging' module can be installed. If
+            neither of these resolve this issue, check the
+            <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+        </p>
+        <p>
+            <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
+        </p>
+
+    {% endif %}
+
+    <h3>Redis Connectivity</h3>
+
+    <p>
+    Fermentrack uses Redis to store datapoints received from the Tilt for futher processing within Fermentrack. If
+    Redis support isn't installed, the Redis server isn't running (or is otherwise inaccessible), or we cannot set or
+    retrieve keys from Redis, then the Tilt support will not function.
+    </p>
+
+    <table class="table table-hover">
+        <tr>
+            <td>Redis Support Installed?</td>
+            <td>{% if redis_installed %}Yes{% else %}Not Installed!{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td>Can Connect to Redis?</td>
+            <td>{% if able_to_connect_to_redis %}Yes{% else %}Cannot connect!{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td>Can Set/Retrieve Keys?</td>
+            <td>{% if redis_key_test %}Yes{% else %}Not able to set/retrieve keys!{% endif %}</td>
+        </tr>
+    </table>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}
+
+
+
+
+

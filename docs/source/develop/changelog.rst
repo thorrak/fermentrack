@@ -6,10 +6,78 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unversioned] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added explicit support for LBussy's BrewPi-Remix I2C Board
+- Exposed upgrade.log from the help screen
+- Store the exact last time that a message was received from a Tilt to Redis
+- Add sentry support to tilt_monitor_aio.py
+- Added "debug" scripts for bluetooth Tilt connections
+
+
+
+Changed
+---------------------
+
+- Removed legacy Python 2 code
+- Reduced gravity sensor temp precision to 0.1 degrees
+- Locked pybluez, aioblescan, and redis versions to prevent undesired format changes going forward
+
+
+Fixed
+---------------------
+
+- Fix display of TiltBridge mDNS settings on Tilt settings page
+
+[2019-02-17] - Improved ESP32 Flashing Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for flashing a bootloader and otadata partition to ESP32 devices
+
+
+Changed
+---------------------
+
+- SPIFFS partitions can now be flashed to ESP8266 devices
+
+
+[2019-02-15] - ThingSpeak and Grainfather Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for pushing data to ThingSpeak (thanks @johndoyle!)
+- Added support for pushing data to Grainfather (thanks @mp-se!)
+
+
+Changed
+---------------------
+
+- Gravity sensors attached to BrewPi controllers will now send those controller's temps to Brewfather
+- An explicit error message will now be displayed when a user attempts to manually access the ispindel endpoint
+
+
+Fixed
+---------------------
+
+- Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
+- Lock temperature display on dashboard panels to one decimal place
+- Allow updates to controller settings when controller name isn't changing (for real this time)
+- Fix bug that would default all Tilts to 'Bluetooth' even when a TiltBridge was selected
+- Fixed issue where Tilt readings were not being properly decoded (Thanks NecroBrews!)
+- Fixed issue where dashboard panels were not being updated (Thanks NecroBrews!)
 
 
 [2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------

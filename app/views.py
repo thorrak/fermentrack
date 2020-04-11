@@ -500,26 +500,14 @@ def github_trigger_upgrade(request, variant=""):
                 branch_to_use = request.POST.get('new_branch', "master")
 
             if variant == "":
-                if sys.version_info[0] < 3:
-                    # TODO - After April 2018, delete the Python 2 option here
-                    cmds['tag'] = "nohup utils/upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/upgrade.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
-                else:
-                    cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
+                cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
+                messages.success(request, "Triggered an upgrade from GitHub")
 
             elif variant == "force":
-                if sys.version_info[0] < 3:
-                    # TODO - After April 2018, delete the Python 2 option here
-                    cmds['tag'] = "nohup utils/force_upgrade.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/force_upgrade.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
-                else:
-                    cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                    cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                    messages.success(request, "Triggered an upgrade from GitHub")
+                cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
+                cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
+                messages.success(request, "Triggered an upgrade from GitHub")
 
             else:
                 cmds['tag'] = ""
@@ -550,6 +538,20 @@ def github_trigger_force_upgrade(request):
     # TODO - Get rid of this in favor of a better urlpattern
     return github_trigger_upgrade(request, variant="force")
 
+
+
+@login_required
+@site_is_configured
+def trigger_requirements_reload(request):
+    # TODO - Add permission check here
+
+    # All that this view does is trigger the utils/fix_python_requirements.sh shell script and return a message letting
+    # the user know that Fermentrack will take a few minutes to restart.
+    cmd = "nohup utils/fix_python_requirements.sh &"
+    messages.success(request, "Triggered a reload of your Python packages")
+    subprocess.call(cmd, shell=True)
+
+    return render(request, template_name="trigger_requirements_reload.html", context={})
 
 
 def login(request, next=None):

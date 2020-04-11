@@ -82,6 +82,7 @@ def gravity_add_board(request):
                 tilt_config = TiltConfiguration(
                     sensor=sensor,
                     color=tilt_form.cleaned_data['color'],
+                    connection_type=tilt_form.cleaned_data['connection_type'],
                     tiltbridge=tilt_bridge,
                 )
                 tilt_config.save()

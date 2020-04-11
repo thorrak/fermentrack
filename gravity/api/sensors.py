@@ -28,7 +28,7 @@ def getGravitySensors(req, device_id=None):
 
         temp, temp_format = dev.retrieve_loggable_temp()
         if temp is None:
-            temp_string = "--.-&deg; -"
+            temp_string = "--.-&deg;"
         else:
             temp_string = "{}&deg; {}".format(temp, temp_format)
 
