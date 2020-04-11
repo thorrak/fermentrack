@@ -26,7 +26,9 @@
                         </tr>
                         <tr>
                             <td>Connection Type</td>
-                            <td>{{ active_device.tilt_configuration.connection_type }}</td>
+                            <td>
+                                {% if active_device.tilt_configuration.connection_type == "Bridge" %}TiltBridge{% elif active_device.tilt_configuration.connection_type == "Bluetooth" %}Bluetooth{% else %}Unknown{% endif %}
+                            </td>
                         </tr>
                         <tr>
                             <td>Smoothing Window (Readings)</td>
@@ -172,7 +174,7 @@
         </div>
 
         <p>
-            <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
+            <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.mdns_id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
         </p>
     {% endif %}
 
