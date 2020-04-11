@@ -540,6 +540,20 @@ def github_trigger_force_upgrade(request):
 
 
 
+@login_required
+@site_is_configured
+def trigger_requirements_reload(request):
+    # TODO - Add permission check here
+
+    # All that this view does is trigger the utils/fix_python_requirements.sh shell script and return a message letting
+    # the user know that Fermentrack will take a few minutes to restart.
+    cmd = "nohup utils/fix_python_requirements.sh &"
+    messages.success(request, "Triggered a reload of your Python packages")
+    subprocess.call(cmd, shell=True)
+
+    return render(request, template_name="trigger_requirements_reload.html", context={})
+
+
 def login(request, next=None):
     if not next:
         if 'next' in request.GET:
