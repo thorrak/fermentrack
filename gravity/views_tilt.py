@@ -458,6 +458,37 @@ def gravity_tiltbridge_add(request):
     return render(request, template_name='gravity/gravity_tiltbridge_add.html',
                   context={'form': form, 'available_devices': available_devices,})
 
+@login_required
+@site_is_configured
+def gravity_tiltbridge_set_url(request, tiltbridge_id, sensor_id=None):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        this_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to locate TiltBridge with mDNS ID {}".format(tiltbridge_id))
+        if sensor_id is not None:
+            return redirect("gravity_manage", sensor_id=sensor_id)
+        else:
+            return redirect("siteroot")
+
+
+    fermentrack_host = request.META['HTTP_HOST']
+
+    if this_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
+        messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(this_tiltbridge.name))
+    else:
+        messages.error(request, u"Unable to automatically update Fermentrack URL at {}.local".format(this_tiltbridge.mdns_id))
+
+    # If we were passed a sensor ID, we want to return to the management screen for that ID.
+    if sensor_id is not None:
+        return redirect("gravity_manage", sensor_id=sensor_id)
+    else:
+        return redirect("siteroot")
+
 
 @login_required
 @site_is_configured

@@ -63,6 +63,8 @@ gravity_urlpatterns = [
 
     # TiltBridge specific views
     url(r'^gravity/tiltbridge/add/$', gravity.views_tilt.gravity_tiltbridge_add, name='gravity_tiltbridge_add'),
+    url(r'^gravity/tiltbridge/update/(?P<tiltbridge_id>[A-Za-z0-9]{1,20})/set_url/$', gravity.views_tilt.gravity_tiltbridge_set_url, name='gravity_tiltbridge_set_url'),
+    url(r'^gravity/tiltbridge/update/(?P<tiltbridge_id>[A-Za-z0-9]{1,20})/set_url/(?P<sensor_id>[A-Za-z0-9]{1,20})$', gravity.views_tilt.gravity_tiltbridge_set_url, name='gravity_tiltbridge_set_url'),
     url(r'^gravity/tiltbridge/urlerror/(?P<tiltbridge_id>[A-Za-z0-9]+)/$', gravity.views_tilt.gravity_tiltbridge_urlerror, name='gravity_tiltbridge_urlerror'),
 
 ]

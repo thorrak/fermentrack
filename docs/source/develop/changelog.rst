@@ -17,6 +17,7 @@ Added
 - Store the exact last time that a message was received from a Tilt to Redis
 - Add sentry support to tilt_monitor_aio.py
 - Added "debug" scripts for bluetooth Tilt connections
+- Added TiltBridge connection settings to Tilt management page
 
 
 
