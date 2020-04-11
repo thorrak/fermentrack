@@ -7,7 +7,7 @@ from django.dispatch.dispatcher import receiver
 from django.db.models import DateTimeField
 
 class BreweryLogo (models.Model):
-    name = models.CharField(max_length=50, blank=True)
+    brewery_name = models.CharField(max_length=50, blank=True)
     image = models.ImageField(null=True, blank=True, default='/media/generic_logo.png')
     date = models.DateTimeField(auto_now=True)
     externalURL = models.URLField(blank=True)
@@ -28,7 +28,7 @@ class BreweryLogo (models.Model):
     image_tag.short_description = 'Image'
 
     def __str__(self):
-        return self.name
+        return self.brewery_name
 
 # this allows the use of {{ image.url }}, but only works for html in brewery_image templates
 # how in the hell can I use something similar to display in app/sitewide/templates

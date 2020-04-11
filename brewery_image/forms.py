@@ -11,4 +11,4 @@ class BreweryLogoForm(forms.ModelForm):
 
     class Meta:
         model = BreweryLogo
-        fields = ['name', 'image', 'externalURL']
+        fields = ['brewery_name', 'image', 'externalURL']
