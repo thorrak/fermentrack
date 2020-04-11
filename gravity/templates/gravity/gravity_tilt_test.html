@@ -25,8 +25,8 @@
 
         <table class="table table-hover">
             <tr>
-                <td>Package Name</td>
-                <td>OK?</td>
+                <th>Package Name</th>
+                <th>OK?</th>
             </tr>
 
             {% for test_result in apt_test_results %}
@@ -37,6 +37,19 @@
             {% endfor %}
 
         </table>
+
+        {% if not has_apt_packages %}
+            <h5 style="color: darkred">NOTE - Fix the above errors first and then re-run the tests before proceeding</h5>
+
+            <p>
+            Several of the system packages listed above are required for all of the Python packages to install. If you
+            do not first install the missing system packages you may be unable to fix other errors that appear on this
+            page. Thankfully, installing these missing packages is pretty simple. Information on how to resolve this
+            can be found in the <a href="http://docs.fermentrack.com/en/dev/gravitysensors/tilt.html#fixing-missing-system-packages">Fermentrack documentation.</a>
+            </p>
+        {% endif %}{# has_apt_packages #}
+
+
     {% else %}
             <h4>Unable to locate the software necessary to check system packages</h4>
             <p>
@@ -44,6 +57,8 @@
                 on another operating system, you're unfortunately on your own for this test.
             </p>
     {% endif %}{# has_apt #}
+
+
 
 
     <h3>Python Packages</h3>
@@ -72,10 +87,10 @@
 
         <table class="table table-hover">
             <tr>
-                <td>Package Name</td>
-                <td>Required Version</td>
-                <td>Installed Version</td>
-                <td>OK?</td>
+                <th>Package Name</th>
+                <th>Required Version</th>
+                <th>Installed Version</th>
+                <th>OK?</th>
             </tr>
 
             {% for test_result in python_test_results %}
@@ -87,11 +102,24 @@
             </tr>
             {% endfor %}
         </table>
+
+        {% if not has_python_packages %}
+            <p>
+                <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Refresh Python Packages</a>
+            </p>
+        {% endif %}
+
     {% else %}
         <h4>Python 'packaging' module is not available - Test cannot run!</h4>
         <p>
             This is a fairly serious error, as it implies that your python packages are not being kept up-to-date.
-        Check the <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+            If there are missing system packages (above) resolve those before proceeding. Next, attempt a
+            manual refresh (below) of the Python requirements to see if the 'packaging' module can be installed. If
+            neither of these resolve this issue, check the
+            <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see what is happening.
+        </p>
+        <p>
+            <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Refresh Python Packages</a>
         </p>
 
     {% endif %}

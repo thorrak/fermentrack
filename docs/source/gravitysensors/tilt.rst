@@ -103,7 +103,12 @@ Although all Python packages should be automatically installed as part of the in
 packages come out of sync for a variety of reasons. If you are missing packages they will need to be installed for
 Fermentrack to properly interface with your Tilt.
 
-.. todo:: Enrich this with steps for resolving missing Python packages
+A manual refresh of the Python packages can be triggered from the GitHub upgrade page without updating Fermentrack from
+GitHub. To trigger a refresh:
 
+#. Log into Fermentrack
+#. Click the 'gear' icon in the upper right hand corner of the page
+#. Click 'Update from GitHub'
+#. Click the 'Refresh Python Packages' button
 
 
