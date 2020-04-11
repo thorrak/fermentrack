@@ -15,6 +15,9 @@ from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravi
 
 from gravity import mdnsLocator
 
+import gravity.tilt.tilt_tests as tilt_tests
+import gravity.gravity_debug as gravity_debug
+
 import csv
 
 try:
@@ -455,6 +458,37 @@ def gravity_tiltbridge_add(request):
     return render(request, template_name='gravity/gravity_tiltbridge_add.html',
                   context={'form': form, 'available_devices': available_devices,})
 
+@login_required
+@site_is_configured
+def gravity_tiltbridge_set_url(request, tiltbridge_id, sensor_id=None):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        this_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to locate TiltBridge with mDNS ID {}".format(tiltbridge_id))
+        if sensor_id is not None:
+            return redirect("gravity_manage", sensor_id=sensor_id)
+        else:
+            return redirect("siteroot")
+
+
+    fermentrack_host = request.META['HTTP_HOST']
+
+    if this_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
+        messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(this_tiltbridge.name))
+    else:
+        messages.error(request, u"Unable to automatically update Fermentrack URL at {}.local".format(this_tiltbridge.mdns_id))
+
+    # If we were passed a sensor ID, we want to return to the management screen for that ID.
+    if sensor_id is not None:
+        return redirect("gravity_manage", sensor_id=sensor_id)
+    else:
+        return redirect("siteroot")
+
 
 @login_required
 @site_is_configured
@@ -489,3 +523,35 @@ def gravity_tiltbridge_urlerror(request, tiltbridge_id):
 
     return render(request, template_name='gravity/gravity_tiltbridge_urlerror.html',
                   context={'tiltbridge': selected_tiltbridge, 'fermentrack_url': fermentrack_url,})
+
+
+
+
+@login_required
+@site_is_configured
+def gravity_tilt_test(request):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    # Check if we are on a system that actually has apt (e.g. Raspbian, Debian, Ubuntu, etc.)
+    has_apt = tilt_tests.has_apt()
+    if has_apt:
+        has_apt_packages, apt_test_results = tilt_tests.check_apt_packages()
+    else:
+        messages.error(request, u"Unable to locate dpkg - Cannot test for system packages")
+        has_apt_packages = False
+        apt_test_results = []
+
+    # Next, check the python packages
+    has_packaging, has_python_packages, python_test_results = tilt_tests.check_python_packages()
+
+    # Then check Redis support
+    redis_installed, able_to_connect_to_redis, redis_key_test = gravity_debug.try_redis()
+
+    return render(request, template_name='gravity/gravity_tilt_test.html',
+                  context={'has_apt': has_apt, 'has_apt_packages': has_apt_packages, 'apt_test_results': apt_test_results,
+                           'has_python_packages': has_python_packages, 'python_test_results': python_test_results,
+                           'redis_installed': redis_installed, 'able_to_connect_to_redis': able_to_connect_to_redis,
+                           'redis_key_test': redis_key_test, 'has_packaging': has_packaging,})

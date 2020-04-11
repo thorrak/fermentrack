@@ -41,13 +41,13 @@ def getPinList(boardType, shieldType):
                    {'val': 20, 'text': 'A2', 'type': 'free'},
                    {'val': 21, 'text': 'A3', 'type': 'free'}]
     elif boardType == "uno" and shieldType == "revC":
-        pinList = [{'val': 6, 'text': ' 6 (Act 1)', 'type': 'act'},
-                   {'val': 5, 'text': ' 5 (Act 2)', 'type': 'act'},
+        pinList = [{'val': 0, 'text': ' 0', 'type': 'serial'},
+                   {'val': 1, 'text': ' 1', 'type': 'serial'},
                    {'val': 2, 'text': ' 2 (Act 3)', 'type': 'act'},
-                   {'val': 19, 'text': 'A5 (Act 4)', 'type': 'act'},
-                   {'val': 4, 'text': ' 4 (Door)', 'type': 'door'},
-                   {'val': 18, 'text': 'A4 (OneWire)', 'type': 'onewire'},
                    {'val': 3, 'text': ' 3', 'type': 'beep'},
+                   {'val': 4, 'text': ' 4 (Door)', 'type': 'door'},
+                   {'val': 5, 'text': ' 5 (Act 2)', 'type': 'act'},
+                   {'val': 6, 'text': ' 6 (Act 1)', 'type': 'act'},
                    {'val': 7, 'text': ' 7', 'type': 'rotary'},
                    {'val': 8, 'text': ' 8', 'type': 'rotary'},
                    {'val': 9, 'text': ' 9', 'type': 'rotary'},
@@ -55,12 +55,33 @@ def getPinList(boardType, shieldType):
                    {'val': 11, ' text': '11', 'type': 'spi'},
                    {'val': 12, ' text': '12', 'type': 'spi'},
                    {'val': 13, ' text': '13', 'type': 'spi'},
-                   {'val': 0, 'text': ' 0', 'type': 'serial'},
-                   {'val': 1, 'text': ' 1', 'type': 'serial'},
                    {'val': 14, 'text': 'A0', 'type': 'free'},
                    {'val': 15, 'text': 'A1', 'type': 'free'},
                    {'val': 16, 'text': 'A2', 'type': 'free'},
-                   {'val': 17, 'text': 'A3', 'type': 'free'}]
+                   {'val': 17, 'text': 'A3', 'type': 'free'},
+                   {'val': 18, 'text': 'A4 (OneWire)', 'type': 'onewire'},
+                   {'val': 19, 'text': 'A5 (Act 4)', 'type': 'act'}]
+    elif boardType == "uno" and shieldType == "I2C":
+        pinList = [{'val': 0, 'text': ' 0', 'type': 'serial'},
+                   {'val': 1, 'text': ' 1', 'type': 'serial'},
+                   {'val': 2, 'text': ' 2 (Act 3)', 'type': 'act'},
+                   {'val': 3, 'text': ' 3 (Alarm)', 'type': 'beep'},
+                   {'val': 4, 'text': ' 4 (Door)', 'type': 'door'},
+                   {'val': 5, 'text': ' 5 (Act 1)', 'type': 'act'},
+                   {'val': 6, 'text': ' 6 (Act 2)', 'type': 'act'},
+                   {'val': 7, 'text': ' 7', 'type': 'rotary'},
+                   {'val': 8, 'text': ' 8', 'type': 'rotary'},
+                   {'val': 9, 'text': ' 9', 'type': 'rotary'},
+                   {'val': 10, 'text': '10 (Act 4)', 'type': 'act'},
+                   {'val': 11, 'text': '11', 'type': 'free'},
+                   {'val': 12, 'text': '12', 'type': 'free'},
+                   {'val': 13, 'text': '13', 'type': 'free'},
+                   {'val': 14, 'text': 'A0 (OneWire)', 'type': 'onewire'},
+                   {'val': 15, 'text': 'A1 (OneWire)', 'type': 'free'},
+                   {'val': 16, 'text': 'A2 (OneWire)', 'type': 'free'},
+                   {'val': 17, 'text': 'A3 (Act 4)', 'type': 'act'},
+                   {'val': 18, 'text': 'A4 (SDA)', 'type': 'i2c'},
+                   {'val': 19, 'text': 'A5 (SCL)', 'type': 'i2c'}]
     elif boardType == "leonardo" and shieldType == "revA":
         pinList = [{'val': 6, 'text': '  6 (Cool)', 'type': 'act'},
                    {'val': 5, 'text': '  5 (Heat)', 'type': 'act'},
@@ -152,10 +173,11 @@ def getPinListJson(boardType, shieldType):
         return 0
 
 def pinListTest():
-    print(getPinListJson("leonardo", "revC"))
-    print(getPinListJson("uno", "revC"))
     print(getPinListJson("leonardo", "revA"))
+    print(getPinListJson("leonardo", "revC"))
     print(getPinListJson("uno", "revA"))
+    print(getPinListJson("uno", "revC"))
+    print(getPinListJson("uno", "I2C"))
     print(getPinListJson("core", "V1"))
     print(getPinListJson("core", "V2"))
     print(getPinListJson("photon", "V1"))

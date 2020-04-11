@@ -6,7 +6,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[2019-02-17] - Improved ESP32 Flashing Support
+[2020-04-11] - Bugfixes & Tilt Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added explicit support for LBussy's BrewPi-Remix I2C Board
+- Exposed upgrade.log from the help screen
+- Store the exact last time that a message was received from a Tilt to Redis
+- Add sentry support to tilt_monitor_aio.py
+- Added "debug" scripts for bluetooth Tilt connections
+- Added TiltBridge connection settings to Tilt management page
+
+
+
+Changed
+---------------------
+
+- Removed legacy Python 2 code
+- Reduced gravity sensor temp precision to 0.1 degrees
+- Locked pybluez, aioblescan, and redis versions to prevent undesired format changes going forward
+
+
+Fixed
+---------------------
+
+- Fix display of TiltBridge mDNS settings on Tilt settings page
+
+[2020-02-17] - Improved ESP32 Flashing Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -21,7 +49,7 @@ Changed
 - SPIFFS partitions can now be flashed to ESP8266 devices
 
 
-[2019-02-15] - ThingSpeak and Grainfather Support
+[2020-02-15] - ThingSpeak and Grainfather Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added

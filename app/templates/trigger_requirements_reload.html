@@ -1,0 +1,30 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load static %}
+
+{% block title %}Reload Python Requirements{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+    <h1>Reload Python Requirements</h1>
+
+    <p>
+        You have triggered a manual reload of the Python packages required by Fermentrack. Please wait several minutes
+        for this refresh to complete and for Fermentrack to relaunch before proceeding.
+    </p>
+
+    <p>
+        Once complete,  you can view the <a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">upgrade log</a> to see
+        what was installed/updated.
+    </p>
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+{% endblock %}
