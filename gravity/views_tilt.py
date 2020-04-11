@@ -467,9 +467,9 @@ def gravity_tiltbridge_set_url(request, tiltbridge_id, sensor_id=None):
     #     return redirect("/")
 
     try:
-        this_tiltbridge = TiltBridge.objects.get(id=tiltbridge_id)
+        this_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
     except ObjectDoesNotExist:
-        messages.error(request, "Unable to locate TiltBridge with ID {}".format(tiltbridge_id))
+        messages.error(request, "Unable to locate TiltBridge with mDNS ID {}".format(tiltbridge_id))
         if sensor_id is not None:
             return redirect("gravity_manage", sensor_id=sensor_id)
         else:
