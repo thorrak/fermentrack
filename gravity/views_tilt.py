@@ -481,7 +481,7 @@ def gravity_tiltbridge_set_url(request, tiltbridge_id, sensor_id=None):
     if this_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
         messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(this_tiltbridge.name))
     else:
-        messages.error(request, u"Unable to automatically update Fermentrack URL on TiltBridge {}".format(this_tiltbridge.name))
+        messages.error(request, u"Unable to automatically update Fermentrack URL at {}.local".format(this_tiltbridge.mdns_id))
 
     # If we were passed a sensor ID, we want to return to the management screen for that ID.
     if sensor_id is not None:
