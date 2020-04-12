@@ -4,9 +4,11 @@ minimizes the ability to accidently alter other styles.*/
 
 .logoimage{
   display: block;
+  margin-top:5px;
   margin-left: auto;
   margin-right: auto;
-  max-width:250px;
+  padding-right: 30px;
+  max-width:100%;
   max-height:155px;
   margin-bottom:5px
 }
@@ -15,9 +17,11 @@ minimizes the ability to accidently alter other styles.*/
 Default logoimage style to keep as a reference for the user
 .logoimage{
   display: block;
+  margin-top:5px;
   margin-left: auto;
   margin-right: auto;
-  max-width:250px;
+  padding-right: 30px;  
+  max-width:100%;
   max-height:155px;
   margin-bottom:5px
 } */
