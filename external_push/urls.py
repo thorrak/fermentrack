@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 import external_push.views
 
+app_name = "external_push"
 
 # This gets added to the app's urlpatterns
 # TODO - Convert this to be properly namespaced

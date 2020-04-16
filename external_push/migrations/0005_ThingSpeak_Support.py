@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('active', 'Active'), ('disabled', 'Disabled'), ('error', 'Error')], default='active', help_text='Status of this push target', max_length=24)),
                 ('push_frequency', models.IntegerField(choices=[(901, '15 minutes'), (1801, '30 minutes'), (3601, '1 hour')], default=900, help_text='How often to push data to the target')),
                 ('api_key', models.CharField(default='', help_text='Brewers Friend API Key', max_length=256)),
-                ('brewpi_to_push_id', models.ForeignKey(blank=True, default=None, help_text="BrewPi Devices to push (ignored if 'all' devices selected)", related_name='push_targets', to='app.BrewPiDevice')),
+                ('brewpi_to_push_id', models.ForeignKey(blank=True, default=None, help_text="BrewPi Devices to push (ignored if 'all' devices selected)", related_name='push_targets', to='app.BrewPiDevice', on_delete=django.db.models.deletion.SET_NULL)),
                 ('error_text', models.TextField(blank=True, default='', help_text='The error (if any) encountered on the last push attempt', null=True)),
                 ('last_triggered', models.DateTimeField(auto_now_add=True, help_text='The last time we pushed data to this target')),
             ],
