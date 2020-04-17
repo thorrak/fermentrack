@@ -43,8 +43,8 @@ INSTALLED_APPS = [
 ]
 
 # TODO - Check the below as I'm getting errors when running on MacOS w/o Apache
-# if sys.platform == "darwin":
-#     INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
+if sys.platform == "darwin":
+    INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
 
 if ENABLE_SENTRY:

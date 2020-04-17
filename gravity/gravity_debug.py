@@ -27,6 +27,10 @@ def try_redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=s
     except redis.exceptions.TimeoutError:
         # Connection timed out (was unavailable). Report back that the test failed
         return True, False, False
+    except redis.exceptions.ConnectionError:
+        # Other onnection error. Report back that the test failed
+        return True, False, False
+
 
     # Generate a unique value to use for testing if we can set values on Redis
     key_value = str(uuid.uuid4())
