@@ -699,7 +699,7 @@ def device_eeprom_reset(request, device_id):
     else:
         active_device.reset_eeprom()
         messages.success(request, "Device EEPROM reset")
-        return redirect("device_control_constants", device_id=device_id)
+        return redirect("device_manage", device_id=device_id)
 
 
 @login_required
@@ -721,7 +721,29 @@ def device_wifi_reset(request, device_id):
     else:
         active_device.reset_wifi()
         messages.success(request, "Device WiFi settings reset. Reset the device to access the configuration AP.")
-        return redirect("device_control_constants", device_id=device_id)
+        return redirect("device_manage", device_id=device_id)
+
+
+@login_required
+@site_is_configured
+def device_restart(request, device_id):
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    # Using this as a proxy to check if we can connect
+    control_constants, is_legacy = active_device.retrieve_control_constants()
+
+    if control_constants is None:
+        # We weren't able to retrieve the version from the controller.
+        messages.error(request, u"Unable to reach brewpi-script for device {}".format(active_device))
+        return redirect('device_dashboard', device_id=device_id)
+    else:
+        active_device.restart()
+        messages.success(request, "Device restarted. Please wait a minute for the device to reconnect.")
+        return redirect("device_manage", device_id=device_id)
 
 
 def site_help(request):

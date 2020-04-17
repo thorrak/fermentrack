@@ -107,6 +107,15 @@
     <a href="{% url 'device_wifi_reset' active_device.id %}" class="btn btn-danger btn-large btn-lg">Reset WiFi Settings</a>
 
 
+    <h2>Restart Controller</h2>
+    <p>
+        Although it generally shouldn't be necessary, if you need to restart the controller for any reason this can
+        often be triggered through the script to save you physically having to walk to the controller itself. Click the
+        button below to send a message to the controller instructing it to restart.
+    </p>
+    <a href="{% url 'device_restart' active_device.id %}" class="btn btn-danger btn-large btn-lg">Restart Controller</a>
+
+
     <h2>Uninstall Device</h2>
     <p>
         To uninstall a device from Fermentrack, approve the following statements and click the "Uninstall Device" button

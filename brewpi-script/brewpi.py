@@ -666,6 +666,7 @@ while run:
                 response = {}
             response_str = json.dumps(response)
             conn.send(response_str.encode(encoding="cp437"))
+
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             bg_ser.writeln("E")
@@ -673,13 +674,20 @@ while run:
             bg_ser.writeln('s')  # request control settings cs
             bg_ser.writeln('c')  # request control constants cc
             bg_ser.writeln('v')  # request control variables cv
-
             trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
+
+        elif messageType == "restartController":
+            logMessage("Restarting controller")
+            bg_ser.writeln("R")  # This tells the controller to restart
+            time.sleep(3)        # We'll give bg_ser 3 seconds for it to send/kick in
+            sys.exit(0)          # Exit BrewPi-script
+
         elif messageType == "resetWiFi":
             logMessage("Resetting controller WiFi settings")
             bg_ser.writeln("w")
             # TODO - Determine if we should sleep & exit here
             trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
+
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 
