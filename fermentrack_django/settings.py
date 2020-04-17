@@ -47,9 +47,9 @@ if sys.platform == "darwin":
     INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
 
-if ENABLE_SENTRY:
-    import raven
-    INSTALLED_APPS += 'raven.contrib.django.raven_compat',
+# if ENABLE_SENTRY:
+#     import raven
+#     INSTALLED_APPS += 'raven.contrib.django.raven_compat',
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -251,12 +251,21 @@ HUEY = {
 
 
 if ENABLE_SENTRY:
-    RAVEN_CONFIG = {
-        'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
-        'tags': {
-            'branch': GIT_BRANCH
-        },
-    }
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn="http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2",
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+    )
+
+    # RAVEN_CONFIG = {
+    #     'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
+    #     # If you are using git, you can also automatically configure the
+    #     # release based on the git info.
+    #     'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
+    #     'tags': {
+    #         'branch': GIT_BRANCH
+    #     },
+    # }
