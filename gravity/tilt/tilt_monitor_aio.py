@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Let's get sentry support going
-from sentry_sdk import init
+from sentry_sdk import init, capture_exception
 init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
 
 import os, sys
@@ -85,9 +85,9 @@ def processBLEBeacon(data):
         # tx_pwr = int.from_bytes(bytes.fromhex(payload[48:49]), byteorder='big')
         # rssi = int.from_bytes(bytes.fromhex(payload[49:50]), byteorder='big')
         rssi = 0  # TODO - Fix this
-    except  Exception as e:
+    except Exception as e:
         LOG.error(e)
-        client.captureException()
+        capture_exception(e)
         return
 
     if verbose:
