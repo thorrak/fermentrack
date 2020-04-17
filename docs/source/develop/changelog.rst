@@ -28,7 +28,7 @@ Fixed
 - Gravity and gravity temp colors when graphed on temp controller graphs will now display the correct color in the legend
 - Links to CSVs from the beer log list now properly generate if the CSV exists
 - Correct error detection/logging when a temp controller with an attached gravity sensor attempts to log before the gravity sensor logs its first point
-
+- Properly check that a temperature setting is provided when setting a Beer or Fridge Constant mode for temp controllers
 
 
 
