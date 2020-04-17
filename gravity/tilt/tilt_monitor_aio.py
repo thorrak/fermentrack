@@ -8,9 +8,31 @@ import os, sys
 import time, datetime, getopt, pid
 from typing import List, Dict
 import asyncio
-# import argparse, re
-import aioblescan as aiobs
+
+# Initialize logging
 import logging
+LOG = logging.getLogger("tilt")
+LOG.setLevel(logging.INFO)
+
+# We're having environment issues - Check the environment before continuing
+try:
+    import aioblescan as aiobs
+except:
+    LOG.error("Aioblescan not installed - unable to run")
+    exit(1)
+
+try:
+    import pkg_resources
+    from packaging import version
+except:
+    LOG.error("Packaging not installed - unable to run")
+    exit(1)
+
+for package in pkg_resources.working_set:
+    if package.project_name == 'aioblescan':
+        if package.parsed_version.public < version.parse("0.2.6"):
+            LOG.error("Incorrect aioblescan version installed - unable to run")
+            exit(1)
 
 # done before importing django app as it does setup
 import tilt_monitor_utils
@@ -28,8 +50,7 @@ tilt_monitor_utils.process_monitor_options()
 verbose = tilt_monitor_utils.verbose
 mydev = tilt_monitor_utils.bluetooth_device
 
-LOG = logging.getLogger("tilt")
-LOG.setLevel(logging.INFO)
+
 
 #### The main loop
 
@@ -52,7 +73,6 @@ def processBLEBeacon(data):
     # To make things easier, let's convert the byte string to a hex string first
     if ev.raw_data is None:
         if verbose:
-            print("Event has no raw_data\r\n")
             LOG.error("Event has no raw data")
         return False
 
@@ -60,11 +80,11 @@ def processBLEBeacon(data):
 
     if len(raw_data_hex) < 80:  # Very quick filter to determine if this is a valid Tilt device
         if verbose:
-            print("Small raw_data_hex: {}\r\n".format(raw_data_hex))
+            LOG.info("Small raw_data_hex: {}".format(raw_data_hex))
         return False
     if "1370f02d74de" not in raw_data_hex:  # Another very quick filter (honestly, might not be faster than just looking at uuid below)
         if verbose:
-            print("Missing key in raw_data_hex: {}\r\n".format(raw_data_hex))
+            LOG.info("Missing key in raw_data_hex: {}".format(raw_data_hex))
         return False
 
     # For testing/viewing raw announcements, uncomment the following
@@ -132,10 +152,10 @@ try:
     event_loop.run_forever()
 except KeyboardInterrupt:
     if verbose:
-        print('Keyboard interrupt\r\n')
+        LOG.info('Keyboard interrupt')
 finally:
     if verbose:
-        print('Closing event loop\r\n')
+        LOG.info('Closing event loop')
     btctrl.stop_scan_request()
     command = aiobs.HCI_Cmd_LE_Advertise(enable=False)
     btctrl.send_command(command)
