@@ -25,7 +25,7 @@ Changed
 Fixed
 ---------------------
 
--
+- Gravity and gravity temp colors when graphed on BrewPiDevice graphs will now display the correct color in the legend
 
 
 
