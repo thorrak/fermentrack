@@ -2,7 +2,7 @@ Django>=3.0.5,<3.1
 configobj       # required by brewpi.py
 
 pytz            # required by manage.py migrate
-raven           # OPTIONAL - used for debugging
+sentry-sdk      # used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices
