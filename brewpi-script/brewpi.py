@@ -110,6 +110,11 @@ except getopt.GetoptError:
 configFile = None
 dbConfig = None  # A BrewPiDevice object (which contains all our configuration info)
 
+def refresh_dbConfig() -> models.BrewPiDevice:
+    global a
+    return models.BrewPiDevice.objects.get(device_name=a)
+
+
 checkDontRunFile = False
 checkStartupOnly = False
 logToFiles = False
@@ -165,7 +170,7 @@ for o, a in opts:
 
         # Try loading the database configuration from Django
         try:
-            dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+            dbConfig = refresh_dbConfig()
             brewpiName = a
         except:
             sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
@@ -231,6 +236,7 @@ if logToFiles:
 def startNewBrew(newName):
     global config
     if len(newName) > 1:     # shorter names are probably invalid
+        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         config = util.configSet(configFile, dbConfig, 'beerName', newName)
         config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
         logMessage("Notification: Restarted logging for beer '%s'." % newName)
@@ -243,8 +249,10 @@ def startNewBrew(newName):
 
 def stopLogging():
     global config
+    global dbConfig
     logMessage("Stopped data logging, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data.")
+    dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
     config = util.configSet(configFile, dbConfig, 'beerName', None)
     config = util.configSet(configFile, dbConfig, 'dataLogging', 'stopped')
     return {'status': 0, 'statusMessage': "Successfully stopped logging"}
@@ -252,10 +260,12 @@ def stopLogging():
 
 def pauseLogging():
     global config
+    global dbConfig
     logMessage("Paused logging data, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data until resumed.")
     if config['dataLogging'] == 'active':
         config = util.configSet(configFile, dbConfig, 'dataLogging', 'paused')
+        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully paused logging."}
     else:
         return {'status': 1, 'statusMessage': "Logging already paused or stopped."}
@@ -263,13 +273,16 @@ def pauseLogging():
 
 def resumeLogging():
     global config
+    global dbConfig
     logMessage("Continued logging data, as requested in web interface.")
     if config['dataLogging'] == 'paused':
         config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully continued logging."}
     elif config['dataLogging'] == 'stopped':
         if dbConfig.active_beer is not None:
             config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             return {'status': 0, 'statusMessage': "Successfully continued logging."}
     # If we didn't return a success status above, we'll return an error
     return {'status': 1, 'statusMessage': "Logging was not resumed."}
@@ -508,8 +521,7 @@ while run:
             cs['mode'] = 'b'
             # round to 2 dec, python will otherwise produce 6.999999999
             bg_ser.writeln("j{{mode:b, beerSet:{}}}".format(cs['beerSet']))
-            # Reload dbConfig from the database (in case we were using profiles)
-            dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Beer temperature set to {} degrees in web interface".format(cs['beerSet']))
             raise socket.timeout  # go to serial communication to update controller
 
@@ -524,7 +536,7 @@ while run:
             cs['fridgeSet'] = round(newTemp, 2)
             bg_ser.writeln("j{mode:f, fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
             # Reload dbConfig from the database (in case we were using profiles)
-            dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             logMessage("Notification: Fridge temperature set to " +
                        str(cs['fridgeSet']) +
                        " degrees in web interface")
@@ -545,7 +557,7 @@ while run:
                     if decoded['tempFormat'] != config.get('temp_format', 'C'):
                         # For database configured installs, we save this in the device definition
                         util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
-                    dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
+                    dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
             raise socket.timeout
@@ -593,7 +605,7 @@ while run:
             # We're using a dbConfig object to manage everything. We aren't being passed anything by Fermentrack
             logMessage("Setting controller to beer profile mode using database-configured profile")
             conn.send(b"Profile successfully updated")
-            dbConfig = models.BrewPiDevice.objects.get(id=dbConfig.id)  # Reload dbConfig from the database
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             if cs['mode'] is not 'p':
                 cs['mode'] = 'p'
                 bg_ser.writeln("j{mode:p}")
@@ -838,8 +850,7 @@ while run:
             if dbConfig.is_past_end_of_profile():
                 bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
                 cs['mode'] = 'b'
-                # Reload dbConfig from the database (just to be safe)
-                dbConfig = models.BrewPiDevice.objects.get(device_name=a)
+                dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
                 dbConfig.reset_profile()
                 logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
                            " degrees at end of profile")
