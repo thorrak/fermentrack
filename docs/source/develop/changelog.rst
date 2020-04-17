@@ -19,13 +19,13 @@ Added
 Changed
 ---------------------
 
--
+- Toggling display of a graph line on a temp controller's dashboard now clears the data point displayed in the legend
 
 
 Fixed
 ---------------------
 
-- Gravity and gravity temp colors when graphed on BrewPiDevice graphs will now display the correct color in the legend
+- Gravity and gravity temp colors when graphed on temp controller graphs will now display the correct color in the legend
 - Links to CSVs from the beer log list now properly generate if the CSV exists
 
 
