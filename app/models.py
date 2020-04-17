@@ -755,7 +755,7 @@ class BrewPiDevice(models.Model):
     #         return control_settings, self.is_legacy(version=version)
     #     return None, None
 
-    def sync_temp_format(self):
+    def sync_temp_format(self) -> bool:
         # This queries the controller to see if we have the correct tempFormat set (If it matches what is specified
         # in the device definition above). If it doesn't, we overwrite what is on the device to match what is in the
         # device definition.
@@ -913,11 +913,15 @@ class BrewPiDevice(models.Model):
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
 
-    def reset_wifi(self):
+    def reset_wifi(self) -> bool:
         response = self.send_message("resetWiFi") # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
-        synced = self.sync_temp_format()                # ...then resync the temp format
-        return synced
+        return True
+
+    def restart(self) -> bool:
+        response = self.send_message("restartController") # Restart the controller
+        time.sleep(1)                                   # Give it 1 second to complete
+        return True
 
     def get_control_constants(self):
         return json.loads(self.send_message("getControlConstants", read_response=True))

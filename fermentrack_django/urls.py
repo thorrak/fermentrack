@@ -62,6 +62,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/temp_control/$', app.views.device_temp_control, name='device_temp_control'),
     url(r'^devices/(?P<device_id>\d{1,20})/reset/$', app.views.device_eeprom_reset, name='device_eeprom_reset'),
     url(r'^devices/(?P<device_id>\d{1,20})/wifi_reset/$', app.views.device_wifi_reset, name='device_wifi_reset'),
+    url(r'^devices/(?P<device_id>\d{1,20})/restart/$', app.views.device_restart, name='device_restart'),
     url(r'^devices/(?P<device_id>\d{1,20})/manage/$', app.views.device_manage, name='device_manage'),
     url(r'^devices/(?P<device_id>\d{1,20})/uninstall/$', app.views.device_uninstall, name='device_uninstall'),
 
