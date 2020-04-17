@@ -23,6 +23,7 @@ from distutils.version import LooseVersion
 from .BrewPiUtil import asciiToUnicode
 from serial import SerialException
 
+
 def getVersionFromSerial(ser):
     version = None
     retries = 0
@@ -31,12 +32,13 @@ def getVersionFromSerial(ser):
     if not ser.isOpen():
         print("Cannot get version from serial port that is not open.")
 
-    ser.timeout = 1
-    # TODO - Rewrite once Python3 is a given
     try:
-        ser.write('n')  # request version info
-    except TypeError:
-        ser.write(b'n')
+        ser.timeout = 1
+    except SerialException:
+        print("Could not configure port")
+        exit(1)
+
+    ser.write(b'n')
 
     while retries < 10:
         retry = True
