@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
@@ -586,7 +586,7 @@ def login(request, next=None):
 
 
 def logout(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         auth.logout(request)
         return redirect('siteroot')
     else:

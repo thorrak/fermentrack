@@ -9,6 +9,7 @@ import gravity.views_ispindel
 import gravity.views_tilt
 import gravity.api.sensors
 
+app_name = "gravity"
 
 # This gets added to the app's urlpatterns
 gravity_urlpatterns = [
