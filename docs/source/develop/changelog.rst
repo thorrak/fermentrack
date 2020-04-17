@@ -26,7 +26,7 @@ Fixed
 ---------------------
 
 - Gravity and gravity temp colors when graphed on BrewPiDevice graphs will now display the correct color in the legend
-
+- Links to CSVs from the beer log list now properly generate if the CSV exists
 
 
 
