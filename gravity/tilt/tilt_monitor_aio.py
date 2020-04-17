@@ -102,8 +102,8 @@ def processBLEBeacon(data):
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # tx_pwr = int.from_bytes(bytes.fromhex(payload[48:49]), byteorder='big')
-        # rssi = int.from_bytes(bytes.fromhex(payload[49:50]), byteorder='big')
+        # tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big')
+        # rssi = int.from_bytes(bytes.fromhex(payload[46:48]), byteorder='big')
         rssi = 0  # TODO - Fix this
     except Exception as e:
         LOG.error(e)
