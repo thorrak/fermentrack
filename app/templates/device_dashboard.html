@@ -229,7 +229,7 @@
                             {% if beer.gravity_enabled %}
                             <tr id="gravityRow">
                                 <td id="gravityLabel">
-                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
                                     Gravity
                                 </td>
                                 <td id="gravityValue"></td>
@@ -237,7 +237,7 @@
 
                             <tr id="gravityTempRow">
                                 <td id="gravityTempLabel">
-                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
                                     Grav Sensor Temp
                                 </td>
                                 <td id="gravityTempValue"></td>
