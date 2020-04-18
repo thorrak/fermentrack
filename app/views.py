@@ -28,7 +28,6 @@ from django.contrib.auth.models import User
 
 def error_notifications(request):
     if config.GIT_UPDATE_TYPE != "none":
-        # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
         now_time = timezone.now()
         try:
@@ -74,6 +73,9 @@ def error_notifications(request):
     #                               "password, and SSH in one more time to test that it worked. Otherwise, we'll keep "
     #                               "annoying you until you do.")
 
+    if not config.SQLITE_OK_DJANGO_2:
+        messages.error(request, "Fermentrack has upgraded to a newer copy of Django which requires an additional step to complete. " +
+                      '<a href="/fix_sqlite"">Click here</a> to trigger this step and restart Fermentrack.')
 
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
@@ -557,6 +559,20 @@ def trigger_requirements_reload(request):
     return render(request, template_name="trigger_requirements_reload.html", context={})
 
 
+@login_required
+@site_is_configured
+def trigger_sqlite_fix(request):
+    # TODO - Add permission check here
+
+    # All that this view does is trigger the utils/fix_sqlite_for_django_2.sh shell script and return a message letting
+    # the user know that Fermentrack will take a few minutes to restart.
+    cmd = "nohup utils/fix_sqlite_for_django_2.sh &"
+    messages.success(request, "Triggered the management command to fix the SQLite database post-Django 2.0+ migration")
+    subprocess.call(cmd, shell=True)
+
+    return render(request, template_name="trigger_requirements_reload.html", context={})
+
+
 def login(request, next=None):
     if not next:
         if 'next' in request.GET:
@@ -615,6 +631,7 @@ def site_settings(request):
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
+            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
