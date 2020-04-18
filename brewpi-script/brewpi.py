@@ -27,13 +27,10 @@ if sys.version_info < (3, 4):
     printStdErr("Sorry, requires Python 3.4.")
     sys.exit(1)
 
-# standard libraries
-import time
-import socket
-import os
-import getopt
-import shutil
-import traceback
+import time, socket, os, getopt, shutil, traceback
+from django.core.exceptions import ObjectDoesNotExist
+
+
 try:
     import urllib.parse as urllib
 except:
@@ -43,7 +40,6 @@ from distutils.version import LooseVersion
 import serial
 from serial import SerialException
 import json
-from configobj import ConfigObj
 import pid
 
 
@@ -109,14 +105,15 @@ except getopt.GetoptError:
 dbConfig = None
 device_id = None
 
+
 def refresh_dbConfig() -> models.BrewPiDevice:
-    global a, device_id
+    global device_id
 
     if device_id is None:
         logMessage("No device ID was found - cannot load DB Config")
         exit(1)
 
-    return models.BrewPiDevice.objects.get(device_name=a)
+    return models.BrewPiDevice.objects.get(id=device_id)
 
 
 checkDontRunFile = False
@@ -125,7 +122,6 @@ logToFiles = False
 
 # Defaults
 pidFileDir = "/tmp"
-brewpiName = None  # Defaulting in config file
 
 for o, a in opts:
     # print help message for command line options
@@ -135,7 +131,7 @@ for o, a in opts:
         printStdErr("--log: redirect stderr and stdout to log files")
         printStdErr("--dontrunfile: check dontrunfile in www directory and quit if it exists")
         printStdErr("--checkstartuponly: exit after startup checks, return 1 if startup is allowed")
-        printStdErr("--dbcfg <Device name in database>: loads configuration from database")
+        printStdErr("--dbcfg <Device ID in database>: loads configuration from database")
         printStdErr("--dblist: lists devices in the database")
         printStdErr("--pidfiledir <filename>: pid-file path/filename")
         exit()
@@ -153,25 +149,23 @@ for o, a in opts:
             if len(dbDevices) == 0:
                 print("No configured devices found.")
             else:
-                x = 0
                 for d in dbDevices:
-                    x += 1
                     print("Devices:")
-                    print("  %d: %s" % (x, d.device_name))
+                    print("  %d: %s" % (d.id, d.device_name))
             print("===========================================================")
             exit()
-        except (Exception) as e:
+        except Exception as e:
             sys.exit(e)
 
     # load the configuration from the database
     if o in ('-w', '--dbcfg'):
 
         # Try loading the database configuration from Django
+        device_id = a
         try:
             dbConfig = refresh_dbConfig()
-            brewpiName = a
-        except:
-            sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
+        except ObjectDoesNotExist:
+            sys.exit('ERROR: No database configuration with the ID \'{}\' was found!'.format(a))
 
 
     # redirect output of stderr and stdout to files in log directory
@@ -199,7 +193,7 @@ else:
     exit(0)
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
-pidFile = pid.PidFile(piddir=pidFileDir, pidname=brewpiName)
+pidFile = pid.PidFile(piddir=pidFileDir, pidname="brewpi-{}".format(device_id))
 try:
     pidFile.create()
 except pid.PidFileAlreadyLockedError:
@@ -543,7 +537,7 @@ while run:
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
             bg_ser.writeln("j{mode:o}")
-            models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+            dbConfig = refresh_dbConfig()   # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Temperature control disabled")
             raise socket.timeout
         elif messageType == "setParameters":

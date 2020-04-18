@@ -20,6 +20,7 @@ Changed
 ---------------------
 
 - Toggling display of a graph line on a temp controller's dashboard now clears the data point displayed in the legend
+- Refactored brewpi-script to accept device IDs rather than names
 
 
 Fixed

@@ -937,7 +937,7 @@ class BrewPiDevice(models.Model):
 
     def circus_parameter(self):
         """Returns the parameter used by Circus to track this device's processes"""
-        return self.device_name
+        return self.id
 
     def start_process(self):
         """Start this device process, raises CircusException if error"""
