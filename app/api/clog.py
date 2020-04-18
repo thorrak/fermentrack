@@ -11,7 +11,7 @@ def get_filepath_to_log(device_type, logfile="", device_id=None):
     if device_type == "brewpi":
         try:
             device = BrewPiDevice.objects.get(id=device_id)
-            log_filename = 'dev-{}-{}.log'.format(device.device_name.lower(), logfile)
+            log_filename = 'dev-{}-{}.log'.format(str(device.circus_parameter()).lower(), logfile)
         except:
             # Unable to load the device
             raise ValueError("No brewpi device with id {}".format(device_id))

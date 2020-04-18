@@ -79,7 +79,7 @@ class ProcessManager(object):
         else:
             self.log.debug(
                 "DB devices (active): %s, Running device processes: %s",
-                ", ".join([dev.circus_parameter() for dev in db_devices]),
+                ", ".join([str(dev.circus_parameter()) for dev in db_devices]),
                 ", ".join([dev for dev in running_devices])
                 )
         names = []
@@ -95,13 +95,13 @@ class ProcessManager(object):
         else:
             # Find active but non-running devices
             for dbd in db_devices:
-                dev_name = self.prefix + dbd.circus_parameter()
+                dev_name = self.prefix + str(dbd.circus_parameter())
                 # https://github.com/circus-tent/circus/issues/927
                 dev_name = dev_name.lower()
                 names.append(dev_name)
                 if dev_name not in running_devices:
                     self.log.info("New {} device found: {}".format(self.device_type, dev_name))
-                    self._add_process(dbd.circus_parameter())
+                    self._add_process(str(dbd.circus_parameter()))
 
             # Find devices running but should not
             for rdev in running_devices:

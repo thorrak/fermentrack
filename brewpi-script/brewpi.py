@@ -27,13 +27,10 @@ if sys.version_info < (3, 4):
     printStdErr("Sorry, requires Python 3.4.")
     sys.exit(1)
 
-# standard libraries
-import time
-import socket
-import os
-import getopt
-import shutil
-import traceback
+import time, socket, os, getopt, shutil, traceback
+from django.core.exceptions import ObjectDoesNotExist
+
+
 try:
     import urllib.parse as urllib
 except:
@@ -43,7 +40,6 @@ from distutils.version import LooseVersion
 import serial
 from serial import SerialException
 import json
-from configobj import ConfigObj
 import pid
 
 
@@ -105,14 +101,19 @@ except getopt.GetoptError:
         "--name <name>, --pidfiledir <directory>")
     sys.exit()
 
-# Only one of configFile or dbConfig will be set. If configFile is set, we have a brewpi-www-based installation.
-# If dbConfig is set, we have a Fermentrack based installation.
-configFile = None
-dbConfig = None  # A BrewPiDevice object (which contains all our configuration info)
+# A BrewPiDevice object from Fermentrack (which contains all our configuration info)
+dbConfig = None
+device_id = None
+
 
 def refresh_dbConfig() -> models.BrewPiDevice:
-    global a
-    return models.BrewPiDevice.objects.get(device_name=a)
+    global device_id
+
+    if device_id is None:
+        logMessage("No device ID was found - cannot load DB Config")
+        exit(1)
+
+    return models.BrewPiDevice.objects.get(id=device_id)
 
 
 checkDontRunFile = False
@@ -121,7 +122,6 @@ logToFiles = False
 
 # Defaults
 pidFileDir = "/tmp"
-brewpiName = None  # Defaulting in config file
 
 for o, a in opts:
     # print help message for command line options
@@ -131,21 +131,15 @@ for o, a in opts:
         printStdErr("--log: redirect stderr and stdout to log files")
         printStdErr("--dontrunfile: check dontrunfile in www directory and quit if it exists")
         printStdErr("--checkstartuponly: exit after startup checks, return 1 if startup is allowed")
-        printStdErr("--dbcfg <Device name in database>: loads configuration from database")
+        printStdErr("--dbcfg <Device ID in database>: loads configuration from database")
         printStdErr("--dblist: lists devices in the database")
         printStdErr("--pidfiledir <filename>: pid-file path/filename")
-        printStdErr("--name <name>: name of brewpi instance")
         exit()
     # supply a config file
     if o in ('--pidfiledir'):
         if not os.path.exists(a):
             sys.exit('ERROR: pidfiledir "%s" does not exist' % a)
         pidFileDir = a
-
-    if o in ('--name'):
-        if dbConfig is not None:
-            sys.exit("ERROR: Cannot use both --name and --dbcfg! Pick one and try again!")
-        brewpiName = a
 
     # list all devices in the database
     if o in ('-L', '--dblist'):
@@ -155,25 +149,23 @@ for o, a in opts:
             if len(dbDevices) == 0:
                 print("No configured devices found.")
             else:
-                x = 0
                 for d in dbDevices:
-                    x += 1
                     print("Devices:")
-                    print("  %d: %s" % (x, d.device_name))
+                    print("  %d: %s" % (d.id, d.device_name))
             print("===========================================================")
             exit()
-        except (Exception) as e:
+        except Exception as e:
             sys.exit(e)
 
     # load the configuration from the database
     if o in ('-w', '--dbcfg'):
 
         # Try loading the database configuration from Django
+        device_id = a
         try:
             dbConfig = refresh_dbConfig()
-            brewpiName = a
-        except:
-            sys.exit('ERROR: No database configuration with the name \'{}\' was found!'.format(a))
+        except ObjectDoesNotExist:
+            sys.exit('ERROR: No database configuration with the ID \'{}\' was found!'.format(a))
 
 
     # redirect output of stderr and stdout to files in log directory
@@ -201,7 +193,7 @@ else:
     exit(0)
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
-pidFile = pid.PidFile(piddir=pidFileDir, pidname=brewpiName)
+pidFile = pid.PidFile(piddir=pidFileDir, pidname="brewpi-{}".format(device_id))
 try:
     pidFile.create()
 except pid.PidFileAlreadyLockedError:
@@ -237,8 +229,8 @@ def startNewBrew(newName):
     global config
     if len(newName) > 1:     # shorter names are probably invalid
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = util.configSet(configFile, dbConfig, 'beerName', newName)
-        config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+        config = util.configSet(dbConfig, 'beerName', newName)
+        config = util.configSet(dbConfig, 'dataLogging', 'active')
         logMessage("Notification: Restarted logging for beer '%s'." % newName)
         return {'status': 0, 'statusMessage': "Successfully switched to new brew '%s'. " % urllib.unquote(newName) +
                                               "Please reload the page."}
@@ -253,8 +245,8 @@ def stopLogging():
     logMessage("Stopped data logging, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data.")
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = util.configSet(configFile, dbConfig, 'beerName', None)
-    config = util.configSet(configFile, dbConfig, 'dataLogging', 'stopped')
+    config = util.configSet(dbConfig, 'beerName', None)
+    config = util.configSet(dbConfig, 'dataLogging', 'stopped')
     return {'status': 0, 'statusMessage': "Successfully stopped logging"}
 
 
@@ -264,7 +256,7 @@ def pauseLogging():
     logMessage("Paused logging data, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data until resumed.")
     if config['dataLogging'] == 'active':
-        config = util.configSet(configFile, dbConfig, 'dataLogging', 'paused')
+        config = util.configSet(dbConfig, 'dataLogging', 'paused')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully paused logging."}
     else:
@@ -276,12 +268,12 @@ def resumeLogging():
     global dbConfig
     logMessage("Continued logging data, as requested in web interface.")
     if config['dataLogging'] == 'paused':
-        config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+        config = util.configSet(dbConfig, 'dataLogging', 'active')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully continued logging."}
     elif config['dataLogging'] == 'stopped':
         if dbConfig.active_beer is not None:
-            config = util.configSet(configFile, dbConfig, 'dataLogging', 'active')
+            config = util.configSet(dbConfig, 'dataLogging', 'active')
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             return {'status': 0, 'statusMessage': "Successfully continued logging."}
     # If we didn't return a success status above, we'll return an error
@@ -545,7 +537,7 @@ while run:
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
             bg_ser.writeln("j{mode:o}")
-            models.BrewPiDevice.objects.get(device_name=a) # Reload dbConfig from the database (in case we were using profiles)
+            dbConfig = refresh_dbConfig()   # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Temperature control disabled")
             raise socket.timeout
         elif messageType == "setParameters":
@@ -556,7 +548,7 @@ while run:
                 if 'tempFormat' in decoded:
                     if decoded['tempFormat'] != config.get('temp_format', 'C'):
                         # For database configured installs, we save this in the device definition
-                        util.configSet(configFile, dbConfig, 'temp_format', decoded['tempFormat'])
+                        util.configSet(dbConfig, 'temp_format', decoded['tempFormat'])
                     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
@@ -581,7 +573,7 @@ while run:
             newInterval = int(value)
             if 5 < newInterval < 5000:
                 try:
-                    config = util.configSet(configFile, dbConfig, 'interval', float(newInterval))
+                    config = util.configSet(dbConfig, 'interval', float(newInterval))
                 except ValueError:
                     logMessage("Cannot convert interval '" + value + "' to float")
                     continue
