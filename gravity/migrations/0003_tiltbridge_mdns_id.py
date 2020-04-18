@@ -24,11 +24,6 @@ class Migration(migrations.Migration):
             name='mdns_id',
             field=models.CharField(help_text="mDNS ID used by the TiltBridge to identify itself both on your network and to Fermentrack. NOTE - Prefix only - do not include '.local'", max_length=64, primary_key=True, serialize=False, validators=[django.core.validators.RegexValidator(regex='^[a-zA-Z0-9]+$')]),
         ),
-        migrations.RenameField(
-            model_name='tiltbridge',
-            old_name='api_key',
-            new_name='mdns_id',
-        ),
         migrations.AlterField(
             model_name='tiltbridge',
             name='mdns_id',
