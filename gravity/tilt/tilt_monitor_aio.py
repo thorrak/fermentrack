@@ -30,7 +30,8 @@ except:
 
 for package in pkg_resources.working_set:
     if package.project_name == 'aioblescan':
-        if package.parsed_version.public < version.parse("0.2.6"):
+        # This is ridiculous but package.parsed_version doesn't return the right type of Version.
+        if version.parse(package.parsed_version.public) < version.parse("0.2.6"):
             LOG.error("Incorrect aioblescan version installed - unable to run")
             exit(1)
 
@@ -98,13 +99,14 @@ def processBLEBeacon(data):
         payload = data[0].payload
         payload = payload[1].val.hex()
 
-        # ...and then dissect said payload into a UUID, temp, gravity, and rssi (which isn't actually rssi)
+        # ...and then dissect said payload into a UUID, temp, and gravity
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big')
-        # rssi = int.from_bytes(bytes.fromhex(payload[46:48]), byteorder='big')
-        rssi = 0  # TODO - Fix this
+        # tx_pwr isn't actually tx_pwr on the latest Tilts - I need to figure out what it actually is
+        tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big', signed=False)
+        rssi = ev.retrieve("rssi")[-1].val
+
     except Exception as e:
         LOG.error(e)
         capture_exception(e)
