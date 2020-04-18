@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
+from lib.ftcircus.client import CircusException
+
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
@@ -138,7 +140,8 @@ def add_device(request):
         # We don't want two devices to have the same port, and the port number doesn't really matter. Just
         # randomize it.
         random_port = random.randint(2000,3000)
-        initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+        initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
+                          'modify_not_create': False}
 
         form = device_forms.DeviceForm(initial=initial_values)
         return render(request, template_name='setup/device_add.html', context={'form': form})
@@ -800,7 +803,11 @@ def device_manage(request, device_id):
 
             messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
 
-            active_device.restart_process()
+            try:
+                active_device.restart_process()
+            except CircusException:
+                messages.warning(request, "Unable to trigger reset of BrewPi-script - Settings may not take effect until next reboot")
+
 
             return render(request, template_name='device_manage.html',
                                        context={'form': form, 'active_device': active_device})
@@ -825,6 +832,7 @@ def device_manage(request, device_id):
             'socket_name': active_device.socket_name,
             'wifi_host': active_device.wifi_host,
             'wifi_port': active_device.wifi_port,
+            'modify_not_create': True,
         }
 
         form = device_forms.DeviceForm(initial=initial_values)

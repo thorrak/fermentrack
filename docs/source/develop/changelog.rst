@@ -7,8 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] - Quality-of-Life Tweaks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Unreleased] - Quality-of-Life Tweaks & Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -29,6 +29,7 @@ Fixed
 - Links to CSVs from the beer log list now properly generate if the CSV exists
 - Correct error detection/logging when a temp controller with an attached gravity sensor attempts to log before the gravity sensor logs its first point
 - Properly check that a temperature setting is provided when setting a Beer or Fridge Constant mode for temp controllers
+- Temp controller name uniqueness checks are now properly enforced in all add controller workflows
 
 
 
