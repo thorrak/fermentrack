@@ -1,0 +1,34 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+{% load static %}
+
+{% block title %}Trigger Sqlite Fix{% endblock %}
+
+{% block header_scripts %}
+{% endblock %}
+
+
+{% block content %}
+    <h1>Trigger SQLite Fix for Django 2.0+</h1>
+
+    <p>
+        In between the original version of Django that was used by Fermentrack and modern versions, certain
+        backwards-incompatible changes were implemented that can cause issues with SQLite databases. These can be fixed
+        programatically, but as we can't automaticaly detect when the version of Django changes we only run this
+        command when manually triggered by the user.
+    </p>
+
+    <p>
+        This command is running now, and may take up to a minute to complete - depending on the size of your SQLite
+        database. As soon as the command completes, Fermentrack will restart and you will be able to access it as you
+        would normally.
+    </p>
+
+    <p><a href="{% url "siteroot" %}">Return to Fermentrack</a></p>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+{% endblock %}
