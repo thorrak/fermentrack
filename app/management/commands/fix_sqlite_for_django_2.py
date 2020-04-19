@@ -11,6 +11,10 @@ class Command(BaseCommand):
     help = "Fixes SQLite databases that have been migrated from Django 1.x to Django 2.0+"
 
     def fix_sqlite_for_django_2(self):
+        if connection.disable_constraint_checking():
+            constraints_disabled = "Disabled"
+        else:
+            constraints_disabled = "NOT Disabled"
         for app in apps.get_app_configs():
             print("Fixing app {}...".format(app.verbose_name))
             for model in app.get_models(include_auto_created=True):
@@ -20,7 +24,7 @@ class Command(BaseCommand):
                             base._meta.local_many_to_many = []
                     model._meta.local_many_to_many = []
                     with connection.schema_editor() as editor:
-                        print("Rebuilding model {}".format(model))
+                        print("Rebuilding model {} - FK Check {}".format(model, constraints_disabled))
                         editor._remake_table(model)
         config.SQLITE_OK_DJANGO_2 = True
         return True

@@ -22,7 +22,6 @@ if __name__ == "__main__":
             )
         raise
     try:
-        print("ArgV: {}".format(sys.argv))
         execute_from_command_line(sys.argv)
     except IntegrityError:
         # If we have an integrity error, it's most likely because of the Django 2 SQLite issue. Trigger the fix, then
