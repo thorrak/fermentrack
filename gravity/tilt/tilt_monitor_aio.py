@@ -1,10 +1,13 @@
 #!/usr/bin/python
 
+# TODO - Figure out the best way to convert this to use sync_to_async calls
+import os, sys
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 # Let's get sentry support going
 from sentry_sdk import init, capture_exception
 init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
 
-import os, sys
 import time, datetime, getopt, pid
 from typing import List, Dict
 import asyncio
@@ -80,12 +83,12 @@ def processBLEBeacon(data):
     raw_data_hex = ev.raw_data.hex()
 
     if len(raw_data_hex) < 80:  # Very quick filter to determine if this is a valid Tilt device
-        if verbose:
-            LOG.info("Small raw_data_hex: {}".format(raw_data_hex))
+        # if verbose:
+        #     LOG.info("Small raw_data_hex: {}".format(raw_data_hex))
         return False
     if "1370f02d74de" not in raw_data_hex:  # Another very quick filter (honestly, might not be faster than just looking at uuid below)
-        if verbose:
-            LOG.info("Missing key in raw_data_hex: {}".format(raw_data_hex))
+        # if verbose:
+        #     LOG.info("Missing key in raw_data_hex: {}".format(raw_data_hex))
         return False
 
     # For testing/viewing raw announcements, uncomment the following
@@ -113,7 +116,7 @@ def processBLEBeacon(data):
         return
 
     if verbose:
-        print("Tilt Payload (hex): {}\r\n".format(payload))
+        LOG.info("Tilt Payload (hex): {}".format(raw_data_hex))
 
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
     tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
@@ -127,9 +130,13 @@ def processBLEBeacon(data):
 
     for this_tilt in tilts:
         if tilts[this_tilt].should_save():
+            if verbose:
+                LOG.info("Saving {} to Fermentrack".format(this_tilt))
             tilts[this_tilt].save_value_to_fermentrack(verbose=verbose)
 
         if reload:  # Users editing/changing objects in Fermentrack doesn't signal this process so reload on a timer
+            if verbose:
+                LOG.info("Loading {} from Fermentrack".format(this_tilt))
             tilts[this_tilt].load_obj_from_fermentrack()
 
 
