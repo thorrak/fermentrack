@@ -15,6 +15,12 @@ class Command(BaseCommand):
 
     def fix_sqlite_for_django_2(self):
 
+        try:
+            constraint_check = connection.disable_constraint_checking()
+        except:
+            connection.connection = connection.connect()
+            constraint_check = connection.disable_constraint_checking()
+
         # Back up the sqlite databases before we start rebuilding things, just in case.
         # ol2 -> ol3
         try:
