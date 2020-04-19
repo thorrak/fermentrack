@@ -7,22 +7,13 @@ from django.db import connection
 from constance import config
 import shutil
 
+from django.db import utils
+
 
 class Command(BaseCommand):
     help = "Fixes SQLite databases that have been migrated from Django 1.x to Django 2.0+"
 
     def fix_sqlite_for_django_2(self):
-
-        try:
-            constraint_check = connection.disable_constraint_checking()
-        except:
-            connection.connection = connection.connect()
-            constraint_check = connection.disable_constraint_checking()
-
-        if constraint_check:
-            constraints_disabled = "Disabled"
-        else:
-            constraints_disabled = "NOT Disabled"
 
         # Back up the sqlite databases before we start rebuilding things, just in case.
         # ol2 -> ol3
@@ -47,8 +38,18 @@ class Command(BaseCommand):
                             base._meta.local_many_to_many = []
                     model._meta.local_many_to_many = []
                     with connection.schema_editor() as editor:
-                        print("Rebuilding model {} - FK Check {}".format(model, constraints_disabled))
-                        editor._remake_table(model)
+                        try:
+                            constraint_check = connection.disable_constraint_checking()
+                        except:
+                            connection.connection = connection.connect()
+                            constraint_check = connection.disable_constraint_checking()
+                        print("Rebuilding model {} - FK Check {}".format(model, constraint_check))
+                        try:
+                            editor._remake_table(model)
+                        except utils.IntegrityError:
+                            # Foreign key check fails during rebuild
+                            pass
+        connection.check_constraints()
         config.SQLITE_OK_DJANGO_2 = True
         return True
 
