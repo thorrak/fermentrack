@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand  # , CommandError
 from django.apps import apps
 from django.db import connection
 from constance import config
+import shutil
 
 
 class Command(BaseCommand):
@@ -15,6 +16,21 @@ class Command(BaseCommand):
             constraints_disabled = "Disabled"
         else:
             constraints_disabled = "NOT Disabled"
+
+        # Back up the sqlite databases before we start rebuilding things, just in case.
+        # ol2 -> ol3
+        try:
+            shutil.copyfile("db.sqlite3.ol2", "db.sqlite3.ol3")
+        except FileNotFoundError:
+            pass
+        # old -> ol2
+        try:
+            shutil.copyfile("db.sqlite3.old", "db.sqlite3.ol2")
+        except FileNotFoundError:
+            pass
+        # (db) -> old
+        shutil.copyfile("db.sqlite3", "db.sqlite3.old")
+
         for app in apps.get_app_configs():
             print("Fixing app {}...".format(app.verbose_name))
             for model in app.get_models(include_auto_created=True):
