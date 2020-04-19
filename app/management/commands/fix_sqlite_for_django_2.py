@@ -12,7 +12,14 @@ class Command(BaseCommand):
     help = "Fixes SQLite databases that have been migrated from Django 1.x to Django 2.0+"
 
     def fix_sqlite_for_django_2(self):
-        if connection.disable_constraint_checking():
+
+        try:
+            constraint_check = connection.disable_constraint_checking()
+        except:
+            connection.connection = connection.connect()
+            constraint_check = connection.disable_constraint_checking()
+
+        if constraint_check:
             constraints_disabled = "Disabled"
         else:
             constraints_disabled = "NOT Disabled"
