@@ -792,14 +792,15 @@ class BrewPiDevice(models.Model):
     def get_temp_control_status(self):
         device_mode = self.send_message("getMode", read_response=True)
 
-        if device_mode is not None:  # If we could connect to the device, force-sync the temp format
-            self.sync_temp_format()
-
         control_status = {}
-        if device_mode is None:  # We were unable to read from the device
+        if (device_mode is None) or (not device_mode):  # We were unable to read from the device
             control_status['device_mode'] = "unable_to_connect"  # Not sure if I want to pass the message back this way
+            return control_status
 
-        elif device_mode == 'o':  # Device mode is off
+        # If we could connect to the device, force-sync the temp format
+        self.sync_temp_format()
+
+        if device_mode == 'o':  # Device mode is off
             control_status['device_mode'] = "off"
 
         elif device_mode == 'b':  # Device mode is beer constant
@@ -815,7 +816,7 @@ class BrewPiDevice(models.Model):
 
         else:
             # No idea what the device mode is
-            logger.error("Invalid device mode '{}' on device {}".format(device_mode, self.device_name))
+            logger.error("Invalid device mode '{}'".format(device_mode))
 
         return control_status
 
