@@ -127,8 +127,6 @@ class TCPSerial(object):
 
     def close(self):
         # Shutdown, then close port
-        self.sock.shutdown(socket.SHUT_RDWR)
-
         try:
             self.sock.shutdown(socket.SHUT_RDWR)
         except OSError as exc:
