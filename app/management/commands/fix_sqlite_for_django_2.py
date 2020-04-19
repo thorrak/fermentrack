@@ -12,6 +12,7 @@ class Command(BaseCommand):
 
     def fix_sqlite_for_django_2(self):
         for app in apps.get_app_configs():
+            print("Fixing app {}...".format(app.verbose_name))
             for model in app.get_models(include_auto_created=True):
                 if model._meta.managed and not (model._meta.proxy or model._meta.swapped):
                     for base in model.__bases__:
@@ -19,6 +20,7 @@ class Command(BaseCommand):
                             base._meta.local_many_to_many = []
                     model._meta.local_many_to_many = []
                     with connection.schema_editor() as editor:
+                        print("Rebuilding model {}".format(model))
                         editor._remake_table(model)
         config.SQLITE_OK_DJANGO_2 = True
         return True
