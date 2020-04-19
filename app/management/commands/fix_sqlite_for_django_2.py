@@ -43,7 +43,7 @@ class Command(BaseCommand):
                         except:
                             connection.connection = connection.connect()
                             constraint_check = connection.disable_constraint_checking()
-                        print("Rebuilding model {} - FK Check {}".format(model, constraint_check))
+                        print("Rebuilding model {} - FK Check Disabled: {}".format(model, constraint_check))
                         try:
                             editor._remake_table(model)
                         except utils.IntegrityError:
