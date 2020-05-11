@@ -499,10 +499,11 @@ class BrewfatherPushTarget(models.Model):
                             if device_info['RoomTemp'] != 0:
                                 to_send['ext_temp'] = temp_convert(float(device_info['RoomTemp']),
                                                                 brewpi_temp_format, latest_log_point.temp_format)
-                
-            # TODO get name of active beer and add this to the payload
+                    
+                    if latest_log_point.associated_device.assigned_brewpi_device.active_beer is not None:
+                        to_send['beer'] = latest_log_point.associated_device.assigned_brewpi_device.active_beer.name
 
-            logger.error("Brewfather payload (gravity):" + json.dumps(to_send) )
+            #logger.error("Brewfather payload (gravity):" + json.dumps(to_send) )
 
         # This section get the temp values from a brewpi if selected. Part of request #464
         else:
@@ -516,10 +517,9 @@ class BrewfatherPushTarget(models.Model):
                 # TODO - Make it so that this data is stored in/loaded from Redis
                 device_info = brewpi.get_dashpanel_info()
 
-                logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+                #logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
 
                 if brewpi.device_name == self.brewpi_to_push.device_name:
-                
                     to_send['name'] = brewpi.device_name
                     to_send['temp_unit'] = brewpi.temp_format
 
@@ -532,7 +532,10 @@ class BrewfatherPushTarget(models.Model):
                     if device_info['RoomTemp'] is not None:
                         to_send['ext_temp'] = float(device_info['RoomTemp'])
 
-            logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
+                    if brewpi.active_beer is not None:
+                        to_send['beer'] =  brewpi.active_beer.name
+
+            #logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
 
         string_to_send = json.dumps(to_send)
 
