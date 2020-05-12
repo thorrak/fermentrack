@@ -1,7 +1,8 @@
 import os, sys
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
-from git import Repo
+#from git import Repo
+import git
 
 from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
@@ -19,8 +20,13 @@ config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
-local_repo = Repo(path=BASE_DIR)
-GIT_BRANCH = local_repo.active_branch.name
+try:
+    local_repo = git.Repo(path=BASE_DIR)
+    GIT_BRANCH = local_repo.active_branch.name
+except git.exc.InvalidGitRepositoryError:
+    ENABLE_SENTRY = False
+    GIT_BRANCH = 'dev'
+
 
 
 
@@ -42,9 +48,16 @@ INSTALLED_APPS = [
     'huey.contrib.djhuey',
 ]
 
-# TODO - Check the below as I'm getting errors when running on MacOS w/o Apache
 if sys.platform == "darwin":
-    INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
+    # For the MacOS standalone support, we need mod_wsgi for Apache. Since I do most of my development/testing on
+    # a Mac but don't use the standalone support, I don't want the app to get added if we don't have the packages
+    # installed.
+    import subprocess
+
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+    installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+    if 'mod_wsgi' in installed_packages:
+        INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
 
 # if ENABLE_SENTRY:
