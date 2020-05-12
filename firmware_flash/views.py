@@ -147,6 +147,11 @@ def refresh_firmware(request=None):
     families_loaded = DeviceFamily.load_from_website()
 
     if families_loaded:
+        # This should be done automatically (via cascading deletes) but breaking it out explicitly here just in case
+        Firmware.objects.all().delete()
+        Project.objects.all().delete()
+        Board.objects.all().delete()
+
         # And if that worked, load the firmware list
         board_loaded = Board.load_from_website()
         if board_loaded:

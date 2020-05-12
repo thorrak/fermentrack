@@ -9,6 +9,8 @@ import shutil
 
 import django.db.utils
 
+import firmware_flash.models
+
 # For monkey patching (see below)
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor, BaseDatabaseSchemaEditor
 
@@ -71,6 +73,29 @@ class Command(BaseCommand):
         #         print("Unable to locate suitable model referencing table {}. Stopping.".format(table_name))
         #         raise django.db.utils.IntegrityError("fix_sqlite_for_django_2 unable to find suitable model referencing table {}".format(table_name))
 
+        # There was some kind of an issue with
+        try:
+            print("Clearing firmware_flash.Firmware objects...")
+            constraint_check = connection.disable_constraint_checking()
+            firmware_flash.models.Firmware.objects.all().delete()
+
+            print("Clearing firmware_flash.Project objects...")
+            constraint_check = connection.disable_constraint_checking()
+            firmware_flash.models.Project.objects.all().delete()
+
+            print("Clearing firmware_flash.Board objects...")
+            constraint_check = connection.disable_constraint_checking()
+            firmware_flash.models.Board.objects.all().delete()
+
+            print("Clearing firmware_flash.DeviceFamily objects...")
+            constraint_check = connection.disable_constraint_checking()
+            firmware_flash.models.DeviceFamily.objects.all().delete()
+
+            print("Done clearing firmware_flash objects...")
+        except:
+            print("Unable to complete!!")
+
+
         # Once that's done, we're going to attempt to loop over all the apps/models and rebuild everything just to be
         # safe.
         for app in apps.get_app_configs():
@@ -89,8 +114,10 @@ class Command(BaseCommand):
                             constraint_check = connection.disable_constraint_checking()
                         print("Rebuilding model {} - FK Check Disabled: {}".format(model, constraint_check))
                         editor._remake_table(model)
+        print("Completed app rebuilding - running check_constraints to ensure we're in a consistent state.")
         connection.check_constraints()
         config.SQLITE_OK_DJANGO_2 = True
+        print("Rebuild complete!")
         return True
 
     def handle(self, *args, **options):

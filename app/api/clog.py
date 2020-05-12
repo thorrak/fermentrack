@@ -35,6 +35,10 @@ def get_filepath_to_log(device_type, logfile="", device_id=None):
 def get_device_log_combined(req, return_type, device_type, logfile, device_id=None, lines=100):
     """Read the log files created by circus for spawned controllers"""
 
+    # TODO - THIS IS A HACK. This needs to be fixed properly, but that will require some refactoring
+    if(device_type=="upgrade"):
+        lines = 1000
+
     # Although the urlpattern checks if the logfile type is valid, this gets used in the filename we're reading so
     # recheck it here just to be safe.
     valid_logfile_types = ['stdout', 'stderr']
