@@ -882,6 +882,8 @@ class IspindelConfiguration(models.Model):
         t = json.loads(redis_response)
         if 'fields' in t[0]:
             if 'log_time' in t[0]['fields']:
-                return t[0]['fields']['log_time'] # return last time the ispindel was heard from
+                # return last time the ispindel was heard from
+                dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") ) 
+                return datetime.datetime.strftime( dt, "%c" )
 
         return {}

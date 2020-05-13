@@ -507,7 +507,7 @@ def gravity_manage(request, sensor_id):
         context['ispindel_calibration_points'] = calibration_points
         ispindel_calibration_form = forms.IspindelCalibrationPointForm(initial={'sensor': sensor.ispindel_configuration})
         context['ispindel_calibration_form'] = ispindel_calibration_form
-        context['temp_display_format'] = config.DATE_TIME_FORMAT_DISPLAY
+        #context['temp_display_format'] = config.DATE_TIME_FORMAT_DISPLAY
 
         return render(request, template_name='gravity/gravity_manage_ispindel.html', context=context)
 
