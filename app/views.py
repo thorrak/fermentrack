@@ -63,6 +63,12 @@ def error_notifications(request):
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
+    # TODO - Remove this after June 1st release
+    if sys.version_info < (3, 7):
+        messages.error(request, "You are currently running Python {}.{} ".format(sys.version_info.major, sys.version_info.minor) +
+                         "which will no longer be supported by Fermentrack with the next release (due <b>June 5th</b>). " +
+                         'To learn more (including how to fix this) read <a href="https://github.com/thorrak/fermentrack/issues/463">this issue on GitHub</a>.')
+
     # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
     # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
     # TODO - Readd this check
