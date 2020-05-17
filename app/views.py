@@ -65,9 +65,9 @@ def error_notifications(request):
 
     # TODO - Remove this after June 1st release
     if sys.version_info < (3, 7):
-        messages.error(request, "You are currently running Python {} ".format(sys.version_info) +
-                         "which will no longer be supported by Fermentrack with the next release which is due June 1st. " +
-                         'To learn more (including how to upgrade to Python 3.7) read <a href="https://github.com/thorrak/fermentrack/issues/463">this issue on GitHub</a>.')
+        messages.error(request, "You are currently running Python {}.{} ".format(sys.version_info.major, sys.version_info.minor) +
+                         "which will no longer be supported by Fermentrack with the next release (which is due June 1st). " +
+                         'To learn more (including how to fix this) read <a href="https://github.com/thorrak/fermentrack/issues/463">this issue on GitHub</a>.')
 
     # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
     # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
