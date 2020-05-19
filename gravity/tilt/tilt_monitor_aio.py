@@ -96,10 +96,15 @@ def processBLEBeacon(data):
     # ev.show(0)
 
     try:
+        mac_addr = ev.retrieve("peer")[0].val
+    except:
+        pass
+
+    try:
         # Let's use some of the functions of aioblesscan to tease out the mfg_specific_data payload
 
-        data = ev.retrieve("Manufacturer Specific Data")
-        payload = data[0].payload
+        manufacturer_data = ev.retrieve("Manufacturer Specific Data")
+        payload = manufacturer_data[0].payload
         payload = payload[1].val.hex()
 
         # ...and then dissect said payload into a UUID, temp, and gravity
@@ -120,6 +125,9 @@ def processBLEBeacon(data):
 
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
     tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
+
+    #print("Color {} - MAC {}".format(color, mac_addr))
+    #print("Raw Data: `{}`".format(raw_data_hex))
 
     # The Fermentrack specific stuff:
     reload = False

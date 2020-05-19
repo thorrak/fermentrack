@@ -14,13 +14,34 @@ import firmware_flash.models
 # For monkey patching (see below)
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor, BaseDatabaseSchemaEditor
 
+from django.core.management import execute_from_command_line
 
 
 class Command(BaseCommand):
     help = "Fixes SQLite databases that have been migrated from Django 1.x to Django 2.0+"
 
-    def fix_sqlite_for_django_2(self):
+    def clear_firmware_data(self):
+        print("Clearing firmware_flash.Firmware objects...")
+        constraint_check = connection.disable_constraint_checking()
+        firmware_flash.models.Firmware.objects.all().delete()
 
+        print("Clearing firmware_flash.Board objects...")
+        constraint_check = connection.disable_constraint_checking()
+        firmware_flash.models.Board.objects.all().delete()
+
+        print("Clearing firmware_flash.DeviceFamily objects...")
+        constraint_check = connection.disable_constraint_checking()
+        firmware_flash.models.DeviceFamily.objects.all().delete()
+
+        print("Clearing firmware_flash.Project objects...")
+        constraint_check = connection.disable_constraint_checking()
+        firmware_flash.models.Project.objects.all().delete()
+
+
+        print("Done clearing firmware_flash objects...")
+
+
+    def fix_sqlite_for_django_2(self):
         # We're monkey patching the __exit__ method of DatabaseSchemaEditor because it reenables constraint checking
         # which we explicitly DO NOT want to do. The problem is that without patching this if multiple tables have
         # incorrect foreign key constraints you can't fix one at a time - you have to fix both simultaneously (which
@@ -48,52 +69,21 @@ class Command(BaseCommand):
         # (db) -> old
         shutil.copyfile("db.sqlite3", "db.sqlite3.old")
 
-        # First thing's first - We want to find any broken foreign key checks, and rebuild those tables specifically
-        # fixed_tables = []
-        # fk_violations = connection.cursor().execute('PRAGMA foreign_key_check').fetchall()
-        # # See https://www.sqlite.org/pragma.html#pragma_foreign_key_check
-        # for table_name, rowid, referenced_table_name, foreign_key_index in fk_violations:
-        #     for app in apps.get_app_configs():
-        #         for model in app.get_models(include_auto_created=True):
-        #             if model._meta.managed and not (model._meta.proxy or model._meta.swapped):
-        #                 if model._meta.db_table == table_name:
-        #                     # What we're trying to do is check every model in every app to see if the table that holds
-        #                     # it is the table with the broken foreign key
-        #                     with connection.schema_editor() as editor:
-        #                         if table_name not in fixed_tables:
-        #                             print("Table {} has a foreign key issue referencing table {} - Attempting to fix...".format(table_name, referenced_table_name))
-        #                             try:
-        #                                 constraint_check = connection.disable_constraint_checking()
-        #                             except:
-        #                                 connection.connection = connection.connect()
-        #                                 constraint_check = connection.disable_constraint_checking()
-        #                             editor._remake_table(model)
-        #                             fixed_tables.append(table_name)
-        #     if table_name not in fixed_tables:
-        #         print("Unable to locate suitable model referencing table {}. Stopping.".format(table_name))
-        #         raise django.db.utils.IntegrityError("fix_sqlite_for_django_2 unable to find suitable model referencing table {}".format(table_name))
 
-        # There was some kind of an issue with
+        # Because Django 2.0+ now enforces FK checks for Sqlite DBs, if we are missing migrations that would now involve
+        # FK checks we have a serious problem - We can't apply the migrations until the DB is fixed, and we can't fix
+        # the DB until we apply the migrations. The solution is to apply the migrations with FK checks disabled, then
+        # run this script to fix the database. I've created a management command - `migrate_no_fk` - which can handle
+        # the migration. Let's call that now just to ensure that we're in the right state.
+        execute_from_command_line(['manage.py', 'migrate_no_fk'])
+
+        # Everything should be migrated at this point - Let's continue.
+
+        # There was some kind of an issue with firmware data specifically - let's delete it all just to be safe
         try:
-            print("Clearing firmware_flash.Firmware objects...")
-            constraint_check = connection.disable_constraint_checking()
-            firmware_flash.models.Firmware.objects.all().delete()
-
-            print("Clearing firmware_flash.Project objects...")
-            constraint_check = connection.disable_constraint_checking()
-            firmware_flash.models.Project.objects.all().delete()
-
-            print("Clearing firmware_flash.Board objects...")
-            constraint_check = connection.disable_constraint_checking()
-            firmware_flash.models.Board.objects.all().delete()
-
-            print("Clearing firmware_flash.DeviceFamily objects...")
-            constraint_check = connection.disable_constraint_checking()
-            firmware_flash.models.DeviceFamily.objects.all().delete()
-
-            print("Done clearing firmware_flash objects...")
+            self.clear_firmware_data()
         except:
-            print("Unable to complete!!")
+            print("Unable to clear data!!")
 
 
         # Once that's done, we're going to attempt to loop over all the apps/models and rebuild everything just to be
@@ -112,7 +102,7 @@ class Command(BaseCommand):
                         except:
                             connection.connection = connection.connect()
                             constraint_check = connection.disable_constraint_checking()
-                        print("Rebuilding model {} - FK Check Disabled: {}".format(model, constraint_check))
+                        print("Rebuilding model {}".format(model))
                         editor._remake_table(model)
         print("Completed app rebuilding - running check_constraints to ensure we're in a consistent state.")
         connection.check_constraints()

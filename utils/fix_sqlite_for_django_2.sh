@@ -36,8 +36,10 @@ printerror() {
 }
 
 
-
-exec > >(tee -i log/upgrade.log)
+# Nuke the upgrade log before we attempt
+touch log/upgrade.log
+truncate --size=0 log/upgrade.log
+exec > >(tee -i -a log/upgrade.log)
 
 
 printinfo "Running fix_sqlite_for_django_2 management command"
