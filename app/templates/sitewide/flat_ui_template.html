@@ -10,6 +10,7 @@
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
         <link href="{% static "css/custom_style.css" %}" rel="stylesheet">
+        <link href="{% static "css/user_upload.css" %}" rel="stylesheet">
         <link rel="shortcut icon" href="{% static "favicon.ico" %}">
         <link rel="icon" href="{% static "favicon.ico" %}">
         {% block header_scripts %}{% endblock %}
@@ -53,6 +54,22 @@
           </nav><!-- /navbar -->
         </div>
       </div> <!-- /row -->
+
+      <!-- Insert User Uploadable Logo Image -->
+      <a href="{% url 'images' %}">{% spaceless %}
+      {% if logo %}
+          {% for image in logo %}
+              <div class="container">
+                <img src="{{ image.url }}" title="User Uploaded Logo", class="logoimage" />
+          	  </div>
+          {% endfor %}
+      {% else %}
+              <div class="container">
+                <img src='{% static "img/fermentrack_logo.png" %}' title="Temporary Placement Logo", class="logoimage" />
+              </div>
+      {% endif %}
+      {% endspaceless %}</a>
+      <!-- End Logo Image -->
 
       <div class="row">
         <div class="col-xs-12">

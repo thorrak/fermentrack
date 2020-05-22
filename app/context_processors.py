@@ -2,6 +2,7 @@ import pytz
 from constance import config
 from app.models import BrewPiDevice  #, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, FermentationProfile, Beer
 from gravity.models import GravitySensor
+from brewery_image.models import BreweryLogo
 
 
 def preferred_tz(request):
@@ -33,3 +34,11 @@ def devices(request):
 
     return {'all_devices': all_devices, 'all_gravity_sensors': all_gravity_sensors,
             'unassigned_gravity_sensors': unassigned_gravity_sensors}
+
+def logo(request):
+    """
+    Simple context processor that displays the last User Uploaded Image into Fermentrack
+    """
+
+    logo = BreweryLogo.objects.order_by('-date')[:1]
+    return {'logo' : logo}
