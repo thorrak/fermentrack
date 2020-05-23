@@ -82,7 +82,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),
     url(r'^devices/(?P<device_id>\d{1,20})/proc/remove/$', app.circus_views.remove_brewpi_device, name='device_remove'),
     url(r'^devices/(?P<device_id>\d{1,20})/proc/status/$', app.circus_views.status_brewpi_device, name='device_status'),
-    
+
 
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),
@@ -122,7 +122,7 @@ urlpatterns = [
     url(r'site/settings/$', app.views.site_settings, name="site_settings"),
     url(r'site/help/$', app.views.site_help, name="site_help"),
 
-] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
+] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + \
               firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + \
               external_push.urls.external_push_urlpatterns
 # TODO - Convert the above to be properly namespaced
