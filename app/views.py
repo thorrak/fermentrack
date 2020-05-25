@@ -552,7 +552,7 @@ def trigger_requirements_reload(request):
 
     # All that this view does is trigger the utils/fix_python_requirements.sh shell script and return a message letting
     # the user know that Fermentrack will take a few minutes to restart.
-    cmd = "nohup utils/fix_python_requirements.sh &"
+    cmd = "nohup utils/cleanup_utils/fix_python_requirements.sh &"
     messages.success(request, "Triggered a reload of your Python packages")
     subprocess.call(cmd, shell=True)
 
@@ -566,7 +566,7 @@ def trigger_sqlite_fix(request):
 
     # All that this view does is trigger the utils/fix_sqlite_for_django_2.sh shell script and return a message letting
     # the user know that Fermentrack will take a few minutes to restart.
-    cmd = "nohup utils/fix_sqlite_for_django_2.sh &"
+    cmd = "nohup utils/cleanup_utils/fix_sqlite_for_django_2.sh &"
     messages.success(request, "Triggered the management command to fix the SQLite database post-Django 2.0+ migration")
     subprocess.call(cmd, shell=True)
 
