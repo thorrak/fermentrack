@@ -730,6 +730,7 @@ while run:
                 if prevDataTime == 0.0:  # If prevDataTime hasn't yet been set (it's 0.0 at script startup), set it.
                     prevDataTime = time.time()
 
+
         if (time.time() - prevDataTime) >= 3 * float(config['interval']):
             # something is wrong: controller is not responding to data requests
             logMessage("Error: controller is not responding to new data requests. Exiting.")
@@ -754,9 +755,6 @@ while run:
                         # store time of last new data for interval check
                         prevDataTime = time.time()
 
-                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':
-                            continue  # skip if logging is paused or stopped
-
                         # process temperature line
                         newData = json.loads(line[2:])
                         # copy/rename keys
@@ -764,6 +762,11 @@ while run:
                             prevTempJson[renameTempKey(key)] = newData[key]
 
                         newRow = prevTempJson
+
+                        # Moved this so that the last read values is updated even if logging is off. Otherwise the getDashInfo 
+                        # will return the default temp values (0)
+                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':                            
+                            continue  # skip if logging is paused or stopped
 
                         # All this is handled by the model
                         util.save_beer_log_point(dbConfig, newRow)
