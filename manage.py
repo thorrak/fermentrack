@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+from django.db import IntegrityError
+# from app.management.commands.fix_sqlite_for_django_2 import Command as fix_sqlite_command
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
@@ -19,4 +21,11 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
-    execute_from_command_line(sys.argv)
+    try:
+        execute_from_command_line(sys.argv)
+    except IntegrityError:
+        # If we have an integrity error, it's most likely because of the Django 2 SQLite issue. Trigger the fix, then
+        # reattempt the initial migration.
+        execute_from_command_line(['manage.py', 'fix_sqlite_for_django_2'])
+        execute_from_command_line(sys.argv)
+

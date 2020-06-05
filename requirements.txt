@@ -1,8 +1,11 @@
-Django>=1.11,<1.12
+Django>=3.0.5,<3.1
 configobj       # required by brewpi.py
 
+pyzmq~=19.0.1 --no-binary=pyzmq  # The wheel for pyzmq periodically has issues for Raspbian installs
+# numpy==1.18.4 --no-binary=numpy  # The wheel for numpy also has issues (at least on Stretch)
+
 pytz            # required by manage.py migrate
-raven           # OPTIONAL - used for debugging
+sentry-sdk      # used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices
@@ -18,6 +21,7 @@ requests        # for loading firmware data from websites
 
 esptool         # for flashing ESP8266 devices
 packaging~=17.1 # for testing requirements in the Tilt tests
+
 
 # Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
 redis==3.4.1           # for huey & gravity sensor support

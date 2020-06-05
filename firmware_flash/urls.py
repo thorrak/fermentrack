@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 import firmware_flash.views
 
+app_name = "firmware_flash"
 
 # This gets added
 firmware_flash_urlpatterns = [

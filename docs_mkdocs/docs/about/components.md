@@ -13,8 +13,8 @@ In addition to Django, this app utilizes a number of Python packages. These pack
 | [Django](https://www.djangoproject.com/foundation/faq/)                     	| [BSD 3 Clause](https://github.com/django/django/blob/master/LICENSE)                              	|
 | [configobj](https://pypi.python.org/pypi/configobj/5.0.6)                   	| [BSD 3 Clause](https://github.com/DiffSK/configobj/blob/master/LICENSE)                           	|
 | [pyserial](https://pypi.python.org/pypi/pyserial/3.2.1)                     	| [BSD 3 Clause](https://github.com/pyserial/pyserial/blob/master/LICENSE.txt)                      	|
-| [huey](https://github.com/coleifer/huey)                                   	| [MIT (Expat)](https://github.com/coleifer/huey/blob/master/LICENSE)                              	|
-| [raven](https://sentry.io/)                                                 	| [BSD 3 Clause](https://github.com/getsentry/raven-python/blob/master/LICENSE)                     	|
+| [huey](https://github.com/coleifer/huey)                                   	| [MIT (Expat)](https://github.com/coleifer/huey/blob/master/LICENSE)                               	|
+| [sentry-python](https://sentry.io/)                                          	| [BSD 2 Clause](https://github.com/getsentry/sentry-python/blob/master/LICENSE)                     	|
 | [django-constance](https://pypi.python.org/pypi/django-constance)           	| [BSD 3 Clause](https://github.com/jazzband/django-constance/blob/master/LICENSE)                  	|
 | [GitPython](https://pypi.python.org/pypi/GitPython/2.1.1)                   	| [BSD 3 Clause](https://github.com/gitpython-developers/GitPython/blob/master/LICENSE)             	|
 | [pytz](https://pypi.python.org/pypi/pytz/2016.10)                           	| [MIT (Expat) License](http://pythonhosted.org/pytz/#license)                                      	|

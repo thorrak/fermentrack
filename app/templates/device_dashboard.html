@@ -229,7 +229,7 @@
                             {% if beer.gravity_enabled %}
                             <tr id="gravityRow">
                                 <td id="gravityLabel">
-                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_FRIDGE_SET_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_COLOR }}" id="gravity_legend" onClick="toggle_graph_visibility(this)"></i>
                                     Gravity
                                 </td>
                                 <td id="gravityValue"></td>
@@ -237,7 +237,7 @@
 
                             <tr id="gravityTempRow">
                                 <td id="gravityTempLabel">
-                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_ROOM_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
+                                    <i class="fa fa-line-chart" style="color: {{ config.GRAPH_GRAVITY_TEMP_COLOR }}" id="gravity_temp_legend" onClick="toggle_graph_visibility(this)"></i>
                                     Grav Sensor Temp
                                 </td>
                                 <td id="gravityTempValue"></td>
@@ -597,31 +597,38 @@ function toggle_graph_visibility(el) {
     if(el.id == "beer_temp_legend") {
         beer_temp_visible = !beer_temp_visible;
         g2.setVisibility(0, beer_temp_visible);
+        $('#beerTempValue').text("");
 
     } else if(el.id == "beer_set_legend") {
         beer_set_visible = !beer_set_visible;
         g2.setVisibility(1, beer_set_visible);
+        $('#beerSetValue').text("");
 
     } else if(el.id == "fridge_temp_legend") {
         fridge_temp_visible = !fridge_temp_visible;
         g2.setVisibility(2, fridge_temp_visible);
+        $('#fridgeTempValue').text("");
 
     } else if(el.id == "fridge_set_legend") {
         fridge_set_visible = !fridge_set_visible;
         g2.setVisibility(3, fridge_set_visible);
+        $('#fridgeSetValue').text("");
 
     } else if(el.id == "room_temp_legend") {
         room_temp_visible = !room_temp_visible;
         g2.setVisibility(4, room_temp_visible);
+        $('#roomTempValue').text("");
 
-    } else if(el.id == "gravity_legend") {
+    } {% if beer.gravity_enabled %}else if(el.id == "gravity_legend") {
         gravity_visible = !gravity_visible;
         g2.setVisibility(5, gravity_visible);
+        $('#gravityValue').text("");
 
     } else if(el.id == "gravity_temp_legend") {
         gravity_temp_visible = !gravity_temp_visible;
         g2.setVisibility(6, gravity_temp_visible);
-    }
+        $('#gravityTempValue').text("");
+    }{% endif %}
 }
 
 

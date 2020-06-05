@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django.core.validators
 
 
 class Migration(migrations.Migration):
@@ -12,10 +13,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
+        # Converting from AlterField to RemoveField/AddField because of issues with Django 2.0+ migration:
+        # https://docs.djangoproject.com/en/3.0/releases/2.0/#foreign-key-constraints-are-now-enabled-on-sqlite
+        migrations.RemoveField(
             model_name='tiltbridge',
-            old_name='api_key',
-            new_name='mdns_id',
+            name='api_key',
+        ),
+        migrations.AddField(
+            model_name='tiltbridge',
+            name='mdns_id',
+            field=models.CharField(help_text="mDNS ID used by the TiltBridge to identify itself both on your network and to Fermentrack. NOTE - Prefix only - do not include '.local'", max_length=64, primary_key=True, serialize=False, validators=[django.core.validators.RegexValidator(regex='^[a-zA-Z0-9]+$')]),
         ),
         migrations.AlterField(
             model_name='tiltbridge',

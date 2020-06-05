@@ -9,6 +9,11 @@
 
 <form action="{% url "device_guided_add_mdns" form.wifi_host.value %}" class="form-horizontal" method="post">{% csrf_token %}
 
+    {# This is primarily to capture modify_not_create #}
+    {% for hidden in this_sensor.device_form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+
     <div id="deviceConstantsSection">
         <h4 class="form-header">Device Constants</h4>
         {% form_generic form.device_name %}
