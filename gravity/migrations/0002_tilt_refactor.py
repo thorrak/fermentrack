@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gravity', '0001_squashed_0005_ispindel_float_conversion'),
+        ('gravity', '0001_initial'),
     ]
 
     operations = [

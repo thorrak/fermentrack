@@ -755,7 +755,7 @@ class BrewPiDevice(models.Model):
     #         return control_settings, self.is_legacy(version=version)
     #     return None, None
 
-    def sync_temp_format(self):
+    def sync_temp_format(self) -> bool:
         # This queries the controller to see if we have the correct tempFormat set (If it matches what is specified
         # in the device definition above). If it doesn't, we overwrite what is on the device to match what is in the
         # device definition.
@@ -792,14 +792,15 @@ class BrewPiDevice(models.Model):
     def get_temp_control_status(self):
         device_mode = self.send_message("getMode", read_response=True)
 
-        if device_mode is not None:  # If we could connect to the device, force-sync the temp format
-            self.sync_temp_format()
-
         control_status = {}
-        if device_mode is None:  # We were unable to read from the device
+        if (device_mode is None) or (not device_mode):  # We were unable to read from the device
             control_status['device_mode'] = "unable_to_connect"  # Not sure if I want to pass the message back this way
+            return control_status
 
-        elif device_mode == 'o':  # Device mode is off
+        # If we could connect to the device, force-sync the temp format
+        self.sync_temp_format()
+
+        if device_mode == 'o':  # Device mode is off
             control_status['device_mode'] = "off"
 
         elif device_mode == 'b':  # Device mode is beer constant
@@ -815,7 +816,7 @@ class BrewPiDevice(models.Model):
 
         else:
             # No idea what the device mode is
-            logger.error("Invalid device mode '{}' on device {}".format(device_mode, self.device_name))
+            logger.error("Invalid device mode '{}'".format(device_mode))
 
         return control_status
 
@@ -913,11 +914,15 @@ class BrewPiDevice(models.Model):
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
 
-    def reset_wifi(self):
+    def reset_wifi(self) -> bool:
         response = self.send_message("resetWiFi") # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
-        synced = self.sync_temp_format()                # ...then resync the temp format
-        return synced
+        return True
+
+    def restart(self) -> bool:
+        response = self.send_message("restartController") # Restart the controller
+        time.sleep(1)                                   # Give it 1 second to complete
+        return True
 
     def get_control_constants(self):
         return json.loads(self.send_message("getControlConstants", read_response=True))
@@ -931,39 +936,39 @@ class BrewPiDevice(models.Model):
         except TypeError:
             return None
 
-    def circus_parameter(self):
+    def circus_parameter(self) -> int:
         """Returns the parameter used by Circus to track this device's processes"""
-        return self.device_name
+        return self.id
 
     def start_process(self):
         """Start this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.start(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.start(name=circus_process_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.remove(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.remove(name=circus_process_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.stop(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.stop(name=circus_process_name)
 
     def restart_process(self):
         """Restart the deviece process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.restart(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.restart(name=circus_process_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        status = fc.application_status(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        status = fc.application_status(name=circus_process_name)
         return status
 
     def get_cached_ip(self, save_to_cache=True):
@@ -1272,7 +1277,6 @@ class BeerLogPoint(models.Model):
         else:
             return False
 
-
     def enrich_gravity_data(self):
         # enrich_graity_data is called to enrich this data point with the relevant gravity data
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
@@ -1286,17 +1290,17 @@ class BeerLogPoint(models.Model):
             temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
             if self.temp_format != temp_format:
-                if self.temp_format == 'C' and temp_format == 'F':
+                if temp_format is None:
+                    # No data exists in redis yet for this sensor
+                    temp = None
+                elif self.temp_format == 'C' and temp_format == 'F':
                     # Convert Fahrenheit to Celsius
                     temp = (temp-32) * 5 / 9
                 elif self.temp_format == 'F' and temp_format == 'C':
                     # Convert Celsius to Fahrenheit
                     temp = (temp*9/5) + 32
-                elif self.temp_format is None:
-                    # No data exists in redis yet for this sensor
-                    temp = None
                 else:
-                    logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(temp_format))
+                    logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(self.temp_format))
 
             self.gravity_temp = temp
 

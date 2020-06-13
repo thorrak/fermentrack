@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -15,7 +15,7 @@ from gravity.models import GravitySensor, GravityLog, TiltConfiguration, TiltTem
 
 from app.decorators import site_is_configured, login_if_required_for_dashboard, gravity_support_enabled
 
-import os, subprocess, datetime, pytz, json, logging, sys
+import os, subprocess, datetime, pytz, json, logging, sys, socket
 
 import gravity.forms as forms
 
@@ -532,6 +532,24 @@ def gravity_manage(request, sensor_id):
         context['tilt_calibration_points'] = calibration_points
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
+
+        if sensor.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BRIDGE:
+            # For TiltBridges, we want to give the user the info necessary to configure the device to communicate with
+            # Fermentrack
+            fermentrack_host = request.META['HTTP_HOST']
+            try:
+                if ":" in fermentrack_host:
+                    fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
+                ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+                ip_list = [result[-1][0] for result in ais]
+                ip_list = list(set(ip_list))
+                resolved_address = ip_list[0]
+                fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
+            except:
+                # For some reason we failed to resolve the IP address of Fermentrack
+                fermentrack_url = "<Error - Unable to resolve Fermentrack IP address>"
+            context['fermentrack_url'] = fermentrack_url
+
 
         return render(request, template_name='gravity/gravity_manage_tilt.html', context=context)
     else:

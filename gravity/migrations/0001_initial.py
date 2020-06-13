@@ -9,8 +9,6 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
 
-    replaces = [('gravity', '0001_initial'), ('gravity', '0002_tilt'), ('gravity', '0003_ispindel'), ('gravity', '0004_ispindel_update'), ('gravity', '0005_ispindel_float_conversion')]
-
     initial = True
 
     dependencies = [

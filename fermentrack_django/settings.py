@@ -1,7 +1,8 @@
 import os, sys
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
-from git import Repo
+#from git import Repo
+import git
 
 from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
 
@@ -19,8 +20,13 @@ config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
-local_repo = Repo(path=BASE_DIR)
-GIT_BRANCH = local_repo.active_branch.name
+try:
+    local_repo = git.Repo(path=BASE_DIR)
+    GIT_BRANCH = local_repo.active_branch.name
+except git.exc.InvalidGitRepositoryError:
+    ENABLE_SENTRY = False
+    GIT_BRANCH = 'dev'
+
 
 
 
@@ -42,14 +48,21 @@ INSTALLED_APPS = [
     'huey.contrib.djhuey',
 ]
 
-# TODO - Check the below as I'm getting errors when running on MacOS w/o Apache
 if sys.platform == "darwin":
-    INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
+    # For the MacOS standalone support, we need mod_wsgi for Apache. Since I do most of my development/testing on
+    # a Mac but don't use the standalone support, I don't want the app to get added if we don't have the packages
+    # installed.
+    import subprocess
+
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+    installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+    if 'mod_wsgi' in installed_packages:
+        INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
 
-if ENABLE_SENTRY:
-    import raven
-    INSTALLED_APPS += 'raven.contrib.django.raven_compat',
+# if ENABLE_SENTRY:
+#     import raven
+#     INSTALLED_APPS += 'raven.contrib.django.raven_compat',
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -197,6 +210,8 @@ CONSTANCE_CONFIG = {
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
+    'SQLITE_OK_DJANGO_2': (False, 'Has the Django 2.0+ SQLite migration been run?',
+                                   bool),
 
 }
 
@@ -208,7 +223,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',
                      'GRAPH_GRAVITY_TEMP_COLOR'),
 
-    'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION'),
+    'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION',
+                       'SQLITE_OK_DJANGO_2'),
 
     'Advanced Options': ('ALLOW_GIT_BRANCH_SWITCHING','GIT_UPDATE_TYPE')
 }
@@ -251,12 +267,21 @@ HUEY = {
 
 
 if ENABLE_SENTRY:
-    RAVEN_CONFIG = {
-        'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
-        'tags': {
-            'branch': GIT_BRANCH
-        },
-    }
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn="http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2",
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+    )
+
+    # RAVEN_CONFIG = {
+    #     'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
+    #     # If you are using git, you can also automatically configure the
+    #     # release based on the git info.
+    #     'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
+    #     'tags': {
+    #         'branch': GIT_BRANCH
+    #     },
+    # }

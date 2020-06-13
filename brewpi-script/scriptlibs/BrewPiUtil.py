@@ -38,11 +38,11 @@ application = get_wsgi_application()
 import app.models as models  # This is only applicable if we're working with Django-based models
 
 
-try:
-    import configobj
-except ImportError:
-    print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
-    sys.exit(0)
+# try:
+#     import configobj
+# except ImportError:
+#     print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
+#     sys.exit(0)
 
 
 def addSlash(path):
@@ -56,34 +56,7 @@ def addSlash(path):
     return path
 
 
-def read_config_file_with_defaults(cfg):
-    """
-    Reads a config file with the default config file as fallback
-
-    Params:
-    cfg: string, path to cfg file
-
-    Returns:
-    ConfigObj of settings
-    """
-    if not cfg:
-        cfg = addSlash(sys.path[0]) + 'settings/config.cfg'
-
-    defaultCfg = scriptPath() + '/settings/defaults.cfg'
-    config = configobj.ConfigObj(defaultCfg)
-
-    if cfg:
-        try:
-            userConfig = configobj.ConfigObj(cfg)
-            config.merge(userConfig)
-        except configobj.ParseError:
-            logMessage("ERROR: Could not parse user config file %s" % cfg)
-        except IOError:
-            logMessage("Could not open user config file %s. Using only default config file" % cfg)
-    return config
-
-
-def read_config_from_database_without_defaults(db_config_object):
+def read_config_from_database_without_defaults(db_config_object) -> dict:
     """
     Reads configuration parameters from the database without defaults
 
@@ -91,7 +64,7 @@ def read_config_from_database_without_defaults(db_config_object):
     db_config_object: models.BrewPiDevice, BrewPiDevice object
 
     Returns:
-    ConfigObj of settings
+    dict of settings
     """
 
     config = {}
@@ -123,57 +96,41 @@ def read_config_from_database_without_defaults(db_config_object):
     return config
 
 
-def configSet(configFile, db_config_object, settingName, value):
-    if configFile:
-        if not os.path.isfile(configFile):
-            logMessage("User config file %s does not exist yet, creating it..." % configFile)
-        try:
-            config = configobj.ConfigObj(configFile)
-            config[settingName] = value
-            config.write()
-        except IOError as e:
-            logMessage("I/O error(%d) while updating %s: %s " % (e.errno, configFile, e.strerror))
-            logMessage("Probably your permissions are not set correctly. " +
-                       "To fix this, run 'sudo sh /home/brewpi/fixPermissions.sh'")
-        return read_config_file_with_defaults(configFile)  # return updated ConfigObj
-    elif db_config_object:
-        # Assuming we have a valid db_config_object here
-        if settingName == "port":
-            db_config_object.serial_port = value
-        elif settingName == "altport":
-            db_config_object.serial_alt_port = value
-        elif settingName == "boardType":
-            db_config_object.board_type = value
-        elif settingName == "beerName":
-            # If we have a blank or NoneType name, we're unsetting the beer.
-            if value is None or len(value) < 1:
-                db_config_object.active_beer = None
-            else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
-                # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
-                # brewpi-script. For Fermentrack we're
-                new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
-                if created:
-                    # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
-                    new_beer.format = db_config_object.temp_format
-                    new_beer.save()
-                if db_config_object.active_beer != new_beer:
-                    db_config_object.active_beer = new_beer
+def configSet(db_config_object, settingName, value):
+    # Assuming we have a valid db_config_object here
+    if settingName == "port":
+        db_config_object.serial_port = value
+    elif settingName == "altport":
+        db_config_object.serial_alt_port = value
+    elif settingName == "boardType":
+        db_config_object.board_type = value
+    elif settingName == "beerName":
+        # If we have a blank or NoneType name, we're unsetting the beer.
+        if value is None or len(value) < 1:
+            db_config_object.active_beer = None
+        else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
+            # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
+            # brewpi-script. For Fermentrack we're
+            new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
+            if created:
+                # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
+                new_beer.format = db_config_object.temp_format
+                new_beer.save()
+            if db_config_object.active_beer != new_beer:
+                db_config_object.active_beer = new_beer
 
-        elif settingName == "socket_name":
-            db_config_object.socket_name = value
-        elif settingName == "interval":
-            db_config_object.data_point_log_interval = value
-        elif settingName == "dataLogging":
-            db_config_object.logging_status = value
-        else:
-            # In all other cases, just try to set the field directly
-            setattr(db_config_object, settingName, value)
-        db_config_object.save()
-        return read_config_from_database_without_defaults(db_config_object)
+    elif settingName == "socket_name":
+        db_config_object.socket_name = value
+    elif settingName == "interval":
+        db_config_object.data_point_log_interval = value
+    elif settingName == "dataLogging":
+        db_config_object.logging_status = value
     else:
-        # This is a pretty major error - we really should
-        logMessage("Neither the config file nor dbcfg were valid. This shouldn't be possible - exiting.")
-        sys.exit(0)
+        # In all other cases, just try to set the field directly
+        setattr(db_config_object, settingName, value)
+    db_config_object.save()
+    return read_config_from_database_without_defaults(db_config_object)
+
 
 def save_beer_log_point(db_config_object, beer_row):
     """
@@ -244,8 +201,8 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
     ser = None
     dumpSerial = config.get('dumpSerial', False)
 
-    error1 = None
-    error2 = None
+    error = None
+
     # open serial port
     tries = 0
     connection_type = config.get('connection_type', 'auto')
