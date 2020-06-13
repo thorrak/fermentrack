@@ -124,7 +124,7 @@ def ispindel_handler(request):
         ispindel_temp_units = 'C'
 
     converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']),
-                                                                                    ispindel_temp_units)
+                                                                                    getattr(ispindel_data, 'temp_units', 'C'))
 
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack

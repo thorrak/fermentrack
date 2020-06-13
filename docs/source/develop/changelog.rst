@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unreleased] - Updates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added pin definitions for esp32 BrewPi firmware
+
+
+Changed
+---------------------
+
+- Added ability for BrewFather push target to push temps from BrewPi temp sensors
+
+
+
+Fixed
+---------------------
+
+- Properly detect/force temperature conversion for iSpindel
+
+
+
 [2020-06-05] - Django 3.0 Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
