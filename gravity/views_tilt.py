@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
@@ -387,37 +387,38 @@ def tiltbridge_handler(request):
         try:
             tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
                                                      tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
-
-            raw_temp = int(tiltbridge_data['tilts'][this_tilt]['temp'])
-            converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
-
-            raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
-            normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
-
-            new_point = GravityLogPoint(
-                gravity=normalized_gravity,
-                temp=converted_temp,
-                temp_format=temp_format,
-                temp_is_estimate=False,
-                associated_device=tilt_obj.sensor,
-                gravity_latest=normalized_gravity,
-                temp_latest=converted_temp,
-            )
-
-            if tilt_obj.sensor.active_log is not None:
-                new_point.associated_log = tilt_obj.sensor.active_log
-
-            new_point.save()
-
-            # Now that the point is saved, save out the 'extra' data so we can use it later for calibration
-            tilt_obj.raw_gravity = raw_gravity
-            tilt_obj.raw_temp = raw_temp  # TODO - Determine if we want to record this in F or sensor_format
-
-            tilt_obj.save_extras_to_redis()
-
         except ObjectDoesNotExist:
             # We received data for an invalid tilt from TiltBridge
-            pass
+            continue
+
+        raw_temp = int(tiltbridge_data['tilts'][this_tilt]['temp'])
+        converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
+
+        raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
+        normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
+
+        new_point = GravityLogPoint(
+            gravity=normalized_gravity,
+            temp=converted_temp,
+            temp_format=temp_format,
+            temp_is_estimate=False,
+            associated_device=tilt_obj.sensor,
+            gravity_latest=normalized_gravity,
+            temp_latest=converted_temp,
+        )
+
+        if tilt_obj.sensor.active_log is not None:
+            new_point.associated_log = tilt_obj.sensor.active_log
+
+        new_point.save()
+
+        # Now that the point is saved, save out the 'extra' data so we can use it later for calibration
+        tilt_obj.raw_gravity = raw_gravity
+        tilt_obj.raw_temp = raw_temp  # TODO - Determine if we want to record this in F or sensor_format
+
+        tilt_obj.save_extras_to_redis()
+
+
 
     return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
                         json_dumps_params={'indent': 4})
@@ -457,6 +458,37 @@ def gravity_tiltbridge_add(request):
 
     return render(request, template_name='gravity/gravity_tiltbridge_add.html',
                   context={'form': form, 'available_devices': available_devices,})
+
+@login_required
+@site_is_configured
+def gravity_tiltbridge_set_url(request, tiltbridge_id, sensor_id=None):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        this_tiltbridge = TiltBridge.objects.get(mdns_id=tiltbridge_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to locate TiltBridge with mDNS ID {}".format(tiltbridge_id))
+        if sensor_id is not None:
+            return redirect("gravity_manage", sensor_id=sensor_id)
+        else:
+            return redirect("siteroot")
+
+
+    fermentrack_host = request.META['HTTP_HOST']
+
+    if this_tiltbridge.update_fermentrack_url_on_tiltbridge(fermentrack_host):
+        messages.success(request, u"Updated Fermentrack URL on TiltBridge '{}'".format(this_tiltbridge.name))
+    else:
+        messages.error(request, u"Unable to automatically update Fermentrack URL at {}.local".format(this_tiltbridge.mdns_id))
+
+    # If we were passed a sensor ID, we want to return to the management screen for that ID.
+    if sensor_id is not None:
+        return redirect("gravity_manage", sensor_id=sensor_id)
+    else:
+        return redirect("siteroot")
 
 
 @login_required

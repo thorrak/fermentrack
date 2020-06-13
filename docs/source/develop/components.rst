@@ -26,8 +26,8 @@ In addition to Django, this app utilizes a number of Python packages. These pack
       - `BSD 3 Clause <https://github.com/pyserial/pyserial/blob/master/LICENSE.txt>`__
     * - `huey <https://github.com/coleifer/huey>`__
       - `MIT (Expat) <https://github.com/coleifer/huey/blob/master/LICENSE>`__
-    * - `raven <https://sentry.io/>`__
-      - `BSD 3 Clause <https://github.com/getsentry/raven-python/blob/master/LICENSE>`__
+    * - `sentry-python <https://sentry.io/>`__
+      - `BSD 2 Clause <https://github.com/getsentry/sentry-python/blob/master/LICENSE>`__
     * - `django-constance <https://pypi.python.org/pypi/django-constance>`__
       - `BSD 3 Clause <https://github.com/jazzband/django-constance/blob/master/LICENSE>`__
     * - `GitPython <https://pypi.python.org/pypi/GitPython/2.1.1>`__
@@ -122,5 +122,7 @@ Fermentrack is designed to help install or manage communications with certain ke
       - GPL v2
     * - Fuscus
       - GPL v3
+    * - esptool.py
+      - GPL v2
 
 

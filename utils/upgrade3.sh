@@ -113,7 +113,7 @@ git pull &>> log/upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip3..."
-pip3 install -U -r requirements.txt --upgrade &>> log/upgrade.log
+pip3 install --no-cache-dir -U -r requirements.txt --upgrade &>> log/upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."

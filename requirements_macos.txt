@@ -1,8 +1,8 @@
-Django>=1.11,<1.12
+Django>=3.0.5,<3.1
 configobj       # required by brewpi.py
 
 pytz            # required by manage.py migrate
-raven           # OPTIONAL - used for debugging
+sentry-sdk      # used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
 zeroconf        # for locating ESP8266 devices
@@ -21,8 +21,9 @@ packaging~=17.1 # for testing requirements in the Tilt tests
 
 # Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
 redis==3.4.1           # for huey & gravity sensor support
-#PyBluez         # for gravity sensor support
-#aioblescan      # Replacement for beacontools for Tilt support
+#PyBluez==0.23          # for gravity sensor support
+#aioblescan==0.2.6      # Replacement for beacontools for Tilt support
+
 pyobjc==6.2      # For MacOS X bluetooth support
 
-mod_wsgi # python in apache on macos
+mod-wsgi # python in apache on macos

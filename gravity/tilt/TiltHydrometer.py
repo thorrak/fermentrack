@@ -4,6 +4,7 @@ from typing import List, Dict, TYPE_CHECKING
 from collections import deque
 
 from gravity.models import TiltConfiguration, GravityLogPoint, GravitySensor
+# from asgiref.sync import sync_to_async
 
 
 class TiltHydrometer(object):
@@ -166,6 +167,7 @@ class TiltHydrometer(object):
     def print_data(self):
         print("{} Tilt: {} ({}) / {} F".format(self.color, self.smoothed_gravity(), self.gravity, self.temp))
 
+#    @sync_to_async
     def load_obj_from_fermentrack(self, obj: TiltConfiguration = None):
         if obj is None:
             # If we weren't handed the object itself, try to load it
@@ -185,6 +187,7 @@ class TiltHydrometer(object):
 
         self.obj = obj
 
+#    @sync_to_async
     def save_value_to_fermentrack(self, verbose=False):
         if self.obj is None:
             # If we don't have a TiltConfiguration object loaded, we can't save the data point

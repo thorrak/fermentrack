@@ -6,8 +6,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unversioned] - Bugfixes
-~~~~~~~~~~~~~~~~~~~~~~~~
+
+[Unreleased] - Updates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added pin definitions for esp32 BrewPi firmware
+
+
+Changed
+---------------------
+
+- Nothing yet
+
+
+Fixed
+---------------------
+
+- Properly detect/force temperature conversion for iSpindel
+
+
+
+[2020-06-05] - Django 3.0 Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added button to controller settings page to restart a controller
+
+
+Changed
+---------------------
+
+- Updated code to be Django 3.0 Compatible
+- Changed from Django 1.11 to Django 3.0
+- Toggling display of a graph line on a temp controller's dashboard now clears the data point displayed in the legend
+- Refactored brewpi-script to accept device IDs rather than names
+
+
+Fixed
+---------------------
+
+- Properly catch exception when Redis test cannot connect to server
+- Gravity and gravity temp colors when graphed on temp controller graphs will now display the correct color in the legend
+- Links to CSVs from the beer log list now properly generate if the CSV exists
+- Correct error detection/logging when a temp controller with an attached gravity sensor attempts to log before the gravity sensor logs its first point
+- Properly check that a temperature setting is provided when setting a Beer or Fridge Constant mode for temp controllers
+- Temp controller name uniqueness checks are now properly enforced in all add controller workflows
+
+
+
+[2020-04-11] - Bugfixes & Tilt Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -17,6 +70,7 @@ Added
 - Store the exact last time that a message was received from a Tilt to Redis
 - Add sentry support to tilt_monitor_aio.py
 - Added "debug" scripts for bluetooth Tilt connections
+- Added TiltBridge connection settings to Tilt management page
 
 
 
@@ -33,7 +87,7 @@ Fixed
 
 - Fix display of TiltBridge mDNS settings on Tilt settings page
 
-[2019-02-17] - Improved ESP32 Flashing Support
+[2020-02-17] - Improved ESP32 Flashing Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -48,8 +102,8 @@ Changed
 - SPIFFS partitions can now be flashed to ESP8266 devices
 
 
-[2019-02-15] - ThingSpeak and Grainfather Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2020-02-15] - ThingSpeak and Grainfather Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -148,7 +202,7 @@ Fixed
 
 
 [2019-03-17] - Firmware Flash Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -163,7 +217,7 @@ Changed
 
 
 [2019-02-17] - External Push (Remote Logging) Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -182,7 +236,7 @@ Fixed
 
 
 [2019-02-17] - External Push (Remote Logging) Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
