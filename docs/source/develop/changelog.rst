@@ -19,7 +19,8 @@ Added
 Changed
 ---------------------
 
-- Nothing yet
+- Added ability for BrewFather push target to push temps from BrewPi temp sensors
+
 
 
 Fixed
