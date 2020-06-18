@@ -183,7 +183,7 @@ for o, a in opts:
 
 # If dbConfig wasn't set, we can't proceed (as we have no controller to manage)
 if dbConfig is None:
-    raise NotImplementedError('Only dbconfig installations are supported in this version of brewpi-script')
+    sys.exit('ERROR: You must specify the BrewPi controller to connect to using the --dbcfg option')
 
 if dbConfig.status == models.BrewPiDevice.STATUS_ACTIVE or dbConfig.status == models.BrewPiDevice.STATUS_UNMANAGED:
     config = util.read_config_from_database_without_defaults(dbConfig)
