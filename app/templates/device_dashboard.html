@@ -630,7 +630,7 @@ const computeDutyCycles = () => {
         cooling: Math.round(coolingMinutes / totalMinutes * 100),
         other: Math.round(otherMinutes / totalMinutes * 100),
     };
-});
+};
  
 const updateDutyCycles = () => {
     const { heating, cooling } = computeDutyCycles();
@@ -658,6 +658,7 @@ function pull_and_update_annotations() {
 
 g2.ready(function () {
     pull_and_update_annotations();
+    updateDutyCycles();
 });
 
 var fridge_temp_visible = true;
