@@ -18,6 +18,12 @@
 
 <form action="{% url "device_add" %}" class="form-horizontal" method="post">{% csrf_token %}
 
+    {# This is primarily to capture modify_not_create #}
+    {% for hidden in this_sensor.device_form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+
+
     <div id="deviceConstantsSection">
         <h4 class="form-header">Device Constants</h4>
         {% form_generic form.device_name %}

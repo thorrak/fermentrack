@@ -36,11 +36,13 @@ printerror() {
 }
 
 
+# Nuke the upgrade log before we attempt
+touch log/upgrade.log
+truncate --size=0 log/upgrade.log
+exec > >(tee -i -a log/upgrade.log)
 
-exec > >(tee -i log/upgrade.log)
 
-
-printinfo "Re-installing Python packages from requirements.txt"
+printinfo "Running fix_sqlite_for_django_2 management command"
 # First, launch the virtualenv
 source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
 
@@ -53,22 +55,14 @@ sleep 1s
 printinfo "Stopping circus..."
 $CIRCUSCTL stop &>> log/upgrade.log
 
-# Install everything from requirements.txt
-printinfo "Updating pip3..."
-pip3 install --upgrade pip
+# Run the management command
+printinfo "Running fix_sqlite_for_django_2 management command"
+python3 manage.py fix_sqlite_for_django_2 &>> log/upgrade.log
 
-
-# Install everything from requirements.txt
-printinfo "Updating requirements via pip3..."
-pip3 install --no-cache-dir -U -r requirements.txt --upgrade &>> log/upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."
 python3 manage.py migrate &>> log/upgrade.log
-
-# Migrate to create/adjust anything necessary in the database
-printinfo "Running manage.py collectstatic..."
-python3 manage.py collectstatic --noinput >> /dev/null
 
 
 # Finally, relaunch the Fermentrack instance using circus

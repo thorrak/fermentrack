@@ -33,7 +33,7 @@
                     <td>
                         {# TODO - Make deleting this involve a modal #}
                         <a href="{% url "beer_delete" this_beer.id %}" type="button" class="btn btn-sm btn-danger">Delete</a>
-                        {% if this_log.full_csv_exists %}
+                        {% if this_beer.full_csv_exists %}
                         <a href="{{ this_beer.full_csv_url }}" type="button" class="btn btn-sm btn-success">View Full CSV</a>
                         {% else %}
                         <a href="#" type="button" class="btn btn-sm btn-info">No data logged</a>

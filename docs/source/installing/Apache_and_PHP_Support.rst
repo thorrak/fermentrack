@@ -9,8 +9,7 @@ Raspberry Pi you will need to configure nginx to serve those applications instea
 
 Fermentrack-tools includes a script which can be used to install this support automatically.
 
-.. warning:: Support for php-5 was discontinued in the latest versions of Raspbian. You may need to use an older version
-    of raspbian to obtain support for apps like RaspberryPints designed for php-5.
+.. warning:: Support for PHP 5 was discontinued in the latest versions of Raspbian.
 
 
 

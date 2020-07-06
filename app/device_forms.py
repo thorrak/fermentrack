@@ -71,23 +71,34 @@ class DeviceForm(forms.Form):
                                                     help_text="Whether to autodetect the appropriate serial port " +
                                                               "using the device's USB serial number")
 
-    # Check that the Start At format is valid, and if it is, replace it with a datetime delta object
+    # modify_not_create is a flag that impacts the device name checking in clean_device_name()
+    modify_not_create = forms.BooleanField(widget=forms.HiddenInput, initial=False, required=False)
+
     def clean_device_name(self):
-        # Removing the "uniqueness" check here and moving it to the processor in views so that we can check if the name
-        # actually changed
         if 'device_name' not in self.cleaned_data:
             raise forms.ValidationError("A device name must be specified")
         else:
             device_name = self.cleaned_data['device_name']
 
-        # try:
-        #     existing_device = BrewPiDevice.objects.get(device_name=device_name)
-        #     raise forms.ValidationError("A device already exists with the name {}".format(device_name))
-        #
-        # except ObjectDoesNotExist:
-        #     # There was no existing device - we're good.
-        #     return device_name
-        return device_name
+        # Name uniqueness is enforced on the sql CREATE, but since we're not using a ModelForm this form won't check to
+        # see if the name is actually uniqye. That said - we only need to check if we're creating the object. We do not
+        # need to check if we're modifying the object.
+        if 'modify_not_create' not in self.cleaned_data:
+            modify_not_create = False
+        else:
+            modify_not_create = self.cleaned_data['modify_not_create']
+
+        if not modify_not_create:  # If we're creating, not modifying
+            try:
+                existing_device = BrewPiDevice.objects.get(device_name=device_name)
+                raise forms.ValidationError("A device already exists with the name {}".format(device_name))
+
+            except ObjectDoesNotExist:
+                # There was no existing device - we're good.
+                return device_name
+        else:
+            # For modifications, we always return the device name
+            return device_name
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -331,7 +342,7 @@ class TempControlForm(forms.Form):
             elif cleaned_data['temp_control'] == 'beer_constant' or cleaned_data['temp_control'] == 'fridge_constant':
                 # For constant modes, we must have a temperature setting
                 if 'temperature_setting' in cleaned_data:
-                    if 'temperature_setting' is None:
+                    if cleaned_data['temperature_setting'] is None:
                         raise forms.ValidationError("A temperature setting must be provided for 'constant' modes")
                     else:
                         return cleaned_data

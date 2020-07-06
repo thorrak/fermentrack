@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
@@ -9,6 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
+
+from lib.ftcircus.client import CircusException
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
@@ -26,7 +28,6 @@ from django.contrib.auth.models import User
 
 def error_notifications(request):
     if config.GIT_UPDATE_TYPE != "none":
-        # TODO - Reset this to 18 hours
         # Check the git status at least every 6 hours
         now_time = timezone.now()
         try:
@@ -63,6 +64,12 @@ def error_notifications(request):
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
+    # TODO - Remove this after June 1st release
+    if sys.version_info < (3, 7):
+        messages.error(request, "You are currently running Python {}.{} ".format(sys.version_info.major, sys.version_info.minor) +
+                         "which will no longer be supported by Fermentrack with the next release (due <b>June 5th</b>). " +
+                         'To learn more (including how to fix this) read <a href="https://github.com/thorrak/fermentrack/issues/463">this issue on GitHub</a>.')
+
     # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
     # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
     # TODO - Readd this check
@@ -72,6 +79,9 @@ def error_notifications(request):
     #                               "password, and SSH in one more time to test that it worked. Otherwise, we'll keep "
     #                               "annoying you until you do.")
 
+    if not config.SQLITE_OK_DJANGO_2:
+        messages.error(request, "Fermentrack has upgraded to a newer copy of Django which requires an additional step to complete. " +
+                      '<a href="/fix_sqlite"">Click here</a> to trigger this step and restart Fermentrack.')
 
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
@@ -138,7 +148,8 @@ def add_device(request):
         # We don't want two devices to have the same port, and the port number doesn't really matter. Just
         # randomize it.
         random_port = random.randint(2000,3000)
-        initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+        initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
+                          'modify_not_create': False}
 
         form = device_forms.DeviceForm(initial=initial_values)
         return render(request, template_name='setup/device_add.html', context={'form': form})
@@ -554,6 +565,20 @@ def trigger_requirements_reload(request):
     return render(request, template_name="trigger_requirements_reload.html", context={})
 
 
+@login_required
+@site_is_configured
+def trigger_sqlite_fix(request):
+    # TODO - Add permission check here
+
+    # All that this view does is trigger the utils/fix_sqlite_for_django_2.sh shell script and return a message letting
+    # the user know that Fermentrack will take a few minutes to restart.
+    cmd = "nohup utils/fix_sqlite_for_django_2.sh &"
+    messages.success(request, "Triggered the management command to fix the SQLite database post-Django 2.0+ migration")
+    subprocess.call(cmd, shell=True)
+
+    return render(request, template_name="trigger_requirements_reload.html", context={})
+
+
 def login(request, next=None):
     if not next:
         if 'next' in request.GET:
@@ -586,7 +611,7 @@ def login(request, next=None):
 
 
 def logout(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         auth.logout(request)
         return redirect('siteroot')
     else:
@@ -612,6 +637,7 @@ def site_settings(request):
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
+            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
@@ -699,7 +725,7 @@ def device_eeprom_reset(request, device_id):
     else:
         active_device.reset_eeprom()
         messages.success(request, "Device EEPROM reset")
-        return redirect("device_control_constants", device_id=device_id)
+        return redirect("device_manage", device_id=device_id)
 
 
 @login_required
@@ -721,7 +747,29 @@ def device_wifi_reset(request, device_id):
     else:
         active_device.reset_wifi()
         messages.success(request, "Device WiFi settings reset. Reset the device to access the configuration AP.")
-        return redirect("device_control_constants", device_id=device_id)
+        return redirect("device_manage", device_id=device_id)
+
+
+@login_required
+@site_is_configured
+def device_restart(request, device_id):
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    # Using this as a proxy to check if we can connect
+    control_constants, is_legacy = active_device.retrieve_control_constants()
+
+    if control_constants is None:
+        # We weren't able to retrieve the version from the controller.
+        messages.error(request, u"Unable to reach brewpi-script for device {}".format(active_device))
+        return redirect('device_dashboard', device_id=device_id)
+    else:
+        active_device.restart()
+        messages.success(request, "Device restarted. Please wait a minute for the device to reconnect.")
+        return redirect("device_manage", device_id=device_id)
 
 
 def site_help(request):
@@ -778,7 +826,11 @@ def device_manage(request, device_id):
 
             messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
 
-            active_device.restart_process()
+            try:
+                active_device.restart_process()
+            except CircusException:
+                messages.warning(request, "Unable to trigger reset of BrewPi-script - Settings may not take effect until next reboot")
+
 
             return render(request, template_name='device_manage.html',
                                        context={'form': form, 'active_device': active_device})
@@ -803,6 +855,7 @@ def device_manage(request, device_id):
             'socket_name': active_device.socket_name,
             'wifi_host': active_device.wifi_host,
             'wifi_port': active_device.wifi_port,
+            'modify_not_create': True,
         }
 
         form = device_forms.DeviceForm(initial=initial_values)
