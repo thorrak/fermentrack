@@ -53,7 +53,7 @@ Requirements
 All Fermentrack installations require the following:
 
 * Raspberry Pi Zero, Zero W, 2 B, or 3 /w Internet Connection
-* Fresh Raspbian install
+* Fresh Raspbian install (Buster or later)
 * 1GB of free space available
 
 Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support.

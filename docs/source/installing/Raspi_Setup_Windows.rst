@@ -80,7 +80,7 @@ Step 9. Login over WiFi/Ethernet using Putty. (Your Windows device MUST be on th
 10.1 Run the command ``sudo apt-get update -y`` on the Raspberry Pi using SSH (Putty)
 10.2 Run the command ``sudo apt-get upgrade -y``
 
-11. Configure Raspberry Pi (RPi 3 B+ with Raspbian Stretch Lite shown)
+11. Configure Raspberry Pi (RPi 3 B+ with Raspbian Lite shown)
 11.1 Run the command ``sudo Raspi-config``
 11.2 Change User Password from default ``raspberry``
 •	Option #1

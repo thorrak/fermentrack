@@ -5,7 +5,38 @@
         <title>{% block title %}Fermentrack Web Interface{% endblock %}</title>
         <meta name="description" content=""/>
 
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <script type="text/javascript">
+        (function(document,navigator,standalone) {
+          // prevents links from apps from oppening in mobile safari
+          // this javascript must be the first script in your <head>
+          if ((standalone in navigator) && navigator[standalone]) {
+            var curnode, location=document.location, stop=/^(a|html)$/i;
+            document.addEventListener('click', function(e) {
+              curnode=e.target;
+              while (!(stop).test(curnode.nodeName)) {
+                curnode=curnode.parentNode;
+              }
+              // Condidions to do this only on links to your own app
+              // if you want all links, use if('href' in curnode) instead.
+              if(
+                'href' in curnode && // is a link
+                (chref=curnode.href).replace(location.href,'').indexOf('#') && // is not an anchor
+                (	!(/^[a-z\+\.\-]+:/i).test(chref) ||                       // either does not have a proper scheme (relative links)
+                  chref.indexOf(location.protocol+'//'+location.host)===0 ) // or is in the same protocol and domain
+              ) {
+                e.preventDefault();
+                location.href = curnode.href;
+              }
+            },false);
+          }
+        })(document,window.navigator,'standalone');
+        </script>
+        <script src="{% static "js/compressed.js" %}" type="text/javascript" charset="utf-8"></script>
+
         <link href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/flat-ui/css/flat-ui.min.css" %}" rel="stylesheet">
         <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}" rel="stylesheet">
@@ -13,6 +44,8 @@
         <link href="{% static "css/user_upload.css" %}" rel="stylesheet">
         <link rel="shortcut icon" href="{% static "favicon.ico" %}">
         <link rel="icon" href="{% static "favicon.ico" %}">
+        <link rel="apple-touch-icon" href="{% static "apple-touch-icon.png" %}">
+        <link rel="touch-icon" href="{% static "icon-hires.png" %}">      
         {% block header_scripts %}{% endblock %}
         {# TODO - Move dygraph out to only the pages that use it #}
         <script type="text/javascript" src="{% static "vendor/dygraph/js/dygraph.min.js" %}"></script>
@@ -24,6 +57,13 @@
           <script src="{% static "vendor/other/js/respond.min.js" %}"></script>
         <![endif]-->
     </head>
+
+  <!-- insert Fermentrack Logo -->
+      <div class="container">
+      	<img src="{% static "fermentrack_banner.png" %}" title="Fermentrack Web Interface", class="transparent" style="width: 100%; float: left; border-radius: 8px;" />
+      </div>
+  <!-- end Fermentrack Logo -->
+
   <body>
     <div class="container">
       <div class="row navbar-row">
