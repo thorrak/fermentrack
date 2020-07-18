@@ -122,7 +122,5 @@ Fermentrack is designed to help install or manage communications with certain ke
       - GPL v2
     * - Fuscus
       - GPL v3
-    * - esptool.py
-      - GPL v2
 
 

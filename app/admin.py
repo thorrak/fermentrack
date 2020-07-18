@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
 
 from app.models import BrewPiDevice, Beer, FermentationProfile, FermentationProfilePoint
 
@@ -13,17 +12,7 @@ class beerAdmin(admin.ModelAdmin):
 
 @admin.register(FermentationProfile)
 class fermentationProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'image', 'status')
-    readonly_fields = ('Profile_Picture',)
-
-# used in the admin site model as a "thumbnail"
-    def Profile_Picture(self, obj):
-        return mark_safe('<img src="{url}" width="{width}" height={height} />'.format(
-        url = obj.image.url,
-        width=obj.image.width,
-        height=obj.image.height,
-        )
-        )
+    list_display = ('name', 'status')
 
 @admin.register(FermentationProfilePoint)
 class fermentationProfilePointAdmin(admin.ModelAdmin):
@@ -34,3 +23,4 @@ class fermentationProfilePointAdmin(admin.ModelAdmin):
 
     def profileName(self, obj):
         return obj.profile.name
+

@@ -7,12 +7,11 @@
 
 <h1 class="page-header">New Fermentation Profile</h1>
 
-<form action="{% url "profile_new" %}" class="form-horizontal" method="post" enctype="multipart/form-data">
-  {% csrf_token %}
+<form action="{% url "profile_new" %}" class="form-horizontal" method="post">{% csrf_token %}
 
     <div id="fermentationProfileOverviewSection">
-      <h3 class="form-header">Initialize Fermentation Profile</h3> {# I mean, I COULD use form.as_p, OK, I'll use form.as_p #}
-      {{ form.as_p }}
+        <h3 class="form-header">Initialize Fermentation Profile</h3> {# I mean, I COULD use form.as_p, but I'm not going to do that #}
+        {% form_generic form.name %}
     </div>
 
     <input type="submit" value="Submit" class="btn btn-primary" />

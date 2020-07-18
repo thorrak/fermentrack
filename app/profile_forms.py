@@ -11,7 +11,7 @@ from django.forms import ModelForm
 class FermentationProfileForm(ModelForm):
     class Meta:
         model = FermentationProfile
-        fields = ['name', 'image']
+        fields = ['name']
 
     def __init__(self, *args, **kwargs):
         super(FermentationProfileForm, self).__init__(*args, **kwargs)

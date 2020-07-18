@@ -21,7 +21,7 @@ def profile_new(request):
     #     messages.error(request, 'Your account is not permissioned to add fermentation profiles. Please contact an admin')
     #     return redirect("/")
     if request.POST:
-        form = profile_forms.FermentationProfileForm(request.POST, request.FILES)
+        form = profile_forms.FermentationProfileForm(request.POST)
         if form.is_valid():
             # Generate the new_fermentation_profile object from the form data
             new_fermentation_profile = form.save()
