@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'constance',
     'constance.backends.database',
     'huey.contrib.djhuey',
-    'brewery_image.apps.BreweryImageConfig',
+    'brewery_image.apps.AppConfig',
 ]
 
 if sys.platform == "darwin":
