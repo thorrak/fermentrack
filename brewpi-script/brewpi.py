@@ -24,7 +24,7 @@ from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (3, 4):
-    printStdErr("Sorry, requires Python 3.4.")
+    printStdErr("Sorry, requires Python 3.4 or newer")
     sys.exit(1)
 
 import time, socket, os, getopt, shutil, traceback
@@ -227,6 +227,7 @@ if logToFiles:
 
 def startNewBrew(newName):
     global config
+    global dbConfig
     if len(newName) > 1:     # shorter names are probably invalid
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         config = util.configSet(dbConfig, 'beerName', newName)
@@ -673,6 +674,7 @@ while run:
 
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             bg_ser.writeln("E")
             # request settings from controller, processed later when reply is received
             bg_ser.writeln('s')  # request control settings cs
@@ -689,9 +691,8 @@ while run:
         elif messageType == "resetWiFi":
             logMessage("Resetting controller WiFi settings")
             bg_ser.writeln("w")
-            # TODO - Determine if we should sleep & exit here
-            trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
-
+            time.sleep(3)        # We'll give bg_ser 3 seconds for it to send/kick in
+            sys.exit(0)          # Exit BrewPi-script
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 
