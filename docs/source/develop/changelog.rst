@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] - Updates
+[2020-08-22] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -26,6 +26,7 @@ Changed
 Fixed
 ---------------------
 
+- Fixed bug that prevents reloading of cached controller objects
 - Properly detect/force temperature conversion for iSpindel
 
 
