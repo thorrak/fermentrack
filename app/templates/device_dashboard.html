@@ -224,6 +224,22 @@
                                 </td>
                                 <td id="roomTempValue"></td>
                             </tr>
+                            
+                            <tr>
+                                <td>
+                                    <i class="fa fa-thermometer-empty" style="color: rgba(66, 134, 244, 0.3)"></i>
+                                    Cooling Duty
+                                </td>
+                                <td id="coolingDutyCycle"></td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <i class="fa fa-thermometer-full" style="color: rgba(198, 9, 35, 0.3)"></i>
+                                    Heating Duty
+                                </td>
+                                <td id="heatingDutyCycle"></td>
+                            </tr>
 
                             {# This is part of the specific gravity sensor support #}
                             {% if beer.gravity_enabled %}
@@ -559,9 +575,68 @@ g2 = new Dygraph(
 {% else %}
         colors: ["{{ config.GRAPH_BEER_TEMP_COLOR }}", "{{ config.GRAPH_BEER_SET_COLOR }}", "{{ config.GRAPH_FRIDGE_TEMP_COLOR }}", "{{ config.GRAPH_FRIDGE_SET_COLOR }}", "{{ config.GRAPH_ROOM_TEMP_COLOR }}"],
 {% endif %}
-        highlightCallback: updateLegend
+        highlightCallback: (...args) => {
+            updateLegend(...args);
+            updateDutyCycles();
+        }
     }  // options
 );
+ 
+const stateToName = state => (({
+    3: 'heating',
+    4: 'cooling',
+})[state] || 'other');
+
+const computeDutyCycles = () => {
+    const [minDate, maxDate] = g2.xAxisRange();
+    const minIdx = g2.rawData_
+        .findIndex(([date]) => date > minDate) - 1;
+    const maxIdxFromEnd = g2.rawData_
+        .slice(0)
+        .reverse().findIndex(([date]) => date < maxDate);
+
+    const visibleData = g2.rawData_
+        .slice(
+            Math.max(0, minIdx),
+            g2.rawData_.length -  maxIdxFromEnd
+        );
+
+    const result = visibleData.reduce((acc, row, idx, arr) => {
+        if (idx === 0) return acc;
+
+        const currentStateName = stateToName(row[6])
+        
+        if (currentStateName === acc.lastState) {
+            acc[currentStateName] += row[0] - arr[idx - 1][0];
+            return acc;
+        } else {
+            acc.lastState = currentStateName;
+            return acc;
+        }
+    }, {
+        heating: 0,
+        cooling: 0,
+        other: 0,
+        lastState: stateToName(visibleData[0][6]),
+    });
+
+    const heatingMinutes = Math.round(result.heating / 1000 / 60);
+    const coolingMinutes = Math.round(result.cooling / 1000 / 60);
+    const otherMinutes = Math.round(result.other / 1000 / 60);
+    const totalMinutes = heatingMinutes + coolingMinutes + otherMinutes;
+    
+    return {
+        heating: Math.round(heatingMinutes / totalMinutes * 100),
+        cooling: Math.round(coolingMinutes / totalMinutes * 100),
+        other: Math.round(otherMinutes / totalMinutes * 100),
+    };
+};
+ 
+const updateDutyCycles = () => {
+    const { heating, cooling } = computeDutyCycles();
+    document.getElementById('coolingDutyCycle').innerHTML = `${cooling}%`;
+    document.getElementById('heatingDutyCycle').innerHTML = `${heating}%`;
+}
 
 function pull_and_update_annotations() {
      $.ajax({
@@ -583,6 +658,7 @@ function pull_and_update_annotations() {
 
 g2.ready(function () {
     pull_and_update_annotations();
+    updateDutyCycles();
 });
 
 var fridge_temp_visible = true;

@@ -870,3 +870,20 @@ class IspindelConfiguration(models.Model):
             self.token = extras['token']
 
         return extras
+
+    def load_last_log_time_from_redis(self) -> str:
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        redis_response = r.get('grav_{}_full'.format(self.sensor_id)).decode(encoding="utf-8")
+
+        if redis_response is None:
+            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+            return {}
+
+        t = json.loads(redis_response)
+        if 'fields' in t[0]:
+            if 'log_time' in t[0]['fields']:
+                # return last time the ispindel was heard from
+                dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") ) 
+                return datetime.datetime.strftime( dt, "%c" )
+
+        return {}

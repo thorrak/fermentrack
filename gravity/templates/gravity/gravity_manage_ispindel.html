@@ -107,6 +107,10 @@
         <div class="col-sm-10" id="ispindelBatteryFeed"></div>
     </div>
 
+    <div class="row">
+        <div class="col-sm-2">Last log time</div>
+        <div class="col-sm-10" id="ispindelLogTime"></div>
+    </div>
 
     <!-- Modal -->
     <div class="modal fade" id="calibrationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -201,6 +205,7 @@
                     $('#ispindelCalibrationAngleFeed').html(data.angle);
                     $('#ispindelAngleFeed').html(data.angle);
                     $('#ispindelBatteryFeed').html(data.battery);
+                    $('#ispindelLogTime').html(data.log_time);
                 },
                 complete: function() {
                 // Schedule the next request when the current one's complete
