@@ -12,6 +12,7 @@ import json
 from app.models import BrewPiDevice
 from gravity.models import GravitySensor
 
+logger = logging.getLogger(__name__)
 
 class GenericPushTarget(models.Model):
     class Meta:
@@ -382,13 +383,26 @@ class BrewfatherPushTarget(models.Model):
         (60 * 60 + 1, '1 hour'),
     )
 
+    DEVICE_GRAVITY = 'gravity'
+    DEVICE_BREWPI = 'brewpi'
+
+    DEVICE_CHOICES = (
+        (DEVICE_GRAVITY, "Gravity sensors"),
+        (DEVICE_BREWPI, "Brewpi sensors"),
+    )
+
     status = models.CharField(max_length=24, help_text="Status of this push target", choices=STATUS_CHOICES,
                               default=STATUS_ACTIVE)
     push_frequency = models.IntegerField(choices=PUSH_FREQUENCY_CHOICES, default=60 * 15,
                                          help_text="How often to push data to the target")
     logging_url = models.CharField(max_length=256, help_text="Brewfather Logging URL", default="")
 
-    gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="brewfather_push_target", on_delete=models.CASCADE,
+    device_type = models.CharField(max_length=24, help_text="What type of device to send", choices=DEVICE_CHOICES,
+                              default=DEVICE_GRAVITY)
+    brewpi_to_push = models.ForeignKey(to=BrewPiDevice, related_name="brewfather_push_target2", null=True, blank=True, on_delete=models.CASCADE,
+                                            help_text="BrewPi Sensors to push (create one push target per "
+                                                         "sensor to push)")
+    gravity_sensor_to_push = models.ForeignKey(to=GravitySensor, related_name="brewfather_push_target", null=True, blank=True, on_delete=models.CASCADE,
                                                help_text="Gravity Sensor to push (create one push target per "
                                                          "sensor to push)")
 
@@ -402,57 +416,126 @@ class BrewfatherPushTarget(models.Model):
     # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
 
     def __str__(self):
-        return self.gravity_sensor_to_push.name
+        if self.device_type == "gravity":
+            return self.gravity_sensor_to_push.name
+        
+        return self.brewpi_to_push.device_name
 
     def data_to_push(self):
         # For Brewfather, we're just cascading a single gravity sensor downstream to the app
-        to_send = {'report_source': "Fermentrack", 'name': self.gravity_sensor_to_push.name}
-
+        to_send = {'report_source': "Fermentrack"}
+ 
         # TODO - Add beer name to what is pushed
 
-        latest_log_point = self.gravity_sensor_to_push.retrieve_latest_point()
+        #{
+        #   "name": "YourDeviceName",          // Will be either brewpi or gravitysensor
+        #   "temp": 20.32,                     // - from gravity sensor (if selected)
+        #   "aux_temp": 15.61,                 // - from brewpi (if selected/associated)
+        #   "ext_temp": 6.51,                  // - from brewpi (if selected/associated)
+        #   "temp_unit": "C",                  // - as defined in settings
+        #   "gravity": 1.042,                  // - from gravity sensor (if selected)
+        #   "gravity_unit": "G",               // always G
+        #   "pressure": 10,
+        #   "pressure_unit": "PSI", 
+        #   "ph": 4.12,
+        #   "bpm": 123, 
+        #   "comment": "Hello World",
+        #   "beer": "Pale Ale"                 // Name of beer if logging is enabled
+        #}
 
-        if latest_log_point is None:  # If there isn't an available log point, return nothing
-            return {}
+        # This section get data from gravity sensor (and attached brewpi), if selected. 
+        if self.device_type == "gravity":
 
-        # For now, if we can't get a latest log point, let's default to just not sending anything.
-        if latest_log_point.gravity != 0.0:
-            to_send['gravity'] = float(latest_log_point.gravity)
-            to_send['gravity_unit'] = "G"
+            if self.gravity_sensor_to_push == None:
+                return {}
+
+            if self.gravity_sensor_to_push == "":
+                return {}
+
+            latest_log_point = self.gravity_sensor_to_push.retrieve_latest_point()
+
+            if latest_log_point is None:  # If there isn't an available log point, return nothing
+                return {}
+
+            to_send['name'] = self.gravity_sensor_to_push.name
+
+            # For now, if we can't get a latest log point, let's default to just not sending anything.
+            if latest_log_point.gravity != 0.0:
+                to_send['gravity'] = float(latest_log_point.gravity)
+                to_send['gravity_unit'] = "G"
+            else:
+                return {}  # Also return nothing if there isn't an available gravity
+
+            # For now all gravity sensors have temp info, but just in case
+            if latest_log_point.temp is not None:
+                to_send['temp'] = float(latest_log_point.temp)
+                to_send['temp_unit'] = latest_log_point.temp_format
+
+            # This if statement fixes bug #458 
+            if latest_log_point.associated_device is not None:
+                if latest_log_point.associated_device.assigned_brewpi_device is not None:
+                    # We have a controller - try to load the data from it
+                    try:
+                        device_info = latest_log_point.associated_device.assigned_brewpi_device.get_dashpanel_info()
+                    except:
+                        device_info = None
+
+                    if device_info is not None:
+                        # We were able to load data from the controller.
+                        # Cache the BrewPi's temp format as we want to convert to use the gravity sensor's format in case they
+                        # happen to be different
+                        brewpi_temp_format = latest_log_point.associated_device.assigned_brewpi_device.temp_format
+                        if device_info['BeerTemp'] is not None:
+                            if device_info['BeerTemp'] != 0:
+                                # If we have an explicit beer temp from a BrewPi controller, we're going to use that instead
+                                # of a temp from the gravity sensor.
+                                to_send['temp'] = temp_convert(float(device_info['BeerTemp']), brewpi_temp_format,
+                                                            latest_log_point.temp_format)
+                        if device_info['FridgeTemp'] is not None:
+                            if device_info['FridgeTemp'] != 0:
+                                to_send['aux_temp'] = temp_convert(float(device_info['FridgeTemp']),
+                                                                brewpi_temp_format, latest_log_point.temp_format)
+                        if device_info['RoomTemp'] is not None:
+                            if device_info['RoomTemp'] != 0:
+                                to_send['ext_temp'] = temp_convert(float(device_info['RoomTemp']),
+                                                                brewpi_temp_format, latest_log_point.temp_format)
+                    
+                    if latest_log_point.associated_device.assigned_brewpi_device.active_beer is not None:
+                        to_send['beer'] = latest_log_point.associated_device.assigned_brewpi_device.active_beer.name
+
+            #logger.error("Brewfather payload (gravity):" + json.dumps(to_send) )
+
+        # This section get the temp values from a brewpi if selected. Part of request #464
         else:
-            return {}  # Also return nothing if there isn't an available gravity
+            if self.brewpi_to_push == None:
+                return {}
 
-        # For now all gravity sensors have temp info, but just in case
-        if latest_log_point.temp is not None:
-            to_send['temp'] = float(latest_log_point.temp)
-            to_send['temp_unit'] = latest_log_point.temp_format
+            brewpi_to_send = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
 
-        if latest_log_point.associated_device.assigned_brewpi_device is not None:
-            # We have a controller - try to load the data from it
-            try:
-                device_info = latest_log_point.associated_device.assigned_brewpi_device.get_dashpanel_info()
-            except:
-                device_info = None
+            for brewpi in brewpi_to_send:
+                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
+                # TODO - Make it so that this data is stored in/loaded from Redis
+                device_info = brewpi.get_dashpanel_info()
 
-            if device_info is not None:
-                # We were able to load data from the controller.
-                # Cache the BrewPi's temp format as we want to convert to use the gravity sensor's format in case they
-                # happen to be different
-                brewpi_temp_format = latest_log_point.associated_device.assigned_brewpi_device.temp_format
-                if device_info['BeerTemp'] is not None:
-                    if device_info['BeerTemp'] != 0:
-                        # If we have an explicit beer temp from a BrewPi controller, we're going to use that instead
-                        # of a temp from the gravity sensor.
-                        to_send['temp'] = temp_convert(float(device_info['BeerTemp']), brewpi_temp_format,
-                                                       latest_log_point.temp_format)
-                if device_info['FridgeTemp'] is not None:
-                    if device_info['FridgeTemp'] != 0:
-                        to_send['aux_temp'] = temp_convert(float(device_info['FridgeTemp']),
-                                                           brewpi_temp_format, latest_log_point.temp_format)
-                if device_info['RoomTemp'] is not None:
-                    if device_info['RoomTemp'] != 0:
-                        to_send['ext_temp'] = temp_convert(float(device_info['RoomTemp']),
-                                                           brewpi_temp_format, latest_log_point.temp_format)
+                #logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+
+                if brewpi.device_name == self.brewpi_to_push.device_name:
+                    to_send['name'] = brewpi.device_name
+                    to_send['temp_unit'] = brewpi.temp_format
+
+                    if device_info['BeerTemp'] is not None:
+                        to_send['temp'] = float(device_info['BeerTemp'])
+
+                    if device_info['FridgeTemp'] is not None:
+                        to_send['aux_temp'] = float(device_info['FridgeTemp'])
+
+                    if device_info['RoomTemp'] is not None:
+                        to_send['ext_temp'] = float(device_info['RoomTemp'])
+
+                    if brewpi.active_beer is not None:
+                        to_send['beer'] =  brewpi.active_beer.name
+
+            #logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
 
         string_to_send = json.dumps(to_send)
 
@@ -471,8 +554,6 @@ class BrewfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
-
-        
         
         
 class ThingSpeakPushTarget(models.Model):
