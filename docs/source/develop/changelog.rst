@@ -7,8 +7,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] - Quality-of-Life Tweaks & Bugfixes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2020-08-22] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added pin definitions for esp32 BrewPi firmware
+
+
+Changed
+---------------------
+
+- Added ability for BrewFather push target to push temps from BrewPi temp sensors
+
+
+
+Fixed
+---------------------
+
+- Fixed bug that prevents reloading of cached controller objects
+- Properly detect/force temperature conversion for iSpindel
+
+
+
+[2020-06-05] - Django 3.0 Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -19,6 +43,8 @@ Added
 Changed
 ---------------------
 
+- Updated code to be Django 3.0 Compatible
+- Changed from Django 1.11 to Django 3.0
 - Toggling display of a graph line on a temp controller's dashboard now clears the data point displayed in the legend
 - Refactored brewpi-script to accept device IDs rather than names
 
@@ -26,29 +52,12 @@ Changed
 Fixed
 ---------------------
 
+- Properly catch exception when Redis test cannot connect to server
 - Gravity and gravity temp colors when graphed on temp controller graphs will now display the correct color in the legend
 - Links to CSVs from the beer log list now properly generate if the CSV exists
 - Correct error detection/logging when a temp controller with an attached gravity sensor attempts to log before the gravity sensor logs its first point
 - Properly check that a temperature setting is provided when setting a Beer or Fridge Constant mode for temp controllers
 - Temp controller name uniqueness checks are now properly enforced in all add controller workflows
-
-
-
-
-[Unreleased] - Django 3.0 Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Changed
----------------------
-
-- Updated code to be Django 3.0 Compatible
-- Changed from Django 1.11 to Django 3.0
-
-
-Fixed
----------------------
-
-- Properly catch exception when Redis test cannot connect to server
 
 
 

@@ -24,7 +24,7 @@ from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (3, 4):
-    printStdErr("Sorry, requires Python 3.4.")
+    printStdErr("Sorry, requires Python 3.4 or newer")
     sys.exit(1)
 
 import time, socket, os, getopt, shutil, traceback
@@ -183,7 +183,7 @@ for o, a in opts:
 
 # If dbConfig wasn't set, we can't proceed (as we have no controller to manage)
 if dbConfig is None:
-    raise NotImplementedError('Only dbconfig installations are supported in this version of brewpi-script')
+    sys.exit('ERROR: You must specify the BrewPi controller to connect to using the --dbcfg option')
 
 if dbConfig.status == models.BrewPiDevice.STATUS_ACTIVE or dbConfig.status == models.BrewPiDevice.STATUS_UNMANAGED:
     config = util.read_config_from_database_without_defaults(dbConfig)
@@ -227,6 +227,7 @@ if logToFiles:
 
 def startNewBrew(newName):
     global config
+    global dbConfig
     if len(newName) > 1:     # shorter names are probably invalid
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         config = util.configSet(dbConfig, 'beerName', newName)
@@ -673,6 +674,7 @@ while run:
 
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             bg_ser.writeln("E")
             # request settings from controller, processed later when reply is received
             bg_ser.writeln('s')  # request control settings cs
@@ -689,9 +691,8 @@ while run:
         elif messageType == "resetWiFi":
             logMessage("Resetting controller WiFi settings")
             bg_ser.writeln("w")
-            # TODO - Determine if we should sleep & exit here
-            trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
-
+            time.sleep(3)        # We'll give bg_ser 3 seconds for it to send/kick in
+            sys.exit(0)          # Exit BrewPi-script
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 
@@ -730,6 +731,7 @@ while run:
                 if prevDataTime == 0.0:  # If prevDataTime hasn't yet been set (it's 0.0 at script startup), set it.
                     prevDataTime = time.time()
 
+
         if (time.time() - prevDataTime) >= 3 * float(config['interval']):
             # something is wrong: controller is not responding to data requests
             logMessage("Error: controller is not responding to new data requests. Exiting.")
@@ -754,9 +756,6 @@ while run:
                         # store time of last new data for interval check
                         prevDataTime = time.time()
 
-                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':
-                            continue  # skip if logging is paused or stopped
-
                         # process temperature line
                         newData = json.loads(line[2:])
                         # copy/rename keys
@@ -764,6 +763,11 @@ while run:
                             prevTempJson[renameTempKey(key)] = newData[key]
 
                         newRow = prevTempJson
+
+                        # Moved this so that the last read values is updated even if logging is off. Otherwise the getDashInfo 
+                        # will return the default temp values (0)
+                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':                            
+                            continue  # skip if logging is paused or stopped
 
                         # All this is handled by the model
                         util.save_beer_log_point(dbConfig, newRow)
