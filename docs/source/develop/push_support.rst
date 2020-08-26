@@ -81,7 +81,29 @@ Within 60 seconds, Fermentrack will begin sending data from your gravity sensor 
 Brewfather Support
 ***********************
 
-Fermentrack supports pushing data from specific gravity sensors to Brewfather using the "Custom Stream" API. To configure:
+Fermentrack supports pushing data from specific gravity sensors or temperature data from a brewpi to Brewfather using the "Custom Stream" API.
+
+The following values in the Brewfather API is used;
+
+::
+
+    { "name": "",      // Will be either brewpi or gravitysensor
+      "temp": 0,       // Temperature from gravity sensor or beer temp from attached brewpi
+      "aux_temp": 0,   // Fridge temperature from brewpi
+      "ext_temp": 0,   // Room temperature from brewpi
+      "temp_unit": "C" //
+      "gravity": 0,    // Gravity from sensor
+      "gravity_unit": "G", 
+      "pressure": 0,   // not used
+      "pressure_unit": "", // not used
+      "ph": 0,         // not used
+      "bpm": 0,        // not used
+      "comment": "",   // not used
+      "beer": ""       // Name of active beer log
+      }
+
+
+To configure:
 
 #. Log into Fermentrack and click the "gear" icon in the upper right
 #. Click "Add Brewfather Push Target" at the bottom of the page
@@ -89,7 +111,8 @@ Fermentrack supports pushing data from specific gravity sensors to Brewfather us
 #. At the bottom of the page, under "Power-ups" click the "switch" next to "Custom Stream"
 #. Copy the Logging URL (starting with http and ending with a string of letters/numbers) listed under "Custom Stream"
 #. Within Fermentrack, paste the Logging URL you just copied into the "Logging URL" field
-#. Set the desired push frequency and select the gravity sensor from which you want to push data
+#. From the drop down list, select either Gravity or BrewPi as source.
+#. Set the desired push frequency and select the gravity sensor/brewpi from which you want to push data
 #. Click "Add Push Target"
 
 Within 60 seconds, Fermentrack will begin sending data from your gravity sensor to Brewfather. This data can be seen on the `Devices <https://web.brewfather.app/#/tabs/devices/devices>`_ page.
@@ -106,7 +129,9 @@ Fermentrack supports pushing data from specific sensors to a ThinkSpeak Channel.
 #. Click "Add ThingSpeak Push Target" at the bottom of the page
 #. Now log into your ThingSpeak acount and on the My Channels Page select New Channel
 #. Enter the data below in
+
 ::
+
     Name - Give your Channel a Name
     Description - Give your Channel a Description
     Field 1 - Beer Name

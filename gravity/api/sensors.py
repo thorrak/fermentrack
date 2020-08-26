@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from constance import config
+from datetime import datetime
 
 from gravity.models import GravitySensor
 
@@ -63,6 +64,7 @@ def get_ispindel_extras(req, device_id):
         extras = device.ispindel_configuration.load_extras_from_redis()
         extras['device_name'] = device.name
         extras['device_id'] = device.id
+        extras['log_time'] = device.ispindel_configuration.load_last_log_time_from_redis()
     else:
         extras = {}
 
