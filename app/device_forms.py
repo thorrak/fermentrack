@@ -134,7 +134,7 @@ class DeviceForm(forms.Form):
                 devices_with_port = BrewPiDevice.objects.filter(serial_port=cleaned_data['serial_port'])
                 devices_with_port_alt = BrewPiDevice.objects.filter(serial_alt_port=cleaned_data['serial_port'])
                 devices_with_alt = BrewPiDevice.objects.filter(serial_port=cleaned_data['serial_alt_port'])
-                devices_with_alt_alt = BrewPiDevice.objects.filter(serial_alt_port=cleaned_data['serial_alt_port'])
+                devices_with_alt_alt = BrewPiDevice.objects.filter(serial_alt_port=cleaned_data['serial_alt_port']).exclude(serial_alt_port="None")
 
                 if len(devices_with_port) != 0 or len(devices_with_port_alt) != 0 or len(devices_with_alt) != 0 or len(devices_with_alt_alt) != 0:
                     raise forms.ValidationError("A device is already set up with that serial port or alternate serial "
