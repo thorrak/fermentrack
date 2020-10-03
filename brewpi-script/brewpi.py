@@ -513,7 +513,7 @@ while run:
 
             cs['mode'] = 'b'
             # round to 2 dec, python will otherwise produce 6.999999999
-            bg_ser.writeln("j{{mode:b, beerSet:{}}}".format(cs['beerSet']))
+            bg_ser.writeln("j{{mode:\"b\", beerSet:{}}}".format(cs['beerSet']))
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Beer temperature set to {} degrees in web interface".format(cs['beerSet']))
             raise socket.timeout  # go to serial communication to update controller
@@ -527,7 +527,7 @@ while run:
 
             cs['mode'] = 'f'
             cs['fridgeSet'] = round(newTemp, 2)
-            bg_ser.writeln("j{mode:f, fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
+            bg_ser.writeln("j{mode:\"f\", fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
             # Reload dbConfig from the database (in case we were using profiles)
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             logMessage("Notification: Fridge temperature set to " +
@@ -537,7 +537,7 @@ while run:
 
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
-            bg_ser.writeln("j{mode:o}")
+            bg_ser.writeln("j{mode:\"o\"}")
             dbConfig = refresh_dbConfig()   # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Temperature control disabled")
             raise socket.timeout
@@ -601,7 +601,7 @@ while run:
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             if cs['mode'] is not 'p':
                 cs['mode'] = 'p'
-                bg_ser.writeln("j{mode:p}")
+                bg_ser.writeln("j{mode:\"p\"}")
                 logMessage("Notification: Profile mode enabled")
                 raise socket.timeout  # go to serial communication to update controller
 
@@ -830,7 +830,7 @@ while run:
 
             if newTemp is None:  # If we had an error loading a temperature (from dbConfig) disable temp control
                 cs['mode'] = 'o'
-                bg_ser.writeln("j{mode:o}")
+                bg_ser.writeln("j{mode:\"o\"}")
                 logMessage("Notification: Error in profile mode - turning off temp control")
                 # raise socket.timeout  # go to serial communication to update controller
             elif newTemp != cs['beerSet']:
@@ -844,7 +844,7 @@ while run:
                 bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
 
             if dbConfig.is_past_end_of_profile():
-                bg_ser.writeln("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
+                bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
                 cs['mode'] = 'b'
                 dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
                 dbConfig.reset_profile()
