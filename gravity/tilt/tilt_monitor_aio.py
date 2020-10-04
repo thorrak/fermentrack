@@ -6,7 +6,10 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 # Let's get sentry support going
 from sentry_sdk import init, capture_exception
-init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
+# This is the sentry queue for Fermentrack
+#init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
+# Breaking this out into its own Sentry queue for now
+init('http://12b1f08408de4586a18db78e7dbe27e4:323dad0efed24058b06cacd13a990987@sentry.optictheory.com:9000/10')
 
 import time, datetime, getopt, pid
 from typing import List, Dict
@@ -18,18 +21,9 @@ LOG = logging.getLogger("tilt")
 LOG.setLevel(logging.INFO)
 
 # We're having environment issues - Check the environment before continuing
-try:
-    import aioblescan as aiobs
-except:
-    LOG.error("Aioblescan not installed - unable to run")
-    exit(1)
-
-try:
-    import pkg_resources
-    from packaging import version
-except:
-    LOG.error("Packaging not installed - unable to run")
-    exit(1)
+import aioblescan as aiobs
+import pkg_resources
+from packaging import version
 
 for package in pkg_resources.working_set:
     if package.project_name == 'aioblescan':
@@ -39,7 +33,7 @@ for package in pkg_resources.working_set:
             exit(1)
 
 # done before importing django app as it does setup
-import tilt_monitor_utils
+from . import tilt_monitor_utils
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
@@ -95,10 +89,10 @@ def processBLEBeacon(data):
     # print("Raw data (hex) {}: {}".format(len(raw_data_hex), raw_data_hex))
     # ev.show(0)
 
-    try:
-        mac_addr = ev.retrieve("peer")[0].val
-    except:
-        pass
+    # try:
+    #     mac_addr = ev.retrieve("peer")[0].val
+    # except:
+    #     pass
 
     try:
         # Let's use some of the functions of aioblesscan to tease out the mfg_specific_data payload
@@ -118,7 +112,8 @@ def processBLEBeacon(data):
     except Exception as e:
         LOG.error(e)
         capture_exception(e)
-        return
+        exit(1)
+        return False  # This can't be called, but it's here to make Pycharm happy
 
     if verbose:
         LOG.info("Tilt Payload (hex): {}".format(raw_data_hex))
@@ -126,8 +121,9 @@ def processBLEBeacon(data):
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
     tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
 
-    #print("Color {} - MAC {}".format(color, mac_addr))
-    #print("Raw Data: `{}`".format(raw_data_hex))
+    if verbose:
+        # print("Color {} - MAC {}".format(color, mac_addr))
+        print("Raw Data: `{}`".format(raw_data_hex))
 
     # The Fermentrack specific stuff:
     reload = False
@@ -161,7 +157,7 @@ except OSError as e:
 # requires a STREAM socket) - previously was fac=event_loop.create_connection(aiobs.BLEScanRequester,sock=mysocket)
 fac = event_loop._create_connection_transport(mysocket, aiobs.BLEScanRequester, None, None)
 conn, btctrl = event_loop.run_until_complete(fac)  # Start the bluetooth control loop
-btctrl.process=processBLEBeacon  # Attach the handler to the bluetooth control loop
+btctrl.process = processBLEBeacon  # Attach the handler to the bluetooth control loop
 
 # Begin probing
 btctrl.send_scan_request()

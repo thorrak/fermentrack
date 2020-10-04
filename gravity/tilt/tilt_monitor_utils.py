@@ -11,7 +11,7 @@ os.chdir(BASE_DIR)  # This is so my local_settings.py gets loaded.
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-  # This is so my local_settings.py gets loaded.
+# This is so my local_settings.py gets loaded.
 
 from gravity.tilt.TiltHydrometer import TiltHydrometer
 import gravity.models
@@ -21,13 +21,15 @@ import django.core.exceptions
 verbose = False         # Should the script print out what it's doing to the console
 bluetooth_device = 0  # Default to /dev/hci0
 
+
 def print_to_stderr(*objs):
     print("", *objs, file=sys.stderr)
+
 
 def process_monitor_options():
     # this is ugly, and should return things instead of setting globals
     global verbose
-    pidFileDir = "/tmp"     # Where the pidfile should be written out to
+    pid_file_dir = "/tmp"     # Where the pidfile should be written out to
     global bluetooth_device
     try:
         opts, args = getopt.getopt(sys.argv[1:], "h:vp:d:l", ['help', 'verbose', 'pidfiledir=', 'device=', 'list'])
@@ -55,7 +57,7 @@ def process_monitor_options():
         if o in ('-p', '--pidfiledir'):
             if not os.path.exists(a):
                 sys.exit('ERROR: pidfiledir "%s" does not exist' % a)
-            pidFileDir = a
+            pid_file_dir = a
 
         # Allow the user to specify an alternative bluetooth device
         if o in ('-d', '--device'):
@@ -82,10 +84,9 @@ def process_monitor_options():
                 sys.exit(e)
   
     # check for other running instances of BrewPi that will cause conflicts with this instance
-    pidFile = pid.PidFile(piddir=pidFileDir, pidname="tilt_monitor")
+    pid_file = pid.PidFile(piddir=pid_file_dir, pidname="tilt_monitor")
     try:
-        pidFile.create()
+        pid_file.create()
     except pid.PidFileAlreadyLockedError:
         print_to_stderr("Another instance of the monitor script is running. Exiting.")
         exit(0)
-        
