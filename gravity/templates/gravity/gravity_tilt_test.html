@@ -170,7 +170,7 @@
         </p>
         <p>
             To fix this, simply ssh into your Pi and run the following command:
-            <blockquote>sudo setcap -v cap_net_raw,cap_net_admin+eip {{ python_executable_path }}</blockquote>
+            <blockquote>sudo setcap cap_net_raw,cap_net_admin+eip {{ python_executable_path }}</blockquote>
         </p>
 
     {% endif %}
