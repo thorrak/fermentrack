@@ -8,8 +8,7 @@ except:
     has_packaging = False
 
 
-
-# This function is used ot check if an apt package is installed on Raspbian, Ubuntu, Debian, etc.
+# This function is used to check if an apt package is installed on Raspbian, Ubuntu, Debian, etc.
 def apt_package_installed(package_name: str) -> bool:
     devnull = open(os.devnull,"w")
     retval = subprocess.call(["dpkg", "-s", package_name],stdout=devnull,stderr=subprocess.STDOUT)
@@ -17,7 +16,6 @@ def apt_package_installed(package_name: str) -> bool:
     if retval != 0:
         return False
     return True
-
 
 
 # This is just a means to check if apt (dpkg) is installed at all
@@ -93,6 +91,46 @@ def check_python_packages() -> (bool, bool, list):
     return has_packaging, all_packages_ok, test_results
 
 
+def check_python_setcap() -> (bool, str, str):
+    try:
+        base_executable = subprocess.check_output(["readlink", "-e", sys.executable]).strip().decode("utf-8")
+    except FileNotFoundError:
+        # readlink doesn't exist
+        return False, "", ""
+    except subprocess.CalledProcessError:
+        # readlink failed
+        return False, "", ""
+
+    try:
+        getcap_values = subprocess.check_output(["getcap", base_executable]).strip().decode("utf-8")
+    except FileNotFoundError:
+        # getcap doesn't exist on this system (e.g. MacOS)
+        return False, base_executable, ""
+    except subprocess.CalledProcessError:
+        # setcap -v failed
+        return False, base_executable, ""
+
+    # We have to check for three things:
+    # 1. That the executable has cap_net_admin
+    # 2. That the executable has cap_net_raw
+    # 3. That the executable has +eip (inheritable permissions)
+    # The output of getcap should look like this: b'/usr/bin/python3.6 = cap_net_admin,cap_net_raw+eip\n'
+
+    cap_net_admin_missing = True
+    cap_net_raw_missing = True
+    cap_eip_unset = True
+    if getcap_values.find("cap_net_admin") != -1:
+        cap_net_admin_missing = False
+    if getcap_values.find("cap_net_raw") != -1:
+        cap_net_raw_missing = False
+    if getcap_values.find("+eip") != -1:
+        cap_eip_unset = False
+
+    if cap_net_admin_missing or cap_net_raw_missing or cap_eip_unset:
+        return False, base_executable, getcap_values
+    return True, base_executable, getcap_values
+
+
 # The following was used for testing during development
 if __name__ == "__main__":
     if has_apt():
@@ -123,5 +161,16 @@ if __name__ == "__main__":
         print("Package {} - Required Version {} - Installed Version {} - OK? {}".format(
             this_test['package'], this_test['required_version'], this_test['installed_version'], this_test['ok']))
     print("")
+
+    # Check that Python has the correct capabilities set
+    has_caps, python_path, getcap_values = check_python_setcap()
+
+    if has_caps:
+        print("Python executable has all necessary cap flags. Current flags: ")
+    else:
+        print("Missing cap flags on python executable. Current flags: ")
+    print(getcap_values)
+    print("")
+
 
 

@@ -14,6 +14,7 @@ Added
 ---------------------
 
 - Added pin definitions for esp32 BrewPi firmware
+- Added Linux networking capability test to Tilt connectivity test suite
 
 
 Changed
