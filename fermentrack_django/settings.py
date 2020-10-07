@@ -210,6 +210,8 @@ CONSTANCE_CONFIG = {
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
+    'GRAPH_TEMP_RANGE_MIN': (40, 'Range for the graph temperature axi', int),
+    'GRAPH_TEMP_RANGE_MAX': (90, 'Range for the graph temperature axi', int),
     'SQLITE_OK_DJANGO_2': (False, 'Has the Django 2.0+ SQLite migration been run?',
                                    bool),
 
@@ -219,9 +221,9 @@ CONSTANCE_CONFIG_FIELDSETS = {
     'General Options': ('BREWERY_NAME', 'DATE_TIME_FORMAT_DISPLAY', 'REQUIRE_LOGIN_FOR_DASHBOARD', 'TEMPERATURE_FORMAT',
                         'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE'),
 
-    'Graph Colors': ('GRAPH_BEER_TEMP_COLOR', 'GRAPH_BEER_SET_COLOR', 'GRAPH_FRIDGE_TEMP_COLOR',
+    'Graph Options': ('GRAPH_BEER_TEMP_COLOR', 'GRAPH_BEER_SET_COLOR', 'GRAPH_FRIDGE_TEMP_COLOR',
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',
-                     'GRAPH_GRAVITY_TEMP_COLOR'),
+                     'GRAPH_GRAVITY_TEMP_COLOR','GRAPH_TEMP_RANGE_MIN','GRAPH_TEMP_RANGE_MAX'),
 
     'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION',
                        'SQLITE_OK_DJANGO_2'),
