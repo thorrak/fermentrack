@@ -566,7 +566,8 @@ g2 = new Dygraph(
         },
         axes: {
             y: {
-                digitsAfterDecimal: 1
+                digitsAfterDecimal: 1,
+                valueRange: ["{{ config.GRAPH_TEMP_RANGE_MIN }}","{{ config.GRAPH_TEMP_RANGE_MAX }}"]
             },
             y2: {
                 digitsAfterDecimal: 3
