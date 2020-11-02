@@ -44,7 +44,7 @@ COPY --chown=django:django ./compose/production/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
-
+COPY --chown=django:django . /app
 
 # Correct the permissions for /app/data
 RUN chown django /app/data/
