@@ -3,8 +3,27 @@ from django.contrib.messages import constants as message_constants  # For the me
 import datetime, pytz, configparser
 #from git import Repo
 import git
+from pathlib import Path
+import datetime, pytz, configparser
 
-from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
+import environ
+
+try:
+    from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
+except:
+    # If we're running under Docker, there is no secretsettings - everything comes from a .env file
+    pass
+
+
+ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent
+
+env = environ.Env()
+
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(str(ROOT_DIR / ".env"))
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
