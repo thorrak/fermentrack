@@ -1,0 +1,29 @@
+Django>=3.0.5,<3.1
+configobj       # required by brewpi.py
+
+pyzmq~=19.0.1 --no-binary=pyzmq  # The wheel for pyzmq periodically has issues for Raspbian installs
+# numpy==1.18.4 --no-binary=numpy  # The wheel for numpy also has issues (at least on Stretch)
+
+pytz            # required by manage.py migrate
+sentry-sdk      # used for debugging
+django-constance[database]  # for managing user-configured constants
+GitPython                   # for managing git integration
+zeroconf        # for locating ESP8266 devices
+circus>=0.16.0,<0.17.0          # for managing Fermentrack wsgi & brewpi.py processes
+#circus-web      # for managing Fermentrack wsgi & brewpi.py processes
+chaussette      # for managing Fermentrack wsgi
+huey>=2.0       # asynchronous task queue
+pid             # for pid-file handling
+pyserial        # for serial interaction
+
+pyudev          # for managing udev rules for serial devices
+requests        # for loading firmware data from websites
+
+esptool         # for flashing ESP8266 devices
+packaging~=17.1 # for testing requirements in the Tilt tests
+
+
+# Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
+redis==3.4.1           # for huey & gravity sensor support
+PyBluez==0.23          # for gravity sensor support
+aioblescan==0.2.6      # Replacement for beacontools for Tilt support

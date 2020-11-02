@@ -179,6 +179,9 @@ config.ini
 *.bin
 *.hex
 
+.envs/
+!.envs/.local/
+!.envs/.prod-sample/
 
 #ignore generated files
 collected_static/*
