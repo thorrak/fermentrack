@@ -30,7 +30,7 @@ RUN addgroup --system django \
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
-RUN pip install --no-cache-dir -r /requirements/production.txt \
+RUN pip install --no-cache-dir -r /requirements/docker-production.txt \
     && rm -rf /requirements
 
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
