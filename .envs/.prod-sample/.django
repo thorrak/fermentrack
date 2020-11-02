@@ -1,7 +1,7 @@
 # General
 # ------------------------------------------------------------------------------
 # DJANGO_READ_DOT_ENV_FILE=True
-DJANGO_SETTINGS_MODULE=config.settings.production
+DJANGO_SETTINGS_MODULE=fermentrack_django.settings
 DJANGO_SECRET_KEY={secret_key}
 DJANGO_ADMIN_URL={admin_url}/
 DJANGO_ALLOWED_HOSTS=*
@@ -29,7 +29,7 @@ WEB_CONCURRENCY=4
 
 # Sentry
 # ------------------------------------------------------------------------------
-SENTRY_DSN=
+SENTRY_DSN=http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2
 
 
 # Redis
