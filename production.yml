@@ -15,7 +15,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - nginx
     volumes:
       - /dev:/dev
       - fermentrack_data:/app/data:z
@@ -25,8 +24,6 @@ services:
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
-    ports:
-      - "0.0.0.0:8123:8123"
     command: ["/start", "--privileged"]
     privileged: true
     restart: unless-stopped
@@ -52,6 +49,8 @@ services:
       context: .
       dockerfile: ./compose/production/nginx/Dockerfile
     image: fermentrack_nginx
+    depends_on:
+      - django
     restart: unless-stopped
     volumes:
       - fermentrack_data:/data:z
