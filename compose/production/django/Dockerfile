@@ -12,8 +12,9 @@ RUN apt-get update \
   && apt-get install -y gettext \
   # Pillow dependencies
   && apt-get install -y libjpeg62 zlib1g libtiff5 libfreetype6 libjpeg62-turbo-dev zlib1g-dev libtiff5-dev libfreetype6-dev \
-  # Other things which Fermentrack might benefit from
+  # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
+#  && apt-get install -y cron \
   # Currently, installing scipy/numpy installs Python3.7
   # TODO - Figure this out
   #&& apt-get install -y python3-scipy python3-numpy \
