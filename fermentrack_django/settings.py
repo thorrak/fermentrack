@@ -20,6 +20,11 @@ config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
+IS_DOCKER = os.getenv("DOCKER", "no")
+DB_DIR = BASE_DIR
+if IS_DOCKER == "yes": 
+    DB_DIR += "/db"
+
 try:
     local_repo = git.Repo(path=BASE_DIR)
     GIT_BRANCH = local_repo.active_branch.name
@@ -105,7 +110,7 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(DB_DIR, 'db.sqlite3'),
     }
 }
 
