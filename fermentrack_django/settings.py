@@ -43,6 +43,7 @@ config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
+
 try:
     local_repo = git.Repo(path=BASE_DIR)
     GIT_BRANCH = local_repo.active_branch.name
@@ -126,8 +127,17 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+
+# There are two methods of Docker installs -- Ones using docker-compose which then have the database
+# moved to Postgres, and ones that act as a single image, where we still use sqlite. For the single
+# image versions we move the database to a subdirectory which can then be persisted.
+if USE_DOCKER:
+    DB_DIR = os.path.join(BASE_DIR, "db")
+else:
+    DB_DIR = BASE_DIR
+
 # For Docker installs, the environment variable DATABASE_URL is set to load Postgres instead of SQLite
-sqlite_file_location = "sqlite:///" + os.path.join(BASE_DIR, 'db.sqlite3')
+sqlite_file_location = "sqlite:///" + os.path.join(DB_DIR, 'db.sqlite3')
 
 DATABASES = {"default": env.db("DATABASE_URL", default=sqlite_file_location)}
 DATABASES["default"]["ATOMIC_REQUESTS"] = True  # noqa F405
@@ -139,6 +149,7 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)  # no
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+
 
 
 # Password validation
