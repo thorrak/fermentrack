@@ -50,6 +50,9 @@ COPY --chown=django:django . /app
 # Correct the permissions for /app/data
 RUN chown django /app/data/
 
+# Fix Bluetooth permissions
+RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.8
+
 USER django
 
 WORKDIR /app
