@@ -4,6 +4,7 @@ volumes:
   postgres_data: {}
   postgres_data_backups: {}
   fermentrack_data: {}
+  fermentrack_logs: {}
 
 services:
   django: &django
@@ -14,9 +15,11 @@ services:
     depends_on:
       - postgres
       - redis
+      - nginx
     volumes:
       - /dev:/dev
-      - fermentrack_data:/app/data:Z
+      - fermentrack_data:/app/data:z
+      - fermentrack_logs:/app/log:z
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
     env_file:
@@ -43,3 +46,12 @@ services:
   redis:
     image: redis:5.0
     restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - fermentrack_data:/data:z
+      - ./compose/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+       - "0.0.0.0:80:80"

@@ -25,6 +25,8 @@ except:
     # If we're running under Docker, there is no secretsettings - everything comes from a .env file
     SECRET_KEY = env("DJANGO_SECRET_KEY")
 
+env.bool("USE_DOCKER", default=False)
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -87,6 +89,7 @@ if sys.platform == "darwin":
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -175,13 +178,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'collected_static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATA_URL = '/data/'
-DATA_ROOT = 'data'
+DATA_ROOT = os.path.join(BASE_DIR, 'data')
 
 
 # Constance configuration

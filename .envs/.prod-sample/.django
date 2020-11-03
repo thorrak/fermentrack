@@ -5,6 +5,7 @@ DJANGO_SETTINGS_MODULE=fermentrack_django.settings
 DJANGO_SECRET_KEY={secret_key}
 DJANGO_ADMIN_URL={admin_url}/
 DJANGO_ALLOWED_HOSTS=*
+USE_DOCKER=True
 
 # Security
 # ------------------------------------------------------------------------------
