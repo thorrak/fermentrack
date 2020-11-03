@@ -48,10 +48,12 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: ./compose/production/nginx/Dockerfile
+    image: fermentrack_nginx
     restart: unless-stopped
     volumes:
       - fermentrack_data:/data:z
-      - ./compose/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
        - "0.0.0.0:80:80"
