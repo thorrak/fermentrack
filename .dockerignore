@@ -1,0 +1,6 @@
+.*
+!.gitignore
+!.git
+!.coveragerc
+!.env
+!.pylintrc

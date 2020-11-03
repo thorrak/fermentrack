@@ -1,17 +1,40 @@
 import os, sys
+import logging
+
 from django.contrib.messages import constants as message_constants  # For the messages override
 import datetime, pytz, configparser
 #from git import Repo
 import git
+from pathlib import Path
+import datetime, pytz, configparser
 
-from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
+import environ
+
+ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent
+
+env = environ.Env()
+
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(str(ROOT_DIR / ".env"))
+
+try:
+    from .secretsettings import *  # See fermentrack_django/secretsettings.py.example, or run utils/make_secretsettings.sh
+except:
+    # If we're running under Docker, there is no secretsettings - everything comes from a .env file
+    SECRET_KEY = env("DJANGO_SECRET_KEY")
+
+env.bool("USE_DOCKER", default=False)
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = ['*']  # This is bad practice, but is the best that we're going to get given our deployment strategy
+# This is bad practice, but is the best that we're going to get given our deployment strategy
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['*'])
 
 
 # Check if Sentry is enabled (read in the config filepath)
@@ -20,10 +43,6 @@ config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
-IS_DOCKER = os.getenv("DOCKER", "no")
-DB_DIR = BASE_DIR
-if IS_DOCKER == "yes": 
-    DB_DIR += "/db"
 
 try:
     local_repo = git.Repo(path=BASE_DIR)
@@ -71,6 +90,7 @@ if sys.platform == "darwin":
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,12 +127,29 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(DB_DIR, 'db.sqlite3'),
-    }
-}
+
+# There are two methods of Docker installs -- Ones using docker-compose which then have the database
+# moved to Postgres, and ones that act as a single image, where we still use sqlite. For the single
+# image versions we move the database to a subdirectory which can then be persisted.
+if USE_DOCKER:
+    DB_DIR = os.path.join(BASE_DIR, "db")
+else:
+    DB_DIR = BASE_DIR
+
+# For Docker installs, the environment variable DATABASE_URL is set to load Postgres instead of SQLite
+sqlite_file_location = "sqlite:///" + os.path.join(DB_DIR, 'db.sqlite3')
+
+DATABASES = {"default": env.db("DATABASE_URL", default=sqlite_file_location)}
+DATABASES["default"]["ATOMIC_REQUESTS"] = True  # noqa F405
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)  # noqa F405
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 
 
 # Password validation
@@ -152,13 +189,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'collected_static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATA_URL = '/data/'
-DATA_ROOT = 'data'
+DATA_ROOT = os.path.join(BASE_DIR, 'data')
 
 
 # Constance configuration
@@ -250,10 +287,7 @@ CONSTANCE_SETUP_URL = 'setup_config'    # Used in @site_is_configured decorator
 
 
 # Redis Configuration (primarily for gravity sensor support)
-REDIS_HOSTNAME = "127.0.0.1"
-REDIS_PORT = 6379
-REDIS_PASSWORD = ""  # Not used for most installations. If you need this, yell in a thread & we'll add to Constance
-
+REDIS_URL = env("REDIS_URL", default=f"redis://127.0.0.1:6379/0")
 
 
 # Huey Configuration
@@ -263,9 +297,7 @@ HUEY = {
     'immediate': False,
 
     'connection': {
-        'host': REDIS_HOSTNAME,
-        'port': REDIS_PORT,
-        'password': REDIS_PASSWORD,  # TODO - Check if this actually works
+        'url': REDIS_URL,
         'read_timeout': 1,
     }
 }
@@ -274,19 +306,20 @@ HUEY = {
 if ENABLE_SENTRY:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
 
+    SENTRY_DSN = env("SENTRY_DSN", default="http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2")
+    SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
+
+    sentry_logging = LoggingIntegration(
+        level=SENTRY_LOG_LEVEL,  # Capture info and above as breadcrumbs
+        event_level=logging.ERROR,  # Send errors as events
+    )
+    integrations = [sentry_logging, DjangoIntegration()]
     sentry_sdk.init(
-        dsn="http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2",
-        integrations=[DjangoIntegration()],
+        dsn=SENTRY_DSN,
+        integrations=integrations,
+        # environment=env("SENTRY_ENVIRONMENT", default="production"),
+        # traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
         send_default_pii=True,
     )
-
-    # RAVEN_CONFIG = {
-    #     'dsn': 'http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2',
-    #     # If you are using git, you can also automatically configure the
-    #     # release based on the git info.
-    #     'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
-    #     'tags': {
-    #         'branch': GIT_BRANCH
-    #     },
-    # }

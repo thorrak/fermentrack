@@ -548,6 +548,9 @@ def gravity_tilt_test(request):
     # Next, check the python packages
     has_packaging, has_python_packages, python_test_results = tilt_tests.check_python_packages()
 
+    # Also check that python has the right setcap flags
+    has_setcap_flags, python_executable_path, getcap_values = tilt_tests.check_python_setcap()
+
     # Then check Redis support
     redis_installed, able_to_connect_to_redis, redis_key_test = gravity_debug.try_redis()
 
@@ -555,4 +558,6 @@ def gravity_tilt_test(request):
                   context={'has_apt': has_apt, 'has_apt_packages': has_apt_packages, 'apt_test_results': apt_test_results,
                            'has_python_packages': has_python_packages, 'python_test_results': python_test_results,
                            'redis_installed': redis_installed, 'able_to_connect_to_redis': able_to_connect_to_redis,
-                           'redis_key_test': redis_key_test, 'has_packaging': has_packaging,})
+                           'redis_key_test': redis_key_test, 'has_packaging': has_packaging,
+                           'has_setcap_flags': has_setcap_flags, 'python_executable_path': python_executable_path,
+                           'getcap_values': getcap_values, })
