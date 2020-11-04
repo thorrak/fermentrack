@@ -47,8 +47,9 @@ RUN chmod +x /start
 
 COPY --chown=django:django . /app
 
-# Correct the permissions for /app/data
+# Correct the permissions for /app/data and /app/log
 RUN chown django /app/data/
+RUN chown django /app/log/
 
 # Fix Bluetooth permissions
 RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.8
