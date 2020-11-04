@@ -25,7 +25,7 @@ except:
     # If we're running under Docker, there is no secretsettings - everything comes from a .env file
     SECRET_KEY = env("DJANGO_SECRET_KEY")
 
-env.bool("USE_DOCKER", default=False)
+USE_DOCKER = env.bool("USE_DOCKER", default=False)
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
