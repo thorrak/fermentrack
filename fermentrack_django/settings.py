@@ -102,10 +102,18 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# There are two methods of Docker installs -- Ones using docker-compose which then have the database
+# moved to Postgres, and ones that act as a single image, where we still use sqlite. For the single
+# image versions we move the database to a subdirectory which can then be persisted.
+if os.getenv("USE_DOCKER", default="no").lower() == "yes":
+    DB_DIR = os.path.join(BASE_DIR, "db")
+else:
+    DB_DIR = BASE_DIR
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(DB_DIR, 'db.sqlite3'),
     }
 }
 
