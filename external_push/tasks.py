@@ -3,29 +3,32 @@ from __future__ import absolute_import, unicode_literals
 from huey import crontab
 from huey.contrib.djhuey import periodic_task, task, db_periodic_task, db_task
 from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget, ThingSpeakPushTarget, GrainfatherPushTarget
+from django.core.exceptions import ObjectDoesNotExist
 
 import datetime, pytz, time
 from django.utils import timezone
+
+from requests.models import MissingSchema
 
 
 @db_task()
 def generic_push_target_push(target_id):
     try:
         push_target = GenericPushTarget.objects.get(id=target_id)
-    except:
-        # TODO - Replace with ObjNotFound
+    except ObjectDoesNotExist:
         return None
 
-    push_target.send_data()
-
+    try:
+        push_target.send_data()
+    except MissingSchema:
+        push_target.check_target_host()
     return None
 
 @db_task()
 def brewers_friend_push_target_push(target_id):
     try:
         push_target = BrewersFriendPushTarget.objects.get(id=target_id)
-    except:
-        # TODO - Replace with ObjNotFound
+    except ObjectDoesNotExist:
         return None
 
     push_target.send_data()
@@ -36,11 +39,13 @@ def brewers_friend_push_target_push(target_id):
 def brewfather_push_target_push(target_id):
     try:
         push_target = BrewfatherPushTarget.objects.get(id=target_id)
-    except:
-        # TODO - Replace with ObjNotFound
+    except ObjectDoesNotExist:
         return None
 
-    push_target.send_data()
+    try:
+        push_target.send_data()
+    except MissingSchema:
+        push_target.check_logging_url()
 
     return None
 
@@ -48,8 +53,7 @@ def brewfather_push_target_push(target_id):
 def thingspeak_push_target_push(target_id):
     try:
         push_target = ThingSpeakPushTarget.objects.get(id=target_id)
-    except:
-        # TODO - Replace with ObjNotFound
+    except ObjectDoesNotExist:
         return None
 
     push_target.send_data()
@@ -60,11 +64,13 @@ def thingspeak_push_target_push(target_id):
 def grainfather_push_target_push(target_id):
     try:
         push_target = GrainfatherPushTarget.objects.get(id=target_id)
-    except:
-        # TODO - Replace with ObjNotFound
+    except ObjectDoesNotExist:
         return None
 
-    push_target.send_data()
+    try:
+        push_target.send_data()
+    except MissingSchema:
+        push_target.check_logging_url()
 
     return None
 

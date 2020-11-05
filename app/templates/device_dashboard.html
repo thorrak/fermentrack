@@ -427,6 +427,7 @@
 
 var temp_format = "{{ beer.format }}";  // Used in formatTempText
 var temp_display_format = "{{ temp_display_format }}";  // Used in formatTimeText
+var gravity_format = "{{ gravity_display_format }}";  // Used to convert gravity to Plato for display
 
 function formatTempText(temp) {
     // This takes the temperature that we are passed from DyGraph below and formats it in accordance with what we
@@ -434,9 +435,18 @@ function formatTempText(temp) {
     return temp + " " + window.temp_format;
 }
 
+function convertGravity(gravity) {
+    // Convert to Plato from SG if this is configured
+    if(gravity_format == "P") {
+        return 259-(259/gravity);
+    }
+
+    return gravity;
+}
+
 function formatGravText(gravity) {
     // This does nothing, but provides an easy place to change the format later if we want
-    return gravity
+    return convertGravity(gravity);
 }
 
 function formatTimeText(time_code) {
@@ -569,6 +579,12 @@ g2 = new Dygraph(
                 digitsAfterDecimal: 1
             },
             y2: {
+                valueFormatter: function(y) {
+                  return convertGravity(y);
+                },
+                axisLabelFormatter: function(y) {
+                    return convertGravity(y);
+                },
                 digitsAfterDecimal: 3
             }
         },

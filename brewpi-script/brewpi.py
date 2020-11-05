@@ -599,7 +599,7 @@ while run:
             logMessage("Setting controller to beer profile mode using database-configured profile")
             conn.send(b"Profile successfully updated")
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-            if cs['mode'] is not 'p':
+            if cs['mode'] != 'p':
                 cs['mode'] = 'p'
                 bg_ser.writeln("j{mode:\"p\"}")
                 logMessage("Notification: Profile mode enabled")

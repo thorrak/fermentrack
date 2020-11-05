@@ -45,6 +45,11 @@
 
     <h3>Profile Setpoints</h3>
 
+
+    {% if this_profile.currently_in_use %}
+        <h5 style="color:red;">Warning - This profile is currently in use. Edits to this profile will impact active fermentations!</h5>
+    {% endif %}
+
     {% if this_profile_points %}
         <table class="table">
             <thead>
@@ -77,6 +82,7 @@
     <table class="table">
         <form action="{% url "profile_edit" this_profile.id %}" method="post">
             {% csrf_token %}
+            {{ form.errors }}
             <thead>
                 <tr>
                     <th>TTL <label for="{{ form.ttl.id_for_label }}" data-toggle="tooltip" title="{{ form.ttl.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>
@@ -101,10 +107,23 @@
             {{ this_line|safe }}<br>
         {% endfor %}
 
-    <h2>Profile (Importable)</h2>
-    <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
-
+        <h2>Profile (Importable)</h2>
+        <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
     {% endif %}
+
+    <h3>Profile Notes</h3>
+
+    <form action="{% url "profile_notes" this_profile.id %}" method="post">
+
+        {% csrf_token %}
+        {# TODO - Add form errors view #}
+        {{ notes_form.profile_notes }}
+
+        <p>
+            <input type="submit" value="Update Notes" class="btn btn-primary" />
+        </p>
+    </form>
+
 
     <p>
         <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal">Delete Profile</button>

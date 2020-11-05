@@ -33,7 +33,7 @@ def has_apt() -> bool:
 
 
 def check_apt_packages() -> (bool, list):
-    package_list = ["bluez", "libcap2-bin", "libbluetooth3", "libbluetooth-dev", "redis-server", "python3-dev"]
+    package_list = ["bluez", "libcap2-bin", "libbluetooth3", "libbluetooth-dev", "redis-server"]
     test_results = []
     all_packages_ok = True
 

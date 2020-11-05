@@ -45,6 +45,7 @@ class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting
     date_time_display_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_display_select'][1]['choices']
     temperature_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['temperature_format_select'][1]['choices']
+    gravity_display_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['gravity_display_format_select'][1]['choices']
     login_true_false = [
         (True, 'Yes - Require Login'),
         (False, 'No - Can be seen without logging in')
@@ -62,15 +63,22 @@ class GuidedSetupConfigForm(forms.Form):
     # There appears to be a bug with constance where if you use config in a form setup it will die if the constance
     # database table hasn't been created yet (ie - at initial setup)
     brewery_name = forms.CharField()  # initial=config.BREWERY_NAME
+
     date_time_format_display = forms.ChoiceField(  # initial=config.DATE_TIME_FORMAT_DISPLAY
         choices=date_time_display_select_choices,
         )
+
     require_login_for_dashboard = forms.ChoiceField(  # initial=config.REQUIRE_LOGIN_FOR_DASHBOARD
         choices=login_true_false,
         # widget=forms.RadioSelect(),
         )
+
     temperature_format = forms.ChoiceField(  # initial=config.TEMPERATURE_FORMAT
         choices=temperature_format_select_choices,
+        )
+
+    gravity_display_format = forms.ChoiceField(  # initial=config.GRAVITY_DISPLAY_FORMAT
+        choices=gravity_display_format_select_choices,
         )
 
     preferred_timezone = forms.ChoiceField(
@@ -107,7 +115,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
         self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
         self.fields['update_preference'].initial = config.GIT_UPDATE_TYPE
-
+        self.fields['gravity_display_format'].initial = config.GRAVITY_DISPLAY_FORMAT
         self.fields['enable_sentry_support'].initial = settings.ENABLE_SENTRY
 
         # This is super-hackish, but whatever. If it works, it works
