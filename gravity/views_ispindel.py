@@ -102,7 +102,7 @@ def ispindel_handler(request):
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
     except:
-        logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
+        # logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
         return JsonResponse({'status': 'failed', 'message': "Unable to load sensor with that name"}, safe=False,
                             json_dumps_params={'indent': 4})
 
