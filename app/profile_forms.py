@@ -66,3 +66,7 @@ class FermentationProfileCopyForm(forms.Form):
 
 class FermentationProfileRenameForm(forms.Form):
     profile_name = forms.CharField(help_text="The new name for the profile", max_length=128)
+
+
+class FermentationProfileNotesForm(forms.Form):
+    profile_notes = forms.CharField(widget=forms.Textarea, help_text="Notes about the profile", required=False)

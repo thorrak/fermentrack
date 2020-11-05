@@ -46,12 +46,12 @@ def profile_edit(request, profile_id):
         this_profile = FermentationProfile.objects.get(id=profile_id)
         this_profile_points = this_profile.fermentationprofilepoint_set.order_by('ttl')
     except:
-        # The URL contained an invalid profile ID. Redirect to the profile
-        # list.
+        # The URL contained an invalid profile ID. Redirect to the profile list.
         messages.error(request, 'Invalid profile \'{}\' selected for editing'.format(profile_id))
         return redirect('profile_list')
 
     rename_form = profile_forms.FermentationProfileRenameForm(initial={'profile_name': this_profile.name})
+    notes_form = profile_forms.FermentationProfileNotesForm(initial={'profile_notes': this_profile.notes})
 
     if request.POST:
         form = profile_forms.FermentationProfilePointForm(request.POST)
@@ -71,12 +71,12 @@ def profile_edit(request, profile_id):
             # existing edit page
         return render(request, template_name='profile/profile_edit.html',
                       context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
-                               'this_profile_points': this_profile_points})
+                               'notes_form': notes_form, 'this_profile_points': this_profile_points})
     else:
         form = profile_forms.FermentationProfilePointForm()
         return render(request, template_name='profile/profile_edit.html',
                       context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
-                               'this_profile_points': this_profile_points})
+                               'notes_form': notes_form, 'this_profile_points': this_profile_points})
 
 
 @login_required
@@ -287,4 +287,29 @@ def profile_rename(request, profile_id):
             return redirect('profile_edit', profile_id=profile_id)
     else:
         messages.error(request, u"No new profile name was specified")
+        return redirect('profile_edit', profile_id=profile_id)
+
+
+@login_required
+@site_is_configured
+def profile_notes(request, profile_id):
+    try:
+        this_profile = FermentationProfile.objects.get(id=profile_id)
+    except:
+        # The URL contained an invalid profile ID. Redirect to the profile list.
+        messages.error(request, u'Unable to locate profile with ID {}'.format(profile_id))
+        return redirect('profile_list')
+
+    if request.POST:
+        form = profile_forms.FermentationProfileNotesForm(request.POST)
+        if form.is_valid():
+            this_profile.notes = form.cleaned_data['profile_notes']
+            this_profile.save()
+            messages.success(request, u"Successfully updated fermentation profile notes")
+            return redirect('profile_edit', profile_id=profile_id)
+        else:
+            messages.error(request, u"The new notes were invalid")
+            return redirect('profile_edit', profile_id=profile_id)
+    else:
+        messages.error(request, u"No update to profile notes was specified")
         return redirect('profile_edit', profile_id=profile_id)

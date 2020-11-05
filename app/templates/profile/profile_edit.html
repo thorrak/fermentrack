@@ -101,10 +101,23 @@
             {{ this_line|safe }}<br>
         {% endfor %}
 
-    <h2>Profile (Importable)</h2>
-    <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
-
+        <h2>Profile (Importable)</h2>
+        <pre><code>{{ this_profile.to_export|linebreaksbr }}</code></pre>
     {% endif %}
+
+    <h3>Profile Notes</h3>
+
+    <form action="{% url "profile_notes" this_profile.id %}" method="post">
+
+        {% csrf_token %}
+        {# TODO - Add form errors view #}
+        {{ notes_form.profile_notes }}
+
+        <p>
+            <input type="submit" value="Update Notes" class="btn btn-primary" />
+        </p>
+    </form>
+
 
     <p>
         <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal">Delete Profile</button>

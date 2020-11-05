@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+from django.core.exceptions import ObjectDoesNotExist
+
 import os.path, csv, logging, socket
 import json, time, datetime, pytz
 from constance import config
@@ -1472,6 +1474,8 @@ class FermentationProfile(models.Model):
     
     profile_type = models.CharField(max_length=32, default=PROFILE_STANDARD, help_text="Type of temperature profile")
 
+    notes = models.TextField(default="", blank=True, null=False,
+                             help_text="Notes about the fermentation profile (Optional)")
 
     def __str__(self):
         return self.name
@@ -1479,10 +1483,8 @@ class FermentationProfile(models.Model):
     def __unicode__(self):
         return self.name
 
-
-
     # Test if this fermentation profile is currently being used by a beer
-    def currently_in_use(self):
+    def currently_in_use(self) -> bool:
         try:
             num_devices_currently_using = BrewPiDevice.objects.filter(active_profile=self).count()
         except:
@@ -1494,20 +1496,19 @@ class FermentationProfile(models.Model):
             return False
 
     # Due to the way we're implementing this, we don't want a user to be able to edit a profile that is currently in use
-    def is_editable(self):
+    def is_editable(self) -> bool:
         return not self.currently_in_use()
 
     def is_pending_delete(self):
         return self.status == self.STATUS_PENDING_DELETE
 
     # An assignable profile needs to be active and have setpoints
-    def is_assignable(self):
+    def is_assignable(self) -> bool:
         if self.status != self.STATUS_ACTIVE:
             return False
         else:
             if self.fermentationprofilepoint_set is None:
                 return False
-
         return True
 
     # If we attempt to delete a profile that is in use, we instead change the status. This runs through profiles in
@@ -1518,7 +1519,6 @@ class FermentationProfile(models.Model):
         for profile in profiles_pending_delete:
             if not profile.currently_in_use():
                 profile.delete()
-
 
     # This function is designed to create a more "human readable" version of a temperature profile (to help people
     # better understand what a given profile is actually going to do).

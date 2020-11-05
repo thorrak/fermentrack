@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+
+[Unreleased] - Tweaks & Docker Prep
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added optional "notes" field to fermentation profile models
+
+
+Changed
+---------------------
+
+- Changed link to sqlite database to allow for a subdirectory in Docker installs
+
+
+Fixed
+---------------------
+
+-
+
+
+
 [2020-08-22] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -21,7 +44,6 @@ Changed
 ---------------------
 
 - Added ability for BrewFather push target to push temps from BrewPi temp sensors
-
 
 
 Fixed
