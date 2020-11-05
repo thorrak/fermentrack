@@ -82,6 +82,7 @@
     <table class="table">
         <form action="{% url "profile_edit" this_profile.id %}" method="post">
             {% csrf_token %}
+            {{ form.errors }}
             <thead>
                 <tr>
                     <th>TTL <label for="{{ form.ttl.id_for_label }}" data-toggle="tooltip" title="{{ form.ttl.help_text }}" class="col-sm-2 control-label"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></label></th>

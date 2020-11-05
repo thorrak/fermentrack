@@ -15,6 +15,7 @@ Added
 ---------------------
 
 - Added optional "notes" field to fermentation profile models
+- Added error message when attempting to create a point with an invalid temp/ttl in a temp profile
 
 
 Changed

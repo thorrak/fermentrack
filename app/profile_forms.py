@@ -37,7 +37,7 @@ class FermentationProfilePointForm(forms.Form):
         else:
             return None
 
-        if len(ttl_text) <= 1:
+        if len(ttl_text) == 0:
             return None
 
         return FermentationProfilePoint.string_to_ttl(ttl_text)
