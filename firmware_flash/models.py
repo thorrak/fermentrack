@@ -21,7 +21,7 @@ except:
 logger = logging.getLogger(__name__)
 
 FERMENTRACK_COM_URL = "https://www.fermentrack.com"
-MODEL_VERSION = 2
+MODEL_VERSION = 3
 
 
 def check_model_version():
@@ -129,10 +129,10 @@ class Firmware(models.Model):
     )
 
     name = models.CharField(max_length=128, blank=False, null=False, help_text="The name of the firmware")
-    family = models.ForeignKey('DeviceFamily')
+    family = models.ForeignKey('DeviceFamily', on_delete=models.CASCADE)
 
     version = models.CharField(max_length=20, default="0.0", help_text="The major version number")
-    revision = models.CharField(max_length=20, default="0.0", help_text="The minor revision number")
+    revision = models.CharField(max_length=20, default="", help_text="The minor revision number", blank=True)
     variant = models.CharField(max_length=80, default="", blank=True,
                                help_text="The firmware 'variant' (if applicable)")
 
@@ -153,16 +153,21 @@ class Firmware(models.Model):
     download_url_partitions = models.CharField(max_length=255, default="", blank=True, null=False,
                                                help_text="The URL at which the partitions binary can be downloaded (ESP32 only, optional)")
     download_url_spiffs = models.CharField(max_length=255, default="", blank=True, null=False,
-                                           help_text="The URL at which the SPIFFS binary can be downloaded (ESP32 only, optional)")
+                                           help_text="The URL at which the SPIFFS binary can be downloaded (optional)")
+
+    download_url_bootloader = models.CharField(max_length=255, default="", blank=True, null=False,
+                                               help_text="The URL at which the bootloader binary can be downloaded (ESP32 only, optional)")
+
+    download_url_otadata = models.CharField(max_length=255, default="", blank=True, null=False,
+                                            help_text="The URL at which the OTA Dta binary can be downloaded (ESP32 only, optional)")
 
     spiffs_address = models.CharField(max_length=12, default="", blank=True, null=False,
-                                           help_text="The flash address the SPIFFS data is at (ESP32 only, optional)")
+                                           help_text="The flash address the SPIFFS data should be flashed to")
+
+    otadata_address = models.CharField(max_length=12, default="", blank=True, null=False,
+                                           help_text="The flash address the SPIFFS data should be flashed to (ESP32 only)")
 
 
-    project_url = models.CharField(max_length=255, default="", blank=True, null=False,
-                                   help_text="The URL for the project associated with the firmware")
-    documentation_url = models.CharField(max_length=255, default="", blank=True, null=False,
-                                         help_text="The URL for documentation/help on the firmware (if any)")
 
     weight = models.IntegerField(default=5, help_text="Weight for sorting (Lower weights rise to the top)",
                                  choices=WEIGHT_CHOICES)
@@ -173,12 +178,16 @@ class Firmware(models.Model):
                                            default="", blank=True)
     checksum_spiffs = models.CharField(max_length=64, help_text="SHA256 checksum of the SPIFFS file (for checking validity)",
                                        default="", blank=True)
+    checksum_bootloader = models.CharField(max_length=64, help_text="SHA256 checksum of the bootloader file (for checking validity)",
+                                           default="", blank=True)
+    checksum_otadata = models.CharField(max_length=64, help_text="SHA256 checksum of the otadata file (for checking validity)",
+                                       default="", blank=True)
+
+
+    project = models.ForeignKey('Project', on_delete=models.SET_NULL, default=None, null=True)
 
     def __str__(self):
-        name = self.name + " - " + self.version + " - " + self.revision
-        if len(self.variant) > 0:
-            name += " - " + self.variant
-        return name
+        return self.name + " - " + self.version + " - " + self.revision + " - " + self.variant
 
     def __unicode__(self):
         return self.__str__()
@@ -197,23 +206,21 @@ class Firmware(models.Model):
             Firmware.objects.all().delete()
             # Then loop through the data we received and recreate it again
             for row in data:
-                try:
-                    # This gets wrapped in a try/except as I don't want this failing if the local copy of Fermentrack
-                    # is slightly behind what is available at Fermentrack.com (eg - if there are new device families)
-                    newFirmware = Firmware(
-                        name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
-                        variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
-                        in_error=row['in_error'], description=row['description'],
-                        variant_description=row['variant_description'], download_url=row['download_url'],
-                        project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
-                        download_url_partitions=row['download_url_partitions'],
-                        download_url_spiffs=row['download_url_spiffs'], checksum=row['checksum'],
-                        checksum_partitions=row['checksum_partitions'], checksum_spiffs=row['checksum_spiffs'],
-                        spiffs_address=row['spiffs_address'],
-                    )
-                    newFirmware.save()
-                except:
-                    pass
+                newFirmware = Firmware(
+                    name=row['name'], version=row['version'], revision=row['revision'], family_id=row['family_id'],
+                    variant=row['variant'], is_fermentrack_supported=row['is_fermentrack_supported'],
+                    in_error=row['in_error'], description=row['description'],
+                    variant_description=row['variant_description'], download_url=row['download_url'],weight=row['weight'],
+                    download_url_partitions=row['download_url_partitions'],
+                    download_url_spiffs=row['download_url_spiffs'], checksum=row['checksum'],
+                    checksum_partitions=row['checksum_partitions'], checksum_spiffs=row['checksum_spiffs'],
+                    spiffs_address=row['spiffs_address'], project_id=row['project_id'],
+                    download_url_bootloader=row['download_url_bootloader'],
+                    checksum_bootloader=row['checksum_bootloader'],
+                    download_url_otadata=row['download_url_otadata'],
+                    otadata_address=row['otadata_address'], checksum_otadata=row['checksum_otadata'],
+                )
+                newFirmware.save()
 
             return True  # Firmware table is updated
         return False  # We didn't get data back from Fermentrack.com, or there was an error
@@ -286,6 +293,16 @@ class Firmware(models.Model):
                                       self.checksum_spiffs, check_checksum, force_download):
                 return False
 
+        if len(self.download_url_bootloader) > 12:
+            if not self.download_file(self.full_filepath("bootloader"), self.download_url_bootloader,
+                                      self.checksum_bootloader, check_checksum, force_download):
+                return False
+
+        if len(self.download_url_otadata) > 12 and len(self.otadata_address) > 2:
+            if not self.download_file(self.full_filepath("otadata"), self.download_url_otadata,
+                                      self.checksum_otadata, check_checksum, force_download):
+                return False
+
         # Always download the main firmware
         return self.download_file(self.full_filepath("firmware"), self.download_url, self.checksum, check_checksum, force_download)
 
@@ -309,7 +326,7 @@ class Board(models.Model):
 
     name = models.CharField(max_length=128, blank=False, null=False, help_text="The name of the board")
 
-    family = models.ForeignKey('DeviceFamily')
+    family = models.ForeignKey('DeviceFamily', on_delete=models.CASCADE)
 
     description = models.TextField(default="", blank=True, null=False, help_text="The description of the board")
 
@@ -321,9 +338,6 @@ class Board(models.Model):
 
     def __str__(self):
         return self.name + " - " + str(self.family)
-
-    def __unicode__(self):
-        return self.name + " - " + unicode(self.family)
 
     @staticmethod
     def load_from_website():
@@ -392,3 +406,62 @@ class FlashRequest(models.Model):
         self.status = self.STATUS_FINISHED
         self.save()
         return True
+
+
+class Project(models.Model):
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
+
+    WEIGHT_CHOICES = (
+        (1, "1 (Highest)"),
+        (2, "2"),
+        (3, "3"),
+        (4, "4"),
+        (5, "5"),
+        (6, "6"),
+        (7, "7"),
+        (8, "8"),
+        (9, "9  (Lowest)"),
+    )
+
+    name = models.CharField(max_length=128, blank=False, null=False,
+                            help_text="The name of the project the firmware is associated with")
+    description = models.TextField(default="", blank=True, null=False, help_text="The description of the project")
+    project_url = models.CharField(max_length=255, default="", blank=True, null=False,
+                                   help_text="The URL for the project associated with the firmware")
+    documentation_url = models.CharField(max_length=255, default="", blank=True, null=False,
+                                         help_text="The URL for documentation/help on the firmware (if any)")
+    support_url = models.CharField(max_length=255, default="", blank=True, null=False,
+                                         help_text="The URL for support (if any, generally a forum thread)")
+    weight = models.IntegerField(default=5, help_text="Weight for sorting (Lower weights rise to the top)",
+                                 choices=WEIGHT_CHOICES)
+    show_in_standalone_flasher = models.BooleanField(default=False, help_text="Should this show standalone flash app?")
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def load_from_website():
+        try:
+            url = FERMENTRACK_COM_URL + "/api/project_list/all/"
+            response = requests.get(url)
+            data = response.json()
+        except:
+            return False
+
+        if len(data) > 0:
+            # If we got data, clear out the cache of Firmware
+            Project.objects.all().delete()
+            # Then loop through the data we received and recreate it again
+            for row in data:
+                newProject = Project(
+                    name=row['name'], project_url=row['project_url'], documentation_url=row['documentation_url'], weight=row['weight'],
+                    support_url=row['support_url'], id=row['id'], description=row['description']
+                )
+                newProject.save()
+
+            return True  # Project table is updated
+        return False  # We didn't get data back from Fermentrack.com, or there was an error
+
+

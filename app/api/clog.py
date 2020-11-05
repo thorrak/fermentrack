@@ -5,13 +5,13 @@ from app.models import BrewPiDevice
 from gravity.models import GravitySensor
 
 
-def get_filepath_to_log(device_type, logfile, device_id=None):
+def get_filepath_to_log(device_type, logfile="", device_id=None):
     # get_filepath_to_log is being broken out so that we can use it in help/other templates to display which log file
     # is being loaded
     if device_type == "brewpi":
         try:
             device = BrewPiDevice.objects.get(id=device_id)
-            log_filename = 'dev-{}-{}.log'.format(device.device_name.lower(), logfile)
+            log_filename = 'dev-{}-{}.log'.format(str(device.circus_parameter()).lower(), logfile)
         except:
             # Unable to load the device
             raise ValueError("No brewpi device with id {}".format(device_id))
@@ -22,6 +22,8 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
         log_filename = 'fermentrack-stderr.log'
     elif device_type == "ispindel":
         log_filename = 'ispindel_raw_output.log'
+    elif device_type == "upgrade":
+        log_filename = 'upgrade.log'
     else:
         return None
 
@@ -32,6 +34,10 @@ def get_filepath_to_log(device_type, logfile, device_id=None):
 
 def get_device_log_combined(req, return_type, device_type, logfile, device_id=None, lines=100):
     """Read the log files created by circus for spawned controllers"""
+
+    # TODO - THIS IS A HACK. This needs to be fixed properly, but that will require some refactoring
+    if(device_type=="upgrade"):
+        lines = 1000
 
     # Although the urlpattern checks if the logfile type is valid, this gets used in the filename we're reading so
     # recheck it here just to be safe.
@@ -44,7 +50,7 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # gravity - A specific gravity sensor object
     # spawner - the circus spawner
     # fermentrack - Fermentrack itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel']
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)

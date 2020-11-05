@@ -37,7 +37,7 @@ class FermentationProfilePointForm(forms.Form):
         else:
             return None
 
-        if len(ttl_text) <= 1:
+        if len(ttl_text) == 0:
             return None
 
         return FermentationProfilePoint.string_to_ttl(ttl_text)
@@ -66,3 +66,7 @@ class FermentationProfileCopyForm(forms.Form):
 
 class FermentationProfileRenameForm(forms.Form):
     profile_name = forms.CharField(help_text="The new name for the profile", max_length=128)
+
+
+class FermentationProfileNotesForm(forms.Form):
+    profile_notes = forms.CharField(widget=forms.Textarea, help_text="Notes about the profile", required=False)

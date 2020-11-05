@@ -114,7 +114,7 @@ class GravitySensor(models.Model):
                               help_text='Status of the gravity sensor (used by scripts that interact with it)')
 
     # The beer that is currently active & being logged
-    active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None,
+    active_log = models.ForeignKey('GravityLog', null=True, blank=True, default=None, on_delete=models.SET_NULL,
                                    help_text='The currently active log of readings')
 
     # The assigned/linked BrewPi device (if applicable)
@@ -169,7 +169,8 @@ class GravitySensor(models.Model):
         if point is None:
             return None, None
         else:
-            return None if point.temp is None else round(point.temp, 2), point.temp_format
+            # Changing to one degree of precision - more precise is nonsensical
+            return None if point.temp is None else round(point.temp, 1), point.temp_format
 
     def create_log_and_start_logging(self, name: str):
         # First, create the new gravity log
@@ -507,7 +508,7 @@ class GravityLogPoint(models.Model):
 class TiltTempCalibrationPoint(models.Model):
     TEMP_FORMAT_CHOICES = (('F', 'Fahrenheit'), ('C', 'Celsius'))
 
-    sensor = models.ForeignKey('TiltConfiguration')
+    sensor = models.ForeignKey('TiltConfiguration', on_delete=models.CASCADE)
     orig_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Original (Sensor) Temp Value",
                                      help_text="Original (Sensor) Temp Value")
     actual_value = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Actual (Measured) Temp Value",
@@ -558,7 +559,7 @@ class TiltTempCalibrationPoint(models.Model):
 
 
 class TiltGravityCalibrationPoint(models.Model):
-    sensor = models.ForeignKey('TiltConfiguration')
+    sensor = models.ForeignKey('TiltConfiguration', on_delete=models.CASCADE)
     actual_gravity = models.DecimalField(max_digits=5, decimal_places=3, verbose_name="Actual (Correct) Gravity value")
     tilt_measured_gravity = models.DecimalField(max_digits=5, decimal_places=3,
                                                 verbose_name="Tilt Measured Gravity Value")
@@ -695,10 +696,13 @@ class TiltConfiguration(models.Model):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
 
+        datetime_string = datetime.datetime.strftime(timezone.now(), "%c")
+
         extras = {
             'rssi': getattr(self, 'rssi', None),
             'raw_gravity': getattr(self, 'raw_gravity', None),
-            'raw_temp': getattr(self, 'raw_temp', None)
+            'raw_temp': getattr(self, 'raw_temp', None),
+            'saved_at': datetime_string,
         }
 
         r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
@@ -724,6 +728,8 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_gravity']
         if 'raw_temp' in extras:
             self.raw_gravity = extras['raw_temp']
+        if 'saved_at' in extras:
+            self.saved_at = datetime.datetime.strptime(extras['saved_at'], "%c")
 
         return extras
 
@@ -791,7 +797,7 @@ class TiltBridge(models.Model):
 
 ### iSpindel specific models
 class IspindelGravityCalibrationPoint(models.Model):
-    sensor = models.ForeignKey('IspindelConfiguration')
+    sensor = models.ForeignKey('IspindelConfiguration', on_delete=models.CASCADE)
     angle = models.DecimalField(max_digits=10, decimal_places=7, verbose_name="Angle (Measured by Device)")
     gravity = models.DecimalField(max_digits=8, decimal_places=4, verbose_name="Gravity Value (Measured Manually)")
     created = models.DateTimeField(default=timezone.now)  # So we can track when the calibration was current as of
@@ -864,3 +870,20 @@ class IspindelConfiguration(models.Model):
             self.token = extras['token']
 
         return extras
+
+    def load_last_log_time_from_redis(self) -> str:
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        redis_response = r.get('grav_{}_full'.format(self.sensor_id)).decode(encoding="utf-8")
+
+        if redis_response is None:
+            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+            return {}
+
+        t = json.loads(redis_response)
+        if 'fields' in t[0]:
+            if 'log_time' in t[0]['fields']:
+                # return last time the ispindel was heard from
+                dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") ) 
+                return datetime.datetime.strftime( dt, "%c" )
+
+        return {}

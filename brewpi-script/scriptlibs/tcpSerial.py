@@ -2,7 +2,7 @@
 # this allows seemless integration with exsiting brewpi-script code
 from __future__ import print_function
 
-import socket
+import socket, errno
 from . import mdnsLocator
 import os, sys, time
 
@@ -127,7 +127,13 @@ class TCPSerial(object):
 
     def close(self):
         # Shutdown, then close port
-        self.sock.shutdown(socket.SHUT_RDWR)
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+        except OSError as exc:
+            if exc.errno == errno.ENOTCONN:
+                pass  # Socket is not connected, so can't send FIN packet.
+            else:
+                raise
         return self.sock.close()
 
     def isOpen(self):

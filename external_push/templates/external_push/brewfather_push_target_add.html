@@ -32,7 +32,15 @@
             <h3 class="form-header">Push Target Settings</h3>
             {% form_generic form.push_frequency %}
             {% form_generic form.logging_url %}
-            {% form_generic form.gravity_sensor_to_push %}
+            {% form_generic form.device_type %}
+            <div id="gravityPushChoices">
+                <!-- Hidden if anything other than 'list' is selected above -->
+                {% form_generic form.gravity_sensor_to_push %}
+            </div>
+            <div id="brewPiPushChoices">
+                <!-- Hidden if anything other than 'list' is selected above -->
+                {% form_generic form.brewpi_to_push %}
+            </div>
         </div>
 
         <input type="submit" value="Add Push Target" class="btn btn-primary" />
@@ -44,6 +52,26 @@
 
 {% block scripts %}
 <script>
+
+function DevicePushSelectionHide() {
+console.log(document.getElementById('id_device_type').options[document.getElementById('id_device_type').selectedIndex].value) 
+    if(document.getElementById('id_device_type').options[document.getElementById('id_device_type').selectedIndex].value == "gravity") {
+console.log("A")
+         document.getElementById('gravityPushChoices').style.display = '';
+         document.getElementById('brewPiPushChoices').style.display = 'none';
+    } else {
+console.log("B")
+         document.getElementById('gravityPushChoices').style.display = 'none';
+         document.getElementById('brewPiPushChoices').style.display = '';
+    }
+}
+
+window.onload = function() {
+    document.getElementById('id_device_type').onchange = DevicePushSelectionHide;
+
+    {# Above we have the code to handle the toggling as the user completes the form, here we're going to unhide as part of creating the form itself #}
+    DevicePushSelectionHide();
+};
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()

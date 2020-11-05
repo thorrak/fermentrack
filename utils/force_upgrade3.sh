@@ -73,7 +73,7 @@ done
 shift $((OPTIND-1))
 
 
-exec > >(tee -i upgrade.log)
+exec > >(tee -i log/upgrade.log)
 
 
 printinfo "Forcing upgrade & reset to upstream branch ${BRANCH}"
@@ -87,32 +87,32 @@ sleep 2s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-$CIRCUSCTL stop &>> upgrade.log
+$CIRCUSCTL stop &>> log/upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
 cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
-git fetch --all &>> upgrade.log
-git reset --hard @{u} &>> upgrade.log
+git fetch --all &>> log/upgrade.log
+git reset --hard @{u} &>> log/upgrade.log
 
 # If we have a tag set, use it
 if [ "${TAG}" = "" ]
 then
-    git checkout ${BRANCH} &>> upgrade.log
+    git checkout ${BRANCH} &>> log/upgrade.log
 else
     # Not entirely sure if we need -B for this, but leaving it here just in case
-    git checkout tags/${TAG} -B ${BRANCH} &>> upgrade.log
+    git checkout tags/${TAG} -B ${BRANCH} &>> log/upgrade.log
 fi
 
-git pull &>> upgrade.log
+git pull &>> log/upgrade.log
 
 # Install everything from requirements.txt
 printinfo "Updating requirements via pip3..."
-pip3 install -U -r requirements.txt --upgrade &>> upgrade.log
+pip3 install --no-cache-dir -U -r requirements.txt --upgrade &>> log/upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py migrate..."
-python3 manage.py migrate &>> upgrade.log
+python3 manage.py migrate &>> log/upgrade.log
 
 # Migrate to create/adjust anything necessary in the database
 printinfo "Running manage.py collectstatic..."
@@ -122,6 +122,6 @@ python3 manage.py collectstatic --noinput >> /dev/null
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
 ~/fermentrack/utils/updateCronCircus.sh startifstopped
-$CIRCUSCTL reloadconfig &>> upgrade.log
-$CIRCUSCTL start &>> upgrade.log
+$CIRCUSCTL reloadconfig &>> log/upgrade.log
+$CIRCUSCTL start &>> log/upgrade.log
 printinfo "Complete!"

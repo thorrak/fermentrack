@@ -7,18 +7,162 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unversioned] - Fixes
-~~~~~~~~~~~~~~~~~~~~~
+
+[Unreleased] - Temp Profile Tweaks & Docker Prep
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added optional "notes" field to fermentation profile models
+- Added error message when attempting to create a point with an invalid temp/ttl in a temp profile
+
+
+Changed
+---------------------
+
+- Changed link to sqlite database to allow for a subdirectory in Docker installs
+- Fermentation profile points can now be deleted for in-use fermentation profiles
+- Remove Python 3.7 warning (everyone should have upgraded by now)
+
+
+Fixed
+---------------------
+
+- Bug causing errors when enabling beer profile mode
+- Can now properly push to BrewFather when a fully populated temperature controller isn't linked
+- If a Grainfather, Brewfather, or generic push target logging URL doesn't begin with http:// it is now automatically appended
+- Don't prompt new installs to run the script to fix old sqlite files
+
+
+
+[2020-08-22] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added pin definitions for esp32 BrewPi firmware
+- Added Linux networking capability test to Tilt connectivity test suite
+
+
+Changed
+---------------------
+
+- Added ability for BrewFather push target to push temps from BrewPi temp sensors
+
+
+Fixed
+---------------------
+
+- Fixed bug that prevents reloading of cached controller objects
+- Properly detect/force temperature conversion for iSpindel
+
+
+
+[2020-06-05] - Django 3.0 Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added button to controller settings page to restart a controller
+
+
+Changed
+---------------------
+
+- Updated code to be Django 3.0 Compatible
+- Changed from Django 1.11 to Django 3.0
+- Toggling display of a graph line on a temp controller's dashboard now clears the data point displayed in the legend
+- Refactored brewpi-script to accept device IDs rather than names
+
+
+Fixed
+---------------------
+
+- Properly catch exception when Redis test cannot connect to server
+- Gravity and gravity temp colors when graphed on temp controller graphs will now display the correct color in the legend
+- Links to CSVs from the beer log list now properly generate if the CSV exists
+- Correct error detection/logging when a temp controller with an attached gravity sensor attempts to log before the gravity sensor logs its first point
+- Properly check that a temperature setting is provided when setting a Beer or Fridge Constant mode for temp controllers
+- Temp controller name uniqueness checks are now properly enforced in all add controller workflows
+
+
+
+[2020-04-11] - Bugfixes & Tilt Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added explicit support for LBussy's BrewPi-Remix I2C Board
+- Exposed upgrade.log from the help screen
+- Store the exact last time that a message was received from a Tilt to Redis
+- Add sentry support to tilt_monitor_aio.py
+- Added "debug" scripts for bluetooth Tilt connections
+- Added TiltBridge connection settings to Tilt management page
+
+
+
+Changed
+---------------------
+
+- Removed legacy Python 2 code
+- Reduced gravity sensor temp precision to 0.1 degrees
+- Locked pybluez, aioblescan, and redis versions to prevent undesired format changes going forward
+
+
+Fixed
+---------------------
+
+- Fix display of TiltBridge mDNS settings on Tilt settings page
+
+[2020-02-17] - Improved ESP32 Flashing Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for flashing a bootloader and otadata partition to ESP32 devices
+
+
+Changed
+---------------------
+
+- SPIFFS partitions can now be flashed to ESP8266 devices
+
+
+[2020-02-15] - ThingSpeak and Grainfather Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for pushing data to ThingSpeak (thanks @johndoyle!)
+- Added support for pushing data to Grainfather (thanks @mp-se!)
+
+
+Changed
+---------------------
+
+- Gravity sensors attached to BrewPi controllers will now send those controller's temps to Brewfather
+- An explicit error message will now be displayed when a user attempts to manually access the ispindel endpoint
+
 
 Fixed
 ---------------------
 
 - Fixed where Fahrenheit readings coming from an iSpindel could be improperly reconverted to Fahrenheit
-
+- Lock temperature display on dashboard panels to one decimal place
+- Allow updates to controller settings when controller name isn't changing (for real this time)
+- Fix bug that would default all Tilts to 'Bluetooth' even when a TiltBridge was selected
+- Fixed issue where Tilt readings were not being properly decoded (Thanks NecroBrews!)
+- Fixed issue where dashboard panels were not being updated (Thanks NecroBrews!)
 
 
 [2019-12-15] - Brewer's Friend, Brewfather, and MacOS BLE Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -89,7 +233,7 @@ Fixed
 
 
 [2019-03-17] - Firmware Flash Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -104,7 +248,7 @@ Changed
 
 
 [2019-02-17] - External Push (Remote Logging) Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -123,7 +267,7 @@ Fixed
 
 
 [2019-02-17] - External Push (Remote Logging) Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------

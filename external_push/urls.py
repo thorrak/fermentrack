@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 import external_push.views
 
+app_name = "external_push"
 
 # This gets added to the app's urlpatterns
 # TODO - Convert this to be properly namespaced
@@ -23,6 +24,10 @@ external_push_urlpatterns = [
     url(r'^push/brewfather/add/$', external_push.views.external_push_brewfather_target_add, name='external_push_brewfather_target_add'),
     url(r'^push/brewfather/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_brewfather_view, name='external_push_brewfather_view'),
     url(r'^push/brewfather/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_brewfather_delete, name='external_push_brewfather_delete'),
+
+    url(r'^push/thingspeak/add/$', external_push.views.external_push_thingspeak_target_add, name='external_push_thingspeak_target_add'),
+    url(r'^push/thingspeak/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_thingspeak_view, name='external_push_thingspeak_view'),
+    url(r'^push/thingspeak/delete/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_thingspeak_delete, name='external_push_thingspeak_delete'),
 
     url(r'^push/grainfather/add/$', external_push.views.external_push_grainfather_target_add, name='external_push_grainfather_target_add'),
     url(r'^push/grainfather/view/(?P<push_target_id>[0-9]{1,20})/$', external_push.views.external_push_grainfather_view, name='external_push_grainfather_view'),

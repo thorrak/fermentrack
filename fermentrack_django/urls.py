@@ -31,6 +31,8 @@ urlpatterns = [
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
     url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
+    url(r'^upgrade/reload/$', app.views.trigger_requirements_reload, name='trigger_requirements_reload'),
+    url(r'^fix_sqlite/$', app.views.trigger_sqlite_fix, name='trigger_sqlite_fix'),
 
     ### Device Views
     url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),
@@ -61,6 +63,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/temp_control/$', app.views.device_temp_control, name='device_temp_control'),
     url(r'^devices/(?P<device_id>\d{1,20})/reset/$', app.views.device_eeprom_reset, name='device_eeprom_reset'),
     url(r'^devices/(?P<device_id>\d{1,20})/wifi_reset/$', app.views.device_wifi_reset, name='device_wifi_reset'),
+    url(r'^devices/(?P<device_id>\d{1,20})/restart/$', app.views.device_restart, name='device_restart'),
     url(r'^devices/(?P<device_id>\d{1,20})/manage/$', app.views.device_manage, name='device_manage'),
     url(r'^devices/(?P<device_id>\d{1,20})/uninstall/$', app.views.device_uninstall, name='device_uninstall'),
 
@@ -93,6 +96,7 @@ urlpatterns = [
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/csv/$', app.profile_views.profile_points_to_csv, name='profile_points_to_csv'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/copy/$', app.profile_views.profile_copy, name='profile_copy'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/rename/$', app.profile_views.profile_rename, name='profile_rename'),
+    url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/notes/$', app.profile_views.profile_notes, name='profile_notes'),
 
     # Beer Views
     url(r'^beer/list/$', app.beer_views.beer_list, name='beer_list'),

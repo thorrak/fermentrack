@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+from django.core.exceptions import ObjectDoesNotExist
+
 import os.path, csv, logging, socket
 import json, time, datetime, pytz
 from constance import config
@@ -755,7 +757,7 @@ class BrewPiDevice(models.Model):
     #         return control_settings, self.is_legacy(version=version)
     #     return None, None
 
-    def sync_temp_format(self):
+    def sync_temp_format(self) -> bool:
         # This queries the controller to see if we have the correct tempFormat set (If it matches what is specified
         # in the device definition above). If it doesn't, we overwrite what is on the device to match what is in the
         # device definition.
@@ -792,14 +794,15 @@ class BrewPiDevice(models.Model):
     def get_temp_control_status(self):
         device_mode = self.send_message("getMode", read_response=True)
 
-        if device_mode is not None:  # If we could connect to the device, force-sync the temp format
-            self.sync_temp_format()
-
         control_status = {}
-        if device_mode is None:  # We were unable to read from the device
+        if (device_mode is None) or (not device_mode):  # We were unable to read from the device
             control_status['device_mode'] = "unable_to_connect"  # Not sure if I want to pass the message back this way
+            return control_status
 
-        elif device_mode == 'o':  # Device mode is off
+        # If we could connect to the device, force-sync the temp format
+        self.sync_temp_format()
+
+        if device_mode == 'o':  # Device mode is off
             control_status['device_mode'] = "off"
 
         elif device_mode == 'b':  # Device mode is beer constant
@@ -815,7 +818,7 @@ class BrewPiDevice(models.Model):
 
         else:
             # No idea what the device mode is
-            logger.error("Invalid device mode '{}' on device {}".format(device_mode, self.device_name))
+            logger.error("Invalid device mode '{}'".format(device_mode))
 
         return control_status
 
@@ -913,11 +916,15 @@ class BrewPiDevice(models.Model):
         synced = self.sync_temp_format()                # ...then resync the temp format
         return synced
 
-    def reset_wifi(self):
+    def reset_wifi(self) -> bool:
         response = self.send_message("resetWiFi") # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
-        synced = self.sync_temp_format()                # ...then resync the temp format
-        return synced
+        return True
+
+    def restart(self) -> bool:
+        response = self.send_message("restartController") # Restart the controller
+        time.sleep(1)                                   # Give it 1 second to complete
+        return True
 
     def get_control_constants(self):
         return json.loads(self.send_message("getControlConstants", read_response=True))
@@ -931,39 +938,39 @@ class BrewPiDevice(models.Model):
         except TypeError:
             return None
 
-    def circus_parameter(self):
+    def circus_parameter(self) -> int:
         """Returns the parameter used by Circus to track this device's processes"""
-        return self.device_name
+        return self.id
 
     def start_process(self):
         """Start this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.start(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.start(name=circus_process_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.remove(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.remove(name=circus_process_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.stop(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.stop(name=circus_process_name)
 
     def restart_process(self):
         """Restart the deviece process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        fc.restart(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        fc.restart(name=circus_process_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
         fc = CircusMgr()
-        circus_device_name = u"dev-{}".format(self.circus_parameter())
-        status = fc.application_status(name=circus_device_name)
+        circus_process_name = u"dev-{}".format(self.circus_parameter())
+        status = fc.application_status(name=circus_process_name)
         return status
 
     def get_cached_ip(self, save_to_cache=True):
@@ -1272,7 +1279,6 @@ class BeerLogPoint(models.Model):
         else:
             return False
 
-
     def enrich_gravity_data(self):
         # enrich_graity_data is called to enrich this data point with the relevant gravity data
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
@@ -1286,17 +1292,17 @@ class BeerLogPoint(models.Model):
             temp, temp_format = self.associated_beer.device.gravity_sensor.retrieve_loggable_temp()
 
             if self.temp_format != temp_format:
-                if self.temp_format == 'C' and temp_format == 'F':
+                if temp_format is None:
+                    # No data exists in redis yet for this sensor
+                    temp = None
+                elif self.temp_format == 'C' and temp_format == 'F':
                     # Convert Fahrenheit to Celsius
                     temp = (temp-32) * 5 / 9
                 elif self.temp_format == 'F' and temp_format == 'C':
                     # Convert Celsius to Fahrenheit
                     temp = (temp*9/5) + 32
-                elif self.temp_format is None:
-                    # No data exists in redis yet for this sensor
-                    temp = None
                 else:
-                    logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(temp_format))
+                    logger.error("BeerLogPoint.enrich_gravity_data called with unsupported temp format {}".format(self.temp_format))
 
             self.gravity_temp = temp
 
@@ -1468,6 +1474,8 @@ class FermentationProfile(models.Model):
     
     profile_type = models.CharField(max_length=32, default=PROFILE_STANDARD, help_text="Type of temperature profile")
 
+    notes = models.TextField(default="", blank=True, null=False,
+                             help_text="Notes about the fermentation profile (Optional)")
 
     def __str__(self):
         return self.name
@@ -1475,10 +1483,8 @@ class FermentationProfile(models.Model):
     def __unicode__(self):
         return self.name
 
-
-
     # Test if this fermentation profile is currently being used by a beer
-    def currently_in_use(self):
+    def currently_in_use(self) -> bool:
         try:
             num_devices_currently_using = BrewPiDevice.objects.filter(active_profile=self).count()
         except:
@@ -1489,21 +1495,16 @@ class FermentationProfile(models.Model):
         else:
             return False
 
-    # Due to the way we're implementing this, we don't want a user to be able to edit a profile that is currently in use
-    def is_editable(self):
-        return not self.currently_in_use()
-
     def is_pending_delete(self):
         return self.status == self.STATUS_PENDING_DELETE
 
     # An assignable profile needs to be active and have setpoints
-    def is_assignable(self):
+    def is_assignable(self) -> bool:
         if self.status != self.STATUS_ACTIVE:
             return False
         else:
             if self.fermentationprofilepoint_set is None:
                 return False
-
         return True
 
     # If we attempt to delete a profile that is in use, we instead change the status. This runs through profiles in
@@ -1514,7 +1515,6 @@ class FermentationProfile(models.Model):
         for profile in profiles_pending_delete:
             if not profile.currently_in_use():
                 profile.delete()
-
 
     # This function is designed to create a more "human readable" version of a temperature profile (to help people
     # better understand what a given profile is actually going to do).

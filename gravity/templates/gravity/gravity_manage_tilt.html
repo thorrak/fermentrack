@@ -26,7 +26,9 @@
                         </tr>
                         <tr>
                             <td>Connection Type</td>
-                            <td>{{ active_device.tilt_configuration.connection_type }}</td>
+                            <td>
+                                {% if active_device.tilt_configuration.connection_type == "Bridge" %}TiltBridge{% elif active_device.tilt_configuration.connection_type == "Bluetooth" %}Bluetooth{% else %}Unknown{% endif %}
+                            </td>
                         </tr>
                         <tr>
                             <td>Smoothing Window (Readings)</td>
@@ -37,7 +39,7 @@
                             <td>{{ active_device.tilt_configuration.polling_frequency }}</td>
                         </tr>
 
-                        {% if active_device.tilt_configuration.connection_type == "TiltBridge" %}
+                        {% if active_device.tilt_configuration.connection_type == "Bridge" %}
                             <tr>
                                 <td>TiltBridge Name</td>
                                 <td>{{ active_device.tilt_configuration.tiltbridge.name }}</td>
@@ -140,6 +142,40 @@
             <div class="col-sm-4">Current Signal Strength</div>
             <div class="col-sm-8" id="tiltRSSIFeed"></div>
         </div>
+
+        <h2>Troubleshoot Tilt Connection</h2>
+
+        <p>If you are having difficulty getting/keeping your Bluetooth Tilt connected, click the button below to launch the Tilt test script.</p>
+
+        <p>
+            <a href="{% url "gravity_tilt_test" %}" class="btn btn-primary">Troubleshoot Tilt Connection</a>
+        </p>
+
+    {% endif %}
+
+    {% if active_device.tilt_configuration.connection_type == "Bridge" %}
+        <h2>TiltBridge Configuration</h2>
+
+        <p>
+        In order for your TiltBridge to communicate with Fermentrack, it needs to be told where Fermentrack can be
+        reached on  your network. If the mDNS ID specified above is correct, this can be done automatically by
+        Fermentrack, or you can set this manually on the TiltBridge's configuration page.
+        </p>
+
+        <div class="row">
+            <div class="col-lg-5 col-sm-9 col-xs-12">
+                <table class="table">
+                    <tr>
+                        <th>Fermentrack URL (copy to TiltBridge)</th>
+                        <td>{{ fermentrack_url }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <p>
+            <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.mdns_id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
+        </p>
     {% endif %}
 
 

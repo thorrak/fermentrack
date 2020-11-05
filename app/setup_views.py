@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
@@ -84,6 +84,8 @@ def setup_config(request):
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
             config.GRAVITY_FORMAT_DISPLAY = f['gravity_format_display']
+            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
+
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
@@ -274,7 +276,8 @@ def device_guided_add_mdns(request, mdns_id):
         random_port = random.randint(2000,3000)
         # If we were just passed to the form, provide the initial values
         initial_values = {'board_type': 'esp8266', 'wifi_host': mdns_id, 'wifi_port': 23, 'connection_type': 'wifi',
-                          'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+                          'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
+                          'modify_not_create': False}
 
         form = device_forms.DeviceForm(initial=initial_values)
         return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
@@ -361,7 +364,8 @@ def device_guided_serial_autodetect(request, device_family):
                     return redirect("/")
 
                 initial_values = {'board_type': board_type, 'serial_port': request.POST['device'], 'connection_type': 'serial',
-                                  'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT}
+                                  'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
+                                  'modify_not_create': False}
 
                 form = device_forms.DeviceForm(initial=initial_values)
                 return render(request, template_name='setup/device_guided_serial_autodetect_4_add.html',

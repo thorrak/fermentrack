@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from constance import config
@@ -90,14 +90,19 @@ def ispindel_handler(request):
     # As of iSpindel 6.2.0 it looks like this:
     # {"name":"iSpindel001","ID":9390968,"token":"fermentrack","angle":68.81093,"temperature":73.175,"temp_units":"F","battery":4.103232,"gravity":22.80585,"interval":20,"RSSI":-41}
 
-    ispindel_data = json.loads(request.body.decode('utf-8'))
+    try:
+        ispindel_data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'failed', 'message': "No JSON data was posted (are you accessing this manually?)"}, safe=False,
+                            json_dumps_params={'indent': 4})
+
     with open(os.path.join(settings.BASE_DIR, "log", 'ispindel_json_output.log'), 'w') as logFile:
         pprint.pprint(ispindel_data, logFile)
 
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
     except:
-        logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
+        # logger.error(u"Unable to load sensor with name {}".format(ispindel_data['name']))
         return JsonResponse({'status': 'failed', 'message': "Unable to load sensor with that name"}, safe=False,
                             json_dumps_params={'indent': 4})
 
