@@ -479,7 +479,7 @@ class GravityLogPoint(models.Model):
 
     def save_to_redis(self, device_id: int=None):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         if device_id is None:
             if self.associated_log is not None:
                 r.set('grav_{}_full'.format(self.associated_log.device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
@@ -492,7 +492,7 @@ class GravityLogPoint(models.Model):
 
     @classmethod
     def load_from_redis(cls, sensor_id: int) -> 'GravityLogPoint' or None:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         try:
             # TODO - Redo this to remove overly greedy except
             redis_response = r.get('grav_{}_full'.format(sensor_id)).decode(encoding="utf-8")
@@ -671,18 +671,15 @@ class TiltConfiguration(models.Model):
 
     # TODO - Eliminate the xxx_redis_reload_flag functions
     def set_redis_reload_flag(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         r.set('tilt_reload_{}'.format(self.color), True)
 
     def clear_redis_reload_flag(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         r.set('tilt_reload_{}'.format(self.color), None)
 
     def check_redis_reload_flag(self) -> bool:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         reload_flag = r.get('tilt_reload_{}'.format(self.color))
 
         if reload_flag is None:
@@ -694,7 +691,7 @@ class TiltConfiguration(models.Model):
     # later on.
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
 
         datetime_string = datetime.datetime.strftime(timezone.now(), "%c")
 
@@ -709,7 +706,7 @@ class TiltConfiguration(models.Model):
 
     def load_extras_from_redis(self) -> dict:
         try:
-            r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+            r = redis.Redis.from_url(url=settings.REDIS_URL)
             redis_response = r.get('tilt_{}_extras'.format(self.color))
         except redis.exceptions.ConnectionError:
             # More than likely redis is offline (or we're in testing)
@@ -835,7 +832,7 @@ class IspindelConfiguration(models.Model):
 
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
 
         extras = {
             'ispindel_id': getattr(self, 'ispindel_id', None),
@@ -848,7 +845,7 @@ class IspindelConfiguration(models.Model):
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
     def load_extras_from_redis(self) -> dict:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
 
         if redis_response is None:
@@ -872,7 +869,7 @@ class IspindelConfiguration(models.Model):
         return extras
 
     def load_last_log_time_from_redis(self) -> str:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         redis_response = r.get('grav_{}_full'.format(self.sensor_id)).decode(encoding="utf-8")
 
         if redis_response is None:
