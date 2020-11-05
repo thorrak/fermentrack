@@ -56,6 +56,8 @@ RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.8
 
 USER django
 
+RUN cd /app && git remote set-url origin https://www.github.com/thorrak/fermentrack.git
+
 WORKDIR /app
 
 ENTRYPOINT ["/entrypoint"]
