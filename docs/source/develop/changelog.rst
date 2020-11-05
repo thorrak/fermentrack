@@ -28,7 +28,7 @@ Fixed
 
 - Bug causing errors when enabling beer profile mode
 - Can now properly push to BrewFather when a fully populated temperature controller isn't linked
-- If a Grainfather logging URL doesn't begin with http:// it is now automatically appended
+- If a Grainfather, Brewfather, or generic push target logging URL doesn't begin with http:// it is now automatically appended
 
 
 
