@@ -23,6 +23,7 @@ Changed
 
 - Changed link to sqlite database to allow for a subdirectory in Docker installs
 - Fermentation profile points can now be deleted for in-use fermentation profiles
+- Remove Python 3.7 warning (everyone should have upgraded by now)
 
 
 Fixed
@@ -31,6 +32,7 @@ Fixed
 - Bug causing errors when enabling beer profile mode
 - Can now properly push to BrewFather when a fully populated temperature controller isn't linked
 - If a Grainfather, Brewfather, or generic push target logging URL doesn't begin with http:// it is now automatically appended
+- Don't prompt new installs to run the script to fix old sqlite files
 
 
 
