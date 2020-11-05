@@ -8,8 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] - Tweaks & Docker Prep
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Unreleased] - Temp Profile Tweaks & Docker Prep
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -21,6 +21,7 @@ Changed
 ---------------------
 
 - Changed link to sqlite database to allow for a subdirectory in Docker installs
+- Fermentation profile points can now be deleted for in-use fermentation profiles
 
 
 Fixed

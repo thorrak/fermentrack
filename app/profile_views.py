@@ -105,14 +105,8 @@ def profile_setpoint_delete(request, profile_id, point_id):
             request, 'Invalid profile setpoint selected for deletion')
         return redirect('profile_edit', profile_id=profile_id)
 
-    if not this_profile_point.profile.is_editable():
-        # Due to the way we're implementing fermentation profiles, we don't want any edits (including deletion of
-        # points!) to a profile that is currently in use.
-        messages.error(
-            request, 'Unable to edit a fermentation profile that is currently in use')
-    else:
-        this_profile_point.delete()
-        messages.success(request, 'Setpoint deleted')
+    this_profile_point.delete()
+    messages.success(request, 'Setpoint deleted')
 
     return redirect('profile_edit', profile_id=profile_id)
 
@@ -132,7 +126,7 @@ def profile_delete(request, profile_id):
         messages.error(request, 'Invalid profile selected for deletion')
         return redirect('profile_list')
 
-    if not this_profile.is_editable():
+    if this_profile.currently_in_use():
         # Due to the way we're implementing fermentation profiles, we don't want any edits to a profile that is
         # currently in use.
         this_profile.status = FermentationProfile.STATUS_PENDING_DELETE

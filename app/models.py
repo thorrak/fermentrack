@@ -1495,10 +1495,6 @@ class FermentationProfile(models.Model):
         else:
             return False
 
-    # Due to the way we're implementing this, we don't want a user to be able to edit a profile that is currently in use
-    def is_editable(self) -> bool:
-        return not self.currently_in_use()
-
     def is_pending_delete(self):
         return self.status == self.STATUS_PENDING_DELETE
 
