@@ -7,6 +7,8 @@ from external_push.models import GenericPushTarget, BrewersFriendPushTarget, Bre
 import datetime, pytz, time
 from django.utils import timezone
 
+from requests.models import MissingSchema
+
 
 @db_task()
 def generic_push_target_push(target_id):
@@ -64,7 +66,10 @@ def grainfather_push_target_push(target_id):
         # TODO - Replace with ObjNotFound
         return None
 
-    push_target.send_data()
+    try:
+        push_target.send_data()
+    except MissingSchema:
+        push_target.check_logging_url()
 
     return None
 

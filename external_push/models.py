@@ -814,3 +814,13 @@ class GrainfatherPushTarget(models.Model):
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
+    def check_logging_url(self):
+        if len(self.logging_url) > 8:
+            if self.logging_url[:7] == "http://":
+                pass
+            elif self.logging_url[:8] == "https://":
+                pass
+            else:
+                self.logging_url = "http://" + self.logging_url
+                self.save()
+
