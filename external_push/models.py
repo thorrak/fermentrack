@@ -362,6 +362,7 @@ def temp_convert(temp, from_units, to_units):
         # TODO - Figure out the proper error type for this
         raise NotImplementedError
 
+
 class BrewfatherPushTarget(models.Model):
     class Meta:
         verbose_name = "Brewfather Push Target"
@@ -523,13 +524,13 @@ class BrewfatherPushTarget(models.Model):
                     to_send['name'] = brewpi.device_name
                     to_send['temp_unit'] = brewpi.temp_format
 
-                    if device_info['BeerTemp'] is not None:
+                    if 'BeerTemp' in device_info:
                         to_send['temp'] = float(device_info['BeerTemp'])
 
-                    if device_info['FridgeTemp'] is not None:
+                    if 'FridgeTemp' in device_info:
                         to_send['aux_temp'] = float(device_info['FridgeTemp'])
 
-                    if device_info['RoomTemp'] is not None:
+                    if 'RoomTemp' in device_info:
                         to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:

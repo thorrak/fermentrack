@@ -27,6 +27,7 @@ Fixed
 ---------------------
 
 - Bug causing errors when enabling beer profile mode
+- Can now properly push to BrewFather when a fully populated temperature controller isn't linked
 
 
 
