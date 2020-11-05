@@ -26,7 +26,7 @@ Changed
 Fixed
 ---------------------
 
--
+- Bug causing errors when enabling beer profile mode
 
 
 
