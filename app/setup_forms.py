@@ -45,7 +45,7 @@ class GuidedSetupConfigForm(forms.Form):
     # Get choices from CONSTANCE_ADDITIONAL_FIELDS setting
     date_time_display_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['date_time_display_select'][1]['choices']
     temperature_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['temperature_format_select'][1]['choices']
-    gravity_format_display_select_choises = settings.CONSTANCE_ADDITIONAL_FIELDS['gravity_format_display_select'][1]['choices']
+    gravity_display_format_select_choices = settings.CONSTANCE_ADDITIONAL_FIELDS['gravity_display_format_select'][1]['choices']
     login_true_false = [
         (True, 'Yes - Require Login'),
         (False, 'No - Can be seen without logging in')
@@ -77,8 +77,8 @@ class GuidedSetupConfigForm(forms.Form):
         choices=temperature_format_select_choices,
         )
 
-    gravity_format_display = forms.ChoiceField(  # initial=config.GRAVITY_FORMAT_DISPLAY
-        choices=gravity_format_display_select_choises,
+    gravity_display_format = forms.ChoiceField(  # initial=config.GRAVITY_DISPLAY_FORMAT
+        choices=gravity_display_format_select_choices,
         )
 
     preferred_timezone = forms.ChoiceField(
@@ -115,7 +115,7 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
         self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
         self.fields['update_preference'].initial = config.GIT_UPDATE_TYPE
-        self.fields['gravity_format_display'].initial = config.GRAVITY_FORMAT_DISPLAY
+        self.fields['gravity_display_format'].initial = config.GRAVITY_DISPLAY_FORMAT
         self.fields['enable_sentry_support'].initial = settings.ENABLE_SENTRY
 
         # This is super-hackish, but whatever. If it works, it works

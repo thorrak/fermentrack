@@ -178,7 +178,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("F", "Fahrenheit"), ("C", "Celsius"))
     }],
-    'gravity_format_display_select': ['django.forms.fields.ChoiceField', {
+    'gravity_display_format_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("SG", "SG (Specific Gravity)"), ("P", "Plato"))
     }],
@@ -203,8 +203,8 @@ CONSTANCE_CONFIG = {
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select'),
-    'GRAVITY_FORMAT_DISPLAY': ('SG', 'Preferred gravity format to use in GUI',
-                           'gravity_format_display_select'),
+    'GRAVITY_DISPLAY_FORMAT': ('SG', 'Preferred gravity format to use in GUI',
+                               'gravity_display_format_select'),
     'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
     'TEMP_CONTROL_SUPPORT_ENABLED': (True, 'Has the user enabled support for temp tracking/control (eg BrewPi)?', bool),
     'GRAVITY_SUPPORT_ENABLED': (True, 'Has the user enabled support for specific gravity sensors?', bool),
@@ -231,7 +231,8 @@ CONSTANCE_CONFIG = {
 
 CONSTANCE_CONFIG_FIELDSETS = {
     'General Options': ('BREWERY_NAME', 'DATE_TIME_FORMAT_DISPLAY', 'REQUIRE_LOGIN_FOR_DASHBOARD', 'TEMPERATURE_FORMAT',
-                        'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE', 'GRAVITY_FORMAT_DISPLAY'),
+                        'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE',
+                        'GRAVITY_DISPLAY_FORMAT'),
 
     'Graph Colors': ('GRAPH_BEER_TEMP_COLOR', 'GRAPH_BEER_SET_COLOR', 'GRAPH_FRIDGE_TEMP_COLOR',
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',

@@ -83,7 +83,7 @@ def setup_config(request):
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
-            config.GRAVITY_FORMAT_DISPLAY = f['gravity_format_display']
+            config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
             config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
 

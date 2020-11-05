@@ -394,6 +394,7 @@ def device_dashboard(request, device_id, beer_id=None):
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                                        'gravity_display_format': config.GRAVITY_DISPLAY_FORMAT,
                                         # 'column_headers': column_headers,
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
@@ -627,7 +628,7 @@ def site_settings(request):
             config.DATE_TIME_FORMAT_DISPLAY = f['date_time_format_display']
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
-            config.GRAVITY_FORMAT_DISPLAY = f['gravity_format_display']
+            config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
