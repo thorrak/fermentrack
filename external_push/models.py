@@ -417,10 +417,12 @@ class BrewfatherPushTarget(models.Model):
     # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
 
     def __str__(self):
-        if self.device_type == "gravity":
+        if self.device_type == "gravity" and self.gravity_sensor_to_push is not None:
             return self.gravity_sensor_to_push.name
-        
-        return self.brewpi_to_push.device_name
+        elif self.brewpi_to_push is not None:
+            return self.brewpi_to_push.device_name
+        else:
+            return "-ERROR-"
 
     def data_to_push(self):
         # For Brewfather, we're just cascading a single gravity sensor downstream to the app
