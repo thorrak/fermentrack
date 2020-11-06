@@ -34,10 +34,18 @@ jobs:
         name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
       -
-        name: Build dockerfile (with push)
+        name: Build dockerfile (amd64/arm64)
         run: |
           docker buildx build \
-          --platform=linux/amd64,linux/arm/v7,linux/arm64 \
+          --platform=linux/amd64,linux/arm64 \
+          --output "type=image,push=true" \
+          --file ./compose/production/django/Dockerfile . \
+          --tag jdbeeler/fermentrack:latest
+      -
+        name: Build dockerfile (armv7)
+        run: |
+          docker buildx build \
+          --platform=linux/arm/v7 \
           --output "type=image,push=true" \
           --file ./compose/production/django/Dockerfile . \
           --tag jdbeeler/fermentrack:latest
