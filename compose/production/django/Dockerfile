@@ -12,6 +12,8 @@ RUN apt-get update \
   && apt-get install -y gettext \
   # Pillow dependencies
   && apt-get install -y libjpeg62 zlib1g libtiff5 libfreetype6 libjpeg62-turbo-dev zlib1g-dev libtiff5-dev libfreetype6-dev \
+  # Cryptography dependencies (for esptool 3.0)
+  && apt-get install -y libssl-dev libffi-dev\
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
 #  && apt-get install -y cron \
@@ -31,8 +33,7 @@ RUN addgroup --system django \
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
-RUN pip install --no-cache-dir -r /requirements/docker-production.txt \
-    && rm -rf /requirements
+RUN pip install --no-cache-dir -r /requirements/docker-production.txt
 
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
