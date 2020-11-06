@@ -2,7 +2,7 @@ Django>=3.0.5,<3.1
 configobj       # required by brewpi.py
 
 #pyzmq~=19.0.1 --no-binary=pyzmq  # The wheel for pyzmq periodically has issues for Raspbian installs
-pyzmq=19.0.2    # Fingers crossed the wheel works
+pyzmq==19.0.2    # Fingers crossed the wheel works
 # numpy==1.18.4 --no-binary=numpy  # The wheel for numpy also has issues (at least on Stretch)
 
 pytz==2020.4           # required by manage.py migrate
