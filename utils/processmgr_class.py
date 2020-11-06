@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # This is a class used for managing processes within Fermentrack. Each instance of this class is designed to track one
 # type of process driven by one type of model (ie - brewpi_script, tilt_manager, etc.)
 
