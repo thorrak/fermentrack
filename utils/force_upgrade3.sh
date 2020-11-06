@@ -5,6 +5,7 @@ BRANCH="master"
 SILENT=0
 TAG=""
 CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -91,7 +92,7 @@ $CIRCUSCTL stop &>> log/upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
-cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
+cd "${SCRIPTPATH}/.."  # Assuming this script is within the utils directory of a normal install
 git fetch --all &>> log/upgrade.log
 git reset --hard @{u} &>> log/upgrade.log
 
