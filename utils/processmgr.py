@@ -39,10 +39,11 @@ fermentrack_install_location = os.path.split(process_mgr_location)[0]
 
 fermentrack_log_path = os.path.join(fermentrack_install_location, "log")
 
-brewpi_script_path = os.path.join(fermentrack_install_location, "brewpi-script/brewpi.py")
+#brewpi_script_path = os.path.join(fermentrack_install_location, "brewpi-script/brewpi.py")
+brewpi_script_path = "brewpi-script.brewpi"
 
 ########## BrewPi Script Configuration
-BREWPI_SCRIPT_CMD_TEMPLATE = "python -u " + brewpi_script_path + ' --dbcfg "%s"'
+BREWPI_SCRIPT_CMD_TEMPLATE = "python -um " + brewpi_script_path + ' --dbcfg "%s"'
 
 
 def BrewPiDevice_query_db(self):
@@ -59,10 +60,10 @@ def BrewPiDevice_query_db(self):
 ########## Tilt Hydrometer Script Configuration
 
 if sys.platform != "darwin":
-    tilt_monitor_script_path = os.path.join(fermentrack_install_location, "gravity/tilt/tilt_monitor_aio.py")
+    tilt_monitor_script_path = "gravity.tilt.tilt_monitor_aio"
 else:
-    tilt_monitor_script_path = os.path.join(fermentrack_install_location, "gravity/tilt/tilt_monitor_macos.py")
-TILT_SCRIPT_CMD_TEMPLATE = "python -u " + tilt_monitor_script_path
+    tilt_monitor_script_path = "gravity.tilt.tilt_monitor_macos"
+TILT_SCRIPT_CMD_TEMPLATE = "python -um " + tilt_monitor_script_path
 
 
 def TiltConfiguration_query_db(self):
