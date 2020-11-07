@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] - Temp Profile Tweaks & Docker Prep
+[2020-11-07] - Temp Profile Tweaks & Docker Prep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
