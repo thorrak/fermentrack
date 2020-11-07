@@ -16,6 +16,10 @@ RUN apt-get update \
   && apt-get install -y libssl-dev libffi-dev\
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
+  # nano so that I can edit files easily inside the container while testing
+  # (I am not a fan of vim. sorry.)
+  # TODO - Remove this
+  && apt-get install -y nano \
 #  && apt-get install -y cron \
   # Currently, installing scipy/numpy installs Python3.7
   # TODO - Figure this out
