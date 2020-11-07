@@ -230,7 +230,7 @@ class GenericPushTarget(models.Model):
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
-    def send_data(self):
+    def send_data(self) -> bool:
         # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
@@ -247,7 +247,16 @@ class GenericPushTarget(models.Model):
         else:
             raise ValueError("Invalid target type specified for push target")
 
-        return False  # Should never get here, but just in case something changes later
+    def check_target_host(self):
+        if len(self.target_host) > 8:
+            if self.target_host[:7] == "http://":
+                pass
+            elif self.target_host[:8] == "https://":
+                pass
+            else:
+                self.target_host = "http://" + self.target_host
+                self.save()
+
 
 
 class BrewersFriendPushTarget(models.Model):
@@ -362,6 +371,7 @@ def temp_convert(temp, from_units, to_units):
         # TODO - Figure out the proper error type for this
         raise NotImplementedError
 
+
 class BrewfatherPushTarget(models.Model):
     class Meta:
         verbose_name = "Brewfather Push Target"
@@ -416,10 +426,12 @@ class BrewfatherPushTarget(models.Model):
     # trigger_next_at = models.DateTimeField(default=timezone.now, help_text="When to next trigger a push")
 
     def __str__(self):
-        if self.device_type == "gravity":
+        if self.device_type == "gravity" and self.gravity_sensor_to_push is not None:
             return self.gravity_sensor_to_push.name
-        
-        return self.brewpi_to_push.device_name
+        elif self.brewpi_to_push is not None:
+            return self.brewpi_to_push.device_name
+        else:
+            return "-ERROR-"
 
     def data_to_push(self):
         # For Brewfather, we're just cascading a single gravity sensor downstream to the app
@@ -523,13 +535,13 @@ class BrewfatherPushTarget(models.Model):
                     to_send['name'] = brewpi.device_name
                     to_send['temp_unit'] = brewpi.temp_format
 
-                    if device_info['BeerTemp'] is not None:
+                    if 'BeerTemp' in device_info:
                         to_send['temp'] = float(device_info['BeerTemp'])
 
-                    if device_info['FridgeTemp'] is not None:
+                    if 'FridgeTemp' in device_info:
                         to_send['aux_temp'] = float(device_info['FridgeTemp'])
 
-                    if device_info['RoomTemp'] is not None:
+                    if 'RoomTemp' in device_info:
                         to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:
@@ -554,8 +566,18 @@ class BrewfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
-        
-        
+
+    def check_logging_url(self):
+        if len(self.logging_url) > 8:
+            if self.logging_url[:7] == "http://":
+                pass
+            elif self.logging_url[:8] == "https://":
+                pass
+            else:
+                self.logging_url = "http://" + self.logging_url
+                self.save()
+
+
 class ThingSpeakPushTarget(models.Model):
     class Meta:
         verbose_name = "ThingSpeak Push Target"
@@ -810,4 +832,14 @@ class GrainfatherPushTarget(models.Model):
 
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
+
+    def check_logging_url(self):
+        if len(self.logging_url) > 8:
+            if self.logging_url[:7] == "http://":
+                pass
+            elif self.logging_url[:8] == "https://":
+                pass
+            else:
+                self.logging_url = "http://" + self.logging_url
+                self.save()
 

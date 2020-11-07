@@ -96,6 +96,7 @@ urlpatterns = [
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/csv/$', app.profile_views.profile_points_to_csv, name='profile_points_to_csv'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/copy/$', app.profile_views.profile_copy, name='profile_copy'),
     url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/rename/$', app.profile_views.profile_rename, name='profile_rename'),
+    url(r'^fermentation_profile/(?P<profile_id>\d{1,20})/notes/$', app.profile_views.profile_notes, name='profile_notes'),
 
     # Beer Views
     url(r'^beer/list/$', app.beer_views.beer_list, name='beer_list'),

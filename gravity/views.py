@@ -219,7 +219,8 @@ def gravity_dashboard(request, sensor_id, log_id=None):
                            'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
                            'column_headers': GravityLog.column_headers_to_graph_string('base_csv'),
                            'log_file_url': log_file_url, 'available_logs': available_logs,
-                           'selected_log_id': log_id, 'manual_add_form': manual_add_form})
+                           'selected_log_id': log_id, 'manual_add_form': manual_add_form,
+                           'gravity_display_format': config.GRAVITY_DISPLAY_FORMAT})
 
 
 @login_required
