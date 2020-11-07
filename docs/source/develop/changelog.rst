@@ -7,6 +7,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+
+[2020-11-07] - Temp Profile Tweaks & Docker Prep
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added optional "notes" field to fermentation profile models
+- Added error message when attempting to create a point with an invalid temp/ttl in a temp profile
+- Added support for configurable gravity units (e.g. plato, specific gravity)
+
+
+Changed
+---------------------
+
+- Changed link to sqlite database to allow for a subdirectory in Docker installs
+- Fermentation profile points can now be deleted for in-use fermentation profiles
+- Remove Python 3.7 warning (everyone should have upgraded by now)
+- If a Grainfather, Brewfather, or generic push target logging URL doesn't begin with http:// it is now automatically appended
+
+
+Fixed
+---------------------
+
+- Bug causing errors when enabling beer profile mode
+- Can now properly push to BrewFather when a fully populated temperature controller isn't linked
+- Don't prompt new installs to run the script to fix old sqlite files
+
+
+
 [2020-08-22] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -14,13 +44,13 @@ Added
 ---------------------
 
 - Added pin definitions for esp32 BrewPi firmware
+- Added Linux networking capability test to Tilt connectivity test suite
 
 
 Changed
 ---------------------
 
 - Added ability for BrewFather push target to push temps from BrewPi temp sensors
-
 
 
 Fixed

@@ -64,12 +64,6 @@ def error_notifications(request):
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
-    # TODO - Remove this after June 1st release
-    if sys.version_info < (3, 7):
-        messages.error(request, "You are currently running Python {}.{} ".format(sys.version_info.major, sys.version_info.minor) +
-                         "which will no longer be supported by Fermentrack with the next release (due <b>June 5th</b>). " +
-                         'To learn more (including how to fix this) read <a href="https://github.com/thorrak/fermentrack/issues/463">this issue on GitHub</a>.')
-
     # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
     # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
     # TODO - Readd this check
@@ -400,6 +394,7 @@ def device_dashboard(request, device_id, beer_id=None):
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
                                         'beer': beer_obj, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
+                                        'gravity_display_format': config.GRAVITY_DISPLAY_FORMAT,
                                         # 'column_headers': column_headers,
                                         'beer_file_url': beer_file_url, 'available_beer_logs': available_beer_logs,
                                         'selected_beer_id': beer_id})
@@ -633,6 +628,7 @@ def site_settings(request):
             config.DATE_TIME_FORMAT_DISPLAY = f['date_time_format_display']
             config.REQUIRE_LOGIN_FOR_DASHBOARD = f['require_login_for_dashboard']
             config.TEMPERATURE_FORMAT = f['temperature_format']
+            config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']

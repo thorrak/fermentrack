@@ -141,6 +141,42 @@
 
     {% endif %}
 
+
+
+    {# TODO - Make this actually test the OS and hide the message for MacOS and Linux #}
+    <h3>Python System Capability Flags</h3>
+
+    <p>
+    Tilt support requires that Python be able to directly interact with your network controller. By default, Linux
+    restricts this type of interaction unless specific flags are set on an application granting this ability.
+    </p>
+
+    <p>
+    <b>Note - </b> This test does not apply to installations on MacOS
+    </p>
+
+    {% if has_setcap_flags %}
+
+        <h4>All necessary capability flags are set</h4>
+        <p>{{ getcap_values }}</p>
+
+    {% else %}
+
+        <h4 style="color: darkred">Python is missing required capability flags!</h4>
+        <p>Current flags: {{ getcap_values }}</p>
+        <p>
+            As these flags are required for Python to properly interact with networking devices (including Bluetooth
+            controllers) this can prevent the Tilt functionality from working as intended.
+        </p>
+        <p>
+            To fix this, simply ssh into your Pi and run the following command:
+            <blockquote>sudo setcap cap_net_raw,cap_net_admin+eip {{ python_executable_path }}</blockquote>
+        </p>
+
+    {% endif %}
+
+
+
     <h3>Redis Connectivity</h3>
 
     <p>

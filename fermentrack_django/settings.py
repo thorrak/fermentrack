@@ -102,10 +102,18 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# There are two methods of Docker installs -- Ones using docker-compose which then have the database
+# moved to Postgres, and ones that act as a single image, where we still use sqlite. For the single
+# image versions we move the database to a subdirectory which can then be persisted.
+if os.getenv("USE_DOCKER", default="false").lower() == "true":
+    DB_DIR = os.path.join(BASE_DIR, "db")
+else:
+    DB_DIR = BASE_DIR
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(DB_DIR, 'db.sqlite3'),
     }
 }
 
@@ -170,6 +178,10 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"), ("F", "Fahrenheit"), ("C", "Celsius"))
     }],
+    'gravity_display_format_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': ((None, "-----"), ("SG", "SG (Specific Gravity)"), ("P", "Plato"))
+    }],
     'git_update_type_select': ['django.forms.fields.ChoiceField', {
         'widget': 'django.forms.Select',
         'choices': ((None, "-----"),
@@ -191,6 +203,8 @@ CONSTANCE_CONFIG = {
     'REQUIRE_LOGIN_FOR_DASHBOARD': (False, 'Should a logged-out user be able to see device status?', bool),
     'TEMPERATURE_FORMAT': ('F', 'Preferred temperature format (can be overridden per device)',
                            'temperature_format_select'),
+    'GRAVITY_DISPLAY_FORMAT': ('SG', 'Preferred gravity format to use in GUI',
+                               'gravity_display_format_select'),
     'USER_HAS_COMPLETED_CONFIGURATION': (False, 'Has the user completed the configuration workflow?', bool),
     'TEMP_CONTROL_SUPPORT_ENABLED': (True, 'Has the user enabled support for temp tracking/control (eg BrewPi)?', bool),
     'GRAVITY_SUPPORT_ENABLED': (True, 'Has the user enabled support for specific gravity sensors?', bool),
@@ -217,7 +231,8 @@ CONSTANCE_CONFIG = {
 
 CONSTANCE_CONFIG_FIELDSETS = {
     'General Options': ('BREWERY_NAME', 'DATE_TIME_FORMAT_DISPLAY', 'REQUIRE_LOGIN_FOR_DASHBOARD', 'TEMPERATURE_FORMAT',
-                        'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE'),
+                        'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE',
+                        'GRAVITY_DISPLAY_FORMAT'),
 
     'Graph Colors': ('GRAPH_BEER_TEMP_COLOR', 'GRAPH_BEER_SET_COLOR', 'GRAPH_FRIDGE_TEMP_COLOR',
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',
