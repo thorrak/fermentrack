@@ -52,6 +52,9 @@ RUN chmod +x /start
 
 COPY --chown=django:django . /app
 
+# Add the django user to the container's dialout group
+RUN usermod -a -G dialout django
+
 # Correct the permissions for /app/data and /app/log
 RUN chown django /app/data/
 RUN chown django /app/log/
