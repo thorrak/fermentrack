@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - docker
+      - docker_hostnet
 
 jobs:
   buildx:

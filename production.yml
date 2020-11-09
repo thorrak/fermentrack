@@ -27,6 +27,7 @@ services:
     command: ["/start", "--privileged"]
     privileged: true
     restart: unless-stopped
+    network_mode: "host"
 
   postgres:
     build:
@@ -39,10 +40,12 @@ services:
     env_file:
       - ./.envs/.production/.postgres
     restart: unless-stopped
+    network_mode: "host"
 
   redis:
     image: redis:5.0
     restart: unless-stopped
+    network_mode: "host"
 
   nginx:
     build:
@@ -56,3 +59,4 @@ services:
       - fermentrack_data:/data:z
     ports:
        - "0.0.0.0:80:80"
+    network_mode: "host"

@@ -32,7 +32,7 @@ def locate_brewpi_services():
     listener = zeroconfListener()
     browser = zeroconf.ServiceBrowser(zeroconf_obj, "_brewpi._tcp.local.", listener)
 
-    sleep(3)  # We have to give zeroconf services time to respond
+    sleep(9)  # We have to give zeroconf services time to respond
     zeroconf_obj.close()
 
     return listener.brewpi_services

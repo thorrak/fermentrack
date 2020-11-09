@@ -35,4 +35,10 @@ SENTRY_DSN=http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b248
 
 # Redis
 # ------------------------------------------------------------------------------
-REDIS_URL=redis://redis:6379/0
+#REDIS_URL=redis://redis:6379/0
+REDIS_URL=redis://127.0.0.1:6379/0
+
+
+# Version Management
+# ------------------------------------------------------------------------------
+ENV_DJANGO_VERSION=1
