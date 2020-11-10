@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - docker
-      - docker_hostnet
 
 jobs:
   buildx:
@@ -31,9 +30,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           version: latest
-      -
-        name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
       -
         name: Build dockerfile (armv7/amd64/arm64)
         run: |
