@@ -173,9 +173,11 @@
             </div>
         </div>
 
-        <p>
-            <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.mdns_id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
-        </p>
+        {% if active_device.tilt_configuration.tiltbridge %}
+            <p>
+                <a href="{% url "gravity_tiltbridge_set_url" active_device.tilt_configuration.tiltbridge.mdns_id active_device.id %}" class="btn btn-primary">Update TiltBridge Automatically</a>
+            </p>
+        {% endif %}
     {% endif %}
 
 
