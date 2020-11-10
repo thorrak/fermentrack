@@ -16,41 +16,33 @@
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+
+import getopt
+import os
+import socket
 import sys
+import time
+import traceback
 
 sys.path.append("..")  # It's a hack, but it works. TODO - Fix this
 
-from scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
+from .scriptlibs.BrewPiUtil import printStdErr, logMessage, asciiToUnicode
 
-# Check needed software dependencies to nudge users to fix their setup
-if sys.version_info < (3, 4):
-    printStdErr("Sorry, requires Python 3.4 or newer")
-    sys.exit(1)
-
-import time, socket, os, getopt, shutil, traceback
 from django.core.exceptions import ObjectDoesNotExist
 
+import urllib.parse as urllib
 
-try:
-    import urllib.parse as urllib
-except:
-    import urllib
 from distutils.version import LooseVersion
 
-import serial
-from serial import SerialException
 import json
 import pid
 
-
-#local imports
-from scriptlibs import brewpiJson
-import scriptlibs.BrewPiUtil as util
-from scriptlibs import brewpiVersion
-from scriptlibs import pinList
-from scriptlibs import expandLogMessage
-from scriptlibs.backgroundserial import BackGroundSerial
-
+# local imports
+from .scriptlibs import BrewPiUtil
+from .scriptlibs import brewpiVersion
+from .scriptlibs import pinList
+from .scriptlibs import expandLogMessage
+from .scriptlibs.backgroundserial import BackGroundSerial
 
 # For Fermentrack compatibility, try to load the Django includes. As this version is now Fermentrack only, die if this
 # doesn't succeed.
@@ -67,7 +59,6 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 import app.models as models  # This SHOULD work due to the sys.path.append above.
-
 
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
@@ -94,11 +85,12 @@ lcdText = ['Script starting up', ' ', ' ', ' ']
 # Read in command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfldwL",
-                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile', 'checkstartuponly', 'dbcfg=', 'dblist', 'name=', 'pidfiledir='])
+                               ['help', 'config=', 'status', 'quit', 'kill', 'force', 'log', 'dontrunfile',
+                                'checkstartuponly', 'dbcfg=', 'dblist', 'name=', 'pidfiledir='])
 except getopt.GetoptError:
     printStdErr("Unknown parameter. Available options: --help, " +
-        "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist, " +
-        "--name <name>, --pidfiledir <directory>")
+                "--status, --quit, --kill, --force, --log, --dontrunfile, --dbcfg <Device name in database>, --dblist, " +
+                "--name <name>, --pidfiledir <directory>")
     sys.exit()
 
 # A BrewPiDevice object from Fermentrack (which contains all our configuration info)
@@ -167,7 +159,6 @@ for o, a in opts:
         except ObjectDoesNotExist:
             sys.exit('ERROR: No database configuration with the ID \'{}\' was found!'.format(a))
 
-
     # redirect output of stderr and stdout to files in log directory
     if o in ('-l', '--log'):
         logToFiles = True
@@ -177,7 +168,6 @@ for o, a in opts:
     if o in ('--checkstartuponly'):
         checkStartupOnly = True
 
-
 # Alright. We're modifying how we load the configuration file to allow for loading both from a database, and from the
 # actual file-based config.
 
@@ -186,7 +176,7 @@ if dbConfig is None:
     sys.exit('ERROR: You must specify the BrewPi controller to connect to using the --dbcfg option')
 
 if dbConfig.status == models.BrewPiDevice.STATUS_ACTIVE or dbConfig.status == models.BrewPiDevice.STATUS_UNMANAGED:
-    config = util.read_config_from_database_without_defaults(dbConfig)
+    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
 else:
     logMessage("This instance of BrewPi is currently disabled in the web interface. Reenable it and relaunch "
                "this script. This instance will now exit.")
@@ -207,7 +197,6 @@ except pid.PidFileAlreadyRunningError:
                    "This instance will exit")
     exit(0)
 
-
 if checkStartupOnly:
     exit(1)
 
@@ -219,7 +208,7 @@ lastDay = ""
 day = ""
 
 if logToFiles:
-    logPath = util.addSlash(util.scriptPath()) + 'logs/'
+    logPath = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + 'logs/'
     logMessage("Redirecting output to log files in %s, output will not be shown in console" % logPath)
     sys.stderr = open(logPath + 'stderr.txt', 'a', 0)  # append to stderr file, unbuffered
     sys.stdout = open(logPath + 'stdout.txt', 'w', 0)  # overwrite stdout file on script start, unbuffered
@@ -228,16 +217,17 @@ if logToFiles:
 def startNewBrew(newName):
     global config
     global dbConfig
-    if len(newName) > 1:     # shorter names are probably invalid
+    if len(newName) > 1:  # shorter names are probably invalid
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = util.configSet(dbConfig, 'beerName', newName)
-        config = util.configSet(dbConfig, 'dataLogging', 'active')
+        config = BrewPiUtil.configSet(dbConfig, 'beerName', newName)
+        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
         logMessage("Notification: Restarted logging for beer '%s'." % newName)
         return {'status': 0, 'statusMessage': "Successfully switched to new brew '%s'. " % urllib.unquote(newName) +
                                               "Please reload the page."}
     else:
         return {'status': 1, 'statusMessage': "Invalid new brew name '%s', "
-                                              "please enter a name with at least 2 characters" % urllib.unquote(newName)}
+                                              "please enter a name with at least 2 characters" % urllib.unquote(
+            newName)}
 
 
 def stopLogging():
@@ -246,8 +236,8 @@ def stopLogging():
     logMessage("Stopped data logging, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data.")
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = util.configSet(dbConfig, 'beerName', None)
-    config = util.configSet(dbConfig, 'dataLogging', 'stopped')
+    config = BrewPiUtil.configSet(dbConfig, 'beerName', None)
+    config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'stopped')
     return {'status': 0, 'statusMessage': "Successfully stopped logging"}
 
 
@@ -257,7 +247,7 @@ def pauseLogging():
     logMessage("Paused logging data, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data until resumed.")
     if config['dataLogging'] == 'active':
-        config = util.configSet(dbConfig, 'dataLogging', 'paused')
+        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'paused')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully paused logging."}
     else:
@@ -269,19 +259,20 @@ def resumeLogging():
     global dbConfig
     logMessage("Continued logging data, as requested in web interface.")
     if config['dataLogging'] == 'paused':
-        config = util.configSet(dbConfig, 'dataLogging', 'active')
+        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
         return {'status': 0, 'statusMessage': "Successfully continued logging."}
     elif config['dataLogging'] == 'stopped':
         if dbConfig.active_beer is not None:
-            config = util.configSet(dbConfig, 'dataLogging', 'active')
+            config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             return {'status': 0, 'statusMessage': "Successfully continued logging."}
     # If we didn't return a success status above, we'll return an error
     return {'status': 1, 'statusMessage': "Logging was not resumed."}
 
+
 # bytes are read from nonblocking serial into this buffer and processed when the buffer contains a full line.
-ser = util.setupSerial(config, time_out=0)
+ser = BrewPiUtil.setupSerial(config, time_out=0)
 
 if not ser:
     exit(1)
@@ -293,7 +284,6 @@ else:
 
 # wait for 10 seconds to allow an Uno to reboot (in case an Uno is being used)
 time.sleep(float(config.get('startupDelay', 10)))
-
 
 logMessage("Checking software version on controller... ")
 hwVersion = brewpiVersion.getVersionFromSerial(ser)
@@ -329,14 +319,12 @@ else:
                    "'develop' branch mode.")
         hwMode = "modern"
 
-
     if int(hwVersion.log) != int(expandLogMessage.getVersion()):
         logMessage("Warning: version number of local copy of logMessages.h " +
                    "does not match log version number received from controller." +
                    "controller version = " + str(hwVersion.log) +
                    ", local copy version = " + str(expandLogMessage.getVersion()) +
                    ". This is generally a non-issue, as thus far log messages have only been added - not changed.")
-
 
 bg_ser = None
 
@@ -352,8 +340,8 @@ if ser is not None:
     bg_ser.writeln('v')  # request control variables cv
 
     # refresh the device list
-    bg_ser.writeln("d{r:1}")        # request installed devices
-    bg_ser.writeln("h{u:-1,v:1}")   # request available, but not installed devices
+    bg_ser.writeln("d{r:1}")  # request installed devices
+    bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
 
     # answer from controller is received asynchronously later.
 
@@ -368,9 +356,10 @@ if useInetSocket:
     s.bind((socketHost, int(socketPort)))
     logMessage('Bound to TCP socket on port {}, interface {} '.format(int(socketPort), socketHost))
 else:
-    socketFile = util.addSlash(util.scriptPath()) + config.get('socket_name', 'BEERSOCKET')  # Making this configurable
+    socketFile = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + config.get('socket_name',
+                                                                           'BEERSOCKET')  # Making this configurable
     if os.path.exists(socketFile):
-    # if socket already exists, remove it
+        # if socket already exists, remove it
         os.remove(socketFile)
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -379,11 +368,10 @@ else:
     os.chmod(socketFile, 0o0777)
 
 serialCheckInterval = 0.5
-s.setblocking(1)  # set socket functions to be blocking
+s.setblocking(True)  # set socket functions to be blocking
 s.listen(10)  # Create a backlog queue for up to 10 connections
 # blocking socket functions wait 'serialCheckInterval' seconds
 s.settimeout(serialCheckInterval)
-
 
 prevDataTime = 0.0  # keep track of time between new data requests
 prevTimeOutReq = prevDataTime  # Using this to fix the prevDataTime tracking
@@ -405,9 +393,10 @@ prevTempJson = {
     "BeerSet": 0,
     "FridgeSet": 0}
 
+
 def renameTempKey(key):
     rename = {
-        "Log1Temp": "RoomTemp", # Added for convenience, allows a configured OEM BrewPi to log room temp with Log1Temp
+        "Log1Temp": "RoomTemp",  # Added for convenience, allows a configured OEM BrewPi to log room temp with Log1Temp
         "bt": "BeerTemp",
         "bs": "BeerSet",
         "ba": "BeerAnn",
@@ -418,6 +407,7 @@ def renameTempKey(key):
         "s": "State",
         "t": "Time"}
     return rename.get(key, key)
+
 
 # At startup, if we're using a db-based config, force synchronization of temperature format
 def syncTempFormat(control_constants):
@@ -454,7 +444,7 @@ while run:
     # When messages are expected on serial, the timeout is raised 'manually'
     try:
         conn, addr = s.accept()
-        conn.setblocking(1)
+        conn.setblocking(True)
         # blocking receive, times out in serialCheckInterval
         message = conn.recv(4096)
         message = message.decode(encoding="cp437")
@@ -481,7 +471,7 @@ while run:
         elif messageType == "getControlSettings":
             # TODO - See where/if we call getControlSettings (and fix the cs['profile'] response below)
             # if cs['mode'] == "p":
-            #     profileFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
+            #     profileFile = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + 'settings/tempProfile.csv'
             #     with file(profileFile, 'r') as prof:
             #         cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
             cs['dataLogging'] = config['dataLogging']
@@ -538,7 +528,7 @@ while run:
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
             bg_ser.writeln("j{mode:\"o\"}")
-            dbConfig = refresh_dbConfig()   # Reload dbConfig from the database (in case we were using profiles)
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database (in case we were using profiles)
             logMessage("Notification: Temperature control disabled")
             raise socket.timeout
         elif messageType == "setParameters":
@@ -549,7 +539,7 @@ while run:
                 if 'tempFormat' in decoded:
                     if decoded['tempFormat'] != config.get('temp_format', 'C'):
                         # For database configured installs, we save this in the device definition
-                        util.configSet(dbConfig, 'temp_format', decoded['tempFormat'])
+                        BrewPiUtil.configSet(dbConfig, 'temp_format', decoded['tempFormat'])
                     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
             except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
@@ -574,7 +564,7 @@ while run:
             newInterval = int(value)
             if 5 < newInterval < 5000:
                 try:
-                    config = util.configSet(dbConfig, 'interval', float(newInterval))
+                    config = BrewPiUtil.configSet(dbConfig, 'interval', float(newInterval))
                 except ValueError:
                     logMessage("Cannot convert interval '" + value + "' to float")
                     continue
@@ -609,7 +599,7 @@ while run:
             logMessage("programController action is not supported by this modified version of brewpi-script")
         elif messageType == "refreshDeviceList":
             # if value.find("readValues") != -1:
-                trigger_refresh(True)
+            trigger_refresh(True)
             # else:
             #     trigger_refresh(False)
         elif messageType == "getDeviceList":
@@ -685,14 +675,14 @@ while run:
         elif messageType == "restartController":
             logMessage("Restarting controller")
             bg_ser.writeln("R")  # This tells the controller to restart
-            time.sleep(3)        # We'll give bg_ser 3 seconds for it to send/kick in
-            sys.exit(0)          # Exit BrewPi-script
+            time.sleep(3)  # We'll give bg_ser 3 seconds for it to send/kick in
+            sys.exit(0)  # Exit BrewPi-script
 
         elif messageType == "resetWiFi":
             logMessage("Resetting controller WiFi settings")
             bg_ser.writeln("w")
-            time.sleep(3)        # We'll give bg_ser 3 seconds for it to send/kick in
-            sys.exit(0)          # Exit BrewPi-script
+            time.sleep(3)  # We'll give bg_ser 3 seconds for it to send/kick in
+            sys.exit(0)  # Exit BrewPi-script
         else:
             logMessage("Error: Received invalid message on socket: " + message)
 
@@ -709,18 +699,18 @@ while run:
         if hwVersion is None:
             continue  # do nothing with the serial port when the controller has not been recognized
 
-        if(time.time() - prevLcdUpdate) > 5:
+        if (time.time() - prevLcdUpdate) > 5:
             # request new LCD text
-            prevLcdUpdate += 5 # give the controller some time to respond
+            prevLcdUpdate += 5  # give the controller some time to respond
             if hwMode == "legacy":
                 # 'l' is only recognized on legacy controllers and results in an error for 'modern' controllers.
                 # We will need to emulate the LCD text
                 bg_ser.writeln('l')
 
-        if(time.time() - prevSettingsUpdate) > 60:
+        if (time.time() - prevSettingsUpdate) > 60:
             # Request Settings from controller to stay up to date
             # Controller should send updates on changes, this is a periodic update to ensure it is up to date
-            prevSettingsUpdate += 5 # give the controller some time to respond
+            prevSettingsUpdate += 5  # give the controller some time to respond
             bg_ser.writeln('s')
 
         # if no new data has been received for serialRequestInteval seconds
@@ -731,7 +721,6 @@ while run:
                 if prevDataTime == 0.0:  # If prevDataTime hasn't yet been set (it's 0.0 at script startup), set it.
                     prevDataTime = time.time()
 
-
         if (time.time() - prevDataTime) >= 3 * float(config['interval']):
             # something is wrong: controller is not responding to data requests
             logMessage("Error: controller is not responding to new data requests. Exiting.")
@@ -739,7 +728,6 @@ while run:
             # In this case, we can rely on either circus (Fermentrack) or cron (brewpi-www) relaunching this script.
             # It's better to fail loudly (in this case with an exit) than silently.
             sys.exit(1)
-
 
         while True:
             line = bg_ser.read_line()
@@ -766,11 +754,11 @@ while run:
 
                         # Moved this so that the last read values is updated even if logging is off. Otherwise the getDashInfo 
                         # will return the default temp values (0)
-                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':                            
+                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':
                             continue  # skip if logging is paused or stopped
 
                         # All this is handled by the model
-                        util.save_beer_log_point(dbConfig, newRow)
+                        BrewPiUtil.save_beer_log_point(dbConfig, newRow)
 
                     elif line[0] == 'D':
                         # debug message received, should already been filtered out, but print anyway here.
@@ -791,14 +779,14 @@ while run:
                     # do not print this to the log file. This is requested continuously.
                     elif line[0] == 'V':
                         # Control settings received
-                        cv = line[2:] # keep as string, do not decode
+                        cv = line[2:]  # keep as string, do not decode
                     elif line[0] == 'N':
                         pass  # version number received. Do nothing, just ignore
                     elif line[0] == 'h':
                         deviceList['available'] = json.loads(line[2:])
                         oldListState = deviceList['listState']
                         deviceList['listState'] = oldListState.strip('h') + "h"
-                        logMessage("Available devices received: "+ json.dumps(deviceList['available']))
+                        logMessage("Available devices received: " + json.dumps(deviceList['available']))
                     elif line[0] == 'd':
                         deviceList['installed'] = json.loads(line[2:])
                         oldListState = deviceList['listState']
