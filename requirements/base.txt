@@ -23,7 +23,7 @@ requests        # for loading firmware data from websites
 esptool==2.8         # for flashing ESP8266 devices
 packaging~=17.1 # for testing requirements in the Tilt tests
 
-urllib<1.26     # Requirement for the new pip resolver
+urllib3<1.26    # Requirement for the new pip resolver
 
 
 # Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
