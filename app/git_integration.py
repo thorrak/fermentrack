@@ -1,6 +1,9 @@
 from git import Repo
 import fermentrack_django.settings as settings
 from constance import config  # For the explicitly user-configurable stuff
+import environ
+
+env = environ.Env()
 
 
 def app_is_current(tagged_commits_only=False, branch_to_check=None):
@@ -77,6 +80,16 @@ def get_tag_info():
 
     return {'latest_tag': latest_tag, 'all_tags': tags}
 
+
+def get_local_version_numbers() -> dict:
+    # DOCKER_CONTAINER_VERSION is set in compose/production/django/start
+    # ENV_DJANGO_VERSION is set in .envs/.production/.django
+    # ENV_POSTGRES_VERSION is set in .envs/.production/.postgres
+    versions = {'docker_container_version': env.int("DOCKER_CONTAINER_VERSION", default=0),
+                'env_django_version': env.int("ENV_DJANGO_VERSION", default=0),
+                'env_postgres_version': env.int("ENV_POSTGRES_VERSION", default=0),
+                'use_docker': env.bool("USE_DOCKER", default=False), }
+    return versions
 
 # The following was used for testing during development
 # if __name__ == "__main__":

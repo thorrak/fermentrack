@@ -478,6 +478,7 @@ def github_trigger_upgrade(request, variant=""):
     git_update_type = config.GIT_UPDATE_TYPE
 
     tags = git_integration.get_tag_info()
+    local_versions = git_integration.get_local_version_numbers()
 
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
@@ -536,7 +537,8 @@ def github_trigger_upgrade(request, variant=""):
     return render(request, template_name="github_trigger_upgrade.html",
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
-                                        'allow_git_branch_switching': allow_git_branch_switching})
+                                        'allow_git_branch_switching': allow_git_branch_switching,
+                                        'local_versions': local_versions})
 
 @login_required
 @site_is_configured

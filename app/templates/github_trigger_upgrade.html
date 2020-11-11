@@ -27,6 +27,24 @@
     </div>
 </div>
 
+{% if local_versions.use_docker %}
+<h3>Local Container Versions</h3>
+<div class="row">
+    <div class="col-xs-2">Docker Container Version:</div>
+    <div class="col-xs-10">{{ local_versions.docker_container_version }}</div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Django Environment Version:</div>
+    <div class="col-xs-10">{{ local_versions.env_django_version }}</div>
+</div>
+<div class="row">
+    <div class="col-xs-2">Postgres Environmnet Version:</div>
+    <div class="col-xs-10">{{ local_versions.env_postgres_version }}</div>
+</div>
+
+
+{% endif %}
+
 
 <div class="row">
 {% if commit_info.local.committed_datetime < tags.latest_tag.committed_datetime %}

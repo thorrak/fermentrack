@@ -4,6 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+export DOCKER_CONTAINER_VERSION="1"
 
 python /app/manage.py collectstatic --noinput
 # TODO - Determine if I really want this here
