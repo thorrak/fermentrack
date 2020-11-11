@@ -18,6 +18,7 @@ pyserial        # for serial interaction
 
 pyudev          # for managing udev rules for serial devices
 requests        # for loading firmware data from websites
+urllib<1.26  # Requirement for the new pip resolver
 
 esptool         # for flashing ESP8266 devices
 packaging~=17.1 # for testing requirements in the Tilt tests
