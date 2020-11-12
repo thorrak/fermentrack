@@ -536,13 +536,16 @@ class BrewfatherPushTarget(models.Model):
                     to_send['temp_unit'] = brewpi.temp_format
 
                     if 'BeerTemp' in device_info:
-                        to_send['temp'] = float(device_info['BeerTemp'])
+                        if device_info['BeerTemp'] is not None:
+                            to_send['temp'] = float(device_info['BeerTemp'])
 
                     if 'FridgeTemp' in device_info:
-                        to_send['aux_temp'] = float(device_info['FridgeTemp'])
+                        if device_info['FridgeTemp'] is not None:
+                            to_send['aux_temp'] = float(device_info['FridgeTemp'])
 
                     if 'RoomTemp' in device_info:
-                        to_send['ext_temp'] = float(device_info['RoomTemp'])
+                        if device_info['RoomTemp'] is not None:
+                            to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:
                         to_send['beer'] =  brewpi.active_beer.name
