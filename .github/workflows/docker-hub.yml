@@ -1,4 +1,4 @@
-name: 'Build & Push to Docker Hub (New)'
+name: 'Build & Push to Docker Hub'
 
 on:
   push:
