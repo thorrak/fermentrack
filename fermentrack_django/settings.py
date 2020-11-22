@@ -286,7 +286,7 @@ if ENABLE_SENTRY:
     from sentry_sdk.integrations.django import DjangoIntegration
 
     sentry_sdk.init(
-        dsn="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9001/6",
+        dsn="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9000/6",
         integrations=[DjangoIntegration()],
         traces_sample_rate=1.0,
         send_default_pii=True,
