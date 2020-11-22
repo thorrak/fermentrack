@@ -308,7 +308,7 @@ if ENABLE_SENTRY:
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
 
-    SENTRY_DSN = env("SENTRY_DSN", default="http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2")
+    SENTRY_DSN = env("SENTRY_DSN", default="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9001/6")
     SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
 
     sentry_logging = LoggingIntegration(
@@ -320,6 +320,6 @@ if ENABLE_SENTRY:
         dsn=SENTRY_DSN,
         integrations=integrations,
         # environment=env("SENTRY_ENVIRONMENT", default="production"),
-        # traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
+        traces_sample_rate=1.0,
         send_default_pii=True,
     )
