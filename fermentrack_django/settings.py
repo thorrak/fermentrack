@@ -84,10 +84,6 @@ if sys.platform == "darwin":
         INSTALLED_APPS += 'mod_wsgi.server', # Used for the macOS setup
 
 
-# if ENABLE_SENTRY:
-#     import raven
-#     INSTALLED_APPS += 'raven.contrib.django.raven_compat',
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -308,7 +304,7 @@ if ENABLE_SENTRY:
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
 
-    SENTRY_DSN = env("SENTRY_DSN", default="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9001/6")
+    SENTRY_DSN = env("SENTRY_DSN", default="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9000/6")
     SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
 
     sentry_logging = LoggingIntegration(
