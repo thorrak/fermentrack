@@ -20,10 +20,7 @@ RUN apt-get update \
   # (I am not a fan of vim. sorry.)
   # TODO - Remove this
   && apt-get install -y nano \
-#  && apt-get install -y cron \
-  # Currently, installing scipy/numpy installs Python3.7
-  # TODO - Figure this out
-  #&& apt-get install -y python3-scipy python3-numpy \
+  # all the bluetooth libs
   && apt-get install -y bluez libcap2-bin libbluetooth3 libbluetooth-dev \
   # We need avahi-utils and libnss-mdns for mDNS support
   && apt-get install -y avahi-utils libnss-mdns \
