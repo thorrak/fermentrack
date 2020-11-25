@@ -35,6 +35,9 @@ RUN apt-get update \
 RUN addgroup --system django \
     && adduser --system --ingroup django django
 
+# Add piwheels (and our custom wheels!) to pip.conf for the armv7 scipy/numpy builds
+COPY ./compose/production/django/pip.conf /etc/pip.conf
+
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
 RUN pip install --no-cache-dir -r /requirements/docker-production.txt

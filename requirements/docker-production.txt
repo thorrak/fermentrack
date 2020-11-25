@@ -8,3 +8,6 @@
 #django-anymail[mailgun]==8.1  # https://github.com/anymail/django-anymail
 
 psycopg2==2.8.6  # https://github.com/psycopg/psycopg2
+
+numpy==1.19.4  # These are custom wheels on RPis (wheels.fermentrack.com)
+scipy==1.5.4  # These are custom wheels on RPis (wheels.fermentrack.com)
