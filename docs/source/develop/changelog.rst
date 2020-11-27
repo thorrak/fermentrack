@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unreleased] -TBD (Bugfixes v. Docker + Fixes)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- iSpindel temperature readings can now be calibrated for accuracy
+- Add properly sized app icon for apple devices
+
+
+Changed
+---------------------
+
+- Updated Sentry target
+
+
+Fixed
+---------------------
+
+- Updated requirements to support the new pip
+
+
+
 
 [2020-11-07] - Temp Profile Tweaks & Docker Prep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
