@@ -15,7 +15,7 @@ RUN apt-get update \
   # Cryptography dependencies (for esptool 3.0)
   && apt-get install -y libssl-dev libffi-dev \
   # pyzmq dependencies
-  && apt-get install -y libzmq-dev \
+  && apt-get install -y libzmq3-dev \
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
   # nano so that I can edit files easily inside the container while testing
