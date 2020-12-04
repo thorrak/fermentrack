@@ -13,7 +13,9 @@ RUN apt-get update \
   # Pillow dependencies
   && apt-get install -y libjpeg62 zlib1g libtiff5 libfreetype6 libjpeg62-turbo-dev zlib1g-dev libtiff5-dev libfreetype6-dev \
   # Cryptography dependencies (for esptool 3.0)
-  && apt-get install -y libssl-dev libffi-dev\
+  && apt-get install -y libssl-dev libffi-dev \
+  # pyzmq dependencies
+  && apt-get install -y libzmq-dev \
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
   # nano so that I can edit files easily inside the container while testing
