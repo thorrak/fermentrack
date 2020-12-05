@@ -53,7 +53,7 @@ class ProcessManager(object):
         try:
             watchers = self._circusmgr.get_applications()
         except CircusException:
-            self.log.error("Could not get running processes from circus", exc_info=self.debug)
+            self.log.error(f"Could not get running processes from circus at {self.circus_endpoint}", exc_info=self.debug)
             return []
         # Only pic devices with prefix set, other apps are other functions and should be left alone.
         running_devices = [x for x in watchers if x.startswith(self.prefix)]
