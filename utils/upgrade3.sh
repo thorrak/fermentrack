@@ -86,7 +86,7 @@ shift $((OPTIND-1))
 
 if [ ${USE_DOCKER} -eq 1 ]
 then
-  # For non-docker installs, we need to launch the virtualenv
+  # For docker installs, the circus endpoint is in a different spot
   CIRCUSCTL="python3 -m circus.circusctl --timeout 10 --endpoint \"tcp://127.0.0.1:7555\""
 fi
 
@@ -114,9 +114,17 @@ $CIRCUSCTL stop &>> log/upgrade.log
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
-cd "${SCRIPTPATH}/.."  # Assuming this script is within the utils directory of a normal install
-git fetch --prune &>> log/upgrade.log
-git reset --hard &>> log/upgrade.log
+cd "${SCRIPTPATH}/.." || exit  # Assuming this script is within the utils directory of a normal install
+
+if [ ${FORCE_UPGRADE} -eq 0 ]
+then
+  git fetch --prune &>> log/upgrade.log
+  git reset --hard &>> log/upgrade.log
+else
+  git fetch --all &>> log/upgrade.log
+  git reset --hard @{u} &>> log/upgrade.log
+fi
+
 
 # If we have a tag set, use it
 if [ "${TAG}" = "" ]
@@ -144,6 +152,12 @@ python3 manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
+
+#if [ ${FORCE_UPGRADE} -eq 1 ]
+#then
+#  ~/fermentrack/utils/updateCronCircus.sh startifstopped
+#fi
+
 $CIRCUSCTL reloadconfig &>> log/upgrade.log
 $CIRCUSCTL start &>> log/upgrade.log
 printinfo "Complete!"

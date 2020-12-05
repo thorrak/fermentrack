@@ -506,28 +506,21 @@ def github_trigger_upgrade(request, variant=""):
                 # Branch switching is enabled & the user provided a branch. Use it.
                 branch_to_use = request.POST.get('new_branch', "master")
 
-            if variant == "":
-                cmds['tag'] = "nohup utils/upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                cmds['branch'] = "nohup utils/upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                messages.success(request, "Triggered an upgrade from GitHub")
-
-            elif variant == "force":
-                cmds['tag'] = "nohup utils/force_upgrade3.sh -t \"{}\" -b \"master\" &".format(request.POST.get('tag', ""))
-                cmds['branch'] = "nohup utils/force_upgrade3.sh -b \"{}\" &".format(branch_to_use)
-                messages.success(request, "Triggered an upgrade from GitHub")
-
-            else:
-                cmds['tag'] = ""
-                cmds['branch'] = ""
-                messages.error(request, "Invalid upgrade variant '{}' requested".format(variant))
+            variant_flags = ""
+            if variant == "force":  # Does git reset --hard
+                variant_flags += "-f "
+            if settings.USE_DOCKER:
+                variant_flags += "-d "
 
             if 'tag' in request.POST:
-                # If we were passed a tag name, explicitly update to it. Assume (for now) all tags are within master
-                cmd = cmds['tag']
+                # If we were passed a tag name, explicitly update to it. Assume all tags are within master
+                tag_to_use = request.POST.get('tag', "")
+                cmd = f"nohup utils/upgrade3.sh {variant_flags} -t \"{tag_to_use}\" -b \"master\" &"
             else:
-                cmd = cmds['branch']
+                cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
+            messages.success(request, "Triggered an upgrade from GitHub")
 
     else:
         # We'll display this error message if the page is being accessed and no form has been posted
