@@ -7,6 +7,7 @@ TAG=""
 CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 FORCE_UPGRADE=0
+USE_DOCKER=0
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -48,7 +49,7 @@ printerror() {
 }
 
 
-while getopts ":b:t:fsh" opt; do
+while getopts ":b:t:fdsh" opt; do
   case ${opt} in
     b)
       BRANCH=${OPTARG}
@@ -63,6 +64,10 @@ while getopts ":b:t:fsh" opt; do
     f)
     # For when the two scripts are combined
       FORCE_UPGRADE=1
+      ;;
+    d)
+      # If this upgrade is taking place from a dockerized install, then we need to do things slightly differently
+      USE_DOCKER=1
       ;;
     h)
       usage
@@ -79,12 +84,24 @@ done
 shift $((OPTIND-1))
 
 
-exec > >(tee -i log/upgrade.log)
+if [ ${USE_DOCKER} -eq 1 ]
+then
+  # For non-docker installs, we need to launch the virtualenv
+  CIRCUSCTL="python3 -m circus.circusctl --timeout 10 --endpoint \"tcp://127.0.0.1:7555\""
+fi
+
+
+rm log/upgrade.log
+exec &> >(tee -i log/upgrade.log)
 
 
 printinfo "Triggering upgrade from branch ${BRANCH}"
-# First, launch the virtualenv
-source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
+
+if [ ${USE_DOCKER} -eq 0 ]
+then
+  # For non-docker installs, we need to launch the virtualenv
+  source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
+fi
 
 # Given that this script can be called by the webapp proper, give it 2 seconds to finish sending a reply to the
 # user if he/she initiated an upgrade through the webapp.
