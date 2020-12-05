@@ -25,6 +25,13 @@ application = get_wsgi_application()
 import app.models
 import gravity.models
 
+from fermentrack_django.settings import USE_DOCKER
+
+if USE_DOCKER:
+    CIRCUS_ENDPOINT = "tcp://127.0.0.1:7555"
+else:
+    CIRCUS_ENDPOINT = DEFAULT_ENDPOINT_DEALER
+
 
 LOG = logging.getLogger("processmgr")
 LOG.setLevel(logging.INFO)
