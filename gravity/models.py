@@ -7,6 +7,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.core import serializers
 
+from pathlib import Path
 import os.path, csv, logging, socket, typing, requests
 import json, time, datetime, pytz
 from constance import config
@@ -265,11 +266,8 @@ class GravityLog(models.Model):
         else:
             return "Gravity Device " + str(self.device_id) + " - L" + str(self.id) + " - NAME ERROR - "
 
-    def full_filename(self, which_file: str, extension_only: bool=False) -> str:
-        if extension_only:
-            base_name = ""
-        else:
-            base_name = self.base_filename()
+    def full_filename(self, which_file: str) -> str:
+        base_name = self.base_filename()
 
         if which_file == 'base_csv':
             return base_name + "_graph.csv"
@@ -278,18 +276,18 @@ class GravityLog(models.Model):
         elif which_file == 'annotation_json':
             return base_name + "_annotations.almost_json"
         else:
-            return None
+            return ""
 
     def data_file_url(self, which_file: str) -> str:
-        return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
+        return settings.DATA_URL + self.full_filename(which_file)
 
     def full_csv_url(self) -> str:
         return self.data_file_url('full_csv')
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.base_filename()
-        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
+        full_csv_file = file_name_base / self.full_filename('full_csv')
         return os.path.isfile(full_csv_file)
 
     # def base_csv_url(self):
@@ -301,11 +299,11 @@ class GravityLog(models.Model):
 # When the user attempts to delete a gravity log, also delete the log files associated with it.
 @receiver(pre_delete, sender=GravityLog)
 def delete_gravity_log(sender, instance, **kwargs):
-    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / instance.base_filename()
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-    base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
-    full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
-    annotation_json = file_name_base + instance.full_filename('annotation_json', extension_only=True)
+    base_csv_file = file_name_base / instance.full_filename('base_csv')
+    full_csv_file = file_name_base / instance.full_filename('full_csv')
+    annotation_json = file_name_base / instance.full_filename('annotation_json')
 
     for this_filepath in [base_csv_file, full_csv_file, annotation_json]:
         try:
@@ -452,11 +450,11 @@ class GravityLogPoint(models.Model):
                     self.temp = self.temp_to_c()
                 self.temp_format = self.associated_log.format
 
-            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.associated_log.base_filename()
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-            base_csv_file = file_name_base + self.associated_log.full_filename('base_csv', extension_only=True)
-            full_csv_file = file_name_base + self.associated_log.full_filename('full_csv', extension_only=True)
-            annotation_json = file_name_base + self.associated_log.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base / self.associated_log.full_filename('base_csv')
+            full_csv_file = file_name_base / self.associated_log.full_filename('full_csv')
+            annotation_json = file_name_base / self.associated_log.full_filename('annotation_json')
 
             # Write out headers (if the files don't exist)
             check_and_write_headers(base_csv_file, self.associated_log.column_headers('base_csv'))

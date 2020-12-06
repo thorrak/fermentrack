@@ -1161,11 +1161,8 @@ class Beer(models.Model):
         else:
             return "Device " + str(self.device_id) + " - B" + str(self.id) + " - NAME ERROR - "
 
-    def full_filename(self, which_file, extension_only=False):
-        if extension_only:
-            base_name = ""
-        else:
-            base_name = self.base_filename()
+    def full_filename(self, which_file):
+        base_name = self.base_filename()
 
         if which_file == 'base_csv':
             return base_name + "_graph.csv"
@@ -1177,15 +1174,15 @@ class Beer(models.Model):
             return None
 
     def data_file_url(self, which_file):
-        return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
+        return settings.DATA_URL + self.full_filename(which_file)
 
     def full_csv_url(self):
         return self.data_file_url('full_csv')
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.base_filename()
-        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
+        full_csv_file = file_name_base / self.full_filename('full_csv')
         return os.path.isfile(full_csv_file)
 
     def can_log_gravity(self):
@@ -1205,11 +1202,11 @@ class Beer(models.Model):
 # When the user attempts to delete a beer, also delete the log files associated with it.
 @receiver(pre_delete, sender=Beer)
 def delete_beer(sender, instance, **kwargs):
-    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / instance.base_filename()
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-    base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
-    full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
-    annotation_json = file_name_base + instance.full_filename('annotation_json', extension_only=True)
+    base_csv_file = file_name_base / instance.full_filename('base_csv')
+    full_csv_file = file_name_base / instance.full_filename('full_csv')
+    annotation_json = file_name_base / instance.full_filename('annotation_json')
 
     for this_filepath in [base_csv_file, full_csv_file, annotation_json]:
         try:
@@ -1417,11 +1414,11 @@ class BeerLogPoint(models.Model):
                 return False
 
         if self.associated_beer_id is not None:
-            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.associated_beer.base_filename()
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-            base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
-            full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
-            annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base / self.associated_beer.full_filename('base_csv')
+            full_csv_file = file_name_base / self.associated_beer.full_filename('full_csv')
+            annotation_json = file_name_base / self.associated_beer.full_filename('annotation_json')
 
             # Write out headers (if the files don't exist)
             check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
