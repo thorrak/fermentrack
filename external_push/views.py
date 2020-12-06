@@ -207,11 +207,6 @@ def external_push_brewers_friend_delete(request, push_target_id):
     return redirect('external_push_list')
 
 
-
-
-
-
-
 @login_required
 @site_is_configured
 def external_push_brewfather_target_add(request):
@@ -225,6 +220,15 @@ def external_push_brewfather_target_add(request):
     if request.POST:
         form = forms.BrewfatherPushTargetModelForm(request.POST)
         if form.is_valid():
+            if form.cleaned_data['device_type'] == "gravity":
+                if form.cleaned_data['gravity_sensor_to_push'] == None:
+                    messages.error(request, "Brewfather push target is missing a sensor name.")
+                    return redirect('external_push_list')
+            else:
+                if form.cleaned_data['brewpi_to_push'] == None:
+                    messages.error(request, "Brewfather push target is missing a device name.")
+                    return redirect('external_push_list')
+
             new_push_target = form.save()
             messages.success(request, 'Successfully added push target')
 
@@ -257,6 +261,15 @@ def external_push_brewfather_view(request, push_target_id):
     if request.POST:
         form = forms.BrewfatherPushTargetModelForm(request.POST, instance=push_target)
         if form.is_valid():
+            if form.cleaned_data['device_type'] == "gravity":
+                if form.cleaned_data['gravity_sensor_to_push'] == None:
+                    messages.error(request, "Brewfather push target {} is missing a sensor name.".format(push_target_id))
+                    return redirect('external_push_list')
+            else:
+                if form.cleaned_data['brewpi_to_push'] == None:
+                    messages.error(request, "Brewfather push target {} is missing a device name.".format(push_target_id))
+                    return redirect('external_push_list')
+
             updated_push_target = form.save()
             messages.success(request, 'Updated push target')
             return redirect('external_push_list')
