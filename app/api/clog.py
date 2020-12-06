@@ -2,10 +2,10 @@ import os
 from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor
+from pathlib import Path
 
 
-def get_filepath_to_log(device_type, logfile="", device_id=None):
+def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path:
     # get_filepath_to_log is being broken out so that we can use it in help/other templates to display which log file
     # is being loaded
     if device_type == "brewpi":
