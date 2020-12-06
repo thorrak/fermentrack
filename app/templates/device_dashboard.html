@@ -603,6 +603,15 @@ const stateToName = state => (({
     4: 'cooling',
 })[state] || 'other');
 
+// The index of the state in the record returned from the API can changes, depending on
+// whether a gravity device is enabled.  Ideally, the gravity data should be added to the
+// end of the record instead of before the state.
+{% if beer.gravity_enabled %}
+const stateIndex = 8;
+{% else %}
+const stateIndex = 6;
+{% endif %}
+
 const computeDutyCycles = () => {
     const [minDate, maxDate] = g2.xAxisRange();
     const minIdx = g2.rawData_
@@ -620,7 +629,7 @@ const computeDutyCycles = () => {
     const result = visibleData.reduce((acc, row, idx, arr) => {
         if (idx === 0) return acc;
 
-        const currentStateName = stateToName(row[6])
+        const currentStateName = stateToName(row[stateIndex])
         
         if (currentStateName === acc.lastState) {
             acc[currentStateName] += row[0] - arr[idx - 1][0];
@@ -633,7 +642,7 @@ const computeDutyCycles = () => {
         heating: 0,
         cooling: 0,
         other: 0,
-        lastState: stateToName(visibleData[0][6]),
+        lastState: stateToName(visibleData[0][stateIndex]),
     });
 
     const heatingMinutes = Math.round(result.heating / 1000 / 60);
