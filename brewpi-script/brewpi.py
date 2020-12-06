@@ -105,6 +105,7 @@ def refresh_dbConfig() -> models.BrewPiDevice:
         logMessage("No device ID was found - cannot load DB Config")
         exit(1)
 
+    logMessage("Refreshing dbConfig")  # TODO - get rid of this
     return models.BrewPiDevice.objects.get(id=device_id)
 
 
