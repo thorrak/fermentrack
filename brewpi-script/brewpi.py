@@ -220,8 +220,7 @@ def startNewBrew(newName):
     global dbConfig
     if len(newName) > 1:  # shorter names are probably invalid
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = BrewPiUtil.configSet(dbConfig, 'beerName', newName)
-        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
+        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
         logMessage("Notification: Restarted logging for beer '%s'." % newName)
         return {'status': 0, 'statusMessage': "Successfully switched to new brew '%s'. " % urllib.unquote(newName) +
                                               "Please reload the page."}
@@ -237,8 +236,7 @@ def stopLogging():
     logMessage("Stopped data logging, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data.")
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = BrewPiUtil.configSet(dbConfig, 'beerName', None)
-    config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'stopped')
+    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
     return {'status': 0, 'statusMessage': "Successfully stopped logging"}
 
 
@@ -248,8 +246,8 @@ def pauseLogging():
     logMessage("Paused logging data, as requested in web interface. " +
                "BrewPi will continue to control temperatures, but will not log any data until resumed.")
     if config['dataLogging'] == 'active':
-        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'paused')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
         return {'status': 0, 'statusMessage': "Successfully paused logging."}
     else:
         return {'status': 1, 'statusMessage': "Logging already paused or stopped."}
@@ -260,13 +258,13 @@ def resumeLogging():
     global dbConfig
     logMessage("Continued logging data, as requested in web interface.")
     if config['dataLogging'] == 'paused':
-        config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
         dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
         return {'status': 0, 'statusMessage': "Successfully continued logging."}
     elif config['dataLogging'] == 'stopped':
         if dbConfig.active_beer is not None:
-            config = BrewPiUtil.configSet(dbConfig, 'dataLogging', 'active')
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+            config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
             return {'status': 0, 'statusMessage': "Successfully continued logging."}
     # If we didn't return a success status above, we'll return an error
     return {'status': 1, 'statusMessage': "Logging was not resumed."}
@@ -538,10 +536,10 @@ while run:
                 decoded = json.loads(value)
                 bg_ser.writeln("j" + json.dumps(decoded))
                 if 'tempFormat' in decoded:
-                    if decoded['tempFormat'] != config.get('temp_format', 'C'):
-                        # For database configured installs, we save this in the device definition
-                        BrewPiUtil.configSet(dbConfig, 'temp_format', decoded['tempFormat'])
                     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+                    # if decoded['tempFormat'] != config.get('temp_format', 'C'):
+                    #     # For database configured installs, we save this in the device definition
+                    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
             except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
             raise socket.timeout
@@ -565,7 +563,7 @@ while run:
             newInterval = int(value)
             if 5 < newInterval < 5000:
                 try:
-                    config = BrewPiUtil.configSet(dbConfig, 'interval', float(newInterval))
+                    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
                 except ValueError:
                     logMessage("Cannot convert interval '" + value + "' to float")
                     continue

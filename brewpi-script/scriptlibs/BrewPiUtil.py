@@ -87,57 +87,13 @@ def read_config_from_database_without_defaults(db_config_object) -> dict:
     config['socketHost'] = db_config_object.socketHost
     config['wifiIPAddress'] = db_config_object.get_cached_ip()  # If we have a cached IP from mDNS, we'll use it
 
-    logMessage("Preparing to call get_port_from_udev")
     udevPort = db_config_object.get_port_from_udev()
     if udevPort is None:
         logMessage("Unable to locate device using USB serial number")
     else:
         config['udevPort'] = udevPort  # If we prioritize udev lookup for serial, get the port
-        logMessage("Successfully got port from udev")
 
     return config
-
-
-def configSet(db_config_object, settingName, value):
-    logMessage(f"configSet called to set {settingName} to {value}")
-    # Assuming we have a valid db_config_object here
-    if settingName == "port":
-        db_config_object.serial_port = value
-    elif settingName == "altport":
-        db_config_object.serial_alt_port = value
-    elif settingName == "boardType":
-        db_config_object.board_type = value
-    elif settingName == "beerName":
-        # If we have a blank or NoneType name, we're unsetting the beer.
-        if value is None or len(value) < 1:
-            db_config_object.active_beer = None
-        else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
-            # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
-            # brewpi-script. For Fermentrack we're
-            logMessage(f"Attempting to retrieve beer {value}")
-            new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
-            logMessage(f"Retrieved {value} - created: {created}")
-            if created:
-                # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
-                new_beer.format = db_config_object.temp_format
-                new_beer.save()
-            if db_config_object.active_beer != new_beer:
-                db_config_object.active_beer = new_beer
-            logMessage("Done setting beer value")
-
-    elif settingName == "socket_name":
-        db_config_object.socket_name = value
-    elif settingName == "interval":
-        db_config_object.data_point_log_interval = value
-    elif settingName == "dataLogging":
-        db_config_object.logging_status = value
-    else:
-        # In all other cases, just try to set the field directly
-        setattr(db_config_object, settingName, value)
-    logMessage("Preparing to call object.save")
-    db_config_object.save()
-    logMessage("Preparing to call read_config_from_database_without_defaults")
-    return read_config_from_database_without_defaults(db_config_object)
 
 
 def save_beer_log_point(db_config_object, beer_row):
