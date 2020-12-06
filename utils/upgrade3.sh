@@ -28,7 +28,7 @@ function usage() {
 printinfo() {
     if [ ${SILENT} -eq 0 ]
     then
-        printf "::: ${green}%s${reset}\n" "$@"
+#        printf "::: ${green}%s${reset}\n" "$@"
     fi
 }
 
@@ -87,7 +87,7 @@ shift $((OPTIND-1))
 if [ ${USE_DOCKER} -eq 1 ]
 then
   # For docker installs, the circus endpoint is in a different spot
-  CIRCUSCTL="python3 -m circus.circusctl --timeout 10 --endpoint \"tcp://127.0.0.1:7555\""
+  CIRCUSCTL="python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555"
 fi
 
 
