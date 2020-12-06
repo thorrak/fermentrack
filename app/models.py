@@ -487,8 +487,7 @@ class BrewPiDevice(models.Model):
     socketHost = models.CharField(max_length=128, default="localhost", help_text="The interface to bind for the "
                                                                                  "internet socket (only used if "
                                                                                  "useInetSocket above is \"True\")")
-    # Note - Although we can manage logging_status from within Fermentrack, it's intended to be managed via
-    # brewpi-script.
+
     logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped', help_text="Data logging status")
 
     serial_port = models.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected",
@@ -882,6 +881,7 @@ class BrewPiDevice(models.Model):
         return True  # If we made it here, return True (we did our job)
 
     def start_new_brew(self, beer_name=None):
+        # This will always be set from beer_views.beer_create
         if beer_name is None:
             if self.active_beer:
                 beer_name = self.active_beer.name
@@ -892,17 +892,19 @@ class BrewPiDevice(models.Model):
 
     def manage_logging(self, status):
         if status == 'stop':
-            # This will be repeated by brewpi.py, but doing it here so we get up-to-date display in the dashboard
             if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
                 # If there is a linked gravity log, stop that as well
                 self.gravity_sensor.active_log = None
                 self.gravity_sensor.save()
             self.active_beer = None
+            self.logging_status = self.DATA_LOGGING_STOPPED
             self.save()
             response = self.send_message("stopLogging", read_response=True)
         elif status == 'resume':
+            self.logging_status = self.DATA_LOGGING_ACTIVE
             response = self.send_message("resumeLogging", read_response=True)
         elif status == 'pause':
+            self.logging_status = self.DATA_LOGGING_PAUSED
             response = self.send_message("pauseLogging", read_response=True)
         else:
             response = '{"status": 1, "statusMessage": "Invalid logging request"}'
