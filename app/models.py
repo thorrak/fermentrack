@@ -1184,7 +1184,7 @@ class Beer(models.Model):
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.base_filename()
         full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
         return os.path.isfile(full_csv_file)
 
@@ -1205,7 +1205,7 @@ class Beer(models.Model):
 # When the user attempts to delete a beer, also delete the log files associated with it.
 @receiver(pre_delete, sender=Beer)
 def delete_beer(sender, instance, **kwargs):
-    file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, instance.base_filename())
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / instance.base_filename()
 
     base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
     full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
@@ -1417,7 +1417,7 @@ class BeerLogPoint(models.Model):
                 return False
 
         if self.associated_beer_id is not None:
-            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.associated_beer.base_filename()
 
             base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
             full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)

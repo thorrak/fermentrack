@@ -38,14 +38,14 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['*'])
 
 
 # Check if Sentry is enabled (read in the config filepath)
-CONFIG_INI_FILEPATH = os.path.join(BASE_DIR, 'fermentrack_django', 'config.ini')
+CONFIG_INI_FILEPATH = ROOT_DIR / 'fermentrack_django' / 'config.ini'
 config = configparser.ConfigParser()
 config.read(CONFIG_INI_FILEPATH)
 ENABLE_SENTRY = config.getboolean("sentry", "enable_sentry", fallback=True)
 
 
 try:
-    local_repo = git.Repo(path=BASE_DIR)
+    local_repo = git.Repo(path=ROOT_DIR)
     GIT_BRANCH = local_repo.active_branch.name
 except git.exc.InvalidGitRepositoryError:
     ENABLE_SENTRY = False
@@ -125,12 +125,12 @@ WSGI_APPLICATION = 'fermentrack_django.wsgi.application'
 
 
 # There are two methods of Docker installs -- Ones using docker-compose which then have the database
-# moved to Postgres, and ones that act as a single image, where we still use sqlite. For the single
+# moved to Postgres, and ones that act as a single image where we still use sqlite. For the single
 # image versions we move the database to a subdirectory which can then be persisted.
 if USE_DOCKER:
-    DB_DIR = os.path.join(BASE_DIR, "db")
+    DB_DIR = ROOT_DIR / "db"
 else:
-    DB_DIR = BASE_DIR
+    DB_DIR = ROOT_DIR
 
 # For Docker installs, the environment variable DATABASE_URL is set to load Postgres instead of SQLite
 sqlite_file_location = "sqlite:///" + os.path.join(DB_DIR, 'db.sqlite3')
@@ -178,13 +178,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = ROOT_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = ROOT_DIR / 'media'
 
 DATA_URL = '/data/'
-DATA_ROOT = os.path.join(BASE_DIR, 'data')
+DATA_ROOT = ROOT_DIR / 'data'
 
 
 # Constance configuration

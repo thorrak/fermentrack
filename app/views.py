@@ -913,7 +913,7 @@ def almost_json_view(request, device_id, beer_id):
         # The beer doesn't exist. Return nothing.
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
 
-    filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, beer_obj.full_filename("annotation_json"))
+    filename = settings.ROOT_DIR / settings.DATA_ROOT / beer_obj.full_filename("annotation_json")
 
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')

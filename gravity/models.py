@@ -288,7 +288,7 @@ class GravityLog(models.Model):
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.base_filename()
         full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
         return os.path.isfile(full_csv_file)
 
@@ -301,7 +301,7 @@ class GravityLog(models.Model):
 # When the user attempts to delete a gravity log, also delete the log files associated with it.
 @receiver(pre_delete, sender=GravityLog)
 def delete_gravity_log(sender, instance, **kwargs):
-    file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, instance.base_filename())
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / instance.base_filename()
 
     base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
     full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
@@ -452,7 +452,7 @@ class GravityLogPoint(models.Model):
                     self.temp = self.temp_to_c()
                 self.temp_format = self.associated_log.format
 
-            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_log.base_filename())
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT / self.associated_log.base_filename()
 
             base_csv_file = file_name_base + self.associated_log.full_filename('base_csv', extension_only=True)
             full_csv_file = file_name_base + self.associated_log.full_filename('full_csv', extension_only=True)

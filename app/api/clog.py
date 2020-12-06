@@ -28,7 +28,7 @@ def get_filepath_to_log(device_type, logfile="", device_id=None):
         return None
 
     # Once we've determined the filename from logfile and device_type, let's open it up & read it in
-    logfile_path = os.path.join(settings.BASE_DIR, 'log', log_filename)
+    logfile_path = settings.ROOT_DIR / 'log' / log_filename
     return logfile_path
 
 

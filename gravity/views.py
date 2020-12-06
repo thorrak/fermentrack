@@ -567,7 +567,7 @@ def almost_json_view(request, sensor_id, log_id):
     # gravity_log = GravityLog.objects.get(id=log_id, device_id=sensor_id)
     gravity_log = GravityLog.objects.get(id=log_id)
 
-    filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, gravity_log.full_filename("annotation_json"))
+    filename = settings.ROOT_DIR / settings.DATA_ROOT / gravity_log.full_filename("annotation_json")
 
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')

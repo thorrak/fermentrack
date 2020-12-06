@@ -7,7 +7,7 @@ env = environ.Env()
 
 
 def app_is_current(tagged_commits_only=False, branch_to_check=None):
-    local_repo = Repo(path=settings.BASE_DIR)
+    local_repo = Repo(path=settings.ROOT_DIR)
     remote_repo = local_repo.remote()
     local_commit = local_repo.commit()
 
@@ -29,7 +29,7 @@ def app_is_current(tagged_commits_only=False, branch_to_check=None):
 
 
 def get_local_remote_commit_info():
-    local_repo = Repo(path=settings.BASE_DIR)
+    local_repo = Repo(path=settings.ROOT_DIR)
     remote_repo = local_repo.remote()
 
     local_commit = local_repo.commit()
@@ -42,7 +42,7 @@ def get_local_remote_commit_info():
 
 
 def get_remote_branch_info():
-    local_repo = Repo(path=settings.BASE_DIR)
+    local_repo = Repo(path=settings.ROOT_DIR)
 
     # Fetch remote branches to ensure we are up to date
     for remote in local_repo.remotes:
@@ -60,7 +60,7 @@ def get_remote_branch_info():
 
 
 def get_tag_info():
-    local_repo = Repo(path=settings.BASE_DIR)
+    local_repo = Repo(path=settings.ROOT_DIR)
 
     # Fetch remote branches to ensure we are up to date
     for remote in local_repo.remotes:

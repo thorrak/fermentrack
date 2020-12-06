@@ -34,4 +34,5 @@ def durfromnow(td):
 
 @register.simple_tag
 def log_file_path(device_type, logfile, device_id=None):
+    # TODO - Fix this to use ROOT_DIR
     return get_filepath_to_log(device_type, logfile, device_id)[len(settings.BASE_DIR):]

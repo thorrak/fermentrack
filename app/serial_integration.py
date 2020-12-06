@@ -6,7 +6,7 @@ import pickle
 
 # from . import udev_integration
 
-DEVICE_CACHE_FILENAME = os.path.join(fermentrack_django.settings.BASE_DIR, 'device.cache')
+DEVICE_CACHE_FILENAME = fermentrack_django.settings.ROOT_DIR / 'device.cache'
 
 known_devices = {
     'arduino': [
