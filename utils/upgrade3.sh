@@ -28,7 +28,8 @@ function usage() {
 printinfo() {
     if [ ${SILENT} -eq 0 ]
     then
-#        printf "::: ${green}%s${reset}\n" "$@"
+      printf "::: ${green}%s${reset}\n" "$@"
+      printf "::: ${green}%s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
@@ -37,6 +38,7 @@ printwarn() {
     if [ ${SILENT} -eq 0 ]
     then
         printf "${tan}*** WARNING: %s${reset}\n" "$@"
+        printf "${tan}*** WARNING: %s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
@@ -45,6 +47,7 @@ printerror() {
     if [ ${SILENT} -eq 0 ]
     then
         printf "${red}*** ERROR: %s${reset}\n" "$@"
+        printf "${red}*** ERROR: %s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
@@ -62,7 +65,6 @@ while getopts ":b:t:fdsh" opt; do
       usage
       ;;
     f)
-    # For when the two scripts are combined
       FORCE_UPGRADE=1
       ;;
     d)
@@ -84,15 +86,41 @@ done
 shift $((OPTIND-1))
 
 
-if [ ${USE_DOCKER} -eq 1 ]
-then
-  # For docker installs, the circus endpoint is in a different spot
-  CIRCUSCTL="python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555"
-fi
+
+stop_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 stop &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 stop &>> log/upgrade.log
+  fi
+}
+
+
+reload_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 reloadconfig &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 reloadconfig &>> log/upgrade.log
+  fi
+}
+
+
+start_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 start &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 start &>> log/upgrade.log
+  fi
+}
 
 
 rm log/upgrade.log
-exec &> >(tee -i log/upgrade.log)
 
 
 printinfo "Triggering upgrade from branch ${BRANCH}"
@@ -110,7 +138,7 @@ sleep 1s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-$CIRCUSCTL stop &>> log/upgrade.log
+stop_circus
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
@@ -158,6 +186,6 @@ printinfo "Relaunching circus..."
 #  ~/fermentrack/utils/updateCronCircus.sh startifstopped
 #fi
 
-$CIRCUSCTL reloadconfig &>> log/upgrade.log
-$CIRCUSCTL start &>> log/upgrade.log
+reload_circus
+start_circus
 printinfo "Complete!"
