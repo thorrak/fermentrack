@@ -316,6 +316,6 @@ if ENABLE_SENTRY:
         dsn=SENTRY_DSN,
         integrations=integrations,
         # environment=env("SENTRY_ENVIRONMENT", default="production"),
-        traces_sample_rate=1.0,
+        traces_sample_rate=0.0,
         send_default_pii=True,
     )
