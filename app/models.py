@@ -880,14 +880,12 @@ class BrewPiDevice(models.Model):
 
         return True  # If we made it here, return True (we did our job)
 
-    def start_new_brew(self, beer_name=None):
-        # This will always be set from beer_views.beer_create
-        if beer_name is None:
-            if self.active_beer:
-                beer_name = self.active_beer.name
-            else:
-                return False
-        response = self.send_message("startNewBrew", message_extended=beer_name, read_response=True)
+    def start_new_brew(self, active_beer):
+        self.logging_status = self.DATA_LOGGING_ACTIVE
+        self.active_beer = active_beer
+        self.save()
+
+        response = self.send_message("startNewBrew", message_extended=active_beer.name, read_response=True)
         return response
 
     def manage_logging(self, status):

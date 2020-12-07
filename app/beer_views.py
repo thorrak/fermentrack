@@ -52,11 +52,7 @@ def beer_create(request, device_id):
             else:
                 messages.success(request, "Beer {} already exists - assigning to device".format(form.cleaned_data['beer_name']))
 
-            if form.cleaned_data['device'].active_beer != new_beer:
-                form.cleaned_data['device'].active_beer = new_beer
-                form.cleaned_data['device'].save()
-
-            form.cleaned_data['device'].start_new_brew()
+            form.cleaned_data['device'].start_new_brew(new_beer)
 
         else:
             messages.error(request, "<p>Unable to create beer</p> %s" % form.errors['__all__'])
