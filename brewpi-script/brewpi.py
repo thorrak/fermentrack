@@ -169,18 +169,15 @@ for o, a in opts:
     if o in ('--checkstartuponly'):
         checkStartupOnly = True
 
-# Alright. We're modifying how we load the configuration file to allow for loading both from a database, and from the
-# actual file-based config.
 
 # If dbConfig wasn't set, we can't proceed (as we have no controller to manage)
 if dbConfig is None:
     sys.exit('ERROR: You must specify the BrewPi controller to connect to using the --dbcfg option')
 
-if dbConfig.status == models.BrewPiDevice.STATUS_ACTIVE or dbConfig.status == models.BrewPiDevice.STATUS_UNMANAGED:
-    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-else:
+if dbConfig.status != models.BrewPiDevice.STATUS_ACTIVE and dbConfig.status != models.BrewPiDevice.STATUS_UNMANAGED:
     logMessage("This instance of BrewPi is currently disabled in the web interface. Reenable it and relaunch "
                "this script. This instance will now exit.")
+    time.sleep(1)
     exit(0)
 
 # check for other running instances of BrewPi that will cause conflicts with this instance
@@ -216,10 +213,8 @@ if logToFiles:
 
 
 def startNewBrew(newName):
-    global config
     global dbConfig
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
 
     if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_ACTIVE:
         logMessage(f"Notification: Started logging for beer '{urllib.unquote(newName)}'.")
@@ -230,10 +225,8 @@ def startNewBrew(newName):
 
 
 def stopLogging():
-    global config
     global dbConfig
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
 
     if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_STOPPED:
         logMessage("Data logging stopped")
@@ -244,10 +237,8 @@ def stopLogging():
 
 
 def pauseLogging():
-    global config
     global dbConfig
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
 
     if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_PAUSED:
         logMessage("Data logging paused")
@@ -258,10 +249,8 @@ def pauseLogging():
 
 
 def resumeLogging():
-    global config
     global dbConfig
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
 
     if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_ACTIVE:
         logMessage(f"Notification: Successfully continued logging.")
@@ -272,7 +261,7 @@ def resumeLogging():
 
 
 # bytes are read from nonblocking serial into this buffer and processed when the buffer contains a full line.
-ser = BrewPiUtil.setupSerial(config, time_out=0)
+ser = BrewPiUtil.setupSerial(dbConfig=dbConfig, time_out=0)
 
 if not ser:
     exit(1)
@@ -283,7 +272,7 @@ else:
     logMessage("Notification: Script started, with no active beer being logged")
 
 # wait for 10 seconds to allow an Uno to reboot (in case an Uno is being used)
-time.sleep(float(config.get('startupDelay', 10)))
+time.sleep(10)
 
 logMessage("Checking software version on controller... ")
 hwVersion = brewpiVersion.getVersionFromSerial(ser)
@@ -345,19 +334,28 @@ if ser is not None:
 
     # answer from controller is received asynchronously later.
 
-# create a listening socket to communicate with PHP
-is_windows = sys.platform.startswith('win')
-useInetSocket = bool(config.get('useInetSocket', is_windows))
+# create a listening socket to communicate with the web interface (socket for systems that support it, otherwise
+# an inetsocket (e.g. for windows))
+if sys.platform.startswith('win'):
+    useInetSocket = True
+else:
+    useInetSocket = dbConfig.useInetSocket
+
 if useInetSocket:
+    if dbConfig.socketHost is None or dbConfig.socketPort is None:
+        logMessage('useInetSocket is true, but socketHost or socketPort not set. Exiting.')
+        exit(1)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    socketPort = config.get('socketPort', 6332)
-    socketHost = config.get('socketHost', 'localhost')
+    socketPort = dbConfig.socketPort
+    socketHost = dbConfig.socketHost
     s.bind((socketHost, int(socketPort)))
     logMessage('Bound to TCP socket on port {}, interface {} '.format(int(socketPort), socketHost))
 else:
-    socketFile = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + config.get('socket_name',
-                                                                           'BEERSOCKET')  # Making this configurable
+    if dbConfig.socket_name is None:
+        logMessage('useInetSocket is false, but socket_name is not set. Exiting')
+        exit(1)
+    socketFile = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + dbConfig.socket_name
     if os.path.exists(socketFile):
         # if socket already exists, remove it
         os.remove(socketFile)
@@ -409,7 +407,7 @@ def renameTempKey(key):
     return rename.get(key, key)
 
 
-# At startup, if we're using a db-based config, force synchronization of temperature format
+# At startup force synchronization of temperature format
 def syncTempFormat(control_constants):
     db_temp_format = dbConfig.temp_format
 
@@ -538,9 +536,6 @@ while run:
                 bg_ser.writeln("j" + json.dumps(decoded))
                 if 'tempFormat' in decoded:
                     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-                    # if decoded['tempFormat'] != config.get('temp_format', 'C'):
-                    #     # For database configured installs, we save this in the device definition
-                    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
             except ValueError:
                 logMessage("Error: invalid JSON parameter string received: " + value)
             raise socket.timeout
@@ -561,14 +556,10 @@ while run:
         elif messageType == "eraseLogs":
             logMessage('eraseLogs is not implemented for this version of brewpi-script')
         elif messageType == "interval":  # new interval received
-            newInterval = int(value)
-            if 5 < newInterval < 5000:
-                try:
-                    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-                except ValueError:
-                    logMessage("Cannot convert interval '" + value + "' to float")
-                    continue
-                logMessage("Notification: Interval changed to " + str(newInterval) + " seconds")
+            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+            # newInterval = int(value)
+            newInterval = int(dbConfig.data_point_log_interval)
+            logMessage("Notification: Interval changed to " + str(newInterval) + " seconds")
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)

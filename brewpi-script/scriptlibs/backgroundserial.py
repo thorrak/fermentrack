@@ -1,12 +1,8 @@
 from __future__ import print_function
 
 import threading
-try:
-    # Python 2
-    import Queue
-except:
-    # Python 3
-    import queue as Queue
+
+import queue as Queue
 import sys
 import time
 
@@ -163,47 +159,47 @@ class BackGroundSerial():
     def __asciiToUnicode(self, s):
         return BrewPiUtil.asciiToUnicode(s)
 
-if __name__ == '__main__':
-    # some test code that requests data from serial and processes the response json
-    import json
-
-
-    # TODO - Rewrite the test code below to work with the database
-    config_file = BrewPiUtil.addSlash(sys.path[0]) + 'settings/config.cfg'
-    config = BrewPiUtil.read_config_file_with_defaults(config_file)
-    ser = BrewPiUtil.setupSerial(config, time_out=0)
-    if not ser:
-        BrewPiUtil.printStdErr("Could not open Serial Port")
-        exit()
-
-    bg_ser = BackGroundSerial(ser)
-    bg_ser.start()
-
-    success = 0
-    fail = 0
-    for i in range(1, 5):
-        # request control variables 4 times. This would overrun buffer if it was not read in a background thread
-        # the json decode will then fail, because the message is clipped
-        bg_ser.writeln('v')
-        bg_ser.writeln('v')
-        bg_ser.writeln('v')
-        bg_ser.writeln('v')
-        bg_ser.writeln('v')
-        line = True
-        while(line):
-            line = bg_ser.read_line()
-            if line:
-                if line[0] == 'V':
-                    try:
-                        decoded = json.loads(line[2:])
-                        print("Success")
-                        success += 1
-                    except json.JSONDecodeError:
-                        BrewPiUtil.logMessage("Error: invalid JSON parameter string received: " + line)
-                        fail += 1
-                else:
-                    print(line)
-        time.sleep(5)
-
-    print("Successes: {0}, Fails: {1}".format(success,fail))
+# if __name__ == '__main__':
+#     # some test code that requests data from serial and processes the response json
+#     import json
+#
+#
+#     # TODO - Rewrite the test code below to work with the database
+#     config_file = BrewPiUtil.addSlash(sys.path[0]) + 'settings/config.cfg'
+#     config = BrewPiUtil.read_config_file_with_defaults(config_file)
+#     ser = BrewPiUtil.setupSerial(config, time_out=0)
+#     if not ser:
+#         BrewPiUtil.printStdErr("Could not open Serial Port")
+#         exit()
+#
+#     bg_ser = BackGroundSerial(ser)
+#     bg_ser.start()
+#
+#     success = 0
+#     fail = 0
+#     for i in range(1, 5):
+#         # request control variables 4 times. This would overrun buffer if it was not read in a background thread
+#         # the json decode will then fail, because the message is clipped
+#         bg_ser.writeln('v')
+#         bg_ser.writeln('v')
+#         bg_ser.writeln('v')
+#         bg_ser.writeln('v')
+#         bg_ser.writeln('v')
+#         line = True
+#         while(line):
+#             line = bg_ser.read_line()
+#             if line:
+#                 if line[0] == 'V':
+#                     try:
+#                         decoded = json.loads(line[2:])
+#                         print("Success")
+#                         success += 1
+#                     except json.JSONDecodeError:
+#                         BrewPiUtil.logMessage("Error: invalid JSON parameter string received: " + line)
+#                         fail += 1
+#                 else:
+#                     print(line)
+#         time.sleep(5)
+#
+#     print("Successes: {0}, Fails: {1}".format(success,fail))
 

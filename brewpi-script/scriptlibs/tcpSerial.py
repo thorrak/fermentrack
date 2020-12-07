@@ -26,6 +26,7 @@ class TCPSerial(object):
         self.retries=10 # max reconnect attempts to try when doing a read or write operation
         self.retryCount=0 # count of reconnect attempts performed
         if hostname:
+            # TODO - Do something with the hostname
             if host is None:
                 logMessage("Unable to resolve hostname {}. Exiting.".format(hostname))
                 exit(1)

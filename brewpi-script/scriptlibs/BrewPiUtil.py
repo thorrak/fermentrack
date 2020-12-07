@@ -157,19 +157,22 @@ def removeDontRunFile(path='/var/www/do_not_run_brewpi'):
     else:
         print("File do_not_run_brewpi does not exist at " + path)
 
+
 def findSerialPort(bootLoader):
     (port, name) = autoSerial.detect_port(bootLoader)
     return port
 
-def setupSerial(config, baud_rate=57600, time_out=0.1):
+
+def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1):
     ser = None
-    dumpSerial = config.get('dumpSerial', False)
+    # dumpSerial = config.get('dumpSerial', False)
+    dumpSerial = False
 
     error = None
 
     # open serial port
     tries = 0
-    connection_type = config.get('connection_type', 'auto')
+    connection_type = dbConfig.connection_type
     if connection_type == "serial" or connection_type == "auto":
         if connection_type == "auto":
             logMessage("Connection type set to 'auto' - Attempting serial first")
@@ -181,14 +184,15 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 
             # If we have a udevPort (from a dbconfig object, found via the udev serial number) use that as the first
             # option - replacing config['port'].
-            if 'udevPort' in config:
-                ports_to_try.append(config['udevPort'])
+            udevPort = dbConfig.get_port_from_udev()
+            if udevPort is not None:
+                ports_to_try.append(udevPort)
             else:
-                ports_to_try.append(config.get('port', "auto"))
+                ports_to_try.append(dbConfig.serial_port)
 
             # Regardless of if we have 'udevPort', add altport as well
-            if 'altport' in config:
-                ports_to_try.append(config['altport'])
+            if dbConfig.serial_alt_port:
+                ports_to_try.append(dbConfig.serial_alt_port)
 
             for portSetting in ports_to_try:
                 if portSetting == None or portSetting == 'None' or portSetting == "none":
@@ -197,7 +201,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                     port = findSerialPort(bootLoader=False)
                     if not port:
                         error = "Could not find compatible serial devices \n"
-                        continue # continue with altport
+                        continue  # continue with altport
                 else:
                     port = portSetting
                 try:
@@ -223,34 +227,38 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
             while tries < 10:
                 error = ""
 
-                try:
-                    port = int(config['wifiPort'])
-                except TypeError:
+                if dbConfig.wifi_port is None:
                     logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config['wifiPort']))
                     logMessage("Exiting.")
-                    port=0  # to make PyCharm happy
                     exit(1)
+                port = dbConfig.wifi_port
 
-                if not(config['wifiHost'] == None or  config['wifiHost'] == 'None' or config['wifiHost'] == 'none'):
-                    # We're going to use the wifiIPAddress
-                    # TODO - Ensure hostname lookup
-                    connect_to = config.get('wifiIPAddress', config['wifiHost'])
-                    ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=config['wifiHost'])
+                if dbConfig.wifi_host_ip is None or len(dbConfig.wifi_host_ip) < 7:
+                    if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
+                        logMessage("Invalid WiFi configuration - No wifi_host or wifi_host_ip set")
+                        logMessage("Exiting.")
+                        exit(1)
+                    connect_to = dbConfig.wifi_host
                 else:
-                    logMessage("Invalid WiFi configuration:")
-                    logMessage("  wifiHost: {}".format(config['wifiHost']))
-                    logMessage("  wifiPort: {}".format(config['wifiPort']))
-                    logMessage("Exiting.")
-                    exit(1)
+                    # the wifi_host_ip is set - use that as the host to connect to
+                    connect_to = dbConfig.wifi_host_ip
+
+                if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
+                    # If we don't have a hostname at all, set it to None
+                    hostname = None
+                else:
+                    hostname = dbConfig.wifi_host
+
+                ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=hostname)
 
                 if ser:
                     break
                 tries += 1
                 time.sleep(1)
-        if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
-            logMessage("Unable to connect via WiFi. Exiting.")
-            exit(1)
 
+    if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
+        logMessage("Unable to connect via Serial or WiFi. Exiting.")
+        exit(1)
 
     if ser:
         # discard everything in serial buffers
