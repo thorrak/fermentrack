@@ -56,46 +56,6 @@ def addSlash(path):
     return path
 
 
-def read_config_from_database_without_defaults(db_config_object) -> dict:
-    """
-    Reads configuration parameters from the database without defaults
-
-    Params:
-    db_config_object: models.BrewPiDevice, BrewPiDevice object
-
-    Returns:
-    dict of settings
-    """
-
-    config = {}
-
-    # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
-    # config['scriptPath'] = db_config_object.script_path
-    config['port'] = db_config_object.serial_port
-    # if db_config_object.serial_alt_port != 'None':
-    config['altport'] = db_config_object.serial_alt_port
-    config['boardType'] = db_config_object.board_type
-    config['beerName'] = db_config_object.get_active_beer_name()
-    config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file
-    config['dataLogging'] = db_config_object.logging_status
-    config['socket_name'] = db_config_object.socket_name
-    config['connection_type'] = db_config_object.connection_type
-    config['wifiHost'] = db_config_object.wifi_host
-    config['wifiPort'] = db_config_object.wifi_port
-    config['useInetSocket'] = db_config_object.useInetSocket
-    config['socketPort'] = db_config_object.socketPort
-    config['socketHost'] = db_config_object.socketHost
-    config['wifiIPAddress'] = db_config_object.get_cached_ip()  # If we have a cached IP from mDNS, we'll use it
-
-    udevPort = db_config_object.get_port_from_udev()
-    if udevPort is None:
-        logMessage("Unable to locate device using USB serial number")
-    else:
-        config['udevPort'] = udevPort  # If we prioritize udev lookup for serial, get the port
-
-    return config
-
-
 def save_beer_log_point(db_config_object, beer_row):
     """
     Saves a row of data to the database (mapping the data row we are passed to Django's BeerLogPoint model)
