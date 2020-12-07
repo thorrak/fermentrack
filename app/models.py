@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django.db.models.signals import pre_delete
@@ -874,7 +874,8 @@ class BrewPiDevice(models.Model):
             # We're subtracting start_at because we want to start in the past
             self.time_profile_started = timezone.now() - start_at
 
-            self.save()
+            with transaction.atomic():
+                self.save()
 
             self.send_message("setActiveProfile", str(self.active_profile.id))
 
@@ -883,26 +884,32 @@ class BrewPiDevice(models.Model):
     def start_new_brew(self, active_beer):
         self.logging_status = self.DATA_LOGGING_ACTIVE
         self.active_beer = active_beer
-        self.save()
+        with transaction.atomic():
+            self.save()
 
         response = self.send_message("startNewBrew", message_extended=active_beer.name, read_response=True)
         return response
 
     def manage_logging(self, status):
         if status == 'stop':
-            if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
-                # If there is a linked gravity log, stop that as well
-                self.gravity_sensor.active_log = None
-                self.gravity_sensor.save()
-            self.active_beer = None
-            self.logging_status = self.DATA_LOGGING_STOPPED
-            self.save()
+            with transaction.atomic():
+                if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
+                    # If there is a linked gravity log, stop that as well
+                    self.gravity_sensor.active_log = None
+                    self.gravity_sensor.save()
+                self.active_beer = None
+                self.logging_status = self.DATA_LOGGING_STOPPED
+                self.save()
             response = self.send_message("stopLogging", read_response=True)
         elif status == 'resume':
             self.logging_status = self.DATA_LOGGING_ACTIVE
+            with transaction.atomic():
+                self.save()
             response = self.send_message("resumeLogging", read_response=True)
         elif status == 'pause':
             self.logging_status = self.DATA_LOGGING_PAUSED
+            with transaction.atomic():
+                self.save()
             response = self.send_message("pauseLogging", read_response=True)
         else:
             response = '{"status": 1, "statusMessage": "Invalid logging request"}'
@@ -911,19 +918,19 @@ class BrewPiDevice(models.Model):
         return json.loads(response)
 
     def reset_eeprom(self):
-        response = self.send_message("resetController") # Reset the controller
-        time.sleep(1)                                   # Give it 1 second to complete
-        synced = self.sync_temp_format()                # ...then resync the temp format
+        response = self.send_message("resetController")  # Reset the controller
+        time.sleep(1)                                    # Give it 1 second to complete
+        synced = self.sync_temp_format()                 # ...then resync the temp format
         return synced
 
     def reset_wifi(self) -> bool:
-        response = self.send_message("resetWiFi") # Reset the controller WiFi settings
+        response = self.send_message("resetWiFi")       # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
         return True
 
     def restart(self) -> bool:
-        response = self.send_message("restartController") # Restart the controller
-        time.sleep(1)                                   # Give it 1 second to complete
+        response = self.send_message("restartController")  # Restart the controller
+        time.sleep(1)                                      # Give it 1 second to complete
         return True
 
     def get_control_constants(self):
@@ -990,7 +997,8 @@ class BrewPiDevice(models.Model):
                 if self.wifi_host_ip != resolved_address and save_to_cache:
                     # If we were able to find an IP address, save it to the cache
                     self.wifi_host_ip = resolved_address
-                    self.save()
+                    with transaction.atomic():
+                        self.save()
                 return resolved_address
             except:
                 # TODO - Add an error message here
@@ -1034,7 +1042,8 @@ class BrewPiDevice(models.Model):
             if self.serial_port != udev_node:
                 # If the serial port changed, cache it.
                 self.serial_port = udev_node
-                self.save()
+                with transaction.atomic():
+                    self.save()
             return udev_node
         else:
             # The udev lookup failed - return None
@@ -1047,7 +1056,8 @@ class BrewPiDevice(models.Model):
 
         if udev_serial_number is not None:
             self.udev_serial_number = udev_serial_number
-            self.save()
+            with transaction.atomic():
+                self.save()
             return True
 
         # We failed to look up the udev serial number.
