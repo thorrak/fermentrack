@@ -81,7 +81,7 @@ class DeviceForm(forms.Form):
             device_name = self.cleaned_data['device_name']
 
         # Name uniqueness is enforced on the sql CREATE, but since we're not using a ModelForm this form won't check to
-        # see if the name is actually uniqye. That said - we only need to check if we're creating the object. We do not
+        # see if the name is actually unique. That said - we only need to check if we're creating the object. We do not
         # need to check if we're modifying the object.
         if 'modify_not_create' not in self.cleaned_data:
             modify_not_create = False

@@ -955,7 +955,7 @@ class BrewPiDevice(models.Model):
         fc.stop(name=circus_process_name)
 
     def restart_process(self):
-        """Restart the deviece process, raises CircusException if error"""
+        """Restart the device process, raises CircusException if error"""
         fc = CircusMgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.restart(name=circus_process_name)

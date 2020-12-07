@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
@@ -84,8 +85,7 @@ def siteroot(request):
     # setup workflow, the user will generally be created before constance configuration takes place, but if
     # the user account gets deleted (for example, in the admin) we want the user to go through that portion
     # of account setup.
-    num_users=User.objects.all().count()
-
+    num_users = User.objects.all().count()
 
     if not config.USER_HAS_COMPLETED_CONFIGURATION or num_users <= 0:
         # If things aren't configured, redirect to the guided setup workflow
@@ -791,44 +791,39 @@ def device_manage(request, device_id):
             if active_device.device_name != form.cleaned_data['device_name']:
                 try:
                     existing_device = BrewPiDevice.objects.get(device_name=form.cleaned_data['device_name'])
-                    messages.error(request, u'A device already exists with the name {}'.format(
-                                         form.cleaned_data['device_name']))
-                    return render(request, template_name='device_manage.html',
-                                  context={'form': form, 'active_device': active_device})
+                    if existing_device.id != active_device.id:
+                        messages.error(request, u'A device already exists with the name {}'.format(
+                                             form.cleaned_data['device_name']))
+                        return render(request, template_name='device_manage.html',
+                                      context={'form': form, 'active_device': active_device})
                 except ObjectDoesNotExist:
                     # There was no existing device - we're good. Set the new name.
-                    active_device.device_name = form.cleaned_data['device_name']
-            active_device.device_name=form.cleaned_data['device_name']
-            active_device.temp_format=form.cleaned_data['temp_format']
-            active_device.data_point_log_interval=form.cleaned_data['data_point_log_interval']
-            active_device.useInetSocket=form.cleaned_data['useInetSocket']
-            active_device.socketPort=form.cleaned_data['socketPort']
-            active_device.socketHost=form.cleaned_data['socketHost']
-            active_device.serial_port=form.cleaned_data['serial_port']
-            active_device.serial_alt_port=form.cleaned_data['serial_alt_port']
+                    pass
+            active_device.device_name = form.cleaned_data['device_name']
+            active_device.temp_format = form.cleaned_data['temp_format']
+            active_device.data_point_log_interval = form.cleaned_data['data_point_log_interval']
+            active_device.useInetSocket = form.cleaned_data['useInetSocket']
+            active_device.socketPort = form.cleaned_data['socketPort']
+            active_device.socketHost = form.cleaned_data['socketHost']
+            active_device.serial_port = form.cleaned_data['serial_port']
+            active_device.serial_alt_port = form.cleaned_data['serial_alt_port']
             # Not going to allow editing the board type. Can revisit if there seems to be a need later
-            # active_device.board_type=form.cleaned_data['board_type']
-            active_device.socket_name=form.cleaned_data['socket_name']
-            active_device.connection_type=form.cleaned_data['connection_type']
-            active_device.wifi_host=form.cleaned_data['wifi_host']
-            active_device.wifi_port=form.cleaned_data['wifi_port']
+            # active_device.board_type= form.cleaned_data['board_type']
+            active_device.socket_name = form.cleaned_data['socket_name']
+            active_device.connection_type = form.cleaned_data['connection_type']
+            active_device.wifi_host = form.cleaned_data['wifi_host']
+            active_device.wifi_port = form.cleaned_data['wifi_port']
 
             active_device.save()
 
             messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
+            transaction.on_commit(active_device.restart_process)
 
-            try:
-                active_device.restart_process()
-            except CircusException:
-                messages.warning(request, "Unable to trigger reset of BrewPi-script - Settings may not take effect until next reboot")
-
-
-            return render(request, template_name='device_manage.html',
-                                       context={'form': form, 'active_device': active_device})
+            return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
 
         else:
             return render(request, template_name='device_manage.html',
-                                       context={'form': form, 'active_device': active_device})
+                          context={'form': form, 'active_device': active_device})
     else:
         # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
         # refactoring it. Project for later if need be.

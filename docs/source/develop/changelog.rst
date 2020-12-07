@@ -21,6 +21,7 @@ Changed
 ---------------------
 
 - Removed instances where BrewPi-Script would write to the database
+- Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
 
 
 Fixed
