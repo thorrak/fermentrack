@@ -18,6 +18,8 @@ from . import udev_integration
 
 from lib.ftcircus.client import CircusMgr, CircusException
 
+from fermentrack_django.settings import USE_DOCKER
+
 logger = logging.getLogger(__name__)
 
 # BrewPiDevice
@@ -936,33 +938,39 @@ class BrewPiDevice(models.Model):
         """Returns the parameter used by Circus to track this device's processes"""
         return self.id
 
+    def _get_circusmgr(self) -> CircusMgr:
+        if USE_DOCKER:
+            return CircusMgr(circus_endpoint="tcp://127.0.0.1:7555")
+        else:
+            return CircusMgr()
+
     def start_process(self):
         """Start this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.start(name=circus_process_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.remove(name=circus_process_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.stop(name=circus_process_name)
 
     def restart_process(self):
         """Restart the device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.restart(name=circus_process_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         status = fc.application_status(name=circus_process_name)
         return status
