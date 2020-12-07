@@ -875,9 +875,7 @@ class BrewPiDevice(models.Model):
             self.time_profile_started = timezone.now() - start_at
 
             self.save()
-            transaction.commit()
-
-            self.send_message("setActiveProfile", str(self.active_profile.id))
+            transaction.on_commit(lambda: self.send_message("setActiveProfile", str(self.active_profile.id)))
 
         return True  # If we made it here, return True (we did our job)
 
@@ -885,38 +883,26 @@ class BrewPiDevice(models.Model):
         self.logging_status = self.DATA_LOGGING_ACTIVE
         self.active_beer = active_beer
         self.save()
-        transaction.commit()
-
-        response = self.send_message("startNewBrew", message_extended=active_beer.name, read_response=True)
-        return response
+        transaction.on_commit(lambda: self.send_message("startNewBrew", message_extended=active_beer.name, read_response=False))
 
     def manage_logging(self, status):
         if status == 'stop':
-            with transaction.atomic():
-                if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
-                    # If there is a linked gravity log, stop that as well
-                    self.gravity_sensor.active_log = None
-                    self.gravity_sensor.save()
-                self.active_beer = None
-                self.logging_status = self.DATA_LOGGING_STOPPED
-                self.save()
-            transaction.commit()
-            response = self.send_message("stopLogging", read_response=True)
+            if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
+                # If there is a linked gravity log, stop that as well
+                self.gravity_sensor.active_log = None
+                self.gravity_sensor.save()
+            self.active_beer = None
+            self.logging_status = self.DATA_LOGGING_STOPPED
+            self.save()
+            transaction.on_commit(lambda: self.send_message("stopLogging", read_response=False))
         elif status == 'resume':
             self.logging_status = self.DATA_LOGGING_ACTIVE
             self.save()
-            transaction.commit()
-            response = self.send_message("resumeLogging", read_response=True)
+            transaction.on_commit(lambda: self.send_message("resumeLogging", read_response=False))
         elif status == 'pause':
             self.logging_status = self.DATA_LOGGING_PAUSED
             self.save()
-            transaction.commit()
-            response = self.send_message("pauseLogging", read_response=True)
-        else:
-            response = '{"status": 1, "statusMessage": "Invalid logging request"}'
-        if not response:
-            response = '{"status": 1, "statusMessage": "Unable to contact brewpi-script for this controller"}'
-        return json.loads(response)
+            transaction.on_commit(lambda: self.send_message("pauseLogging", read_response=False))
 
     def reset_eeprom(self):
         response = self.send_message("resetController")  # Reset the controller
@@ -982,6 +968,8 @@ class BrewPiDevice(models.Model):
         return status
 
     def get_cached_ip(self, save_to_cache=True):
+        # This only gets called from within BrewPi-script
+
         # I really hate the name of the function, but I can't think of anything else. This basically does three things:
         # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
         # 2. (Optional) Saves that IP address to self.wifi_host_ip (if we were successful in step 1)
@@ -999,7 +987,6 @@ class BrewPiDevice(models.Model):
                     # If we were able to find an IP address, save it to the cache
                     self.wifi_host_ip = resolved_address
                     self.save()
-                    transaction.commit()
                 return resolved_address
             except:
                 # TODO - Add an error message here
@@ -1013,6 +1000,8 @@ class BrewPiDevice(models.Model):
         return None
 
     def get_port_from_udev(self):
+        # This only gets called from within BrewPi-script
+
         # get_port_from_udev() looks for a USB device connected which matches self.udev_serial_number. If one is found,
         # it returns the associated device port. If one isn't found, it returns None (to prevent the cached port from
         # being used, and potentially pointing to another, unrelated device)
@@ -1044,7 +1033,6 @@ class BrewPiDevice(models.Model):
                 # If the serial port changed, cache it.
                 self.serial_port = udev_node
                 self.save()
-                transaction.commit()
             return udev_node
         else:
             # The udev lookup failed - return None
@@ -1058,7 +1046,6 @@ class BrewPiDevice(models.Model):
         if udev_serial_number is not None:
             self.udev_serial_number = udev_serial_number
             self.save()
-            transaction.commit()
             return True
 
         # We failed to look up the udev serial number.
