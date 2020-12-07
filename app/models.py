@@ -874,8 +874,8 @@ class BrewPiDevice(models.Model):
             # We're subtracting start_at because we want to start in the past
             self.time_profile_started = timezone.now() - start_at
 
-            with transaction.atomic():
-                self.save()
+            self.save()
+            transaction.commit()
 
             self.send_message("setActiveProfile", str(self.active_profile.id))
 
@@ -884,8 +884,8 @@ class BrewPiDevice(models.Model):
     def start_new_brew(self, active_beer):
         self.logging_status = self.DATA_LOGGING_ACTIVE
         self.active_beer = active_beer
-        with transaction.atomic():
-            self.save()
+        self.save()
+        transaction.commit()
 
         response = self.send_message("startNewBrew", message_extended=active_beer.name, read_response=True)
         return response
@@ -900,16 +900,17 @@ class BrewPiDevice(models.Model):
                 self.active_beer = None
                 self.logging_status = self.DATA_LOGGING_STOPPED
                 self.save()
+            transaction.commit()
             response = self.send_message("stopLogging", read_response=True)
         elif status == 'resume':
             self.logging_status = self.DATA_LOGGING_ACTIVE
-            with transaction.atomic():
-                self.save()
+            self.save()
+            transaction.commit()
             response = self.send_message("resumeLogging", read_response=True)
         elif status == 'pause':
             self.logging_status = self.DATA_LOGGING_PAUSED
-            with transaction.atomic():
-                self.save()
+            self.save()
+            transaction.commit()
             response = self.send_message("pauseLogging", read_response=True)
         else:
             response = '{"status": 1, "statusMessage": "Invalid logging request"}'
@@ -997,8 +998,8 @@ class BrewPiDevice(models.Model):
                 if self.wifi_host_ip != resolved_address and save_to_cache:
                     # If we were able to find an IP address, save it to the cache
                     self.wifi_host_ip = resolved_address
-                    with transaction.atomic():
-                        self.save()
+                    self.save()
+                    transaction.commit()
                 return resolved_address
             except:
                 # TODO - Add an error message here
@@ -1042,8 +1043,8 @@ class BrewPiDevice(models.Model):
             if self.serial_port != udev_node:
                 # If the serial port changed, cache it.
                 self.serial_port = udev_node
-                with transaction.atomic():
-                    self.save()
+                self.save()
+                transaction.commit()
             return udev_node
         else:
             # The udev lookup failed - return None
@@ -1056,8 +1057,8 @@ class BrewPiDevice(models.Model):
 
         if udev_serial_number is not None:
             self.udev_serial_number = udev_serial_number
-            with transaction.atomic():
-                self.save()
+            self.save()
+            transaction.commit()
             return True
 
         # We failed to look up the udev serial number.
