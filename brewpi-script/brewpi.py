@@ -218,56 +218,57 @@ if logToFiles:
 def startNewBrew(newName):
     global config
     global dbConfig
-    if len(newName) > 1:  # shorter names are probably invalid
-        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-        logMessage("Notification: Restarted logging for beer '%s'." % newName)
-        return {'status': 0, 'statusMessage': "Successfully switched to new brew '%s'. " % urllib.unquote(newName) +
-                                              "Please reload the page."}
+    dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
+
+    if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_ACTIVE:
+        logMessage(f"Notification: Started logging for beer '{urllib.unquote(newName)}'.")
+        return {'status': 0, 'statusMessage': f"Successfully switched to new brew '{urllib.unquote(newName)}'. "}
     else:
-        return {'status': 1, 'statusMessage': "Invalid new brew name '%s', "
-                                              "please enter a name with at least 2 characters" % urllib.unquote(
-            newName)}
+        logMessage("ERROR: Data logging start request received, but not updated on the dbConfig object")
+        return {'status': 1, 'statusMessage': "Logging not started on dbConfig object"}
 
 
 def stopLogging():
     global config
     global dbConfig
-    logMessage("Stopped data logging, as requested in web interface. " +
-               "BrewPi will continue to control temperatures, but will not log any data.")
     dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
     config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-    return {'status': 0, 'statusMessage': "Successfully stopped logging"}
+
+    if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_STOPPED:
+        logMessage("Data logging stopped")
+        return {'status': 0, 'statusMessage': "Successfully stopped logging."}
+    else:
+        logMessage("ERROR: Data logging stop request received, but not updated on the dbConfig object")
+        return {'status': 1, 'statusMessage': "Logging not stopped on dbConfig object"}
 
 
 def pauseLogging():
     global config
     global dbConfig
-    logMessage("Paused logging data, as requested in web interface. " +
-               "BrewPi will continue to control temperatures, but will not log any data until resumed.")
-    if config['dataLogging'] == 'active':
-        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
+    dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
+
+    if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_PAUSED:
+        logMessage("Data logging paused")
         return {'status': 0, 'statusMessage': "Successfully paused logging."}
     else:
-        return {'status': 1, 'statusMessage': "Logging already paused or stopped."}
+        logMessage("ERROR: Data logging pause request received, but not updated on the dbConfig object")
+        return {'status': 1, 'statusMessage': "Logging not paused on dbConfig object"}
 
 
 def resumeLogging():
     global config
     global dbConfig
-    logMessage("Continued logging data, as requested in web interface.")
-    if config['dataLogging'] == 'paused':
-        dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-        config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-        return {'status': 0, 'statusMessage': "Successfully continued logging."}
-    elif config['dataLogging'] == 'stopped':
-        if dbConfig.active_beer is not None:
-            dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-            config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
-            return {'status': 0, 'statusMessage': "Successfully continued logging."}
-    # If we didn't return a success status above, we'll return an error
-    return {'status': 1, 'statusMessage': "Logging was not resumed."}
+    dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
+    config = BrewPiUtil.read_config_from_database_without_defaults(dbConfig)
+
+    if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_ACTIVE:
+        logMessage(f"Notification: Successfully continued logging.")
+        return {'status': 0, 'statusMessage': "Successfully continued logging. "}
+    else:
+        logMessage("ERROR: Data logging resume request received, but not updated on the dbConfig object")
+        return {'status': 1, 'statusMessage': "Logging not resumed on dbConfig object"}
 
 
 # bytes are read from nonblocking serial into this buffer and processed when the buffer contains a full line.
@@ -276,8 +277,8 @@ ser = BrewPiUtil.setupSerial(config, time_out=0)
 if not ser:
     exit(1)
 
-if len(urllib.unquote(config['beerName'])) > 1:
-    logMessage("Notification: Script started for beer '" + urllib.unquote(config['beerName']) + "'")
+if dbConfig.active_beer:
+    logMessage(f"Notification: Script started for beer '{dbConfig.active_beer.name}'")
 else:
     logMessage("Notification: Script started, with no active beer being logged")
 
@@ -473,7 +474,7 @@ while run:
             #     profileFile = BrewPiUtil.addSlash(BrewPiUtil.scriptPath()) + 'settings/tempProfile.csv'
             #     with file(profileFile, 'r') as prof:
             #         cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
-            cs['dataLogging'] = config['dataLogging']
+            cs['dataLogging'] = dbConfig.logging_status
             conn.send(json.dumps(cs).encode(encoding="cp437"))
         elif messageType == "getControlVariables":
             conn.send(cv.encode(encoding="cp437"))
@@ -622,7 +623,7 @@ while run:
                         "State": prevTempJson['State'],
                         "BeerSet": prevTempJson['BeerSet'],
                         "FridgeSet": prevTempJson['FridgeSet'],
-                        "LogInterval": config['interval'],
+                        "LogInterval": float(dbConfig.data_point_log_interval),
                         "Mode": cs['mode']}
             conn.send(json.dumps(response).encode(encoding="cp437"))
         elif messageType == "applyDevice":
@@ -713,14 +714,14 @@ while run:
             bg_ser.writeln('s')
 
         # if no new data has been received for serialRequestInteval seconds
-        if (time.time() - prevDataTime) >= float(config['interval']):
+        if (time.time() - prevDataTime) >= float(dbConfig.data_point_log_interval):
             if (time.time() - prevTimeOutReq) > 5:  # If it's been more than 5 seconds since we last requested temps
                 bg_ser.writeln("t")  # request new from controller
                 prevTimeOutReq = time.time()
                 if prevDataTime == 0.0:  # If prevDataTime hasn't yet been set (it's 0.0 at script startup), set it.
                     prevDataTime = time.time()
 
-        if (time.time() - prevDataTime) >= 3 * float(config['interval']):
+        if (time.time() - prevDataTime) >= 3 * float(dbConfig.data_point_log_interval):
             # something is wrong: controller is not responding to data requests
             logMessage("Error: controller is not responding to new data requests. Exiting.")
 
@@ -753,11 +754,9 @@ while run:
 
                         # Moved this so that the last read values is updated even if logging is off. Otherwise the getDashInfo 
                         # will return the default temp values (0)
-                        if config['dataLogging'] == 'paused' or config['dataLogging'] == 'stopped':
-                            continue  # skip if logging is paused or stopped
-
-                        # All this is handled by the model
-                        BrewPiUtil.save_beer_log_point(dbConfig, newRow)
+                        if dbConfig.logging_status == models.BrewPiDevice.DATA_LOGGING_ACTIVE:
+                            # All this is handled by the model
+                            BrewPiUtil.save_beer_log_point(dbConfig, newRow)
 
                     elif line[0] == 'D':
                         # debug message received, should already been filtered out, but print anyway here.
