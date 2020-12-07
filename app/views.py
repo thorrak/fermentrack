@@ -796,13 +796,15 @@ def device_manage(request, device_id):
             if active_device.device_name != form.cleaned_data['device_name']:
                 try:
                     existing_device = BrewPiDevice.objects.get(device_name=form.cleaned_data['device_name'])
-                    messages.error(request, u'A device already exists with the name {}'.format(
-                                         form.cleaned_data['device_name']))
-                    return render(request, template_name='device_manage.html',
-                                  context={'form': form, 'active_device': active_device})
+                    if existing_device.id != active_device.id:
+                        messages.error(request, u'A device already exists with the name {}'.format(
+                                             form.cleaned_data['device_name']))
+                        return render(request, template_name='device_manage.html',
+                                      context={'form': form, 'active_device': active_device})
                 except ObjectDoesNotExist:
                     # There was no existing device - we're good. Set the new name.
-                    active_device.device_name = form.cleaned_data['device_name']
+                    pass
+            active_device.device_name = form.cleaned_data['device_name']
             active_device.device_name=form.cleaned_data['device_name']
             active_device.temp_format=form.cleaned_data['temp_format']
             active_device.data_point_log_interval=form.cleaned_data['data_point_log_interval']
