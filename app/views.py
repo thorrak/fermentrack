@@ -107,7 +107,7 @@ def add_device(request):
     #     return redirect("/")
 
     if request.POST:
-        form = device_forms.DeviceForm(request.POST)
+        form = device_forms.BrewPiDeviceCreateForm(request.POST)
         if form.is_valid():
             # TODO - Add support for editing to this
             new_device = BrewPiDevice(
@@ -145,7 +145,7 @@ def add_device(request):
         initial_values = {'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
                           'modify_not_create': False}
 
-        form = device_forms.DeviceForm(initial=initial_values)
+        form = device_forms.BrewPiDeviceCreateForm(initial=initial_values)
         return render(request, template_name='setup/device_add.html', context={'form': form})
 
 
@@ -783,7 +783,7 @@ def device_manage(request, device_id):
 
     # Forms posted back to device_manage are explicitly settings update forms
     if request.POST:
-        form = device_forms.DeviceForm(request.POST)
+        form = device_forms.BrewPiDeviceModifyForm(request.POST)
 
         if form.is_valid():
             # Update the device settings based on what we were passed via the form
@@ -844,7 +844,7 @@ def device_manage(request, device_id):
             'modify_not_create': True,
         }
 
-        form = device_forms.DeviceForm(initial=initial_values)
+        form = device_forms.BrewPiDeviceModifyForm(initial=initial_values)
         return render(request, template_name='device_manage.html',
                                    context={'form': form, 'active_device': active_device})
 

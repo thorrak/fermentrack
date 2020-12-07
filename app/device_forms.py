@@ -13,7 +13,7 @@ import pytz
 import random
 
 
-class DeviceForm(forms.Form):
+class BrewPiDeviceModifyForm(forms.Form):
     device_name = forms.CharField(max_length=48, help_text="Unique name for this device",
                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Device Name'}))
 
@@ -71,34 +71,14 @@ class DeviceForm(forms.Form):
                                                     help_text="Whether to autodetect the appropriate serial port " +
                                                               "using the device's USB serial number")
 
-    # modify_not_create is a flag that impacts the device name checking in clean_device_name()
-    modify_not_create = forms.BooleanField(widget=forms.HiddenInput, initial=False, required=False)
-
     def clean_device_name(self):
         if 'device_name' not in self.cleaned_data:
             raise forms.ValidationError("A device name must be specified")
         else:
             device_name = self.cleaned_data['device_name']
 
-        # Name uniqueness is enforced on the sql CREATE, but since we're not using a ModelForm this form won't check to
-        # see if the name is actually unique. That said - we only need to check if we're creating the object. We do not
-        # need to check if we're modifying the object.
-        if 'modify_not_create' not in self.cleaned_data:
-            modify_not_create = False
-        else:
-            modify_not_create = self.cleaned_data['modify_not_create']
-
-        if not modify_not_create:  # If we're creating, not modifying
-            try:
-                existing_device = BrewPiDevice.objects.get(device_name=device_name)
-                raise forms.ValidationError("A device already exists with the name {}".format(device_name))
-
-            except ObjectDoesNotExist:
-                # There was no existing device - we're good.
-                return device_name
-        else:
-            # For modifications, we always return the device name
-            return device_name
+        # For modifications, we always return the device name
+        return device_name
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -175,6 +155,21 @@ class DeviceForm(forms.Form):
             cleaned_data['socketHost'] = "localhost"
 
         return cleaned_data
+
+
+class BrewPiDeviceCreateForm(BrewPiDeviceModifyForm):
+    def clean_device_name(self):
+        if 'device_name' not in self.cleaned_data:
+            raise forms.ValidationError("A device name must be specified")
+        else:
+            device_name = self.cleaned_data['device_name']
+        try:
+            existing_device = BrewPiDevice.objects.get(device_name=device_name)
+            raise forms.ValidationError("A device already exists with the name {}".format(device_name))
+
+        except ObjectDoesNotExist:
+            # There was no existing device - we're good.
+            return device_name
 
 
 class OldCCModelForm(ModelForm):
