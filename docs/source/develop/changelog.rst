@@ -15,6 +15,7 @@ Added
 ---------------------
 
 - Added support for Docker installations
+- Added environment/container version number to GitHub page
 
 
 Changed
@@ -22,6 +23,7 @@ Changed
 
 - Removed instances where BrewPi-Script would write to the database
 - Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
+- Redesigned available firmware list to reduce confusion
 
 
 Fixed

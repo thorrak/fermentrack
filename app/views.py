@@ -512,12 +512,7 @@ def github_trigger_upgrade(request, variant=""):
             if settings.USE_DOCKER:
                 variant_flags += "-d "
 
-            if 'tag' in request.POST:
-                # If we were passed a tag name, explicitly update to it. Assume all tags are within master
-                tag_to_use = request.POST.get('tag', "")
-                cmd = f"nohup utils/upgrade3.sh {variant_flags} -t \"{tag_to_use}\" -b \"master\" &"
-            else:
-                cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
             messages.success(request, "Triggered an upgrade from GitHub")
