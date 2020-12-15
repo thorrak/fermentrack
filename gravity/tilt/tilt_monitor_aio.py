@@ -6,7 +6,10 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 # Let's get sentry support going
 from sentry_sdk import init, capture_exception
-init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
+# This is the sentry queue for Fermentrack
+#init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
+# Breaking this out into its own Sentry queue for now
+init('http://12b1f08408de4586a18db78e7dbe27e4:323dad0efed24058b06cacd13a990987@sentry.optictheory.com:9000/10')
 
 import time, datetime, getopt, pid
 from typing import List, Dict
@@ -95,10 +98,10 @@ def processBLEBeacon(data):
     # print("Raw data (hex) {}: {}".format(len(raw_data_hex), raw_data_hex))
     # ev.show(0)
 
-    try:
-        mac_addr = ev.retrieve("peer")[0].val
-    except:
-        pass
+    # try:
+    #     mac_addr = ev.retrieve("peer")[0].val
+    # except:
+    #     pass
 
     try:
         # Let's use some of the functions of aioblesscan to tease out the mfg_specific_data payload
@@ -111,23 +114,26 @@ def processBLEBeacon(data):
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # tx_pwr isn't actually tx_pwr on the latest Tilts - I need to figure out what it actually is
+        # On the latest tilts, TX power is used for battery
         tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big', signed=False)
         rssi = ev.retrieve("rssi")[-1].val
 
     except Exception as e:
         LOG.error(e)
         capture_exception(e)
-        return
+        exit(1)
+        return False  # This can't be called, but it's here to make Pycharm happy
 
     if verbose:
         LOG.info("Tilt Payload (hex): {}".format(raw_data_hex))
 
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
-    tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
+    tilts[color].process_decoded_values(gravity, temp, rssi, tx_pwr)  # Process the data sent from the Tilt
 
-    #print("Color {} - MAC {}".format(color, mac_addr))
-    #print("Raw Data: `{}`".format(raw_data_hex))
+    if verbose:
+        # print("Color {} - MAC {}".format(color, mac_addr))
+        print("Raw Data: `{}`".format(raw_data_hex))
+        print(f"{color} - Temp: {temp}, Gravity: {gravity}, RSSI: {rssi}, TX Pwr: {tx_pwr}")
 
     # The Fermentrack specific stuff:
     reload = False
@@ -161,7 +167,7 @@ except OSError as e:
 # requires a STREAM socket) - previously was fac=event_loop.create_connection(aiobs.BLEScanRequester,sock=mysocket)
 fac = event_loop._create_connection_transport(mysocket, aiobs.BLEScanRequester, None, None)
 conn, btctrl = event_loop.run_until_complete(fac)  # Start the bluetooth control loop
-btctrl.process=processBLEBeacon  # Attach the handler to the bluetooth control loop
+btctrl.process = processBLEBeacon  # Attach the handler to the bluetooth control loop
 
 # Begin probing
 btctrl.send_scan_request()

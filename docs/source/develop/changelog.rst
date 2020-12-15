@@ -7,8 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] -TBD (Bugfixes v. Docker + Fixes)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Unreleased] -TBD (Tilt Pro v. Docker + Tilt Pro)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
 ---------------------
@@ -20,6 +20,7 @@ Added
 Changed
 ---------------------
 
+- Added support for the new Tilt Pro
 - Updated Sentry target
 
 
