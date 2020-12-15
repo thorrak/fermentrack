@@ -122,7 +122,7 @@ class TiltHydrometer(object):
             self.firmware_version = sensor_gravity
             return
 
-        if self.raw_gravity >= 5000:
+        if sensor_gravity >= 5000:
             # Tilt Pro support
             self.tilt_pro = True
             self.raw_gravity = sensor_gravity / 10000
