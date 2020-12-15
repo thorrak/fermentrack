@@ -535,6 +535,9 @@ def gravity_manage(request, sensor_id):
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
 
+        tilt_extras = sensor.tilt_configuration.load_extras_from_redis()
+        context['tilt_extras'] = tilt_extras
+
         if sensor.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BRIDGE:
             # For TiltBridges, we want to give the user the info necessary to configure the device to communicate with
             # Fermentrack

@@ -143,6 +143,20 @@
             <div class="col-sm-8" id="tiltRSSIFeed"></div>
         </div>
 
+        {% if tilt_extras.rssi %}
+        <div class="row">
+            <div class="col-sm-4">Tilt Type</div>
+            <div class="col-sm-8">{% if tilt_extras.tilt_pro %}Tilt Pro{% elif tilt_extras.sends_battery %}v3{% else %}v2/v1{% endif %}</div>
+        </div>
+        {% endif %}
+
+        {% if tilt_extras.sends_battery %}
+            <div class="row">
+                <div class="col-sm-4">Battery Age (weeks)</div>
+                <div class="col-sm-8">{{ tilt_extras.weeks_on_battery }}</div>
+            </div>
+        {% endif %}
+
         <h2>Troubleshoot Tilt Connection</h2>
 
         <p>If you are having difficulty getting/keeping your Bluetooth Tilt connected, click the button below to launch the Tilt test script.</p>

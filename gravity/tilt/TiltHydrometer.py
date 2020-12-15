@@ -44,8 +44,9 @@ class TiltHydrometer(object):
         self.rssi = 0  # type: int
 
         # v3 and newer Tilts use the tx_pwr field to send the battery life
-        self.sends_battery = False # type: bool
-        self.weeks_on_battery = 0 # type: int
+        self.sends_battery = False  # type: bool
+        self.weeks_on_battery = 0  # type: int
+        self.firmware_version = 0
 
         # Tilt Pros are determined when we receive a gravity reading > 5000
         self.tilt_pro = False  # type: bool
@@ -114,10 +115,11 @@ class TiltHydrometer(object):
     #     self._add_to_list(self.gravity, self.temp)
 
     def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi: int, tx_pwr: int):
-        if sensor_temp >= 999:
+        if sensor_temp == 999:
             # For the latest Tilts, this is now actually a special code indicating that the gravity is the version info.
             # Regardless of whether or not we end up doing anything with that information, we definitely do not want to
             # add it to the list
+            self.firmware_version = sensor_gravity
             return
 
         if self.raw_gravity >= 5000:
@@ -251,6 +253,10 @@ class TiltHydrometer(object):
         self.obj.rssi = self.rssi
         self.obj.raw_gravity = self.raw_gravity
         self.obj.raw_temp = self.raw_temp
+        self.obj.tilt_pro = self.tilt_pro
+        self.obj.sends_battery = self.sends_battery
+        self.obj.weeks_on_battery = self.weeks_on_battery
+        self.obj.firmware_version = self.firmware_version
         self.obj.save_extras_to_redis()
 
         self.last_saved_value = datetime.datetime.now()

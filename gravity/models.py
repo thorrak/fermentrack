@@ -698,9 +698,14 @@ class TiltConfiguration(models.Model):
             'raw_gravity': getattr(self, 'raw_gravity', None),
             'raw_temp': getattr(self, 'raw_temp', None),
             'saved_at': datetime_string,
+            'tilt_pro': getattr(self, 'tilt_pro', False),
+            'sends_battery': getattr(self, 'sends_battery', False),
+            'weeks_on_battery': getattr(self, 'weeks_on_battery', None),
+            'firmware_version': getattr(self, 'firmware_version', None),
         }
 
-        r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
+        r.set(f'tilt_{self.color}_extras', json.dumps(extras).encode(encoding="utf-8"))
+        r.expire(f'tilt_{self.color}_extras', 60 * 5)
 
     def load_extras_from_redis(self) -> dict:
         try:
@@ -725,6 +730,14 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_temp']
         if 'saved_at' in extras:
             self.saved_at = datetime.datetime.strptime(extras['saved_at'], "%c")
+        if 'tilt_pro' in extras:
+            self.tilt_pro = extras['tilt_pro']
+        if 'sends_battery' in extras:
+            self.tilt_pro = extras['sends_battery']
+        if 'weeks_on_battery' in extras:
+            self.tilt_pro = extras['weeks_on_battery']
+        if 'firmware_version' in extras:
+            self.tilt_pro = extras['firmware_version']
 
         return extras
 
