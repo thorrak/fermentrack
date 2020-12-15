@@ -43,6 +43,14 @@ class TiltHydrometer(object):
         self.raw_temp = 0  # type: int
         self.rssi = 0  # type: int
 
+        # v3 and newer Tilts use the tx_pwr field to send the battery life
+        self.sends_battery = False  # type: bool
+        self.weeks_on_battery = 0  # type: int
+        self.firmware_version = 0
+
+        # Tilt Pros are determined when we receive a gravity reading > 5000
+        self.tilt_pro = False  # type: bool
+
         self.obj = None  # type: TiltConfiguration
 
         # Let's load the object from Fermentrack as part of the initialization
@@ -106,25 +114,45 @@ class TiltHydrometer(object):
     #     self.rssi = rssi
     #     self._add_to_list(self.gravity, self.temp)
 
-    def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi):
-        if sensor_temp >= 999:
+    def process_decoded_values(self, sensor_gravity: int, sensor_temp: int, rssi: int, tx_pwr: int):
+        if sensor_temp == 999:
             # For the latest Tilts, this is now actually a special code indicating that the gravity is the version info.
             # Regardless of whether or not we end up doing anything with that information, we definitely do not want to
             # add it to the list
+            self.firmware_version = sensor_gravity
             return
 
-        self.raw_gravity = sensor_gravity / 1000
+        if sensor_gravity >= 5000:
+            # Tilt Pro support
+            self.tilt_pro = True
+            self.raw_gravity = sensor_gravity / 10000
+            usable_temp = sensor_temp / 10
+        else:
+            # Tilt "Classic" support
+            self.tilt_pro = False
+            self.raw_gravity = sensor_gravity / 1000
+            usable_temp = sensor_temp
+
+        # v3 Tilts send battery age in weeks using the tx_pwr field, but they have a hack in place to maintain
+        # compatibility with iPhones where they alternate sending "197" (unsigned) or "-59" (signed) with the actual
+        # number of weeks since the battery was changed. If we see the 197 (-59) then we'll set "sends_battery" to true
+        # and then update the weeks_on_battery the next time we see a beacon
+        if tx_pwr == 197:
+            self.sends_battery = True
+        elif self.sends_battery:
+            self.weeks_on_battery = tx_pwr
+
         if self.obj is None:
             # If there is no TiltConfiguration object set, just use the raw gravity the Tilt provided
             self.gravity = self.raw_gravity
-            self.raw_temp = sensor_temp
+            self.raw_temp = usable_temp
         else:
             # Otherwise, apply the calibration
             self.gravity = self.obj.apply_gravity_calibration(self.raw_gravity)
 
             # Temps are always provided in degrees fahrenheit - Convert to Celsius if required
             # Note - convert_temp_to_sensor returns as a tuple (with units) - we only want the degrees not the units
-            self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(sensor_temp,
+            self.raw_temp, _ = self.obj.sensor.convert_temp_to_sensor_format(usable_temp,
                                                                              GravitySensor.TEMP_FAHRENHEIT)
         self.temp = self.raw_temp
         self.rssi = rssi
@@ -225,6 +253,10 @@ class TiltHydrometer(object):
         self.obj.rssi = self.rssi
         self.obj.raw_gravity = self.raw_gravity
         self.obj.raw_temp = self.raw_temp
+        self.obj.tilt_pro = self.tilt_pro
+        self.obj.sends_battery = self.sends_battery
+        self.obj.weeks_on_battery = self.weeks_on_battery
+        self.obj.firmware_version = self.firmware_version
         self.obj.save_extras_to_redis()
 
         self.last_saved_value = datetime.datetime.now()
