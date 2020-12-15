@@ -105,7 +105,7 @@ def processBLEBeacon(data):
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # tx_pwr isn't actually tx_pwr on the latest Tilts - I need to figure out what it actually is
+        # On the latest tilts, TX power is used for battery
         tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big', signed=False)
         rssi = ev.retrieve("rssi")[-1].val
 
@@ -119,11 +119,12 @@ def processBLEBeacon(data):
         LOG.info("Tilt Payload (hex): {}".format(raw_data_hex))
 
     color = TiltHydrometer.color_lookup(uuid)  # Map the uuid back to our TiltHydrometer object
-    tilts[color].process_decoded_values(gravity, temp, rssi)  # Process the data sent from the Tilt
+    tilts[color].process_decoded_values(gravity, temp, rssi, tx_pwr)  # Process the data sent from the Tilt
 
     if verbose:
         # print("Color {} - MAC {}".format(color, mac_addr))
         print("Raw Data: `{}`".format(raw_data_hex))
+        print(f"{color} - Temp: {temp}, Gravity: {gravity}, RSSI: {rssi}, TX Pwr: {tx_pwr}")
 
     # The Fermentrack specific stuff:
     reload = False
