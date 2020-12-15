@@ -7,6 +7,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
+[Unreleased] - Docker Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Added
+---------------------
+
+- Added support for Docker installations
+- Added environment/container version number to GitHub page
+
+
+Changed
+---------------------
+
+- Removed instances where BrewPi-Script would write to the database
+- Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
+- Redesigned available firmware list to reduce confusion
+
+
+Fixed
+---------------------
+
+- Fermentrack now works with properly transactional databases (e.g. Postgres)
+
+
 
 [2020-11-07] - Temp Profile Tweaks & Docker Prep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

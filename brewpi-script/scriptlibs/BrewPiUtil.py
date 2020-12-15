@@ -56,90 +56,6 @@ def addSlash(path):
     return path
 
 
-def read_config_from_database_without_defaults(db_config_object) -> dict:
-    """
-    Reads configuration parameters from the database without defaults
-
-    Params:
-    db_config_object: models.BrewPiDevice, BrewPiDevice object
-
-    Returns:
-    dict of settings
-    """
-
-    config = {}
-
-    # Unlike the above, we don't have defaults (because we assume the database enforces defaults). Load everything.
-    # config['scriptPath'] = db_config_object.script_path
-    config['port'] = db_config_object.serial_port
-    # if db_config_object.serial_alt_port != 'None':
-    config['altport'] = db_config_object.serial_alt_port
-    config['boardType'] = db_config_object.board_type
-    config['beerName'] = db_config_object.get_active_beer_name()
-    config['interval'] = float(db_config_object.data_point_log_interval)  # Converting to a float to match config file
-    config['dataLogging'] = db_config_object.logging_status
-    config['socket_name'] = db_config_object.socket_name
-    config['connection_type'] = db_config_object.connection_type
-    config['wifiHost'] = db_config_object.wifi_host
-    config['wifiPort'] = db_config_object.wifi_port
-    config['useInetSocket'] = db_config_object.useInetSocket
-    config['socketPort'] = db_config_object.socketPort
-    config['socketHost'] = db_config_object.socketHost
-    config['wifiIPAddress'] = db_config_object.get_cached_ip()  # If we have a cached IP from mDNS, we'll use it
-
-    logMessage("Preparing to call get_port_from_udev")
-    udevPort = db_config_object.get_port_from_udev()
-    if udevPort is None:
-        logMessage("Unable to locate device using USB serial number")
-    else:
-        config['udevPort'] = udevPort  # If we prioritize udev lookup for serial, get the port
-        logMessage("Successfully got port from udev")
-
-    return config
-
-
-def configSet(db_config_object, settingName, value):
-    logMessage(f"configSet called to set {settingName} to {value}")
-    # Assuming we have a valid db_config_object here
-    if settingName == "port":
-        db_config_object.serial_port = value
-    elif settingName == "altport":
-        db_config_object.serial_alt_port = value
-    elif settingName == "boardType":
-        db_config_object.board_type = value
-    elif settingName == "beerName":
-        # If we have a blank or NoneType name, we're unsetting the beer.
-        if value is None or len(value) < 1:
-            db_config_object.active_beer = None
-        else:  # Otherwise, we need to (possibly) create the beer and link it to the chamber
-            # One thing to note - In traditional brewpi-www the beer is entirely created within/managed by the
-            # brewpi-script. For Fermentrack we're
-            logMessage(f"Attempting to retrieve beer {value}")
-            new_beer, created = models.Beer.objects.get_or_create(name=value, device=db_config_object)
-            logMessage(f"Retrieved {value} - created: {created}")
-            if created:
-                # If we just created the beer, set the temp format (otherwise, defaults to Fahrenheit)
-                new_beer.format = db_config_object.temp_format
-                new_beer.save()
-            if db_config_object.active_beer != new_beer:
-                db_config_object.active_beer = new_beer
-            logMessage("Done setting beer value")
-
-    elif settingName == "socket_name":
-        db_config_object.socket_name = value
-    elif settingName == "interval":
-        db_config_object.data_point_log_interval = value
-    elif settingName == "dataLogging":
-        db_config_object.logging_status = value
-    else:
-        # In all other cases, just try to set the field directly
-        setattr(db_config_object, settingName, value)
-    logMessage("Preparing to call object.save")
-    db_config_object.save()
-    logMessage("Preparing to call read_config_from_database_without_defaults")
-    return read_config_from_database_without_defaults(db_config_object)
-
-
 def save_beer_log_point(db_config_object, beer_row):
     """
     Saves a row of data to the database (mapping the data row we are passed to Django's BeerLogPoint model)
@@ -201,19 +117,22 @@ def removeDontRunFile(path='/var/www/do_not_run_brewpi'):
     else:
         print("File do_not_run_brewpi does not exist at " + path)
 
+
 def findSerialPort(bootLoader):
     (port, name) = autoSerial.detect_port(bootLoader)
     return port
 
-def setupSerial(config, baud_rate=57600, time_out=0.1):
+
+def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1):
     ser = None
-    dumpSerial = config.get('dumpSerial', False)
+    # dumpSerial = config.get('dumpSerial', False)
+    dumpSerial = False
 
     error = None
 
     # open serial port
     tries = 0
-    connection_type = config.get('connection_type', 'auto')
+    connection_type = dbConfig.connection_type
     if connection_type == "serial" or connection_type == "auto":
         if connection_type == "auto":
             logMessage("Connection type set to 'auto' - Attempting serial first")
@@ -225,14 +144,15 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
 
             # If we have a udevPort (from a dbconfig object, found via the udev serial number) use that as the first
             # option - replacing config['port'].
-            if 'udevPort' in config:
-                ports_to_try.append(config['udevPort'])
+            udevPort = dbConfig.get_port_from_udev()
+            if udevPort is not None:
+                ports_to_try.append(udevPort)
             else:
-                ports_to_try.append(config.get('port', "auto"))
+                ports_to_try.append(dbConfig.serial_port)
 
             # Regardless of if we have 'udevPort', add altport as well
-            if 'altport' in config:
-                ports_to_try.append(config['altport'])
+            if dbConfig.serial_alt_port:
+                ports_to_try.append(dbConfig.serial_alt_port)
 
             for portSetting in ports_to_try:
                 if portSetting == None or portSetting == 'None' or portSetting == "none":
@@ -241,7 +161,7 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
                     port = findSerialPort(bootLoader=False)
                     if not port:
                         error = "Could not find compatible serial devices \n"
-                        continue # continue with altport
+                        continue  # continue with altport
                 else:
                     port = portSetting
                 try:
@@ -267,34 +187,38 @@ def setupSerial(config, baud_rate=57600, time_out=0.1):
             while tries < 10:
                 error = ""
 
-                try:
-                    port = int(config['wifiPort'])
-                except TypeError:
+                if dbConfig.wifi_port is None:
                     logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config['wifiPort']))
                     logMessage("Exiting.")
-                    port=0  # to make PyCharm happy
                     exit(1)
+                port = dbConfig.wifi_port
 
-                if not(config['wifiHost'] == None or  config['wifiHost'] == 'None' or config['wifiHost'] == 'none'):
-                    # We're going to use the wifiIPAddress
-                    # TODO - Ensure hostname lookup
-                    connect_to = config.get('wifiIPAddress', config['wifiHost'])
-                    ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=config['wifiHost'])
+                if dbConfig.wifi_host_ip is None or len(dbConfig.wifi_host_ip) < 7:
+                    if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
+                        logMessage("Invalid WiFi configuration - No wifi_host or wifi_host_ip set")
+                        logMessage("Exiting.")
+                        exit(1)
+                    connect_to = dbConfig.wifi_host
                 else:
-                    logMessage("Invalid WiFi configuration:")
-                    logMessage("  wifiHost: {}".format(config['wifiHost']))
-                    logMessage("  wifiPort: {}".format(config['wifiPort']))
-                    logMessage("Exiting.")
-                    exit(1)
+                    # the wifi_host_ip is set - use that as the host to connect to
+                    connect_to = dbConfig.wifi_host_ip
+
+                if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
+                    # If we don't have a hostname at all, set it to None
+                    hostname = None
+                else:
+                    hostname = dbConfig.wifi_host
+
+                ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=hostname)
 
                 if ser:
                     break
                 tries += 1
                 time.sleep(1)
-        if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
-            logMessage("Unable to connect via WiFi. Exiting.")
-            exit(1)
 
+    if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
+        logMessage("Unable to connect via Serial or WiFi. Exiting.")
+        exit(1)
 
     if ser:
         # discard everything in serial buffers

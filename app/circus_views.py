@@ -4,8 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from app.models import BrewPiDevice
 from lib.ftcircus.client import CircusException
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
+
 
 def _JsonResponseIndent(request):
     """Simple function that returns JsonResponse with indent 4"""
@@ -46,13 +48,13 @@ def start_brewpi_device(request, device_id):
         logger.error("Error loading device with ID: {}".format(device_id), exc_info=True)
         ret = {'status': 'error', 'message': 'Unable to load device id: {}'.format(device_id)}
         return _JsonResponseIndent(ret)
-    try:
-        active_device.start_process()
-    except (CircusException) as cerror:
-        logger.error("Error during circus call", exc_info=True)
-        ret = {'status': 'error', 'message': 'Error during circus call: {}'.format(cerror)}
-        return _JsonResponseIndent(ret)
-    ret = {'status': 'ok', 'message': 'process signaled to start'}
+
+    # Due to the way that Django handles transactions, starting the process here can cause a race condition with a
+    # transaction editing/creating the BrewPiDevice getting written to the database. We'll wrap the start process call
+    # in "on_commit" to ensure that it is called after the commit takes place.
+    transaction.on_commit(active_device.start_process)
+
+    ret = {'status': 'ok', 'message': 'process queued to start'}
     return _JsonResponseIndent(ret)
 
 @login_required

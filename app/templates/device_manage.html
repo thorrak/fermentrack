@@ -42,7 +42,7 @@
 <form action="{% url "device_manage" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
 
     {# This is primarily to capture modify_not_create #}
-    {% for hidden in this_sensor.device_form.hidden_fields %}
+    {% for hidden in form.hidden_fields %}
     {{ hidden }}
     {% endfor %}
 

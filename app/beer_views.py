@@ -52,11 +52,7 @@ def beer_create(request, device_id):
             else:
                 messages.success(request, "Beer {} already exists - assigning to device".format(form.cleaned_data['beer_name']))
 
-            if form.cleaned_data['device'].active_beer != new_beer:
-                form.cleaned_data['device'].active_beer = new_beer
-                form.cleaned_data['device'].save()
-
-            form.cleaned_data['device'].start_new_brew()
+            form.cleaned_data['device'].start_new_brew(new_beer)
 
         else:
             messages.error(request, "<p>Unable to create beer</p> %s" % form.errors['__all__'])
@@ -78,25 +74,16 @@ def beer_logging_status(request, device_id, logging_status):
 
     # logging_status is the target status. Differs a bit from how the action is referred to in brewpi.py
     if logging_status == BrewPiDevice.DATA_LOGGING_ACTIVE:
-        response = this_device.manage_logging(status='resume')
-        if response['status'] == 0:
-            messages.success(request, "Data logging has been resumed")
-        else:
-            messages.error(request, response['statusMessage'])
+        this_device.manage_logging(status='resume')
+        messages.success(request, "Request to resume logging sent to controller")
 
     elif logging_status == BrewPiDevice.DATA_LOGGING_PAUSED:
-        response = this_device.manage_logging(status='pause')
-        if response['status'] == 0:
-            messages.success(request, "Data logging has been paused")
-        else:
-            messages.error(request, response['statusMessage'])
+        this_device.manage_logging(status='pause')
+        messages.success(request, "Request to pause logging sent to controller")
 
     elif logging_status == BrewPiDevice.DATA_LOGGING_STOPPED:
-        response = this_device.manage_logging(status='stop')
-        if response['status'] == 0:
-            messages.success(request, "Data logging has been stopped")
-        else:
-            messages.error(request, response['statusMessage'])
+        this_device.manage_logging(status='stop')
+        messages.success(request, "Request to stop logging sent to controller")
 
     else:
         messages.error(request, "Requested status is invalid!")

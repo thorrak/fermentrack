@@ -85,9 +85,9 @@ def get_local_version_numbers() -> dict:
     # DOCKER_CONTAINER_VERSION is set in compose/production/django/start
     # ENV_DJANGO_VERSION is set in .envs/.production/.django
     # ENV_POSTGRES_VERSION is set in .envs/.production/.postgres
-    versions = {'docker_container_version': env.int("DOCKER_CONTAINER_VERSION", default=0),
-                'env_django_version': env.int("ENV_DJANGO_VERSION", default=0),
-                'env_postgres_version': env.int("ENV_POSTGRES_VERSION", default=0),
+    versions = {'docker_container_version': env.int("DOCKER_CONTAINER_VERSION", default=1),
+                'env_django_version': env.int("ENV_DJANGO_VERSION", default=-1),
+                'env_postgres_version': env.int("ENV_POSTGRES_VERSION", default=-1),
                 'use_docker': env.bool("USE_DOCKER", default=False), }
     return versions
 
