@@ -36,15 +36,13 @@ def get_gravity_sensors(req, device_id=None):
         else:
             point_expiry = datetime.timedelta(days=30)  # For all other sensors (including manual) extend this way out
 
+        # Only display unexpired points
         log_point = dev.retrieve_latest_point()
-        if log_point is None:
-            temp = None
-            gravity = None
-        elif log_point.log_time < timezone.now() - point_expiry:
-            # If the last log point was received too long ago, act like we don't have a point to display
-            temp = None
-            gravity = None
-        else:
+        temp_format = dev.temp_format
+        temp = None
+        gravity = None
+
+        if log_point is not None and log_point.log_time > timezone.now() - point_expiry:
             temp, temp_format = dev.retrieve_loggable_temp()
             gravity = dev.retrieve_loggable_gravity()
 
