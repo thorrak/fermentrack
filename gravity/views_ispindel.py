@@ -115,6 +115,7 @@ def ispindel_handler(request):
     calculated_gravity += ispindel_obj.second_degree_coefficient * angle**2
     calculated_gravity += ispindel_obj.first_degree_coefficient * angle
     calculated_gravity += ispindel_obj.constant_term
+    calculated_gravity = decimal.Decimal(str(round(calculated_gravity, 4)))
 
     if 'temp_units' in ispindel_data:
         # If we were provided temp units, use them

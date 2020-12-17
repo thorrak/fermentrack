@@ -22,6 +22,7 @@ Changed
 
 - Added support for the new Tilt Pro
 - Updated Sentry target
+- Round iSpindel readings to four decimal places
 
 
 Fixed
