@@ -16,7 +16,8 @@ Added
 
 - Added support for Docker installations
 - Added environment/container version number to GitHub page
-
+- Tilt "version" is now displayed on the Tilt Configuration page (Bluetooth only)
+- Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
 
 Changed
 ---------------------
