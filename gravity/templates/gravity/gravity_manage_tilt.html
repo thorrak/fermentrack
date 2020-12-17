@@ -143,7 +143,12 @@
             <div class="col-sm-8" id="tiltRSSIFeed"></div>
         </div>
 
-        {% if tilt_extras.rssi %}
+        <div class="row">
+            <div class="col-sm-4">Last Check-in</div>
+            <div class="col-sm-8" id="tiltLastReceived"></div>
+        </div>
+
+        {% if tilt_extras.rssi %} {# Testing against rssi here because that means we got -something- from the API #}
         <div class="row">
             <div class="col-sm-4">Tilt Type</div>
             <div class="col-sm-8">{% if tilt_extras.tilt_pro %}Tilt Pro{% elif tilt_extras.sends_battery %}v3{% else %}v2/v1{% endif %}</div>
@@ -281,10 +286,11 @@
                     url: '{% url 'get_tilt_extras' active_device.id %}',
                     success: function(data) {
                         $('#tiltRSSIFeed').html(data.rssi);
+                        $('#tiltLastReceived').html(data.saved_at);
                     },
                     complete: function() {
-                    // Schedule the next request when the current one's complete
-                    setTimeout(tilt_worker, 2000);
+                        // Schedule the next request when the current one's complete
+                        setTimeout(tilt_worker, 2000);
                     }
                 });
             })();

@@ -105,7 +105,7 @@ def processBLEBeacon(data):
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # On the latest tilts, TX power is used for battery
+        # On the latest tilts, TX power is used for battery age in weeks
         tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big', signed=False)
         rssi = ev.retrieve("rssi")[-1].val
 
