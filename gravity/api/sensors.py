@@ -1,39 +1,58 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from constance import config
-from datetime import datetime
+from django.utils import timezone
+import datetime
 
 from gravity.models import GravitySensor
 
 
-def getGravitySensors(req, device_id=None):
+def get_gravity_sensors(req, device_id=None):
     ret = []
     if device_id is None:
         devices = GravitySensor.objects.all()
     else:
         try:
-            devices = [GravitySensor.objects.get(id=device_id),]
+            devices = [GravitySensor.objects.get(id=device_id), ]
         except ObjectDoesNotExist:
             devices = []
     for dev in devices:
         if dev.sensor_type == GravitySensor.SENSOR_MANUAL:
             # For manual sensors, we want the "manage device" link to be for adding a reading instead
             manage_text = "Add Reading"
-            manage_url = reverse('gravity_add_point', kwargs={'manual_sensor_id': dev.id,})
+            manage_url = reverse('gravity_add_point', kwargs={'manual_sensor_id': dev.id, })
         else:
             manage_text = "Manage Device"
-            manage_url = reverse('gravity_dashboard', kwargs={'sensor_id': dev.id,})
+            manage_url = reverse('gravity_dashboard', kwargs={'sensor_id': dev.id, })
 
-        temp, temp_format = dev.retrieve_loggable_temp()
+        # To reduce confusion about what is going on with gravity sensor check-ins, if we haven't received a recent
+        # check-in, we want this API to act as if no point is available. The point has to remain available, though,
+        # in order to be used for logging (so graphs don't look wonky)
+        if dev.sensor_type == GravitySensor.SENSOR_TILT:
+            point_expiry = datetime.timedelta(minutes=2)  # Tilts report in roughly every second. This should be plenty.
+        elif dev.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+            point_expiry = datetime.timedelta(minutes=62)  # iSpindels sleep for a long time. Giving them over an hour.
+        else:
+            point_expiry = datetime.timedelta(days=30)  # For all other sensors (including manual) extend this way out
+
+        log_point = dev.retrieve_latest_point()
+        if log_point is None:
+            temp = None
+            gravity = None
+        elif log_point.log_time < timezone.now() - point_expiry:
+            # If the last log point was received too long ago, act like we don't have a point to display
+            temp = None
+            gravity = None
+        else:
+            temp, temp_format = dev.retrieve_loggable_temp()
+            gravity = dev.retrieve_loggable_gravity()
+
         if temp is None:
             temp_string = "--.-&deg;"
         else:
-            temp_string = "{}&deg; {}".format(temp, temp_format)
+            temp_string = f"{temp}&deg; {temp_format}"
 
-        gravity = dev.retrieve_loggable_gravity()
         if gravity is None:
             grav_string = "-.---"
         else:

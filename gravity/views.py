@@ -497,7 +497,7 @@ def gravity_manage(request, sensor_id):
             }
         except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
-            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            messages.error(request, f"The gravity sensor {sensor.name} had incomplete configuration and was deleted")
             sensor.delete()
             return redirect("siteroot")
 
@@ -522,10 +522,9 @@ def gravity_manage(request, sensor_id):
             }
         except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
-            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            messages.error(request, f"The gravity sensor {sensor.name} had incomplete configuration and was deleted")
             sensor.delete()
             return redirect("siteroot")
-
 
         tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
         context['tilt_coefficient_form'] = tilt_coefficient_form

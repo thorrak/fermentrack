@@ -1283,7 +1283,7 @@ class BeerLogPoint(models.Model):
             return False
 
     def enrich_gravity_data(self):
-        # enrich_graity_data is called to enrich this data point with the relevant gravity data
+        # enrich_gravity_data is called to enrich this data point with the relevant gravity data
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
         if self.has_gravity_enabled():
             if not self.can_log_gravity():

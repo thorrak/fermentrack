@@ -475,7 +475,7 @@ class GravityLogPoint(models.Model):
         # Once everything is written out, also write to redis as the cached current point
         self.save_to_redis()
 
-    def save_to_redis(self, device_id: int=None):
+    def save_to_redis(self, device_id: int or None = None):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis.from_url(url=settings.REDIS_URL)
         if device_id is None:

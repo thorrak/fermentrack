@@ -26,6 +26,7 @@ Changed
 - Removed instances where BrewPi-Script would write to the database
 - Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
 - Redesigned available firmware list to reduce confusion
+- Stale gravity check-in points will now not be displayed in the gravity dashboard panels
 
 
 Fixed
