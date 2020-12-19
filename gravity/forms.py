@@ -320,6 +320,7 @@ class IspindelCoefficientForm(forms.Form):
     b = forms.DecimalField(required=False, help_text="The second degree coefficient of the gravity equation")
     c = forms.DecimalField(required=False, help_text="The first degree coefficient of the gravity equation")
     d = forms.DecimalField(required=False, help_text="The constant term of the gravity equation")
+    t = forms.DecimalField(required=False, help_text="Temperature correction value for temperature sensor (this number will be added to reported value)")
 
     def __init__(self, *args, **kwargs):
         super(IspindelCoefficientForm, self).__init__(*args, **kwargs)

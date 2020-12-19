@@ -115,6 +115,7 @@ def ispindel_handler(request):
     calculated_gravity += ispindel_obj.second_degree_coefficient * angle**2
     calculated_gravity += ispindel_obj.first_degree_coefficient * angle
     calculated_gravity += ispindel_obj.constant_term
+    calculated_gravity = decimal.Decimal(str(round(calculated_gravity, 4)))
 
     if 'temp_units' in ispindel_data:
         # If we were provided temp units, use them
@@ -125,6 +126,8 @@ def ispindel_handler(request):
 
     converted_temp, temp_format = ispindel_obj.sensor.convert_temp_to_sensor_format(float(ispindel_data['temperature']),
                                                                                     ispindel_temp_units)
+
+    converted_temp += ispindel_obj.temperature_correction
 
     new_point = GravityLogPoint(
         gravity=calculated_gravity,         # We're using the gravity we calc within Fermentrack
@@ -182,6 +185,7 @@ def gravity_ispindel_coefficients(request, sensor_id):
             sensor.ispindel_configuration.second_degree_coefficient = ispindel_coefficient_form.cleaned_data['b']
             sensor.ispindel_configuration.first_degree_coefficient = ispindel_coefficient_form.cleaned_data['c']
             sensor.ispindel_configuration.constant_term = ispindel_coefficient_form.cleaned_data['d']
+            sensor.ispindel_configuration.temperature_correction = ispindel_coefficient_form.cleaned_data['t']
 
             if sensor.ispindel_configuration.coefficients_up_to_date:
                 # If we are manually setting the coefficients, then we'll assume they're up to date
