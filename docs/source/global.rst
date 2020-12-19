@@ -10,4 +10,6 @@
 
 .. _Fuscus: https://github.com/andrewerrington/fuscus
 
+.. _fermentrack-tools: https://github.com/thorrak/fermentrack-tools/
+
 
