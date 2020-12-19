@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 
 
 
-[Unreleased] -TBD (Tilt Pro v. Docker + Tilt Pro)
+[2020-12-19] - Tilt Pro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Added
