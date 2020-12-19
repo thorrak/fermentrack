@@ -494,6 +494,7 @@ def gravity_manage(request, sensor_id):
                 'b': sensor.ispindel_configuration.second_degree_coefficient,
                 'c': sensor.ispindel_configuration.first_degree_coefficient,
                 'd': sensor.ispindel_configuration.constant_term,
+                't': sensor.ispindel_configuration.temperature_correction,  
             }
         except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.

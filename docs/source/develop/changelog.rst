@@ -6,10 +6,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-
 [Unreleased] - Docker Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Added
 ---------------------
@@ -33,6 +31,32 @@ Fixed
 ---------------------
 
 - Fermentrack now works with properly transactional databases (e.g. Postgres)
+
+
+
+[2020-12-19] - Tilt Pro
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- iSpindel temperature readings can now be calibrated for accuracy
+- Add properly sized app icon for apple devices
+
+
+Changed
+---------------------
+
+- Added support for the new Tilt Pro
+- Updated Sentry target
+- Round iSpindel readings to four decimal places
+
+
+Fixed
+---------------------
+
+- Updated requirements to support the new pip
+
 
 
 

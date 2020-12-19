@@ -829,6 +829,7 @@ class IspindelConfiguration(models.Model):
     first_degree_coefficient = models.FloatField(default=0.0, help_text="The first degree coefficient in the gravity "
                                                                         "conversion equation")
     constant_term = models.FloatField(default=0.0, help_text="The constant term in the gravity conversion equation")
+    temperature_correction = models.FloatField(default=0.0, help_text="Value to correct iSpindel temperature value with " )
 
     # While coefficients_up_to_date is kept accurate, at the moment it doesn't really get used anywhere.
     # TODO - Do something useful with this
