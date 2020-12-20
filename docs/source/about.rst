@@ -5,7 +5,7 @@ What is Fermentrack?
 
 Fermentrack is a web interface for controlling and monitoring fermentation temperature and progress. It interfaces with
 BrewPi controllers as well as specific gravity sensors like the Tilt and iSpindel in order to help you make better beer.
-Fermentrack is designed to be run on a Raspberry Pi, but can be used in most environments capable of running Python.
+Fermentrack is designed to be run on a Raspberry Pi, but can be used in most environments capable of running Docker.
 
 Fermentrack is a complete replacement for the web interface used by BrewPi written in Python using the Django web
 framework. In addition to the features bundled with brewpi-www, Fermentrack provides an easy install process, simple
@@ -34,7 +34,7 @@ referenced at :doc:`develop/components`
 Why Use Fermentrack? (New Features)
 -------------------------------------------
 
-One of the key reasons to write Fermentrack was to incorporate features that are missing in the official BrewPi web interface. The following are just some of the features that have been added:
+Fermentrack adds a number of features that are missing in the official BrewPi web interface. The following are just some of the features that have been added or enhanced:
 
 * Single Command Installation (See: :doc:`installing/install`)
 * Native multi-chamber support
@@ -45,6 +45,7 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 * Robust device detection for serial controllers
 * Support for Tilt and iSpindel specific gravity sensors
 * Support for Python 3
+* Support for Docker-based installations
 
 
 Requirements
@@ -52,11 +53,19 @@ Requirements
 
 All Fermentrack installations require the following:
 
-* Raspberry Pi Zero, Zero W, 2 B, or 3 /w Internet Connection
-* Fresh Raspbian install (Buster or later)
-* 1GB of free space available
+**For Raspberry Pi-based Installations:**
+* Raspberry Pi 2B, 3, 4, 400, (or newer) /w Internet Connection
+* Raspberry Pi OS (Raspbian) install (Buster or later)
+* 2GB of free space available
 
-Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support.
+.. note:: Fermentrack does NOT support installing to armv6-based Pis (e.g. Pi Zero, Pi Zero W, Pi 1).
+
+
+**For x86/x64-based Installations:**
+* A Debian Buster or later-based-OS (e.g. Ubuntu, Debian, RPi OS for x86)
+* 2GB of free space available
+
+Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support. (For Raspberry Pi installations, the adapter built into a Pi 3+ is sufficient)
 
 Getting Started with Fermentrack
 ---------------------------------

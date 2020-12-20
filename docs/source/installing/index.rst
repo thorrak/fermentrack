@@ -9,7 +9,7 @@ Installing Fermentrack
 
     Raspi_Setup
     install
-    Raspi_Setup_Windows
     non_docker
     coexistence
+    Raspi_Setup_Windows
 

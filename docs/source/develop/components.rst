@@ -50,6 +50,16 @@ In addition to Django, this app utilizes a number of Python packages. These pack
       - `Apache Public License v2 <https://github.com/trbs/pid/blob/master/LICENSE>`__
     * - `aioblescan <https://github.com/frawau/aioblescan>`__
       - `MIT (Expat) <https://github.com/frawau/aioblescan/blob/master/LICENSE.txt>`__
+    * - `django-environ <https://github.com/joke2k/django-environ>`__
+      - `MIT (Expat) <https://github.com/joke2k/django-environ/blob/develop/LICENSE.txt>`__
+    * - `whitenoise <https://github.com/evansd/whitenoise>`__
+      - `MIT (Expat) <https://github.com/evansd/whitenoise/blob/master/LICENSE>`__
+    * - `psycopg2 <https://github.com/psycopg/psycopg2>`__
+      - `LGPL v3 <https://github.com/psycopg/psycopg2/blob/master/LICENSE>`__
+    * - `numpy <https://numpy.org/>`__
+      - `BSD 3 Clause <https://numpy.org/doc/stable/license.html>`__
+    * - `scipy <https://scipy.org/index.html>`__
+      - `BSD 3 Clause <https://scipy.org/scipylib/license.html>`__
 
 
 JavaScript Packages
