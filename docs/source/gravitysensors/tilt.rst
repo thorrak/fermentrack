@@ -3,18 +3,44 @@
 Tilt Setup
 ==========
 
-To associate your a Tilt with Fermentrack, simply place the Tilt near a Raspberry Pi 3B or newer, running Fermentrack. Place the Tilt at an angle (not vertical or horizontal) to wake it up and the Pi running Fermentrack will automatically detect the Tilt (The Tilt enters a sleep mode when horizontal or vertical).
+The `Tilt Hydrometer`_ is a Bluetooth specific gravity sensor which operates by measuring the angle of a sensor floating
+in your fermenting beer. Fermentrack supports all versions of the Tilt Hydrometer both on a standalone basis and in
+conjunction with a BrewPi-based temperature controller.
+
+
+Connecting a Tilt to Fermentrack
+--------------------------------
+
+Tilt Hydrometers can be connected to Fermentrack either through a TiltBridge_ Tilt-to-WiFi bridge or using a Bluetooth
+adapter connected to the device running Fermentrack (including the built-in Bluetooth adapter on Raspberry Pi 3B or
+newer).
+
+Bluetooth
+~~~~~~~~~
+
+To utilize the Bluetooth adapter connected to the device running Fermentrack simply place the tilt near the device at an
+angle (not vertical or horizontal) to wake it up. After a few seconds the device will begin broadcasting and can be
+detected within Fermentrack. Then, to add the device:
 
 #. From the main Fermentrack dashboard, click on "Add new gravity sensor"
 #. Click on the Tilt icon
 #. Enter a name for the Tilt hydrometer you are adding, select the temperature units you wish to use, and select the color of the circuit board on the Tilt. You also want to specify if you are using a direct Bluetooth connection (default, included) to your Pi, or using a TiltBridge bluetooth to WiFi adapter (requires additional hardware).
 
-You will return to the Dashboard and Fermentrack will notify you that a new tilt sensor was added.
+You will return to the dashboard and Fermentrack will notify you that a new tilt sensor was added.
+
+
+
+TiltBridge
+~~~~~~~~~~
+
+.. todo:: Write the TiltBridge instructions
+
+
 
 Tilt Settings
 -------------
 
-After adding the Tilt to Fermentrack, you are returned to the Gravity Sensors dashboard. Right now, the Tilt is running in unassociated mode in Fermentrack, meaning it is handled as its own device- not integrated with the BrewPi controller. Clicking on the device you just added will bring you into a screen where you can further configure and customize that Tilt sensor. From this page, you can `Manage Sensor`_, `Load Prior Log`_, and `Assign Device`_.
+After adding the Tilt to Fermentrack, you are returned to the Gravity Sensors dashboard. When first added the Tilt is running in unassociated mode in Fermentrack, meaning it is handled as its own device - not integrated with a BrewPi controller. Clicking on the device will bring you into a screen where you can further configure and customize that Tilt sensor. From this page, you can `Manage Sensor`_, `Load Prior Log`_, and `Assign Device`_.
 
 Manage Sensor
 ~~~~~~~~~~~~~
@@ -79,7 +105,10 @@ Now, to view your Tilt sensor readings, navigate to the BrewPi controller dashbo
 Troubleshooting Tilt Support
 ----------------------------
 
-Tilt Hydrometer support relies on a number of components beyond those used for other functions in Fermentrack, and as a result is particularly sensitive to changes in the program environment on the device on which Fermentrack is installed. Testing has been added to Fermentrack to help diagnose some of these environmental issues if they happen to impact an installation.
+Tilt Hydrometer support relies on a number of components beyond those used for other functions in Fermentrack, and as a
+result is particularly sensitive to changes in the program environment on the device on which Fermentrack is installed.
+Testing has been added to Fermentrack to help diagnose some of these environmental issues if they happen to impact an
+installation.
 
 
 Fixing Missing System Packages

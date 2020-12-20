@@ -8,7 +8,7 @@
 
 Fermentrack is an application designed to manage and log fermentation temperatures and specific gravity. It acts as a complete replacement for the web interface used by BrewPi written in Python using the Django web framework. It also can track Tilt Hydrometers and iSpindel specific gravity sensors - both alongside BrewPi controllers as well as by themselves.
 
-Fermentrack is Python-based, does not require PHP5, and works with Raspbian Stretch or later including on Raspberry Pi 3 B+. Fermentrack is intended to be installed on a fresh installation of Raspbian and will conflict with brewpi-www if installed on the same device. 
+Fermentrack is Python-based, does not require PHP5, and works with Raspbian Buster or later including on Raspberry Pi 3 B+. Fermentrack is intended to be installed on a fresh installation of Raspbian (or another Debian-based OS for x86/x64 installations) and will conflict with brewpi-www if installed on the same device. 
 
 Want to see it in action? See videos of key Fermentrack features on [YouTube](https://www.youtube.com/playlist?list=PLCs4FqrNRHd00wsfsP7cTs83e19S2-Atf)!
 
@@ -32,7 +32,8 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 * Native support (including mDNS autodetection) for WiFi controllers
 * Integrated specific gravity sensor support, including for Tilt Hydrometers and iSpindel devices
 
-A full table of controllers/expected hardware availability is available [https://fermentrack.readthedocs.io/](https://fermentrack.readthedocs.io/).
+A full table of controllers/expected hardware availability is available [in the documentation](http://docs.fermentrack.com/en/master/hardware.html).
+
 
 ## Installation & Documentation
 
@@ -48,9 +49,15 @@ Full documentation for Fermentrack (including complete installation instructions
 
 ## Requirements
 
-* Raspberry Pi Zero, 2 B, or 3 /w Internet Connection
-* Fresh Raspbian install (Stretch or later preferred, Jessie supported)
-* 1GB of free space available
+Fermentrack is designed to be run as part of a Docker compose stack and should be able to run on most armv7/x86/x64-based systems that are capable of running docker-compose. Most users, however, will install Fermentrack on a Raspberry Pi.
 
-**PLEASE NOTE** - Fermentrack is currently intended to be installed on a fresh installation of Raspbian. It is **not** intended to be installed alongside brewpi-www and will conflict with the apache server brewpi-www installs. 
+**For Raspberry Pi-based Installs:**
+* Raspberry Pi 2 B, 3, 4, 400, or later /w Internet Connection
+* 2GB of free space available
+* Fresh Raspberry Pi OS (Raspbian) install (Buster or later) preferred
+
+
+**For x86/x64-based Installs:**
+* Debian-based systems preferred (e.g. Ubuntu, Debian, etc)
+* 2GB of free space available
 
