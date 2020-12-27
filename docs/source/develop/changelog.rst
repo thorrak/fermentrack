@@ -31,6 +31,7 @@ Fixed
 ---------------------
 
 - Fermentrack now works with properly transactional databases (e.g. Postgres)
+- Resolved issue causing false failures of the connectivity test (Thanks postalbunny!)
 
 
 
