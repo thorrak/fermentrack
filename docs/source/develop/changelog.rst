@@ -27,6 +27,7 @@ Changed
 - Stale gravity check-in points will now not be displayed in the gravity dashboard panels
 - Added support for latest TiltBridge firmware
 - Remove unimplemented "TCP Socket" external push option
+- Added Beer Setting, Fridge Setting, and Controller State to generic external push targets
 
 
 Fixed

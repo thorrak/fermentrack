@@ -191,6 +191,16 @@ class GenericPushTarget(models.Model):
                         if device_info['RoomTemp'] != 0:
                             data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
+                    if device_info['BeerSet'] is not None:
+                        if device_info['BeerSet'] != 0:
+                            data_to_send['beer_setting'] = float(device_info['BeerSet'])
+                    if device_info['FridgeSet'] is not None:
+                        if device_info['FridgeSet'] != 0:
+                            data_to_send['fridge_setting'] = float(device_info['FridgeSet'])
+                    if device_info['State'] is not None:
+                        if device_info['State'] != 0:
+                            data_to_send['controller_state'] = float(device_info['State'])
+
                     # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
                     try:
                         if brewpi.gravity_sensor is not None:
