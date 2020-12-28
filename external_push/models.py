@@ -239,8 +239,11 @@ class GenericPushTarget(models.Model):
             return False
 
         if self.target_type == self.SENSOR_PUSH_HTTP:
-            r = requests.post(self.target_host, data=json_data, verify=False)
-            return True  # TODO - Check if the post actually succeeded & react accordingly
+            try:
+                r = requests.post(self.target_host, data=json_data, verify=False)
+            except requests.ConnectionError:
+                return False
+            return True
         elif self.target_type == self.SENSOR_PUSH_TCP:
             # TODO - Push to a socket endpoint
             raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
