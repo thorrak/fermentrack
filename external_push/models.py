@@ -245,8 +245,10 @@ class GenericPushTarget(models.Model):
                 return False
             return True
         elif self.target_type == self.SENSOR_PUSH_TCP:
-            # TODO - Push to a socket endpoint
-            raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
+            # This was previously something I was planning on supporting, but haven't found a use for yet.
+            # Commenting out for now.
+            # raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
+            return False
         else:
             raise ValueError("Invalid target type specified for push target")
 

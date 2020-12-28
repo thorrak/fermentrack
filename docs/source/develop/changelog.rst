@@ -26,6 +26,7 @@ Changed
 - Redesigned available firmware list to reduce confusion
 - Stale gravity check-in points will now not be displayed in the gravity dashboard panels
 - Added support for latest TiltBridge firmware
+- Remove unimplemented "TCP Socket" external push option
 
 
 Fixed

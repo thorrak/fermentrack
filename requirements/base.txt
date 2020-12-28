@@ -9,7 +9,7 @@ pytz==2020.4           # required by manage.py migrate
 sentry-sdk             # used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython                   # for managing git integration
-zeroconf        # for locating ESP8266 devices
+zeroconf==0.28.7        # for locating ESP8266 devices
 circus>=0.16.0,<0.17.0          # for managing Fermentrack wsgi & brewpi.py processes
 #circus-web      # for managing Fermentrack wsgi & brewpi.py processes
 chaussette      # for managing Fermentrack wsgi
