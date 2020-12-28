@@ -5,7 +5,9 @@ BRANCH="master"
 SILENT=0
 TAG=""
 CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 FORCE_UPGRADE=0
+USE_DOCKER=0
 
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
@@ -26,7 +28,8 @@ function usage() {
 printinfo() {
     if [ ${SILENT} -eq 0 ]
     then
-        printf "::: ${green}%s${reset}\n" "$@"
+      printf "::: ${green}%s${reset}\n" "$@"
+      printf "::: ${green}%s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
@@ -35,6 +38,7 @@ printwarn() {
     if [ ${SILENT} -eq 0 ]
     then
         printf "${tan}*** WARNING: %s${reset}\n" "$@"
+        printf "${tan}*** WARNING: %s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
@@ -43,11 +47,12 @@ printerror() {
     if [ ${SILENT} -eq 0 ]
     then
         printf "${red}*** ERROR: %s${reset}\n" "$@"
+        printf "${red}*** ERROR: %s${reset}\n" "$@" >> log/upgrade.log
     fi
 }
 
 
-while getopts ":b:t:fsh" opt; do
+while getopts ":b:t:fdsh" opt; do
   case ${opt} in
     b)
       BRANCH=${OPTARG}
@@ -60,8 +65,11 @@ while getopts ":b:t:fsh" opt; do
       usage
       ;;
     f)
-    # For when the two scripts are combined
       FORCE_UPGRADE=1
+      ;;
+    d)
+      # If this upgrade is taking place from a dockerized install, then we need to do things slightly differently
+      USE_DOCKER=1
       ;;
     h)
       usage
@@ -78,12 +86,50 @@ done
 shift $((OPTIND-1))
 
 
-exec > >(tee -i log/upgrade.log)
+
+stop_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 stop &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 stop &>> log/upgrade.log
+  fi
+}
+
+
+reload_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 reloadconfig &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 reloadconfig &>> log/upgrade.log
+  fi
+}
+
+
+start_circus () {
+  if [ ${USE_DOCKER} -eq 1 ]
+  then
+    # For docker installs, the circus endpoint is in a different spot
+    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 start &>> log/upgrade.log
+  else
+    python3 -m circus.circusctl --timeout 10 start &>> log/upgrade.log
+  fi
+}
+
+
+rm log/upgrade.log
 
 
 printinfo "Triggering upgrade from branch ${BRANCH}"
-# First, launch the virtualenv
-source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
+
+if [ ${USE_DOCKER} -eq 0 ]
+then
+  # For non-docker installs, we need to launch the virtualenv
+  source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
+fi
 
 # Given that this script can be called by the webapp proper, give it 2 seconds to finish sending a reply to the
 # user if he/she initiated an upgrade through the webapp.
@@ -92,13 +138,21 @@ sleep 1s
 
 # Next, kill the running Fermentrack instance using circus
 printinfo "Stopping circus..."
-$CIRCUSCTL stop &>> log/upgrade.log
+stop_circus
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
-cd ~/fermentrack  # Assuming the directory based on a normal install with Fermentrack-tools
-git fetch --prune &>> log/upgrade.log
-git reset --hard &>> log/upgrade.log
+cd "${SCRIPTPATH}/.." || exit  # Assuming this script is within the utils directory of a normal install
+
+if [ ${FORCE_UPGRADE} -eq 0 ]
+then
+  git fetch --prune &>> log/upgrade.log
+  git reset --hard &>> log/upgrade.log
+else
+  git fetch --all &>> log/upgrade.log
+  git reset --hard @{u} &>> log/upgrade.log
+fi
+
 
 # If we have a tag set, use it
 if [ "${TAG}" = "" ]
@@ -126,6 +180,12 @@ python3 manage.py collectstatic --noinput >> /dev/null
 
 # Finally, relaunch the Fermentrack instance using circus
 printinfo "Relaunching circus..."
-$CIRCUSCTL reloadconfig &>> log/upgrade.log
-$CIRCUSCTL start &>> log/upgrade.log
+
+#if [ ${FORCE_UPGRADE} -eq 1 ]
+#then
+#  ~/fermentrack/utils/updateCronCircus.sh startifstopped
+#fi
+
+reload_circus
+start_circus
 printinfo "Complete!"

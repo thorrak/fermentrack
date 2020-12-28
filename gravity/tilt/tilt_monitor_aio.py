@@ -21,18 +21,9 @@ LOG = logging.getLogger("tilt")
 LOG.setLevel(logging.INFO)
 
 # We're having environment issues - Check the environment before continuing
-try:
-    import aioblescan as aiobs
-except:
-    LOG.error("Aioblescan not installed - unable to run")
-    exit(1)
-
-try:
-    import pkg_resources
-    from packaging import version
-except:
-    LOG.error("Packaging not installed - unable to run")
-    exit(1)
+import aioblescan as aiobs
+import pkg_resources
+from packaging import version
 
 for package in pkg_resources.working_set:
     if package.project_name == 'aioblescan':
@@ -42,7 +33,7 @@ for package in pkg_resources.working_set:
             exit(1)
 
 # done before importing django app as it does setup
-import tilt_monitor_utils
+from . import tilt_monitor_utils
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
@@ -114,7 +105,7 @@ def processBLEBeacon(data):
         uuid = payload[4:36]
         temp = int.from_bytes(bytes.fromhex(payload[36:40]), byteorder='big')
         gravity = int.from_bytes(bytes.fromhex(payload[40:44]), byteorder='big')
-        # On the latest tilts, TX power is used for battery
+        # On the latest tilts, TX power is used for battery age in weeks
         tx_pwr = int.from_bytes(bytes.fromhex(payload[44:46]), byteorder='big', signed=False)
         rssi = ev.retrieve("rssi")[-1].val
 

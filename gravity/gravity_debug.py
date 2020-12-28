@@ -13,7 +13,7 @@ except:
     redis_installed = False
 
 
-def try_redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD) -> (bool, bool, bool):
+def try_redis(url=settings.REDIS_URL) -> (bool, bool, bool):
     # Returns a tuple: (redis_installed, able_to_connect_test_result, key_set_and_retreival_test_result)
 
     if not redis_installed:
@@ -21,8 +21,8 @@ def try_redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=s
         return False, False, False
 
     try:
+        r = redis.Redis.from_url(url=url, socket_timeout=5)
 
-        r = redis.Redis(host=host, port=port, password=password, socket_timeout=3)
         r.ping()  # Test if the connection is active
     except redis.exceptions.TimeoutError:
         # Connection timed out (was unavailable). Report back that the test failed
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     print("Redis Installed: {}".format(redis_install_test))
     # print("Testing redis connection to ({},{},{}):".format(redis_host, redis_port, redis_pass))
-    print("Testing redis connection to ({},{},{}):".format(settings.REDIS_HOSTNAME, settings.REDIS_PORT, settings.REDIS_PASSWORD))
+    print("Testing redis connection to ({}):".format(settings.REDIS_URL))
     print("Connection Test: {}".format(redis_connection_test))
     print("Value Set/Read Test: {}".format(redis_value_test))
 

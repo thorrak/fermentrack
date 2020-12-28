@@ -7,6 +7,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.core import serializers
 
+from pathlib import Path
 import os.path, csv, logging, socket, typing, requests
 import json, time, datetime, pytz
 from constance import config
@@ -265,11 +266,8 @@ class GravityLog(models.Model):
         else:
             return "Gravity Device " + str(self.device_id) + " - L" + str(self.id) + " - NAME ERROR - "
 
-    def full_filename(self, which_file: str, extension_only: bool=False) -> str:
-        if extension_only:
-            base_name = ""
-        else:
-            base_name = self.base_filename()
+    def full_filename(self, which_file: str) -> str:
+        base_name = self.base_filename()
 
         if which_file == 'base_csv':
             return base_name + "_graph.csv"
@@ -278,18 +276,18 @@ class GravityLog(models.Model):
         elif which_file == 'annotation_json':
             return base_name + "_annotations.almost_json"
         else:
-            return None
+            return ""
 
     def data_file_url(self, which_file: str) -> str:
-        return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
+        return settings.DATA_URL + self.full_filename(which_file)
 
     def full_csv_url(self) -> str:
         return self.data_file_url('full_csv')
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
-        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
+        full_csv_file = file_name_base / self.full_filename('full_csv')
         return os.path.isfile(full_csv_file)
 
     # def base_csv_url(self):
@@ -301,11 +299,11 @@ class GravityLog(models.Model):
 # When the user attempts to delete a gravity log, also delete the log files associated with it.
 @receiver(pre_delete, sender=GravityLog)
 def delete_gravity_log(sender, instance, **kwargs):
-    file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, instance.base_filename())
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-    base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
-    full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
-    annotation_json = file_name_base + instance.full_filename('annotation_json', extension_only=True)
+    base_csv_file = file_name_base / instance.full_filename('base_csv')
+    full_csv_file = file_name_base / instance.full_filename('full_csv')
+    annotation_json = file_name_base / instance.full_filename('annotation_json')
 
     for this_filepath in [base_csv_file, full_csv_file, annotation_json]:
         try:
@@ -452,11 +450,11 @@ class GravityLogPoint(models.Model):
                     self.temp = self.temp_to_c()
                 self.temp_format = self.associated_log.format
 
-            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_log.base_filename())
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-            base_csv_file = file_name_base + self.associated_log.full_filename('base_csv', extension_only=True)
-            full_csv_file = file_name_base + self.associated_log.full_filename('full_csv', extension_only=True)
-            annotation_json = file_name_base + self.associated_log.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base / self.associated_log.full_filename('base_csv')
+            full_csv_file = file_name_base / self.associated_log.full_filename('full_csv')
+            annotation_json = file_name_base / self.associated_log.full_filename('annotation_json')
 
             # Write out headers (if the files don't exist)
             check_and_write_headers(base_csv_file, self.associated_log.column_headers('base_csv'))
@@ -477,9 +475,9 @@ class GravityLogPoint(models.Model):
         # Once everything is written out, also write to redis as the cached current point
         self.save_to_redis()
 
-    def save_to_redis(self, device_id: int=None):
+    def save_to_redis(self, device_id: int or None = None):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         if device_id is None:
             if self.associated_log is not None:
                 r.set('grav_{}_full'.format(self.associated_log.device_id), serializers.serialize('json', [self, ]).encode(encoding="utf-8"))
@@ -492,7 +490,7 @@ class GravityLogPoint(models.Model):
 
     @classmethod
     def load_from_redis(cls, sensor_id: int) -> 'GravityLogPoint' or None:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         try:
             # TODO - Redo this to remove overly greedy except
             redis_response = r.get('grav_{}_full'.format(sensor_id)).decode(encoding="utf-8")
@@ -671,18 +669,15 @@ class TiltConfiguration(models.Model):
 
     # TODO - Eliminate the xxx_redis_reload_flag functions
     def set_redis_reload_flag(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         r.set('tilt_reload_{}'.format(self.color), True)
 
     def clear_redis_reload_flag(self):
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         r.set('tilt_reload_{}'.format(self.color), None)
 
     def check_redis_reload_flag(self) -> bool:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
-                        socket_timeout=5)
+        r = redis.Redis.from_url(url=settings.REDIS_URL, socket_timeout=5)
         reload_flag = r.get('tilt_reload_{}'.format(self.color))
 
         if reload_flag is None:
@@ -694,7 +689,7 @@ class TiltConfiguration(models.Model):
     # later on.
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
 
         datetime_string = datetime.datetime.strftime(timezone.now(), "%c")
 
@@ -703,13 +698,18 @@ class TiltConfiguration(models.Model):
             'raw_gravity': getattr(self, 'raw_gravity', None),
             'raw_temp': getattr(self, 'raw_temp', None),
             'saved_at': datetime_string,
+            'tilt_pro': getattr(self, 'tilt_pro', False),
+            'sends_battery': getattr(self, 'sends_battery', False),
+            'weeks_on_battery': getattr(self, 'weeks_on_battery', None),
+            'firmware_version': getattr(self, 'firmware_version', None),
         }
 
-        r.set('tilt_{}_extras'.format(self.color), json.dumps(extras).encode(encoding="utf-8"))
+        r.set(f'tilt_{self.color}_extras', json.dumps(extras).encode(encoding="utf-8"))
+        r.expire(f'tilt_{self.color}_extras', 60 * 5)
 
     def load_extras_from_redis(self) -> dict:
         try:
-            r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+            r = redis.Redis.from_url(url=settings.REDIS_URL)
             redis_response = r.get('tilt_{}_extras'.format(self.color))
         except redis.exceptions.ConnectionError:
             # More than likely redis is offline (or we're in testing)
@@ -730,6 +730,14 @@ class TiltConfiguration(models.Model):
             self.raw_gravity = extras['raw_temp']
         if 'saved_at' in extras:
             self.saved_at = datetime.datetime.strptime(extras['saved_at'], "%c")
+        if 'tilt_pro' in extras:
+            self.tilt_pro = extras['tilt_pro']
+        if 'sends_battery' in extras:
+            self.tilt_pro = extras['sends_battery']
+        if 'weeks_on_battery' in extras:
+            self.tilt_pro = extras['weeks_on_battery']
+        if 'firmware_version' in extras:
+            self.tilt_pro = extras['firmware_version']
 
         return extras
 
@@ -836,7 +844,7 @@ class IspindelConfiguration(models.Model):
 
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
 
         extras = {
             'ispindel_id': getattr(self, 'ispindel_id', None),
@@ -849,7 +857,7 @@ class IspindelConfiguration(models.Model):
         r.set('ispindel_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
 
     def load_extras_from_redis(self) -> dict:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
 
         if redis_response is None:
@@ -873,7 +881,7 @@ class IspindelConfiguration(models.Model):
         return extras
 
     def load_last_log_time_from_redis(self) -> str:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        r = redis.Redis.from_url(url=settings.REDIS_URL)
         redis_response = r.get('grav_{}_full'.format(self.sensor_id)).decode(encoding="utf-8")
 
         if redis_response is None:

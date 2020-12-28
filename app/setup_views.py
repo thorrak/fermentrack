@@ -247,7 +247,7 @@ def device_guided_add_mdns(request, mdns_id):
 
 
     if request.POST:
-        form = device_forms.DeviceForm(request.POST)
+        form = device_forms.BrewPiDeviceCreateForm(request.POST)
         if form.is_valid():
             new_device = BrewPiDevice(
                 device_name=form.cleaned_data['device_name'],
@@ -279,7 +279,7 @@ def device_guided_add_mdns(request, mdns_id):
                           'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
                           'modify_not_create': False}
 
-        form = device_forms.DeviceForm(initial=initial_values)
+        form = device_forms.BrewPiDeviceCreateForm(initial=initial_values)
         return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
 
 
@@ -319,7 +319,7 @@ def device_guided_serial_autodetect(request, device_family):
         elif request.POST['step'] == "4":
             # Step 4 - MAGIC.
             if 'serial_port' in request.POST:
-                form = device_forms.DeviceForm(request.POST)
+                form = device_forms.BrewPiDeviceCreateForm(request.POST)
                 if form.is_valid():
                     new_device = BrewPiDevice(
                         device_name=form.cleaned_data['device_name'],
@@ -367,7 +367,7 @@ def device_guided_serial_autodetect(request, device_family):
                                   'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
                                   'modify_not_create': False}
 
-                form = device_forms.DeviceForm(initial=initial_values)
+                form = device_forms.BrewPiDeviceCreateForm(initial=initial_values)
                 return render(request, template_name='setup/device_guided_serial_autodetect_4_add.html',
                                            context={'form': form, 'device_family': device_family})
 

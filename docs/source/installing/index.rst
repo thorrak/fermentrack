@@ -9,6 +9,7 @@ Installing Fermentrack
 
     Raspi_Setup
     install
-    Apache_and_PHP_Support
+    non_docker
+    coexistence
     Raspi_Setup_Windows
 

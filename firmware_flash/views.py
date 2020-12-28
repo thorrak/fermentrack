@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from constance import config
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.db import transaction
 
 from . import forms, tasks
 
@@ -332,7 +333,7 @@ def firmware_flash_flash_firmware(request, board_id):
 
     flash_request.save()
 
-    req = tasks.flash_firmware(flash_request.id)
+    transaction.on_commit(lambda: tasks.flash_firmware(flash_request.id))  # Huey (fixes the race condition)
 
     messages.info(request, "Firmware flash has been queued and will be completed shortly.")
 

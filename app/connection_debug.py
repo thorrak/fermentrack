@@ -36,8 +36,8 @@ def test_telnet(hostname, port):
         return False, False, None
 
     try:
-        tn.write("n\r\n")
-        version_string = tn.read_until("}",3)
+        tn.write(b"n\r\n")
+        version_string = tn.read_until(b"}", 3)
     except:
         return True, False, None
     return True, True, version_string

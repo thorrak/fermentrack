@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - Docker Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for Docker installations
+- Added environment/container version number to GitHub page
+- Tilt "version" is now displayed on the Tilt Configuration page (Bluetooth only)
+- Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
+- "Last Check-in" time now added to Tilt configuration page (Bluetooth only)
+
+Changed
+---------------------
+
+- Removed instances where BrewPi-Script would write to the database
+- Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
+- Redesigned available firmware list to reduce confusion
+- Stale gravity check-in points will now not be displayed in the gravity dashboard panels
+
+
+Fixed
+---------------------
+
+- Fermentrack now works with properly transactional databases (e.g. Postgres)
+- Resolved issue causing false failures of the connectivity test (Thanks postalbunny!)
+
+
 
 [2020-12-19] - Tilt Pro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
