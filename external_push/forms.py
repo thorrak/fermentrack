@@ -11,7 +11,7 @@ class GenericPushTargetModelForm(ModelForm):
     class Meta:
         model = GenericPushTarget
         fields = ['name', 'push_frequency', 'api_key', 'brewpi_push_selection', 'brewpi_to_push',
-                  'gravity_push_selection', 'gravity_sensors_to_push', 'target_host', 'target_port']
+                  'gravity_push_selection', 'gravity_sensors_to_push', 'target_host']
 
 
 class BrewersFriendPushTargetModelForm(ModelForm):
