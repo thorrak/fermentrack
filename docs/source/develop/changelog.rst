@@ -18,6 +18,7 @@ Added
 - Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
 - "Last Check-in" time now added to Tilt configuration page (Bluetooth only)
 
+
 Changed
 ---------------------
 
@@ -36,6 +37,7 @@ Fixed
 - Fermentrack now works with properly transactional databases (e.g. Postgres)
 - Resolved issue causing false failures of the connectivity test (Thanks postalbunny!)
 - Fixed issue preventing renaming of BrewPi controllers
+- Dashes now allowed in TiltBridge mDNS IDs
 
 
 

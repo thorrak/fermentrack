@@ -768,7 +768,8 @@ class TiltBridge(models.Model):
         verbose_name_plural = "TiltBridges"
 
     name = models.CharField(max_length=64, help_text="Name to identify this TiltBridge")
-    mdns_id = models.CharField(max_length=64, primary_key=True, validators=[RegexValidator(regex="^[a-zA-Z0-9]+$")],
+    mdns_id = models.CharField(max_length=64, primary_key=True,
+                               validators=[RegexValidator(regex="^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$")],
                                help_text="mDNS ID used by the TiltBridge to identify itself both on your network " +
                                          "and to Fermentrack. NOTE - Prefix only - do not include '.local'")
 
