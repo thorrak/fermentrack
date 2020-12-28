@@ -391,8 +391,8 @@ def tiltbridge_handler(request):
             # We received data for an invalid tilt from TiltBridge
             continue
 
-        raw_temp = int(tiltbridge_data['tilts'][this_tilt]['temp'])
-        converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), 'F')
+        raw_temp = float(tiltbridge_data['tilts'][this_tilt]['temp'])
+        converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), tiltbridge_data['tilts'][this_tilt]['tempUnit'])
 
         raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
         normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
