@@ -25,6 +25,7 @@ Changed
 - Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
 - Redesigned available firmware list to reduce confusion
 - Stale gravity check-in points will now not be displayed in the gravity dashboard panels
+- Added support for latest TiltBridge firmware
 
 
 Fixed
