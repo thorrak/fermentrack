@@ -3,7 +3,8 @@ name: 'Build & Push to Docker Hub'
 on:
   push:
     branches:
-      - docker
+      - dev
+      - master
 
 jobs:
   buildx:
