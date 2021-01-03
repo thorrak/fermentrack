@@ -46,6 +46,7 @@ services:
     image: redis:5.0
     restart: unless-stopped
     network_mode: "host"
+    command: ["redis-server", "--protected-mode", "yes"]
 
   nginx:
     build:
