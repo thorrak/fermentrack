@@ -43,10 +43,12 @@ services:
     network_mode: "host"
 
   redis:
-    image: redis:5.0
+    build:
+      context: .
+      dockerfile: ./compose/production/redis/Dockerfile
+    image: fermentrack_redis
     restart: unless-stopped
     network_mode: "host"
-    command: ["redis-server", "--protected-mode", "yes"]
 
   nginx:
     build:
