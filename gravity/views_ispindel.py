@@ -337,6 +337,9 @@ def gravity_ispindel_calibrate(request, sensor_id):
     y = [float(point.gravity) for point in points]
     poly_terms = numpy.polyfit(x, y, degree)
 
+    sensor.ispindel_configuration.third_degree_coefficient = 0
+    sensor.ispindel_configuration.second_degree_coefficient = 0
+
     # Save the results out to our ispindel configuration...
     i = 0  # This is a bit hackish, but it works
     if degree == 3:
