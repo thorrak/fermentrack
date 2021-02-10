@@ -60,6 +60,4 @@ services:
     restart: unless-stopped
     volumes:
       - fermentrack_data:/data:z
-    ports:
-       - "0.0.0.0:80:80"
     network_mode: "host"
