@@ -542,18 +542,7 @@ def gravity_manage(request, sensor_id):
             # For TiltBridges, we want to give the user the info necessary to configure the device to communicate with
             # Fermentrack
             fermentrack_host = request.META['HTTP_HOST']
-            try:
-                if ":" in fermentrack_host:
-                    fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
-                ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
-                ip_list = [result[-1][0] for result in ais]
-                ip_list = list(set(ip_list))
-                resolved_address = ip_list[0]
-                fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
-            except:
-                # For some reason we failed to resolve the IP address of Fermentrack
-                fermentrack_url = "<Error - Unable to resolve Fermentrack IP address>"
-            context['fermentrack_url'] = fermentrack_url
+            context['fermentrack_url'] = f"http://{fermentrack_host}/tiltbridge/"
 
 
         return render(request, template_name='gravity/gravity_manage_tilt.html', context=context)
