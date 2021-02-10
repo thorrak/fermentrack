@@ -29,6 +29,7 @@ Changed
 - Added support for latest TiltBridge firmware
 - Remove unimplemented "TCP Socket" external push option
 - Added Beer Setting, Fridge Setting, and Controller State to generic external push targets
+- Upgraded TiltBridge support for v1.0.0 TiltBridges (earlier TiltBridge versions will now require manual configuration)
 
 
 Fixed

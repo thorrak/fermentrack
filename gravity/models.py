@@ -782,16 +782,16 @@ class TiltBridge(models.Model):
     def update_fermentrack_url_on_tiltbridge(self, fermentrack_host) -> bool:
         # fermentrack_host = request.META['HTTP_HOST']
         try:
-            if ":" in fermentrack_host:
-                fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
-            ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
-            ip_list = [result[-1][0] for result in ais]
-            ip_list = list(set(ip_list))
-            resolved_address = ip_list[0]
-            fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
-            tiltbridge_url = "http://{}.local/settings/update/".format(self.mdns_id)
+            # if ":" in fermentrack_host:
+            #     fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
+            # ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
+            # ip_list = [result[-1][0] for result in ais]
+            # ip_list = list(set(ip_list))
+            # resolved_address = ip_list[0]
+            fermentrack_url = "http://{}/tiltbridge/".format(fermentrack_host)  # We now have mDNS support on TiltBridge
+            tiltbridge_url = "http://{}.local/settings/localtarget/".format(self.mdns_id)
 
-            r = requests.post(tiltbridge_url, data={'fermentrackURL': fermentrack_url})
+            r = requests.post(tiltbridge_url, data={'localTargetURL': fermentrack_url, 'localTargetPushEvery': 30})
 
             if r.status_code == 200:
                 return True
