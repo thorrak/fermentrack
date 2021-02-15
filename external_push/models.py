@@ -330,6 +330,9 @@ class BrewersFriendPushTarget(models.Model):
             to_send['device_source'] = "Tilt"
         elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_ISPINDEL:
             to_send['device_source'] = "iSpindel"
+            extras = self.gravity_sensor_to_push.ispindel_configuration.load_extras_from_redis()
+            if 'battery' in extras:  # Load & send the iSpindel battery
+                to_send['battery'] = extras['battery']
         elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_MANUAL:
             to_send['device_source'] = "Manual"
         else:
@@ -352,6 +355,8 @@ class BrewersFriendPushTarget(models.Model):
         if latest_log_point.temp is not None:
             to_send['temp'] = float(latest_log_point.temp)
             to_send['temp_unit'] = latest_log_point.temp_format
+
+
 
         string_to_send = json.dumps(to_send)
 
