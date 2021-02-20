@@ -503,7 +503,12 @@ class BrewfatherPushTarget(models.Model):
                 to_send['temp'] = float(latest_log_point.temp)
                 to_send['temp_unit'] = latest_log_point.temp_format
 
-            # This if statement fixes bug #458 
+            if self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+                extras = self.gravity_sensor_to_push.ispindel_configuration.load_extras_from_redis()
+                if 'battery' in extras:  # Load & send the iSpindel battery
+                    to_send['battery'] = extras['battery']
+
+            # This if statement fixes bug #458
             if latest_log_point.associated_device is not None:
                 if latest_log_point.associated_device.assigned_brewpi_device is not None:
                     # We have a controller - try to load the data from it
