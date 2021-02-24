@@ -96,6 +96,10 @@
     background: #000000!important;
 }
 
+/* Emerald is defined as part of flat-ui */
+.bg-emerald {
+    background: #2ecc71!important;
+}
 
 .dashpanel-top .dash-icon.dash-icon-lg {
     font-size: 52px;

@@ -141,7 +141,24 @@
 
             </div>
         </div>
+       {% if active_device.sensor_type == "ispindel" %}        
+        <div class="col-md-4 col-xs-6">
+            <div class="dashpanel dashpanel-top bg-emerald" id="gravBattPanel">
+                <div class="dash-icon dash-icon-lg"><i class="fa fa-battery-three-quarters fa-fw"></i></div>
+                <div class="dashpanel-title">Battery</div>
+                <div class="dash-data" id="dashBatt">--</div>
 
+                <div class="dashpanel-divider"></div>
+                <a href="#" data-toggle="modal" data-target="#beerLogModal">
+                    <div class="dash-desc" id="gravBattToggle">
+                        <div class="pull-left">Load Prior Log</div>
+                        <div class="pull-right"><i class="fa fa-arrow-circle-right"></i></div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+       {% endif %}
     </div>
     <!-- End Dashboard Panels -->
 
@@ -687,6 +704,24 @@ function toggle_graph_visibility(el) {
         setTimeout(panel_worker, 5000);
         }
     });
+    {% if active_device.sensor_type == "ispindel" %}
+    $.ajax({
+        type: 'GET',
+        async: true,
+        beforeSend: function (xhr) {
+            if (xhr && xhr.overrideMimeType) {
+                xhr.overrideMimeType('application/json;charset=utf-8');
+            }
+        },
+        dataType: 'json',
+        url: '{% url 'get_ispindel_extras' active_device.id %}',
+        success: function(data) {
+            $('#dashBatt').html(data.battery);
+        },
+        complete: function() {
+        }
+    });
+    {% endif %}
 })();
 
 
