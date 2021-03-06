@@ -810,7 +810,7 @@ while run:
                 bg_ser.writeln("j{mode:\"o\"}")
                 logMessage("Notification: Error in profile mode - turning off temp control")
                 # raise socket.timeout  # go to serial communication to update controller
-            elif newTemp != cs['beerSet']:
+            elif round(newTemp, 2) != cs['beerSet']:
                 try:
                     newTemp = float(newTemp)
                     cs['beerSet'] = round(newTemp, 2)
