@@ -44,21 +44,20 @@
 
 <h3>Local Installation Versions</h3>
 <div class="row">
-    <div class="col-xs-2">{% if not local_versions.use_docker %}Environment/{% endif %}Container Version:</div>
-    <div class="col-xs-10">{{ local_versions.docker_container_version }}</div>
+    <div class="col-xs-9 col-sm-4">{% if not local_versions.use_docker %}Environment/{% endif %}Container Version:</div>
+    <div class="col-xs-3 col-sm-8">{{ local_versions.docker_container_version }}</div>
 </div>
 
 {% if local_versions.use_docker %}
     <div class="row">
-        <div class="col-xs-2">Django Environment Version:</div>
-        <div class="col-xs-10">{{ local_versions.env_django_version }}</div>
+        <div class="col-xs-9 col-sm-4">Django Environment Version:</div>
+        <div class="col-xs-3 col-sm-8">{{ local_versions.env_django_version }}</div>
     </div>
     <div class="row">
-        <div class="col-xs-2">Postgres Environmnet Version:</div>
-        <div class="col-xs-10">{{ local_versions.env_postgres_version }}</div>
+        <div class="col-xs-9 col-sm-4">Postgres Environmnet Version:</div>
+        <div class="col-xs-3 col-sm-8">{{ local_versions.env_postgres_version }}</div>
     </div>
 {% else %}
-
     <p>
         Need to manually refresh the Python packages without upgrading? Click the below to trigger a refresh without pulling
         new code from GitHub
@@ -73,13 +72,13 @@
     <h3>Switch Branch</h3>
     <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
         <div class="row">
-            <div class="col-xs-2">Current Branch:</div>
-            <div class="col-xs-10">{{ branch_info.local_branch }}</div>
+            <div class="col-xs-4">Current Branch:</div>
+            <div class="col-xs-8">{{ branch_info.local_branch }}</div>
         </div>
 
         <div class="row">
-            <div class="col-xs-2">New Branch:</div>
-            <div class="col-xs-10">
+            <div class="col-xs-4">New Branch:</div>
+            <div class="col-xs-8">
                 <select name="new_branch">
                     {% for this_branch in branch_info.remote_branches %}
                         <option value="{{ this_branch }}">{{ this_branch }}</option>

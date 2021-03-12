@@ -14,6 +14,8 @@ from constance import config
 from fermentrack_django import settings
 import re
 
+from decimal import Decimal
+
 from . import udev_integration
 
 from lib.ftcircus.client import CircusMgr, CircusException
@@ -533,7 +535,7 @@ class BrewPiDevice(models.Model):
     def is_temp_controller(self):  # This is a hack used in the site template so we can display relevant functionality
         return True
 
-    def get_profile_temp(self):
+    def get_profile_temp(self) -> float or None:
         # If the object is inconsistent, don't return anything
         if self.active_profile is None:
             return None
@@ -1577,13 +1579,13 @@ class FermentationProfile(models.Model):
 
     # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
     # get_profile_temp from BrewPiDevice
-    def profile_temp(self, time_started, temp_format):
+    def profile_temp(self, time_started, temp_format) -> float:
         # temp_format in this case is the temperature format active on BrewPiDevice. This will force conversion from
         # the profile point's format to the device's format.
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         past_first_point=False  # There's guaranteed to be a better way to do this
-        previous_setpoint = 0.0
+        previous_setpoint = Decimal("0.0")
         previous_ttl = 0.0
         current_time = timezone.now()
 
@@ -1592,14 +1594,14 @@ class FermentationProfile(models.Model):
                 # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
                 # temperature. Return the temperature setting
                 if current_time < (time_started + this_point.ttl):
-                    return this_point.convert_temp(temp_format)
+                    return float(this_point.convert_temp(temp_format))
                 past_first_point = True
             else:
                 # Test if we are in this period
                 if current_time < (time_started + this_point.ttl):
                     # We are - Check if we need to interpolate, or if we can just use the static temperature
                     if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
-                        return this_point.convert_temp(temp_format)
+                        return float(this_point.convert_temp(temp_format))
                     else:  # We have to interpolate
                         duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
                         delta = (this_point.convert_temp(temp_format) - previous_setpoint)
@@ -1818,19 +1820,19 @@ class FermentationProfilePoint(models.Model):
                                               help_text="The temperature the beer should be when TTL has passed")
     temp_format = models.CharField(max_length=1, default='F')
 
-    def temp_to_f(self):
+    def temp_to_f(self) -> Decimal:
         if self.temp_format == 'F':
             return self.temperature_setting
         else:
             return (self.temperature_setting*9/5) + 32
 
-    def temp_to_c(self):
+    def temp_to_c(self) -> Decimal:
         if self.temp_format == 'C':
             return self.temperature_setting
         else:
             return (self.temperature_setting-32) * 5 / 9
 
-    def temp_to_preferred(self):
+    def temp_to_preferred(self) -> Decimal:
         # Converts the point to whatever the preferred temperature format is per Constance
         if config.TEMPERATURE_FORMAT == 'F':
             return self.temp_to_f()
@@ -1838,7 +1840,7 @@ class FermentationProfilePoint(models.Model):
             return self.temp_to_c()
         pass
 
-    def convert_temp(self, desired_temp_format):
+    def convert_temp(self, desired_temp_format) -> Decimal:
         if self.temp_format == desired_temp_format:
             return self.temperature_setting
         elif self.temp_format == 'F' and desired_temp_format == 'C':
