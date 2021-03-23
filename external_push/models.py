@@ -478,7 +478,7 @@ class BrewfatherPushTarget(models.Model):
         # This section get data from gravity sensor (and attached brewpi), if selected. 
         if self.device_type == "gravity":
 
-            if self.gravity_sensor_to_push == None:
+            if self.gravity_sensor_to_push is None:
                 return {}
 
             if self.gravity_sensor_to_push == "":
@@ -542,21 +542,26 @@ class BrewfatherPushTarget(models.Model):
 
             #logger.error("Brewfather payload (gravity):" + json.dumps(to_send) )
 
-        # This section get the temp values from a brewpi if selected. Part of request #464
-        else:
-            if self.brewpi_to_push == None:
+        else:  # self.device_type != "gravity"
+            # This section get the temp values from a brewpi if selected. Part of request #464
+            if self.brewpi_to_push is None:
                 return {}
 
+            # TODO - There is absolutely no reason to iterate over brewpi_to_send searching for the brewpi to send considering we have self.brewpi_to_push
             brewpi_to_send = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
 
             for brewpi in brewpi_to_send:
-                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                 # TODO - Make it so that this data is stored in/loaded from Redis
-                device_info = brewpi.get_dashpanel_info()
 
-                #logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+                if brewpi.id == self.brewpi_to_push.id:
+                    device_info = brewpi.get_dashpanel_info()
 
-                if brewpi.device_name == self.brewpi_to_push.device_name:
+                    if device_info is None:
+                        # If we couldn't load device_info, continue with the next loop
+                        return {}
+
+                    # logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+
                     to_send['name'] = brewpi.device_name
                     to_send['temp_unit'] = brewpi.temp_format
 
@@ -573,7 +578,7 @@ class BrewfatherPushTarget(models.Model):
                             to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:
-                        to_send['beer'] =  brewpi.active_beer.name
+                        to_send['beer'] = brewpi.active_beer.name
 
             #logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
 
