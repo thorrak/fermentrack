@@ -580,14 +580,14 @@ class BrewfatherPushTarget(models.Model):
                     if brewpi.active_beer is not None:
                         to_send['beer'] = brewpi.active_beer.name
 
-            #logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
+            # logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
 
         string_to_send = json.dumps(to_send)
 
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
-    def send_data(self):
+    def send_data(self) -> bool:
         # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
@@ -600,15 +600,16 @@ class BrewfatherPushTarget(models.Model):
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
-    def check_logging_url(self):
+    def check_logging_url(self) -> bool:
         if len(self.logging_url) > 8:
             if self.logging_url[:7] == "http://":
-                pass
+                return False
             elif self.logging_url[:8] == "https://":
-                pass
+                return False
             else:
                 self.logging_url = "http://" + self.logging_url
                 self.save()
+                return True
 
 
 class ThingSpeakPushTarget(models.Model):

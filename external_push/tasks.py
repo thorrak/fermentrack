@@ -4,6 +4,7 @@ from huey import crontab
 from huey.contrib.djhuey import periodic_task, task, db_periodic_task, db_task
 from external_push.models import GenericPushTarget, BrewersFriendPushTarget, BrewfatherPushTarget, ThingSpeakPushTarget, GrainfatherPushTarget
 from django.core.exceptions import ObjectDoesNotExist
+from requests import ConnectionError
 
 import datetime, pytz, time
 from django.utils import timezone
@@ -24,6 +25,7 @@ def generic_push_target_push(target_id):
         push_target.check_target_host()
     return None
 
+
 @db_task()
 def brewers_friend_push_target_push(target_id):
     try:
@@ -35,6 +37,7 @@ def brewers_friend_push_target_push(target_id):
 
     return None
 
+
 @db_task()
 def brewfather_push_target_push(target_id):
     try:
@@ -43,11 +46,22 @@ def brewfather_push_target_push(target_id):
         return None
 
     try:
-        push_target.send_data()
+        if push_target.send_data():
+            print("SUCCESS - Logged data to Brewfather")
+        else:
+            print("FAILED - Unable to log data to Brewfather")
     except MissingSchema:
-        push_target.check_logging_url()
+        print(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
+        if push_target.check_logging_url():
+            print(f"Updated schema - new logging URL '{push_target.logging_url}'.")
+        else:
+            print("Unable to update schema")
+    except ConnectionError as err:
+        print("FAILED - Connection error")
+        print(str(err))
 
     return None
+
 
 @db_task()
 def thingspeak_push_target_push(target_id):
@@ -59,6 +73,7 @@ def thingspeak_push_target_push(target_id):
     push_target.send_data()
 
     return None
+
 
 @db_task()
 def grainfather_push_target_push(target_id):
@@ -73,6 +88,7 @@ def grainfather_push_target_push(target_id):
         push_target.check_logging_url()
 
     return None
+
 
 # TODO - At some point write a validation function that will allow us to trigger more often than every minute
 @db_periodic_task(crontab(minute="*"))
