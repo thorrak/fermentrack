@@ -17,6 +17,7 @@ Added
 - Tilt "version" is now displayed on the Tilt Configuration page (Bluetooth only)
 - Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
 - "Last Check-in" time now added to Tilt configuration page (Bluetooth only)
+- Added link to view Huey logs inside the Fermentrack UI
 
 
 Changed
@@ -30,6 +31,7 @@ Changed
 - Remove unimplemented "TCP Socket" external push option
 - Added Beer Setting, Fridge Setting, and Controller State to generic external push targets
 - Upgraded TiltBridge support for v1.0.0 TiltBridges (earlier TiltBridge versions will now require manual configuration)
+- External push target attempts now log to huey stdout
 
 
 Fixed
