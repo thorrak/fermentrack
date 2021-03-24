@@ -5,7 +5,7 @@ from app.models import BrewPiDevice
 from pathlib import Path
 
 
-def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path:
+def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None:
     # get_filepath_to_log is being broken out so that we can use it in help/other templates to display which log file
     # is being loaded
     if device_type == "brewpi":
@@ -22,12 +22,12 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path:
         log_filename = 'fermentrack-stderr.log'
     elif device_type == "ispindel":
         log_filename = 'ispindel_raw_output.log'
-    elif device_type == "huey_stderr":
-        log_filename = 'huey-stderr.log'
-    elif device_type == "huey_stdout":
-        log_filename = 'huey-stdout.log'
+    elif device_type == "huey":
+        log_filename = f'huey-{logfile}.log'  # Logfile is stderr or stdout
     elif device_type == "upgrade":
         log_filename = 'upgrade.log'
+    elif device_type == "circusd":
+        log_filename = 'circusd.log'
     else:
         return None
 
@@ -52,11 +52,13 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # Device_type determines the other part of the logfile to read. Valid options are:
     # brewpi - A BrewPiDevice object
     # gravity - A specific gravity sensor object
-    # spawner - the circus spawner
+    # spawner - the circus spawner (not the daemon)
     # fermentrack - Fermentrack itself
     # ispindel - iSpindel raw log
-    # upgrade -
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey_stderr', 'huey_stdout']
+    # upgrade - The log of the upgrade process (from Git)
+    # huey - The Huey (task manager) logs
+    # circusd - The log for Circusd itself
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey', 'circusd']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)

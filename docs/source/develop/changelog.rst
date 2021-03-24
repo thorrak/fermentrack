@@ -18,6 +18,7 @@ Added
 - Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
 - "Last Check-in" time now added to Tilt configuration page (Bluetooth only)
 - Added link to view Huey logs inside the Fermentrack UI
+- Added link to view Circusd logs inside the Fermentrack UI
 
 
 Changed
