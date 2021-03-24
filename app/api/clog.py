@@ -22,6 +22,10 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path:
         log_filename = 'fermentrack-stderr.log'
     elif device_type == "ispindel":
         log_filename = 'ispindel_raw_output.log'
+    elif device_type == "huey_stderr":
+        log_filename = 'huey-stderr.log'
+    elif device_type == "huey_stdout":
+        log_filename = 'huey-stdout.log'
     elif device_type == "upgrade":
         log_filename = 'upgrade.log'
     else:
@@ -50,7 +54,9 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # gravity - A specific gravity sensor object
     # spawner - the circus spawner
     # fermentrack - Fermentrack itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade']
+    # ispindel - iSpindel raw log
+    # upgrade -
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey_stderr', 'huey_stdout']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)

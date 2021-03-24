@@ -12,17 +12,30 @@ from django.utils import timezone
 from requests.models import MissingSchema
 
 
+def print_for_logs(log_string):
+    print(f"[{str(datetime.datetime.now())}] {log_string}")
+
+
 @db_task()
 def generic_push_target_push(target_id):
     try:
         push_target = GenericPushTarget.objects.get(id=target_id)
     except ObjectDoesNotExist:
+        print_for_logs("FAILED - Unable to load generic push_target object")
         return None
 
     try:
-        push_target.send_data()
+        if push_target.send_data():
+            print_for_logs("SUCCESS - Logged data to generic push target")
+        else:
+            print_for_logs("FAILED - Unable to log data to generic push target")
     except MissingSchema:
-        push_target.check_target_host()
+        print_for_logs(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
+        if push_target.check_target_host():
+            print_for_logs(f"Updated schema - new logging URL '{push_target.logging_url}'")
+        else:
+            print_for_logs("Unable to update schema")
+
     return None
 
 
@@ -31,9 +44,13 @@ def brewers_friend_push_target_push(target_id):
     try:
         push_target = BrewersFriendPushTarget.objects.get(id=target_id)
     except ObjectDoesNotExist:
+        print_for_logs("FAILED - Unable to load Brewer's Friend push_target object")
         return None
 
-    push_target.send_data()
+    if push_target.send_data():
+        print_for_logs("SUCCESS - Logged data to Brewer's Friend")
+    else:
+        print_for_logs("FAILED - Unable to log data to Brewer's Friend")
 
     return None
 
@@ -43,22 +60,23 @@ def brewfather_push_target_push(target_id):
     try:
         push_target = BrewfatherPushTarget.objects.get(id=target_id)
     except ObjectDoesNotExist:
+        print_for_logs("FAILED - Unable to load Brewfather push_target object")
         return None
 
     try:
         if push_target.send_data():
-            print("SUCCESS - Logged data to Brewfather")
+            print_for_logs("SUCCESS - Logged data to Brewfather")
         else:
-            print("FAILED - Unable to log data to Brewfather")
+            print_for_logs("FAILED - Unable to log data to Brewfather")
     except MissingSchema:
-        print(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
+        print_for_logs(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
         if push_target.check_logging_url():
-            print(f"Updated schema - new logging URL '{push_target.logging_url}'.")
+            print_for_logs(f"Updated schema - new logging URL '{push_target.logging_url}'")
         else:
-            print("Unable to update schema")
+            print_for_logs("Unable to update schema")
     except ConnectionError as err:
-        print("FAILED - Connection error")
-        print(str(err))
+        print_for_logs("FAILED - Connection error")
+        print_for_logs(str(err))
 
     return None
 
@@ -68,9 +86,13 @@ def thingspeak_push_target_push(target_id):
     try:
         push_target = ThingSpeakPushTarget.objects.get(id=target_id)
     except ObjectDoesNotExist:
+        print_for_logs("FAILED - Unable to load Thingspeak push_target object")
         return None
 
-    push_target.send_data()
+    if push_target.send_data():
+        print_for_logs("SUCCESS - Logged data to Thingspeak")
+    else:
+        print_for_logs("FAILED - Unable to log data to Thingspeak")
 
     return None
 
@@ -80,12 +102,21 @@ def grainfather_push_target_push(target_id):
     try:
         push_target = GrainfatherPushTarget.objects.get(id=target_id)
     except ObjectDoesNotExist:
+        print_for_logs("FAILED - Unable to load Grainfather push_target object")
         return None
 
     try:
-        push_target.send_data()
+        if push_target.send_data():
+            print_for_logs("SUCCESS - Logged data to Grainfather")
+        else:
+            print_for_logs("FAILED - Unable to log data to Grainfather")
+
     except MissingSchema:
-        push_target.check_logging_url()
+        print_for_logs(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
+        if push_target.check_logging_url():
+            print_for_logs(f"Updated schema - new logging URL '{push_target.logging_url}'")
+        else:
+            print_for_logs("Unable to update schema")
 
     return None
 
