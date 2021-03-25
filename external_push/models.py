@@ -101,8 +101,7 @@ class GenericPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
-                                          editable=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -316,8 +315,7 @@ class BrewersFriendPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
-                                          editable=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -443,8 +441,7 @@ class BrewfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
-                                          editable=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -671,8 +668,7 @@ class ThingSpeakPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
-                                          editable=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
     
 #    def __str__(self):
 #        return self.gravity_sensor_to_push.name
@@ -810,8 +806,7 @@ class GrainfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
-                                          editable=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
