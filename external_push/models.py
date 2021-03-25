@@ -14,6 +14,7 @@ from gravity.models import GravitySensor
 
 logger = logging.getLogger(__name__)
 
+
 class GenericPushTarget(models.Model):
     class Meta:
         verbose_name = "Generic Push Target"
@@ -100,7 +101,8 @@ class GenericPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
+                                          editable=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -275,7 +277,6 @@ class GenericPushTarget(models.Model):
         return False
 
 
-
 class BrewersFriendPushTarget(models.Model):
     class Meta:
         verbose_name = "Brewers Friend Push Target"
@@ -315,7 +316,8 @@ class BrewersFriendPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
+                                          editable=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -441,7 +443,8 @@ class BrewfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
+                                          editable=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -668,7 +671,8 @@ class ThingSpeakPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
+                                          editable=True)
     
 #    def __str__(self):
 #        return self.gravity_sensor_to_push.name
@@ -806,7 +810,8 @@ class GrainfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True,
+                                          editable=True)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.

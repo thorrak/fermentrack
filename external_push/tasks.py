@@ -137,6 +137,7 @@ def dispatch_push_tasks():
             target.save()
 
             # Queue the generic_push_target_push task (going to do it asynchronously)
+            print_for_logs("DISPATCH - Dispatching generic push target")
             generic_push_target_push(target.id)
 
     # Run through the list of Brewer's Friend push targets and trigger a (future) data send for each
@@ -146,6 +147,7 @@ def dispatch_push_tasks():
             target.save()
 
             # Queue the generic_push_target_push task (going to do it asynchronously)
+            print_for_logs("DISPATCH - Dispatching Brewer's Friend push target")
             brewers_friend_push_target_push(target.id)
 
     # Run through the list of Brewfather push targets and trigger a (future) data send for each
@@ -155,6 +157,7 @@ def dispatch_push_tasks():
             target.save()
 
             # Queue the generic_push_target_push task (going to do it asynchronously)
+            print_for_logs("DISPATCH - Dispatching Brewfather push target")
             brewfather_push_target_push(target.id)
 
     # Run through the list of ThingSpeak push targets and trigger a (future) data send for each
@@ -164,7 +167,9 @@ def dispatch_push_tasks():
             target.save()
 
             # Queue the thingspeak_push_target_push task (going to do it asynchronously)
+            print_for_logs("DISPATCH - Dispatching Thingspeak push target")
             thingspeak_push_target_push(target.id)
+
     # Run through the list of Grainfather push targets and trigger a (future) data send for each
     for target in grainfather_push_targets:
         if timezone.now() >= (target.last_triggered + datetime.timedelta(seconds=target.push_frequency)):
@@ -172,6 +177,7 @@ def dispatch_push_tasks():
             target.save()
 
             # Queue the generic_push_target_push task (going to do it asynchronously)
+            print_for_logs("DISPATCH - Dispatching Grainfather push target")
             grainfather_push_target_push(target.id)
 
     return None
