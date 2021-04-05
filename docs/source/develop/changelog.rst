@@ -42,6 +42,7 @@ Fixed
 - Resolved issue causing false failures of the connectivity test (Thanks postalbunny!)
 - Fixed issue preventing renaming of BrewPi controllers
 - Dashes now allowed in TiltBridge mDNS IDs
+- Corrected issue where iSpindel data couldn't be loaded if a data point wasn't availble in Redis
 
 
 

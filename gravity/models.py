@@ -881,13 +881,15 @@ class IspindelConfiguration(models.Model):
 
         return extras
 
-    def load_last_log_time_from_redis(self) -> str:
+    def load_last_log_time_from_redis(self) -> str or None:
         r = redis.Redis.from_url(url=settings.REDIS_URL)
-        redis_response = r.get('grav_{}_full'.format(self.sensor_id)).decode(encoding="utf-8")
+        redis_response = r.get('grav_{}_full'.format(self.sensor_id))
 
         if redis_response is None:
             # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
-            return {}
+            return None
+        else:
+            redis_response = redis_response.decode(encoding="utf-8")
 
         t = json.loads(redis_response)
         if 'fields' in t[0]:
@@ -896,4 +898,4 @@ class IspindelConfiguration(models.Model):
                 dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") ) 
                 return datetime.datetime.strftime( dt, "%c" )
 
-        return {}
+        return None
