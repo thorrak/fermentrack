@@ -232,6 +232,11 @@ class GenericPushTarget(models.Model):
                             grav_dict['temp'] = float(latest_log_point.temp)
                             grav_dict['temp_format'] = latest_log_point.temp_format
 
+                    if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+                        extras = sensor.ispindel_configuration.load_extras_from_redis()
+                        if 'battery' in extras:  # Load & send the iSpindel battery
+                            to_send['battery'] = extras['battery']
+
                     to_send['gravity_sensors'].append(grav_dict)
 
             string_to_send = json.dumps(to_send)

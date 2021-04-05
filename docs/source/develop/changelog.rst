@@ -33,6 +33,7 @@ Changed
 - Added Beer Setting, Fridge Setting, and Controller State to generic external push targets
 - Upgraded TiltBridge support for v1.0.0 TiltBridges (earlier TiltBridge versions will now require manual configuration)
 - External push target attempts now log to huey stdout
+- Added battery to the GenericPushTarget message for pushed iSpindel devices
 
 
 Fixed
