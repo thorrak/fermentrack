@@ -1,4 +1,4 @@
-Django>=3.0.5,<3.1
+Django>=3.0.13,<3.1
 configobj       # required by brewpi.py
 
 pytz            # required by manage.py migrate

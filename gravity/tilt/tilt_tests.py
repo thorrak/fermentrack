@@ -1,6 +1,8 @@
 import os, subprocess, sys
 import pkg_resources
 
+import fermentrack_django.settings
+
 try:
     from packaging import version
     has_packaging = True
@@ -33,7 +35,12 @@ def has_apt() -> bool:
 
 
 def check_apt_packages() -> (bool, list):
-    package_list = ["bluez", "libcap2-bin", "libbluetooth3", "libbluetooth-dev", "redis-server"]
+    package_list = ["bluez", "libcap2-bin", "libbluetooth3", "libbluetooth-dev"]
+
+    if not fermentrack_django.settings.USE_DOCKER:
+        # For non-docker installs, we assume that redis-server is installed on the same host as Fermentrack
+        package_list.append("redis-server")
+
     test_results = []
     all_packages_ok = True
 

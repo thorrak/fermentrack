@@ -2,10 +2,10 @@ import os
 from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
-from gravity.models import GravitySensor
+from pathlib import Path
 
 
-def get_filepath_to_log(device_type, logfile="", device_id=None):
+def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None:
     # get_filepath_to_log is being broken out so that we can use it in help/other templates to display which log file
     # is being loaded
     if device_type == "brewpi":
@@ -22,13 +22,17 @@ def get_filepath_to_log(device_type, logfile="", device_id=None):
         log_filename = 'fermentrack-stderr.log'
     elif device_type == "ispindel":
         log_filename = 'ispindel_raw_output.log'
+    elif device_type == "huey":
+        log_filename = f'huey-{logfile}.log'  # Logfile is stderr or stdout
     elif device_type == "upgrade":
         log_filename = 'upgrade.log'
+    elif device_type == "circusd":
+        log_filename = 'circusd.log'
     else:
         return None
 
     # Once we've determined the filename from logfile and device_type, let's open it up & read it in
-    logfile_path = os.path.join(settings.BASE_DIR, 'log', log_filename)
+    logfile_path = settings.ROOT_DIR / 'log' / log_filename
     return logfile_path
 
 
@@ -48,9 +52,13 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # Device_type determines the other part of the logfile to read. Valid options are:
     # brewpi - A BrewPiDevice object
     # gravity - A specific gravity sensor object
-    # spawner - the circus spawner
+    # spawner - the circus spawner (not the daemon)
     # fermentrack - Fermentrack itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade']
+    # ispindel - iSpindel raw log
+    # upgrade - The log of the upgrade process (from Git)
+    # huey - The Huey (task manager) logs
+    # circusd - The log for Circusd itself
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey', 'circusd']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)

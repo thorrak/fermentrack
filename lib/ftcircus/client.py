@@ -27,7 +27,7 @@ class CircusMgr(object):
             res = self._client.call(message)
         except (CallError) as callerr:
             LOG.debug("Error from circus", exc_info=True)
-            raise CircusException("Could send message to circus: {}".format(callerr))
+            raise CircusException("Could not send message to circus: {}".format(callerr))
         if res['status'] == u'error':
             raise CircusException("Error: {}".format(res['reason']))
         return res

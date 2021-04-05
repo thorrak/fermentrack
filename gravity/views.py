@@ -498,7 +498,7 @@ def gravity_manage(request, sensor_id):
             }
         except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
-            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            messages.error(request, f"The gravity sensor {sensor.name} had incomplete configuration and was deleted")
             sensor.delete()
             return redirect("siteroot")
 
@@ -523,10 +523,9 @@ def gravity_manage(request, sensor_id):
             }
         except ObjectDoesNotExist:
             # The sensor is in an inconsistent state. Delete it.
-            messages.error(request, u"The gravity sensor {} had incomplete configuration and was deleted".format(sensor.name))
+            messages.error(request, f"The gravity sensor {sensor.name} had incomplete configuration and was deleted")
             sensor.delete()
             return redirect("siteroot")
-
 
         tilt_coefficient_form = forms.TiltCoefficientForm(initial=initial)
         context['tilt_coefficient_form'] = tilt_coefficient_form
@@ -536,22 +535,14 @@ def gravity_manage(request, sensor_id):
         tilt_calibration_form = forms.TiltGravityCalibrationPointForm(initial={'sensor': sensor.tilt_configuration})
         context['tilt_calibration_form'] = tilt_calibration_form
 
+        tilt_extras = sensor.tilt_configuration.load_extras_from_redis()
+        context['tilt_extras'] = tilt_extras
+
         if sensor.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BRIDGE:
             # For TiltBridges, we want to give the user the info necessary to configure the device to communicate with
             # Fermentrack
             fermentrack_host = request.META['HTTP_HOST']
-            try:
-                if ":" in fermentrack_host:
-                    fermentrack_host = fermentrack_host[:fermentrack_host.find(":")]
-                ais = socket.getaddrinfo(fermentrack_host, 0, 0, 0, 0)
-                ip_list = [result[-1][0] for result in ais]
-                ip_list = list(set(ip_list))
-                resolved_address = ip_list[0]
-                fermentrack_url = "http://{}/tiltbridge/".format(resolved_address)
-            except:
-                # For some reason we failed to resolve the IP address of Fermentrack
-                fermentrack_url = "<Error - Unable to resolve Fermentrack IP address>"
-            context['fermentrack_url'] = fermentrack_url
+            context['fermentrack_url'] = f"http://{fermentrack_host}/tiltbridge/"
 
 
         return render(request, template_name='gravity/gravity_manage_tilt.html', context=context)
@@ -568,7 +559,7 @@ def almost_json_view(request, sensor_id, log_id):
     # gravity_log = GravityLog.objects.get(id=log_id, device_id=sensor_id)
     gravity_log = GravityLog.objects.get(id=log_id)
 
-    filename = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, gravity_log.full_filename("annotation_json"))
+    filename = settings.ROOT_DIR / settings.DATA_ROOT / gravity_log.full_filename("annotation_json")
 
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')

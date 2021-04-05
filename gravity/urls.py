@@ -38,8 +38,8 @@ gravity_urlpatterns = [
     url(r'^gravity/logs/(?P<log_id>\d{1,20})/delete/$', gravity.views.gravity_log_delete, name='gravity_log_delete'),
 
     # API Calls
-    url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.getGravitySensors, name="getSensor"),  # For a single device
-    url(r'^api/gravity/$', gravity.api.sensors.getGravitySensors, name="getSensors"),  # For all sensors
+    url(r'^api/gravity/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_gravity_sensors, name="getSensor"),  # For a single device
+    url(r'^api/gravity/$', gravity.api.sensors.get_gravity_sensors, name="getSensors"),  # For all sensors
     url(r'^api/gravity/ispindel/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_ispindel_extras, name="get_ispindel_extras"),  # Specific to iSpindel devices, allows for easy calibration
     url(r'^api/gravity/tilt/(?P<device_id>\d{1,20})/$', gravity.api.sensors.get_tilt_extras, name="get_tilt_extras"),  # Specific to Tilt Hydrometers, allows for easy calibration
 

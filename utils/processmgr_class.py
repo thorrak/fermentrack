@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # This is a class used for managing processes within Fermentrack. Each instance of this class is designed to track one
 # type of process driven by one type of model (ie - brewpi_script, tilt_manager, etc.)
 
@@ -55,7 +53,7 @@ class ProcessManager(object):
         try:
             watchers = self._circusmgr.get_applications()
         except CircusException:
-            self.log.error("Could not get running processes from circus", exc_info=self.debug)
+            self.log.error(f"Could not get running processes from circus at {self.circus_endpoint}", exc_info=self.debug)
             return []
         # Only pic devices with prefix set, other apps are other functions and should be left alone.
         running_devices = [x for x in watchers if x.startswith(self.prefix)]

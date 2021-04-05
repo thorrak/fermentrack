@@ -75,7 +75,7 @@ def ispindel_handler(request):
                             json_dumps_params={'indent': 4})
 
     import pprint
-    with open(os.path.join(settings.BASE_DIR, "log", 'ispindel_raw_output.log'), 'w') as logFile:
+    with open((settings.ROOT_DIR / "log" / 'ispindel_raw_output.log'), 'w') as logFile:
         pprint.pprint(request.body.decode('utf-8'), logFile)
 
     # As of the iSpindel firmware version 5.6.1, the json posted contains the following fields:
@@ -96,8 +96,8 @@ def ispindel_handler(request):
         return JsonResponse({'status': 'failed', 'message': "No JSON data was posted (are you accessing this manually?)"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    with open(os.path.join(settings.BASE_DIR, "log", 'ispindel_json_output.log'), 'w') as logFile:
-        pprint.pprint(ispindel_data, logFile)
+    # with open((settings.ROOT_DIR / "log" / 'ispindel_json_output.log'), 'w') as logFile:
+    #     pprint.pprint(ispindel_data, logFile)
 
     try:
         ispindel_obj = IspindelConfiguration.objects.get(name_on_device=ispindel_data['name'])
@@ -336,6 +336,9 @@ def gravity_ispindel_calibrate(request, sensor_id):
     x = [float(point.angle) for point in points]
     y = [float(point.gravity) for point in points]
     poly_terms = numpy.polyfit(x, y, degree)
+
+    sensor.ispindel_configuration.third_degree_coefficient = 0
+    sensor.ispindel_configuration.second_degree_coefficient = 0
 
     # Save the results out to our ispindel configuration...
     i = 0  # This is a bit hackish, but it works

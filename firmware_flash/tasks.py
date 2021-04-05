@@ -21,7 +21,7 @@ def flash_firmware(flash_request_id):
         flash_request.fail("Unable to download firmware file(s)!")
         return None
 
-    firmware_path = flash_request.firmware_to_flash.full_filepath("firmware")
+    firmware_path = str(flash_request.firmware_to_flash.full_filepath("firmware"))
 
     # Ok, we now have the firmware file. Let's do something with it
     if flash_request.firmware_to_flash.family.flash_method == models.DeviceFamily.FLASH_ESP:
@@ -48,13 +48,13 @@ def flash_firmware(flash_request_id):
         if len(flash_request.firmware_to_flash.download_url_partitions) > 0 and len(flash_request.firmware_to_flash.checksum_partitions) > 0:
             # We need to flash partitions. Partitions are (currently) always at 0x8000
             flash_cmd.append("0x8000")
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("partitions"))
+            flash_cmd.append(str(flash_request.firmware_to_flash.full_filepath("partitions")))
 
         if len(flash_request.firmware_to_flash.download_url_bootloader) > 0 and \
                  len(flash_request.firmware_to_flash.checksum_bootloader) > 0:
             # The ESP32 bootloader is always flashed to 0x1000
             flash_cmd.append("0x1000")
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("bootloader"))
+            flash_cmd.append(str(flash_request.firmware_to_flash.full_filepath("bootloader")))
 
 
 
@@ -66,14 +66,14 @@ def flash_firmware(flash_request_id):
                  len(flash_request.firmware_to_flash.spiffs_address) > 2:
             # We need to flash SPIFFS. The location is dependent on the partition scheme, so we need to use the address
             flash_cmd.append(flash_request.firmware_to_flash.spiffs_address)
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("spiffs"))
+            flash_cmd.append(str(flash_request.firmware_to_flash.full_filepath("spiffs")))
         # Then check for otadata
         if len(flash_request.firmware_to_flash.download_url_otadata) > 0 and \
                  len(flash_request.firmware_to_flash.checksum_otadata) > 0 and \
                  len(flash_request.firmware_to_flash.otadata_address) > 2:
             # We need to flash otadata. The location is dependent on the partition scheme, so we need to use the address
             flash_cmd.append(flash_request.firmware_to_flash.otadata_address)
-            flash_cmd.append(flash_request.firmware_to_flash.full_filepath("otadata"))
+            flash_cmd.append(str(flash_request.firmware_to_flash.full_filepath("otadata")))
 
 
     # TODO - Explicitly need to disable any device on that port

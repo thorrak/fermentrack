@@ -39,8 +39,8 @@ will use that - instead of the specified serial port - to connect. For more info
 
 
 
-Bluetooth Support
-*********************
+Bluetooth Support for BrewPi-Controllers
+****************************************
 
 There is a third party project which looks to add bluetooth support for Arduino (and similar) controllers to BrewPi.
 While this project is not natively supported from within Fermentrack, at the end the project presents the BrewPi

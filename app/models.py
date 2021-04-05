@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django.db.models.signals import pre_delete
@@ -14,9 +14,13 @@ from constance import config
 from fermentrack_django import settings
 import re
 
+from decimal import Decimal
+
 from . import udev_integration
 
 from lib.ftcircus.client import CircusMgr, CircusException
+
+from fermentrack_django.settings import USE_DOCKER
 
 logger = logging.getLogger(__name__)
 
@@ -487,8 +491,7 @@ class BrewPiDevice(models.Model):
     socketHost = models.CharField(max_length=128, default="localhost", help_text="The interface to bind for the "
                                                                                  "internet socket (only used if "
                                                                                  "useInetSocket above is \"True\")")
-    # Note - Although we can manage logging_status from within Fermentrack, it's intended to be managed via
-    # brewpi-script.
+
     logging_status = models.CharField(max_length=10, choices=DATA_LOGGING_CHOICES, default='stopped', help_text="Data logging status")
 
     serial_port = models.CharField(max_length=255, help_text="Serial port to which the BrewPi device is connected",
@@ -532,7 +535,7 @@ class BrewPiDevice(models.Model):
     def is_temp_controller(self):  # This is a hack used in the site template so we can display relevant functionality
         return True
 
-    def get_profile_temp(self):
+    def get_profile_temp(self) -> float or None:
         # If the object is inconsistent, don't return anything
         if self.active_profile is None:
             return None
@@ -876,54 +879,49 @@ class BrewPiDevice(models.Model):
             self.time_profile_started = timezone.now() - start_at
 
             self.save()
-
-            self.send_message("setActiveProfile", str(self.active_profile.id))
+            transaction.on_commit(lambda: self.send_message("setActiveProfile", str(self.active_profile.id)))
 
         return True  # If we made it here, return True (we did our job)
 
-    def start_new_brew(self, beer_name=None):
-        if beer_name is None:
-            if self.active_beer:
-                beer_name = self.active_beer.name
-            else:
-                return False
-        response = self.send_message("startNewBrew", message_extended=beer_name, read_response=True)
-        return response
+    def start_new_brew(self, active_beer):
+        self.logging_status = self.DATA_LOGGING_ACTIVE
+        self.active_beer = active_beer
+        self.save()
+        transaction.on_commit(lambda: self.send_message("startNewBrew", message_extended=active_beer.name, read_response=False))
 
     def manage_logging(self, status):
         if status == 'stop':
-            # This will be repeated by brewpi.py, but doing it here so we get up-to-date display in the dashboard
             if hasattr(self, 'gravity_sensor') and self.gravity_sensor is not None:
                 # If there is a linked gravity log, stop that as well
                 self.gravity_sensor.active_log = None
                 self.gravity_sensor.save()
             self.active_beer = None
+            self.logging_status = self.DATA_LOGGING_STOPPED
             self.save()
-            response = self.send_message("stopLogging", read_response=True)
+            transaction.on_commit(lambda: self.send_message("stopLogging", read_response=False))
         elif status == 'resume':
-            response = self.send_message("resumeLogging", read_response=True)
+            self.logging_status = self.DATA_LOGGING_ACTIVE
+            self.save()
+            transaction.on_commit(lambda: self.send_message("resumeLogging", read_response=False))
         elif status == 'pause':
-            response = self.send_message("pauseLogging", read_response=True)
-        else:
-            response = '{"status": 1, "statusMessage": "Invalid logging request"}'
-        if not response:
-            response = '{"status": 1, "statusMessage": "Unable to contact brewpi-script for this controller"}'
-        return json.loads(response)
+            self.logging_status = self.DATA_LOGGING_PAUSED
+            self.save()
+            transaction.on_commit(lambda: self.send_message("pauseLogging", read_response=False))
 
     def reset_eeprom(self):
-        response = self.send_message("resetController") # Reset the controller
-        time.sleep(1)                                   # Give it 1 second to complete
-        synced = self.sync_temp_format()                # ...then resync the temp format
+        response = self.send_message("resetController")  # Reset the controller
+        time.sleep(1)                                    # Give it 1 second to complete
+        synced = self.sync_temp_format()                 # ...then resync the temp format
         return synced
 
     def reset_wifi(self) -> bool:
-        response = self.send_message("resetWiFi") # Reset the controller WiFi settings
+        response = self.send_message("resetWiFi")       # Reset the controller WiFi settings
         time.sleep(1)                                   # Give it 1 second to complete
         return True
 
     def restart(self) -> bool:
-        response = self.send_message("restartController") # Restart the controller
-        time.sleep(1)                                   # Give it 1 second to complete
+        response = self.send_message("restartController")  # Restart the controller
+        time.sleep(1)                                      # Give it 1 second to complete
         return True
 
     def get_control_constants(self):
@@ -942,38 +940,46 @@ class BrewPiDevice(models.Model):
         """Returns the parameter used by Circus to track this device's processes"""
         return self.id
 
+    def _get_circusmgr(self) -> CircusMgr:
+        if USE_DOCKER:
+            return CircusMgr(circus_endpoint="tcp://127.0.0.1:7555")
+        else:
+            return CircusMgr()
+
     def start_process(self):
         """Start this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.start(name=circus_process_name)
 
     def remove_process(self):
         """Remove this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.remove(name=circus_process_name)
 
     def stop_process(self):
         """Stop this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.stop(name=circus_process_name)
 
     def restart_process(self):
-        """Restart the deviece process, raises CircusException if error"""
-        fc = CircusMgr()
+        """Restart the device process, raises CircusException if error"""
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         fc.restart(name=circus_process_name)
 
     def status_process(self):
         """Status this device process, raises CircusException if error"""
-        fc = CircusMgr()
+        fc = self._get_circusmgr()
         circus_process_name = u"dev-{}".format(self.circus_parameter())
         status = fc.application_status(name=circus_process_name)
         return status
 
     def get_cached_ip(self, save_to_cache=True):
+        # This only gets called from within BrewPi-script
+
         # I really hate the name of the function, but I can't think of anything else. This basically does three things:
         # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
         # 2. (Optional) Saves that IP address to self.wifi_host_ip (if we were successful in step 1)
@@ -1004,6 +1010,8 @@ class BrewPiDevice(models.Model):
         return None
 
     def get_port_from_udev(self):
+        # This only gets called from within BrewPi-script
+
         # get_port_from_udev() looks for a USB device connected which matches self.udev_serial_number. If one is found,
         # it returns the associated device port. If one isn't found, it returns None (to prevent the cached port from
         # being used, and potentially pointing to another, unrelated device)
@@ -1161,11 +1169,8 @@ class Beer(models.Model):
         else:
             return "Device " + str(self.device_id) + " - B" + str(self.id) + " - NAME ERROR - "
 
-    def full_filename(self, which_file, extension_only=False):
-        if extension_only:
-            base_name = ""
-        else:
-            base_name = self.base_filename()
+    def full_filename(self, which_file):
+        base_name = self.base_filename()
 
         if which_file == 'base_csv':
             return base_name + "_graph.csv"
@@ -1177,15 +1182,15 @@ class Beer(models.Model):
             return None
 
     def data_file_url(self, which_file):
-        return settings.DATA_URL + self.full_filename(which_file, extension_only=False)
+        return settings.DATA_URL + self.full_filename(which_file)
 
     def full_csv_url(self):
         return self.data_file_url('full_csv')
 
     def full_csv_exists(self) -> bool:
         # This is so that we can test if the log exists before presenting the user the option to download it
-        file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.base_filename())
-        full_csv_file = file_name_base + self.full_filename('full_csv', extension_only=True)
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
+        full_csv_file = file_name_base / self.full_filename('full_csv')
         return os.path.isfile(full_csv_file)
 
     def can_log_gravity(self):
@@ -1205,11 +1210,11 @@ class Beer(models.Model):
 # When the user attempts to delete a beer, also delete the log files associated with it.
 @receiver(pre_delete, sender=Beer)
 def delete_beer(sender, instance, **kwargs):
-    file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, instance.base_filename())
+    file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-    base_csv_file = file_name_base + instance.full_filename('base_csv', extension_only=True)
-    full_csv_file = file_name_base + instance.full_filename('full_csv', extension_only=True)
-    annotation_json = file_name_base + instance.full_filename('annotation_json', extension_only=True)
+    base_csv_file = file_name_base / instance.full_filename('base_csv')
+    full_csv_file = file_name_base / instance.full_filename('full_csv')
+    annotation_json = file_name_base / instance.full_filename('annotation_json')
 
     for this_filepath in [base_csv_file, full_csv_file, annotation_json]:
         try:
@@ -1280,7 +1285,7 @@ class BeerLogPoint(models.Model):
             return False
 
     def enrich_gravity_data(self):
-        # enrich_graity_data is called to enrich this data point with the relevant gravity data
+        # enrich_gravity_data is called to enrich this data point with the relevant gravity data
         # Only relevant if self.has_gravity_enabled is true (The associated_beer has gravity logging enabled)
         if self.has_gravity_enabled():
             if not self.can_log_gravity():
@@ -1417,11 +1422,11 @@ class BeerLogPoint(models.Model):
                 return False
 
         if self.associated_beer_id is not None:
-            file_name_base = os.path.join(settings.BASE_DIR, settings.DATA_ROOT, self.associated_beer.base_filename())
+            file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
 
-            base_csv_file = file_name_base + self.associated_beer.full_filename('base_csv', extension_only=True)
-            full_csv_file = file_name_base + self.associated_beer.full_filename('full_csv', extension_only=True)
-            annotation_json = file_name_base + self.associated_beer.full_filename('annotation_json', extension_only=True)
+            base_csv_file = file_name_base / self.associated_beer.full_filename('base_csv')
+            full_csv_file = file_name_base / self.associated_beer.full_filename('full_csv')
+            annotation_json = file_name_base / self.associated_beer.full_filename('annotation_json')
 
             # Write out headers (if the files don't exist)
             check_and_write_headers(base_csv_file, self.associated_beer.column_headers('base_csv'))
@@ -1574,13 +1579,13 @@ class FermentationProfile(models.Model):
 
     # profile_temp replaces brewpi-script/temperatureProfile.py, and is intended to be called by
     # get_profile_temp from BrewPiDevice
-    def profile_temp(self, time_started, temp_format):
+    def profile_temp(self, time_started, temp_format) -> float:
         # temp_format in this case is the temperature format active on BrewPiDevice. This will force conversion from
         # the profile point's format to the device's format.
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
         past_first_point=False  # There's guaranteed to be a better way to do this
-        previous_setpoint = 0.0
+        previous_setpoint = Decimal("0.0")
         previous_ttl = 0.0
         current_time = timezone.now()
 
@@ -1589,14 +1594,14 @@ class FermentationProfile(models.Model):
                 # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
                 # temperature. Return the temperature setting
                 if current_time < (time_started + this_point.ttl):
-                    return this_point.convert_temp(temp_format)
+                    return float(this_point.convert_temp(temp_format))
                 past_first_point = True
             else:
                 # Test if we are in this period
                 if current_time < (time_started + this_point.ttl):
                     # We are - Check if we need to interpolate, or if we can just use the static temperature
                     if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
-                        return this_point.convert_temp(temp_format)
+                        return float(this_point.convert_temp(temp_format))
                     else:  # We have to interpolate
                         duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
                         delta = (this_point.convert_temp(temp_format) - previous_setpoint)
@@ -1815,19 +1820,19 @@ class FermentationProfilePoint(models.Model):
                                               help_text="The temperature the beer should be when TTL has passed")
     temp_format = models.CharField(max_length=1, default='F')
 
-    def temp_to_f(self):
+    def temp_to_f(self) -> Decimal:
         if self.temp_format == 'F':
             return self.temperature_setting
         else:
             return (self.temperature_setting*9/5) + 32
 
-    def temp_to_c(self):
+    def temp_to_c(self) -> Decimal:
         if self.temp_format == 'C':
             return self.temperature_setting
         else:
             return (self.temperature_setting-32) * 5 / 9
 
-    def temp_to_preferred(self):
+    def temp_to_preferred(self) -> Decimal:
         # Converts the point to whatever the preferred temperature format is per Constance
         if config.TEMPERATURE_FORMAT == 'F':
             return self.temp_to_f()
@@ -1835,7 +1840,7 @@ class FermentationProfilePoint(models.Model):
             return self.temp_to_c()
         pass
 
-    def convert_temp(self, desired_temp_format):
+    def convert_temp(self, desired_temp_format) -> Decimal:
         if self.temp_format == desired_temp_format:
             return self.temperature_setting
         elif self.temp_format == 'F' and desired_temp_format == 'C':

@@ -9,31 +9,43 @@
 #
 
 # Path to circus config file
-CONFIG=~/fermentrack/circus.ini
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+CONFIG="$SCRIPTPATH"/../circus.ini
 
 # Config
-CIRCUSD=~/venv/bin/circusd
+
+if [ -f "$HOME/venv/bin/circusd" ]; then
+  # Standard install environment - circusd is available in a venv in the standard location
+  CIRCUSD=~/venv/bin/circusd
+  # Source in our virtualenv
+  if [ ! -e ~/venv/bin/activate ]; then
+    echo "ERROR: Could not find activation script for  python virtualenv environment"
+    exit 1
+  else
+    source ~/venv/bin/activate
+  fi
+elif command -v circusd &> /dev/null; then
+  # circusd is naturally available on the path
+  CIRCUSD=circusd
+else
+    echo "ERROR: Could not find circusd"
+    exit 1
+fi
+
 CIRCUSCTL="python -m circus.circusctl --timeout 10"
 NAME="Fermentrack supervisor: circusd: "
 # Cron Regexp
 REBOOT_ENTRY="^@reboot.*updateCronCircus.sh start$"
 CHECK_ENTRY="^\*/10 \* \* \* \*.*updateCronCircus.sh startifstopped$"
 # Cron Entries
-REBOOT_CRON="@reboot ~/fermentrack/utils/updateCronCircus.sh start"
-CHECK_CRON="*/10 * * * * ~/fermentrack/utils/updateCronCircus.sh startifstopped"
+REBOOT_CRON="@reboot \"${SCRIPTPATH}\"/updateCronCircus.sh start"
+CHECK_CRON="*/10 * * * * \"${SCRIPTPATH}\"/updateCronCircus.sh startifstopped"
 
-# Source in our virtualenv
-if [ ! -e ~/venv/bin/activate ]; then
-    echo "ERROR: Could not find python virtualenv enviroment"
-    exit -1
-fi
 
-# Source or virtualenv
-source ~/venv/bin/activate
 
 start() {
     echo -n "Starting $NAME"
-    export PYTHONPATH=$PYTHONPATH:/home/fermentrack/fermentrack
+    export PYTHONPATH=$PYTHONPATH:"$SCRIPTPATH/.."
     $CIRCUSD --daemon $CONFIG
     RETVAL=$?
     if [ $RETVAL -eq 0 ]; then

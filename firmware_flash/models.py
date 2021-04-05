@@ -242,10 +242,10 @@ class Firmware(models.Model):
 
     @classmethod
     def local_filepath(cls):
-        return os.path.join(settings.BASE_DIR, "firmware_flash", "firmware")
+        return settings.ROOT_DIR / "firmware_flash" / "firmware"
 
     def full_filepath(self, bintype):
-        return os.path.join(self.local_filepath(), self.local_filename(bintype))
+        return self.local_filepath() / self.local_filename(bintype)
 
     @classmethod
     def download_file(cls, full_path, url, checksum, check_checksum, force_download):

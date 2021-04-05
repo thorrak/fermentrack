@@ -1,0 +1,63 @@
+version: '3.3'
+
+volumes:
+  postgres_data: {}
+  postgres_data_backups: {}
+  fermentrack_data: {}
+  fermentrack_logs: {}
+
+services:
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: fermentrack_django
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - /dev:/dev
+      - fermentrack_data:/app/data:z
+      - fermentrack_logs:/app/log:z
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    command: ["/start", "--privileged"]
+    privileged: true
+    restart: unless-stopped
+    network_mode: "host"
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: fermentrack_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:Z
+      - postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.production/.postgres
+    restart: unless-stopped
+    network_mode: "host"
+
+  redis:
+    build:
+      context: .
+      dockerfile: ./compose/production/redis/Dockerfile
+    image: fermentrack_redis
+    restart: unless-stopped
+    network_mode: "host"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./compose/production/nginx/Dockerfile
+    image: fermentrack_nginx
+    depends_on:
+      - django
+    restart: unless-stopped
+    volumes:
+      - fermentrack_data:/data:z
+    network_mode: "host"

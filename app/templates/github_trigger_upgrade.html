@@ -9,41 +9,8 @@
 <h1>Upgrade from GitHub</h1>
 
 
-{% if git_update_type == "tagged" %}
-    {#  This functionality no longer exists, but I'm leaving the code here in case we decide to reenable it later #}
-
-<h3>Update to Latest Tagged Commit</h3>
-<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
-<div class="row">
-    <div class="col-xs-2">Current Commit Date:</div>
-    <div class="col-xs-10">{{ commit_info.local.committed_datetime|timezone:preferred_tz }}</div>
-</div>
-
-<div class="row">
-    <div class="col-xs-2">Latest Tagged Commit:</div>
-    <div class="col-xs-10">
-        {{ tags.latest_tag.name }} - Released {{ tags.latest_tag.committed_datetime|timezone:preferred_tz }}
-        <input type="hidden" name="tag" value="{{ tags.latest_tag.name }}">
-    </div>
-</div>
-
-
-<div class="row">
-{% if commit_info.local.committed_datetime < tags.latest_tag.committed_datetime %}
-    <div class="col-xs-2"><input type="submit" value="Update to Latest Release" class="btn btn-block btn-lg btn-success" /></div>
-{% else %}
-    <div class="col-xs-2"><input type="submit" value="Revert to Latest Release" class="btn btn-block btn-lg btn-danger" /></div>
-{% endif %}
-</div>
-
-</form>
-
-{% endif %}
-
 {% if allow_git_branch_switching %}
-<h3>Update Current Branch</h3>
-{% elif git_update_type == "tagged" %}
-    <h3>Update to Latest <u>Untagged</u> Commit</h3>
+    <h3>Update Current Branch</h3>
 {% endif %}
 
 <h4>Local Commit Info:</h4>
@@ -74,38 +41,57 @@
 
 {% endif %}
 
-<p>Need to manually refresh the Python packages without upgrading? Click the below to trigger a refresh without pulling
-    new code from GitHub</p>
-<p>
-    <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
-</p>
+
+<h3>Local Installation Versions</h3>
+<div class="row">
+    <div class="col-xs-9 col-sm-4">{% if not local_versions.use_docker %}Environment/{% endif %}Container Version:</div>
+    <div class="col-xs-3 col-sm-8">{{ local_versions.docker_container_version }}</div>
+</div>
+
+{% if local_versions.use_docker %}
+    <div class="row">
+        <div class="col-xs-9 col-sm-4">Django Environment Version:</div>
+        <div class="col-xs-3 col-sm-8">{{ local_versions.env_django_version }}</div>
+    </div>
+    <div class="row">
+        <div class="col-xs-9 col-sm-4">Postgres Environmnet Version:</div>
+        <div class="col-xs-3 col-sm-8">{{ local_versions.env_postgres_version }}</div>
+    </div>
+{% else %}
+    <p>
+        Need to manually refresh the Python packages without upgrading? Click the below to trigger a refresh without pulling
+        new code from GitHub
+    </p>
+    <p>
+        <a href="{% url "trigger_requirements_reload" %}" class="btn btn-primary">Update/Install Missing Python Packages</a>
+    </p>
+{% endif %}
 
 {% if allow_git_branch_switching %}
 
-<h3>Switch Branch</h3>
-<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
-<div class="row">
-    <div class="col-xs-2">Current Branch:</div>
-    <div class="col-xs-10">{{ branch_info.local_branch }}</div>
-</div>
+    <h3>Switch Branch</h3>
+    <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
+        <div class="row">
+            <div class="col-xs-4">Current Branch:</div>
+            <div class="col-xs-8">{{ branch_info.local_branch }}</div>
+        </div>
 
-<div class="row">
-    <div class="col-xs-2">New Branch:</div>
-    <div class="col-xs-10">
-        <select name="new_branch">
-            {% for this_branch in branch_info.remote_branches %}
-                <option value="{{ this_branch }}">{{ this_branch }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
+        <div class="row">
+            <div class="col-xs-4">New Branch:</div>
+            <div class="col-xs-8">
+                <select name="new_branch">
+                    {% for this_branch in branch_info.remote_branches %}
+                        <option value="{{ this_branch }}">{{ this_branch }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
+        <div class="row">
+            <div class="col-xs-2"><input type="submit" value="Switch Branch" class="btn btn-block btn-lg btn-danger" /></div>
+        </div>
 
-<div class="row">
-    <div class="col-xs-2"><input type="submit" value="Switch Branch" class="btn btn-block btn-lg btn-danger" /></div>
-</div>
-
-</form>
+    </form>
 
 {% endif %}
 

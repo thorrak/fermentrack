@@ -6,6 +6,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - Docker Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Added support for Docker installations
+- Added environment/container version number to GitHub page
+- Tilt "version" is now displayed on the Tilt Configuration page (Bluetooth only)
+- Tilt battery level now shows on the Tilt Configuration page (Bluetooth v3/Tilt Pro only)
+- "Last Check-in" time now added to Tilt configuration page (Bluetooth only)
+- Added link to view Huey logs inside the Fermentrack UI
+- Added link to view Circusd logs inside the Fermentrack UI
+
+
+Changed
+---------------------
+
+- Removed instances where BrewPi-Script would write to the database
+- Adjusted feedback loop for Circus to eliminate a potential race condition with transactional databases
+- Redesigned available firmware list to reduce confusion
+- Stale gravity check-in points will now not be displayed in the gravity dashboard panels
+- Added support for latest TiltBridge firmware
+- Remove unimplemented "TCP Socket" external push option
+- Added Beer Setting, Fridge Setting, and Controller State to generic external push targets
+- Upgraded TiltBridge support for v1.0.0 TiltBridges (earlier TiltBridge versions will now require manual configuration)
+- External push target attempts now log to huey stdout
+- Added battery to the GenericPushTarget message for pushed iSpindel devices
+
+
+Fixed
+---------------------
+
+- Fermentrack now works with properly transactional databases (e.g. Postgres)
+- Resolved issue causing false failures of the connectivity test (Thanks postalbunny!)
+- Fixed issue preventing renaming of BrewPi controllers
+- Dashes now allowed in TiltBridge mDNS IDs
+- Corrected issue where iSpindel data couldn't be loaded if a data point wasn't availble in Redis
+
+
 
 [2020-12-19] - Tilt Pro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

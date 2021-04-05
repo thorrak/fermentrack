@@ -103,6 +103,18 @@
       <th scope="row">Upgrade Log</th>
       <td><a href="{% url "get_app_log" "text" "upgrade" "stderr" %}">{% log_file_path "upgrade" "stderr" %}</a></td>
     </tr>
+    <tr>
+      <th scope="row">Huey (Task Manager) Stderr</th>
+      <td><a href="{% url "get_app_log" "text" "huey" "stderr" %}">{% log_file_path "huey" "stderr" %}</a></td>
+    </tr>
+    <tr>
+      <th scope="row">Huey (Task Manager) Stdout</th>
+      <td><a href="{% url "get_app_log" "text" "huey" "stdout" %}">{% log_file_path "huey" "stdout" %}</a></td>
+    </tr>
+    <tr>
+      <th scope="row">Circus Daemon (Process Monitor)</th>
+      <td><a href="{% url "get_app_log" "text" "circusd" "stderr" %}">{% log_file_path "circusd" "stderr" %}</a></td>
+    </tr>
   </tbody>
 </table>
 

@@ -14,6 +14,7 @@ from gravity.models import GravitySensor
 
 logger = logging.getLogger(__name__)
 
+
 class GenericPushTarget(models.Model):
     class Meta:
         verbose_name = "Generic Push Target"
@@ -100,7 +101,7 @@ class GenericPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -191,6 +192,16 @@ class GenericPushTarget(models.Model):
                         if device_info['RoomTemp'] != 0:
                             data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
+                    if device_info['BeerSet'] is not None:
+                        if device_info['BeerSet'] != 0:
+                            data_to_send['beer_setting'] = float(device_info['BeerSet'])
+                    if device_info['FridgeSet'] is not None:
+                        if device_info['FridgeSet'] != 0:
+                            data_to_send['fridge_setting'] = float(device_info['FridgeSet'])
+                    if device_info['State'] is not None:
+                        if device_info['State'] != 0:
+                            data_to_send['controller_state'] = float(device_info['State'])
+
                     # Gravity isn't retrieved via get_dashpanel_info, and as such requires special handling
                     try:
                         if brewpi.gravity_sensor is not None:
@@ -221,6 +232,11 @@ class GenericPushTarget(models.Model):
                             grav_dict['temp'] = float(latest_log_point.temp)
                             grav_dict['temp_format'] = latest_log_point.temp_format
 
+                    if sensor.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+                        extras = sensor.ispindel_configuration.load_extras_from_redis()
+                        if 'battery' in extras:  # Load & send the iSpindel battery
+                            to_send['battery'] = extras['battery']
+
                     to_send['gravity_sensors'].append(grav_dict)
 
             string_to_send = json.dumps(to_send)
@@ -239,24 +255,30 @@ class GenericPushTarget(models.Model):
             return False
 
         if self.target_type == self.SENSOR_PUSH_HTTP:
-            r = requests.post(self.target_host, data=json_data)
-            return True  # TODO - Check if the post actually succeeded & react accordingly
+            try:
+                r = requests.post(self.target_host, data=json_data, verify=False)
+            except requests.ConnectionError:
+                return False
+            return True
         elif self.target_type == self.SENSOR_PUSH_TCP:
-            # TODO - Push to a socket endpoint
-            raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
+            # This was previously something I was planning on supporting, but haven't found a use for yet.
+            # Commenting out for now.
+            # raise NotImplementedError("TCP push targets (sockets) are not yet implemented")
+            return False
         else:
             raise ValueError("Invalid target type specified for push target")
 
-    def check_target_host(self):
+    def check_target_host(self) -> bool:
         if len(self.target_host) > 8:
             if self.target_host[:7] == "http://":
-                pass
+                return False
             elif self.target_host[:8] == "https://":
-                pass
+                return False
             else:
                 self.target_host = "http://" + self.target_host
                 self.save()
-
+                return True
+        return False
 
 
 class BrewersFriendPushTarget(models.Model):
@@ -298,7 +320,7 @@ class BrewersFriendPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -315,6 +337,9 @@ class BrewersFriendPushTarget(models.Model):
             to_send['device_source'] = "Tilt"
         elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_ISPINDEL:
             to_send['device_source'] = "iSpindel"
+            extras = self.gravity_sensor_to_push.ispindel_configuration.load_extras_from_redis()
+            if 'battery' in extras:  # Load & send the iSpindel battery
+                to_send['battery'] = extras['battery']
         elif self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_MANUAL:
             to_send['device_source'] = "Manual"
         else:
@@ -337,6 +362,8 @@ class BrewersFriendPushTarget(models.Model):
         if latest_log_point.temp is not None:
             to_send['temp'] = float(latest_log_point.temp)
             to_send['temp_unit'] = latest_log_point.temp_format
+
+
 
         string_to_send = json.dumps(to_send)
 
@@ -419,7 +446,7 @@ class BrewfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -458,7 +485,7 @@ class BrewfatherPushTarget(models.Model):
         # This section get data from gravity sensor (and attached brewpi), if selected. 
         if self.device_type == "gravity":
 
-            if self.gravity_sensor_to_push == None:
+            if self.gravity_sensor_to_push is None:
                 return {}
 
             if self.gravity_sensor_to_push == "":
@@ -483,7 +510,12 @@ class BrewfatherPushTarget(models.Model):
                 to_send['temp'] = float(latest_log_point.temp)
                 to_send['temp_unit'] = latest_log_point.temp_format
 
-            # This if statement fixes bug #458 
+            if self.gravity_sensor_to_push.sensor_type == GravitySensor.SENSOR_ISPINDEL:
+                extras = self.gravity_sensor_to_push.ispindel_configuration.load_extras_from_redis()
+                if 'battery' in extras:  # Load & send the iSpindel battery
+                    to_send['battery'] = extras['battery']
+
+            # This if statement fixes bug #458
             if latest_log_point.associated_device is not None:
                 if latest_log_point.associated_device.assigned_brewpi_device is not None:
                     # We have a controller - try to load the data from it
@@ -517,21 +549,26 @@ class BrewfatherPushTarget(models.Model):
 
             #logger.error("Brewfather payload (gravity):" + json.dumps(to_send) )
 
-        # This section get the temp values from a brewpi if selected. Part of request #464
-        else:
-            if self.brewpi_to_push == None:
+        else:  # self.device_type != "gravity"
+            # This section get the temp values from a brewpi if selected. Part of request #464
+            if self.brewpi_to_push is None:
                 return {}
 
+            # TODO - There is absolutely no reason to iterate over brewpi_to_send searching for the brewpi to send considering we have self.brewpi_to_push
             brewpi_to_send = BrewPiDevice.objects.filter(status=BrewPiDevice.STATUS_ACTIVE)
 
             for brewpi in brewpi_to_send:
-                # TODO - Handle this if the brewpi can't be loaded, given "get_dashpanel_info" communicates with BrewPi-Script
                 # TODO - Make it so that this data is stored in/loaded from Redis
-                device_info = brewpi.get_dashpanel_info()
 
-                #logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+                if brewpi.id == self.brewpi_to_push.id:
+                    device_info = brewpi.get_dashpanel_info()
 
-                if brewpi.device_name == self.brewpi_to_push.device_name:
+                    if device_info is None:
+                        # If we couldn't load device_info, continue with the next loop
+                        return {}
+
+                    # logger.error("Brewfather device_info (brewpi):" + json.dumps(device_info) )
+
                     to_send['name'] = brewpi.device_name
                     to_send['temp_unit'] = brewpi.temp_format
 
@@ -548,16 +585,16 @@ class BrewfatherPushTarget(models.Model):
                             to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:
-                        to_send['beer'] =  brewpi.active_beer.name
+                        to_send['beer'] = brewpi.active_beer.name
 
-            #logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
+            # logger.error("Brewfather payload (brewpi):" + json.dumps(to_send) )
 
         string_to_send = json.dumps(to_send)
 
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
-    def send_data(self):
+    def send_data(self) -> bool:
         # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
@@ -570,15 +607,17 @@ class BrewfatherPushTarget(models.Model):
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
-    def check_logging_url(self):
+    def check_logging_url(self) -> bool:
         if len(self.logging_url) > 8:
             if self.logging_url[:7] == "http://":
-                pass
+                return False
             elif self.logging_url[:8] == "https://":
-                pass
+                return False
             else:
                 self.logging_url = "http://" + self.logging_url
                 self.save()
+                return True
+        return False
 
 
 class ThingSpeakPushTarget(models.Model):
@@ -634,7 +673,7 @@ class ThingSpeakPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
     
 #    def __str__(self):
 #        return self.gravity_sensor_to_push.name
@@ -720,7 +759,7 @@ class ThingSpeakPushTarget(models.Model):
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
-    def send_data(self):
+    def send_data(self) -> bool:
         # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
@@ -772,7 +811,7 @@ class GrainfatherPushTarget(models.Model):
     error_text = models.TextField(blank=True, null=True, default="", help_text="The error (if any) encountered on the "
                                                                                "last push attempt")
 
-    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", auto_now_add=True)
+    last_triggered = models.DateTimeField(help_text="The last time we pushed data to this target", default=timezone.now)
 
     # I'm on the fence as to whether or not to test when to trigger by selecting everything from the database and doing
     # (last_triggered + push_frequency) < now, or to actually create a "trigger_next_at" field.
@@ -823,7 +862,7 @@ class GrainfatherPushTarget(models.Model):
         # We've got the data (in a json'ed string) - lets send it
         return string_to_send
 
-    def send_data(self):
+    def send_data(self) -> bool:
         # self.data_to_push() returns a JSON-encoded string which we will push directly out
         json_data = self.data_to_push()
 
@@ -836,13 +875,14 @@ class GrainfatherPushTarget(models.Model):
         r = requests.post(self.logging_url, data=json_data, headers=headers)
         return True  # TODO - Check if the post actually succeeded & react accordingly
 
-    def check_logging_url(self):
+    def check_logging_url(self) -> bool:
         if len(self.logging_url) > 8:
             if self.logging_url[:7] == "http://":
-                pass
+                return False
             elif self.logging_url[:8] == "https://":
-                pass
+                return False
             else:
                 self.logging_url = "http://" + self.logging_url
                 self.save()
-
+                return True
+        return False

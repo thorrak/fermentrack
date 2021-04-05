@@ -69,11 +69,19 @@ def profile_edit(request, profile_id):
             ).order_by('ttl')
             # Regardless of whether we were successful or not - rerender the
             # existing edit page
+
         return render(request, template_name='profile/profile_edit.html',
                       context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
                                'notes_form': notes_form, 'this_profile_points': this_profile_points})
     else:
         form = profile_forms.FermentationProfilePointForm()
+        if this_profile.currently_in_use():
+            # I'm on the fence about how to handle this. On the one hand, I don't like the idea of users editing an
+            # active profile, but on the other I don't like preventing users from doing something if they -really- want
+            # to. For now, I'm going to remove the is_editable() checks and revert to just popping up a warning at the
+            # top of the page.
+            messages.warning(request, "This profile is currently in use! Any changes <b>will</b> impact <b>all</b> active "
+                                      "ferments using this profile.")
         return render(request, template_name='profile/profile_edit.html',
                       context={'form': form, 'this_profile': this_profile, 'rename_form': rename_form,
                                'notes_form': notes_form, 'this_profile_points': this_profile_points})
@@ -101,8 +109,7 @@ def profile_setpoint_delete(request, profile_id, point_id):
     except:
         # The URL contained an invalid profile ID. Redirect to the profile
         # list.
-        messages.error(
-            request, 'Invalid profile setpoint selected for deletion')
+        messages.error(request, 'Invalid profile setpoint selected for deletion')
         return redirect('profile_edit', profile_id=profile_id)
 
     this_profile_point.delete()
@@ -127,8 +134,7 @@ def profile_delete(request, profile_id):
         return redirect('profile_list')
 
     if this_profile.currently_in_use():
-        # Due to the way we're implementing fermentation profiles, we don't want any edits to a profile that is
-        # currently in use.
+        # If a profile is currently in use, we aren't going to delete it immediately but queue it for deletion instead.
         this_profile.status = FermentationProfile.STATUS_PENDING_DELETE
         this_profile.save()
         messages.info(request,
