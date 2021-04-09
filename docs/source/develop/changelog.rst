@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Fixed
+-----
+
+- Properly allow blanks for BrewPiDevice.wifi_host_ip
+
+
+
+
 [2021-04-05] - Docker Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

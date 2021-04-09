@@ -518,7 +518,7 @@ class BrewPiDevice(models.Model):
     wifi_host = models.CharField(max_length=40, default='None',
                                  help_text="mDNS host name or IP address for WiFi connected hardware (only used if " +
                                            "connection_type is wifi)")
-    wifi_host_ip = models.CharField(max_length=46, default='', help_text="Cached IP address in case of mDNS issues (only used if connection_type is wifi)")
+    wifi_host_ip = models.CharField(max_length=46, blank=True, default='', help_text="Cached IP address in case of mDNS issues (only used if connection_type is wifi)")
     wifi_port = models.IntegerField(default=23, validators=[MinValueValidator(10,"Port must be 10 or higher"),
                                                             MaxValueValidator(65535, "Port must be 65535 or lower")],
                                     help_text="The internet socket to use (only used if connection_type is wifi)")
