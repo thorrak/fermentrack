@@ -188,28 +188,27 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
                 error = ""
 
                 if dbConfig.wifi_port is None:
-                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(config['wifiPort']))
+                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(dbConfig.wifi_port))
                     logMessage("Exiting.")
                     exit(1)
                 port = dbConfig.wifi_port
 
-                if dbConfig.wifi_host_ip is None or len(dbConfig.wifi_host_ip) < 7:
-                    if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
-                        logMessage("Invalid WiFi configuration - No wifi_host or wifi_host_ip set")
-                        logMessage("Exiting.")
-                        exit(1)
-                    connect_to = dbConfig.wifi_host
-                else:
-                    # the wifi_host_ip is set - use that as the host to connect to
-                    connect_to = dbConfig.wifi_host_ip
+                ip_address = dbConfig.get_cached_ip()  # Resolve wifi_host to an IP address or get the cached IP
 
-                if dbConfig.wifi_host is None or len(dbConfig.wifi_host) <= 4:
+                if ip_address is None:
+                    logMessage("Invalid WiFi configuration - No wifi_host or wifi_host_ip set")
+                    logMessage("Exiting.")
+                    exit(1)
+
+                if not dbConfig.wifi_host:
                     # If we don't have a hostname at all, set it to None
                     hostname = None
                 else:
                     hostname = dbConfig.wifi_host
 
-                ser = tcpSerial.TCPSerial(host=connect_to, port=port, hostname=hostname)
+                # The way TCPSerial is implemented, hostname is just a memo field. We always connect to the host (which
+                # in this case is a resolved IP address)
+                ser = tcpSerial.TCPSerial(host=ip_address, port=port, hostname=hostname)
 
                 if ser:
                     break
