@@ -299,12 +299,21 @@ HUEY = {
 }
 
 
+SENTRY_DSN_MAP = {
+    'http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9000/6': 'http://10a2b38a37f4440f8d8c60769566c5a0@sentry.optictheory.com:9000/2',  # Former "legacy" install DSN
+    'http://b590686c4b614b4b9edad2fbe3d55002@sentry.optictheory.com:9000/7': 'http://48dbb30951254646a472d378672c2689@sentry.optictheory.com:9000/4',  # Former "docker" install DSN
+}
+
+
 if ENABLE_SENTRY:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
 
-    SENTRY_DSN = env("SENTRY_DSN", default="http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9000/6")
+    SENTRY_DSN = env("SENTRY_DSN", default="http://10a2b38a37f4440f8d8c60769566c5a0@sentry.optictheory.com:9000/2")
+    # Sentry is a fickle beast, and from time to time I may have to update the DSN. Since it is now set via ENV,
+    if SENTRY_DSN in SENTRY_DSN_MAP:
+        SENTRY_DSN = SENTRY_DSN_MAP[SENTRY_DSN]
     SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
 
     sentry_logging = LoggingIntegration(
