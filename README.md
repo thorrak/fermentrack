@@ -1,6 +1,7 @@
 # Fermentrack
 
 [![Fermentrack Logo](http://www.fermentrack.com/static/img/fermentrack_logo.png "Fermentrack")](http://www.fermentrack.com/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fthorrak%2Ffermentrack.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fthorrak%2Ffermentrack?ref=badge_shield)
 
 [![Documentation Status](https://readthedocs.org/projects/fermentrack/badge/?version=master)](http://fermentrack.readthedocs.io/en/master/?badge=master)
                 
@@ -61,3 +62,7 @@ Fermentrack is designed to be run as part of a Docker compose stack and should b
 * Debian-based systems preferred (e.g. Ubuntu, Debian, etc)
 * 2GB of free space available
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fthorrak%2Ffermentrack.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fthorrak%2Ffermentrack?ref=badge_large)
