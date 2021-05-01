@@ -7,7 +7,7 @@ from app.models import BrewPiDevice
 
 def getLCDs(req):
     ret = []
-    all_devices = BrewPiDevice.objects.all()
+    all_devices = BrewPiDevice.objects.all().order_by('device_name')
     for dev in all_devices:
         ret.append({"device_name": dev.device_name, "lcd_data": dev.read_lcd(),
                     'device_url': reverse('device_dashboard', kwargs={'device_id': dev.id,}),
