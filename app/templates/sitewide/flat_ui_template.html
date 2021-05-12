@@ -17,7 +17,10 @@
         {# TODO - Move dygraph out to only the pages that use it #}
         <script type="text/javascript" src="{% static "vendor/dygraph/js/dygraph.min.js" %}"></script>
         <link src="{% static "vendor/dygraph/css/dygraph.css" %}" rel="stylesheet">
-
+        {% if config.CUSTOM_THEME == 'nord' %}
+        <link href="{% static "css/nord.fermentrack.css" %}" rel="stylesheet">
+        {% endif %}
+                
         <!-- HTML5 shim, for IE6-8 support of HTML5 elements. -->
         <!--[if lt IE 9]>
           <script src="{% static "vendor/other/js/html5shiv.js" %}"></script>
