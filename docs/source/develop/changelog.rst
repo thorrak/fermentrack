@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) because it
 [Unreleased] - Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+Added
+---------------------
+
+- i386 (i686) build target for Docker images
+- Custom color scheme support (dark mode!) (Thanks @calandryll!)
+
+
 Fixed
 -----
 

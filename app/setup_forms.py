@@ -55,7 +55,7 @@ class GuidedSetupConfigForm(forms.Form):
         (True, 'Yes'),
         (False, 'No')
     ]
-    theme_select = settings.CONSTANCE_ADDITIONAL_FIELDS['theme_select'][1]['choices']
+    theme_select = settings.CONSTANCE_ADDITIONAL_FIELDS['custom_theme_select'][1]['choices']
 
     update_options = settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices'][1:]
 
@@ -65,9 +65,7 @@ class GuidedSetupConfigForm(forms.Form):
     # database table hasn't been created yet (ie - at initial setup)
     brewery_name = forms.CharField()  # initial=config.BREWERY_NAME
 
-    custom_theme = forms.ChoiceField(
-        choices=theme_select,
-        )
+    custom_theme = forms.ChoiceField(choices=theme_select)
 
     date_time_format_display = forms.ChoiceField(  # initial=config.DATE_TIME_FORMAT_DISPLAY
         choices=date_time_display_select_choices,

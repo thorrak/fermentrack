@@ -216,6 +216,10 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         'widget': 'django.forms.Select',
         'choices': [(x,x) for x in pytz.common_timezones]
     }],
+    'custom_theme_select': ['django.forms.fields.ChoiceField', {
+        'widget': 'django.forms.Select',
+        'choices': [('default', "Default (light) Color Theme"), ('nord', "Nord (dark) Color Theme")]
+    }],
 }
 
 # CONSTANCE_SUPERUSER_ONLY = False
@@ -249,13 +253,14 @@ CONSTANCE_CONFIG = {
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
     'SQLITE_OK_DJANGO_2': (False, 'Has the Django 2.0+ SQLite migration been run?',
                                    bool),
+    'CUSTOM_THEME': ('default', 'What color theme would you like to use for Fermentrack?', 'custom_theme_select'),
 
 }
 
 CONSTANCE_CONFIG_FIELDSETS = {
     'General Options': ('BREWERY_NAME', 'DATE_TIME_FORMAT_DISPLAY', 'REQUIRE_LOGIN_FOR_DASHBOARD', 'TEMPERATURE_FORMAT',
                         'TEMP_CONTROL_SUPPORT_ENABLED', 'GRAVITY_SUPPORT_ENABLED', 'PREFERRED_TIMEZONE',
-                        'GRAVITY_DISPLAY_FORMAT'),
+                        'GRAVITY_DISPLAY_FORMAT', 'CUSTOM_THEME'),
 
     'Graph Colors': ('GRAPH_BEER_TEMP_COLOR', 'GRAPH_BEER_SET_COLOR', 'GRAPH_FRIDGE_TEMP_COLOR',
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',
