@@ -1,7 +1,7 @@
 Installing Fermentrack
 ========================
 
-Fermentrack is intended to be installed as a Docker container as part of a Docker compose stack. There are three main
+Fermentrack is intended to be installed as a Docker container as part of a Docker Compose stack. There are three main
 ways to install Fermentrack:
 
 * One-line fully automated
@@ -9,15 +9,17 @@ ways to install Fermentrack:
 * Manual
 
 Regardless of what method you choose, all of these expect that your Raspberry Pi has been properly set up with a working
-copy of Raspbian. If Raspbian is not yet installed, please read and complete :doc:`Raspi_Setup`
+copy of Raspberry Pi OS. If Raspberry Pi OS is not yet installed, please read and complete :doc:`Raspi_Setup`.
+
+The installation will take around 30 minutes, depending on which Raspberry Pi you are using.
 
 Fully Automated
 -----------------
 
 The easiest way to install Fermentrack is via a single command executed on your Raspberry Pi. To install via this
-method, simply SSH into your Raspberry Pi and execute:
+method, SSH into your Raspberry Pi and execute:
 
-``curl -L install.fermentrack.com | sudo bash``
+``curl -L install.fermentrack.com | bash``
 
 Follow the prompts as needed, and once the script completes, you're done!
 
