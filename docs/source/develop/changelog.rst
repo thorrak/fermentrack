@@ -16,6 +16,12 @@ Added
 - Custom color scheme support (dark mode!) (Thanks @calandryll!)
 
 
+Changed
+-------
+
+- Change to prefer caching IPv4 addresses in BrewPiDevice.wifi_host_ip
+
+
 Fixed
 -----
 
