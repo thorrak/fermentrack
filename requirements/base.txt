@@ -1,4 +1,4 @@
-Django==3.0.14
+Django==3.1.13
 configobj       # required by brewpi.py
 
 #pyzmq~=19.0.1 --no-binary=pyzmq  # The wheel for pyzmq periodically has issues for Raspbian installs
