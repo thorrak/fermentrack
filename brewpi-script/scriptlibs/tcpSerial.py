@@ -25,13 +25,13 @@ class TCPSerial(object):
         self.port=port
         self.retries=10 # max reconnect attempts to try when doing a read or write operation
         self.retryCount=0 # count of reconnect attempts performed
+
+        if host is None:
+            logMessage(f"No IP address provided - cannot connect to BrewPi")  # This -should- never get tripped
+            exit(1)
+
         if hostname:
-            # TODO - Do something with the hostname
-            if host is None:
-                logMessage("Unable to resolve hostname {}. Exiting.".format(hostname))
-                exit(1)
-            else:
-                logMessage("Connecting to BrewPi " + hostname + " (via " + host + ") on port " + str(port))
+            logMessage("Connecting to BrewPi " + hostname + " (via " + host + ") on port " + str(port))
         else:
             logMessage("Connecting to BrewPi " + host + " on port " + str(port))
         self.open()

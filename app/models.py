@@ -518,7 +518,7 @@ class BrewPiDevice(models.Model):
     wifi_host = models.CharField(max_length=40, default='None',
                                  help_text="mDNS host name or IP address for WiFi connected hardware (only used if " +
                                            "connection_type is wifi)")
-    wifi_host_ip = models.CharField(max_length=46, default='', help_text="Cached IP address in case of mDNS issues (only used if connection_type is wifi)")
+    wifi_host_ip = models.CharField(max_length=46, blank=True, default='', help_text="Cached IP address in case of mDNS issues (only used if connection_type is wifi)")
     wifi_port = models.IntegerField(default=23, validators=[MinValueValidator(10,"Port must be 10 or higher"),
                                                             MaxValueValidator(65535, "Port must be 65535 or lower")],
                                     help_text="The internet socket to use (only used if connection_type is wifi)")
@@ -977,26 +977,34 @@ class BrewPiDevice(models.Model):
         status = fc.application_status(name=circus_process_name)
         return status
 
-    def get_cached_ip(self, save_to_cache=True):
+    def get_cached_ip(self):
         # This only gets called from within BrewPi-script
 
         # I really hate the name of the function, but I can't think of anything else. This basically does three things:
         # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
-        # 2. (Optional) Saves that IP address to self.wifi_host_ip (if we were successful in step 1)
+        # 2. Saves that IP address to self.wifi_host_ip (if we were successful in step 1)
         # 3. Returns the found IP address (if step 1 was successful), the cached (self.wifi_host_ip) address if it
         #    wasn't, or 'None' if we don't have a cached address and we weren't able to resolve the hostname
         if len(self.wifi_host) > 4:
             try:
                 ip_list = []
+                ipv6_list = []
                 ais = socket.getaddrinfo(self.wifi_host, 0, 0, 0, 0)
                 for result in ais:
-                    ip_list.append(result[-1][0])
+                    if result[0] == socket.AddressFamily.AF_INET:
+                        # IPv4 only
+                        ip_list.append(result[-1][0])
+                    elif result[0] == socket.AddressFamily.AF_INET6:
+                        ipv6_list.append(result[-1][0])
                 ip_list = list(set(ip_list))
-                resolved_address = ip_list[0]
-                if self.wifi_host_ip != resolved_address and save_to_cache:
-                    # If we were able to find an IP address, save it to the cache
-                    self.wifi_host_ip = resolved_address
-                    self.save()
+                ipv6_list = list(set(ip_list))
+                if len(ip_list) > 0:
+                    resolved_address = ip_list[0]
+                else:
+                    resolved_address = ipv6_list[0]
+                # If we were able to find an IP address, save it to the cache
+                self.wifi_host_ip = resolved_address
+                self.save()
                 return resolved_address
             except:
                 # TODO - Add an error message here

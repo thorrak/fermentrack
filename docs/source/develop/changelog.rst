@@ -6,6 +6,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[2021-12-08] - Compatibility Enhancements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- i386 (i686) build target for Docker images
+- Custom color scheme support (dark mode!) (Thanks @calandryll!)
+
+
+Changed
+-------
+
+- Change to prefer caching IPv4 addresses in BrewPiDevice.wifi_host_ip
+- Removed PyBluez requirement to enable wider platform support
+
+
+Fixed
+-----
+
+- Properly allow blanks for BrewPiDevice.wifi_host_ip
+
+
+
+
 [2021-04-05] - Docker Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

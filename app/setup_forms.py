@@ -55,6 +55,7 @@ class GuidedSetupConfigForm(forms.Form):
         (True, 'Yes'),
         (False, 'No')
     ]
+    theme_select = settings.CONSTANCE_ADDITIONAL_FIELDS['custom_theme_select'][1]['choices']
 
     update_options = settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices'][1:]
 
@@ -63,6 +64,8 @@ class GuidedSetupConfigForm(forms.Form):
     # There appears to be a bug with constance where if you use config in a form setup it will die if the constance
     # database table hasn't been created yet (ie - at initial setup)
     brewery_name = forms.CharField()  # initial=config.BREWERY_NAME
+
+    custom_theme = forms.ChoiceField(choices=theme_select)
 
     date_time_format_display = forms.ChoiceField(  # initial=config.DATE_TIME_FORMAT_DISPLAY
         choices=date_time_display_select_choices,
@@ -109,6 +112,7 @@ class GuidedSetupConfigForm(forms.Form):
 
         self.fields['brewery_name'].initial = config.BREWERY_NAME
         self.fields['brewery_name'].help_text = config.BREWERY_NAME
+        self.fields['custom_theme'].initial = config.CUSTOM_THEME
         self.fields['date_time_format_display'].initial = config.DATE_TIME_FORMAT_DISPLAY
         self.fields['require_login_for_dashboard'].initial = config.REQUIRE_LOGIN_FOR_DASHBOARD
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT

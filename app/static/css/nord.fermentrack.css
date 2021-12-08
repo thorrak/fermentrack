@@ -1,0 +1,176 @@
+/* Nord Theme for Fermentrack */
+/* Default Colors from https://github.com/arcticicestudio/nord */
+:root {
+    --bgcolor: #2e3440; /* Background color of the page */
+    --textcolor: #e5e9f0; /* Main text color */
+    --linkcolor: #88c0d0; /* Link color */
+    --linkhover: #8fbcbb; /* Link color when hovering */
+    --navbgcolor: #3b4252; /* Navigation bar background color */
+    --bgsensorbox: #d08770; /* Sensor box background color */
+    --bgsgbox: #b48ead; /* Specific gravity box background color */
+    --bgabvbox: #4c566a; /* ABV box background color */
+    --bgtempbox: #5e81ac; /* Temperature box background color */
+    --bgtempconbox: #81a1c1; /* Temperature control box background color */
+    --graphlabels: #eceff4; /* Graph axis text color */
+    --bgdatapt: #bf616a; /* Add data point button background color */
+    --bgconbut: #88c0d0; /* Control logging button background color */
+    --bgprior: #a3be8c; /* Load prior log button background color */
+    --bgalert: #a3be8c; /* Pop-up alert background color */
+    --borderalert: #a3be8c; /* Pop-up alert border color */
+    --textalert: #e5e9f0; /* Pop-up alert text color */
+    --bghovermenu: #88c0d0; /* Menu hover color */
+    --legendrow: #4c566a; /* Legend row background color */
+    --bordercolor: #d8dee9; /* Border color for legend row */
+    --caret: #4c566a; /* Menu caret color */
+  }
+
+
+/* Overall colors */
+body{
+    color: var(--textcolor);
+    background-color: var(--bgcolor);
+}
+
+/* Link colors */
+a {
+    color: var(--linkcolor);
+}
+
+a:hover, a:focus {
+    color: var(--linkhover);
+}
+
+/* Background color of the navigation bar */
+.navbar-inverse {
+    background-color: var(--navbgcolor);
+}
+
+/* Drop down menu from navigation bar */
+.navbar-inverse .navbar-nav>.open>.dropdown-menu {
+    background-color: var(--navbgcolor);
+}
+
+.navbar-inverse .navbar-brand {
+    color: var(--textcolor);
+}
+
+.navbar-inverse .navbar-nav>li>a {
+    color: var(--textcolor);
+}
+
+.navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li>a:focus {
+    color: var(--linkhover);
+}
+
+.navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:hover, .navbar-inverse .navbar-nav>.open>a:focus {
+    color: var(--textcolor);
+    background-color: var(--linkhover);
+}
+
+.navbar-inverse .navbar-nav>.dropdown>a:hover .caret, .navbar-inverse .navbar-nav>.dropdown>a:focus .caret {
+    border-top-color: var(--linkhover);
+    border-bottom-color: var(--linkhover);
+}
+
+.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus {
+    color: var(--linkhover);
+    background-color: transparent;
+}
+
+.navbar-inverse .navbar-nav>.dropdown>a .caret {
+    border-top-color: var(--caret);
+    border-bottom-color: var(--caret);
+}
+
+.navbar-inverse .navbar-nav>.open>.dropdown-menu>li>a:hover,
+.navbar-inverse .navbar-nav>.open>.dropdown-menu>li>a:focus {
+	color: var(--textcolor);
+	background-color: var(--linkhover)
+}
+
+/* Gravity Sensor Box */
+.bg-carrot {
+    background: var(--bgsensorbox)!important;
+}
+
+/* SG Box */
+.bg-amethyst {
+    background: var(--bgsgbox)!important;
+}
+
+/* ABV Box */
+.bg-wet-asphalt {
+    background: var(--bgabvbox)!important;
+}
+
+/* Temperature Box */
+.bg-petermann {
+    background: var(--bgtempbox)!important;
+}
+
+/* Temp Controller Box */
+.bg-concrete {
+    background: var(--bgtempconbox)!important;
+}
+
+/* Graph colors */
+.dygraph-axis-label {
+    color: var(--graphlabels);
+}
+
+/* Bottom Buttons */
+.btn-danger {
+    background-color: var(--bgdatapt);
+}
+
+.btn-info {
+    background-color: var(--bgconbut);
+}
+
+.btn-success {
+    background-color: var(--bgprior);
+}
+
+/* Buttons (e.g. login, etc.) */
+.btn-primary:hover, .btn-primary.hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    color: var(--textcolor);
+    background-color: var(--bghovermenu);
+    border-color: var(--bghovermenu);
+}
+
+.btn-primary {
+    color: var(--textcolor);
+    background-color: var(--bgprior);
+}
+
+/* Alert pop-up */
+.alert-success {
+    color: var(--textcolor);
+    background-color: var(--bgalert);
+    border-color: var(--bgalert);
+}
+
+.panel-red > .panel-heading {
+    border-color: var(--bgdatapt);
+    color: var(--textcolor);
+    background-color: var(--bgdatapt);
+}
+
+.panel-red {
+    border-color: var(--bgdatapt);
+    background-color: var(--legendrow);
+}
+
+.chart-legend-row {
+    background-color: var(--legendrow);
+    border-top: 1px solid #ddd;
+}
+
+.form-control, .select2-search input[type=text] {
+    border: 2px solid var(--bordercolor);
+}
+
+.panel-footer {
+    background-color: var(--legendrow);
+    border-top: 1px solid #ddd;
+}
