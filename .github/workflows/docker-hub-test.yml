@@ -3,7 +3,7 @@ name: 'Build & Push to Docker Hub'
 on:
   push:
     branches:
-      - no_bluez
+      - pyzmq
 
 jobs:
   buildx:
@@ -37,4 +37,4 @@ jobs:
           --platform=linux/arm/v7,linux/amd64,linux/i386 \
           --output "type=image,push=true" \
           --file ./compose/production/django/Dockerfile . \
-          --tag jdbeeler/fermentrack:nobluez
+          --tag jdbeeler/fermentrack:testing
