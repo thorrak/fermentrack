@@ -62,7 +62,7 @@ RUN chown django /app/data/
 RUN chown django /app/log/
 
 # Fix Bluetooth permissions
-RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.8
+RUN setcap cap_net_raw,cap_net_admin+eip /usr/local/bin/python3.9
 
 USER django
 
