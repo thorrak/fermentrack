@@ -25,8 +25,6 @@ packaging~=17.1 # for testing requirements in the Tilt tests
 
 urllib3<1.26    # Requirement for the new pip resolver
 
-numpy==1.21.5   # Used to calibrate ispindel
-
 
 # Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
 redis==3.4.1           # for huey & gravity sensor support
