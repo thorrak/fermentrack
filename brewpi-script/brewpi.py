@@ -656,7 +656,7 @@ while run:
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-            bg_ser.writeln("E")
+            bg_ser.writeln("E{\"confirmReset\": true}")
             # request settings from controller, processed later when reply is received
             bg_ser.writeln('s')  # request control settings cs
             bg_ser.writeln('c')  # request control constants cc
