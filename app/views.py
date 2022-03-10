@@ -268,13 +268,13 @@ def sensor_list(request, device_id):
     if devices_loaded:
         for this_device in active_device.available_devices:
             data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin}
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin}
             this_device.device_form = device_forms.SensorFormRevised(data)
 
         for this_device in active_device.installed_devices:
             data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin, 'installed': True,
-                    'perform_uninstall': True}
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin,
+                    'installed': True, 'perform_uninstall': True}
             this_device.device_form = device_forms.SensorFormRevised(data)
     else:
         # If we weren't able to load devices, we should have set an error message instead. Display it.
@@ -282,8 +282,8 @@ def sensor_list(request, device_id):
         messages.error(request, active_device.error_message)
 
     return render(request, template_name="pin_list.html",
-                               context={'available_devices': active_device.available_devices, 'active_device': active_device,
-                                        'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
+                  context={'available_devices': active_device.available_devices, 'active_device': active_device,
+                           'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
 
 @login_required
@@ -306,10 +306,10 @@ def sensor_config(request, device_id):
             try:
                 if form.data['installed']:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.installed_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
                 else:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.available_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
             except ValueError:
                 messages.error(request, "Unable to confirm the pin/address on your controller. Check to ensure that " +
                                "your controller is properly connected, and reattempt assignment.")

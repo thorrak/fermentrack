@@ -148,6 +148,10 @@ class SensorDevice(models.Model):
     # DEVICE_HARDWARE_PIN = 1, // a digital pin, either input or output
     # DEVICE_HARDWARE_ONEWIRE_TEMP = 2, // a onewire temperature sensor
     # DEVICE_HARDWARE_ONEWIRE_2413 = 3 // a onewire 2 - channel PIO input or output.
+    # DEVICE_HARDWARE_BLUETOOTH_INKBIRD = 5,  // Inkbird temp sensor
+    # DEVICE_HARDWARE_BLUETOOTH_TILT = 6,
+    # DEVICE_HARDWARE_TPLINK_SWITCH = 7,
+
 
     DEVICE_HARDWARE_CHOICES = (
         (0, 'NONE'),
@@ -155,6 +159,9 @@ class SensorDevice(models.Model):
         (2, 'ONEWIRE_TEMP'),
         (3, 'ONEWIRE_2413'),
         (4, 'ONEWIRE_2408/Valve'),
+        (5, 'Bluetooth Inkbird'),
+        (6, 'Bluetooth Tilt'),
+        (7, 'TPLink Kasa Switch'),
     )
 
     DEVICE_TYPE_CHOICES = (
@@ -171,7 +178,9 @@ class SensorDevice(models.Model):
         (INVERT_INVERTED,       'Inverted'),
     )
 
-    address = models.CharField(max_length=16, blank=True, default="")
+    address = models.CharField(max_length=18, blank=True, default="")
+    alias = models.CharField(max_length=32, blank=True, default="")
+    child_no = models.CharField(max_length=3, blank=True, default="")
     device_index = models.IntegerField(default=-1)
     type = models.IntegerField(default=0)
     chamber = models.IntegerField(default=0)
@@ -195,13 +204,19 @@ class SensorDevice(models.Model):
     # Defining the name as something readable for debugging
     def __str__(self):
         if self.hardware == 1:
-            return "Pin {}".format(self.pin)
+            return f"Pin {self.pin}"
         elif self.hardware == 2:
-            return "TempSensor " + self.address
+            return f"OneWire Temp Sensor {self.address}"
         elif self.hardware == 3:
-            return "OneWire 2413 " + self.address
+            return f"OneWire 2413 {self.address}"
         elif self.hardware == 4:
-            return "OneWire 2408 " + self.address
+            return f"OneWire 2408 {self.address}"
+        elif self.hardware == 5:
+            return f"Inkbird Bluetooth Temp Sensor {self.address}"
+        elif self.hardware == 6:
+            return f"Tilt Hydrometer {self.alias}"
+        elif self.hardware == 7:
+            return f"TPLink Kasa {self.alias}"
 
 
     # This factory method is used to allow us to quickly create an instance from a dict loaded from the firmware
@@ -210,10 +225,16 @@ class SensorDevice(models.Model):
         new_device = cls()
 
         # An example string is as below (from one of my (unconfigured) onewire temperature sensors)
-        # {u'a': u'28FF93A7A4150307', u'c': 1, u'b': 0, u'd': 0, u'f': 0, u'i': -1, u'h': 2, u'j': 0.0, u'p': 12, u't': 0}
+        # {'a': '28FF93A7A4150307', 'c': 1, 'b': 0, 'd': 0, 'f': 0, 'i': -1, 'h': 2, 'j': 0.0, 'p': 12, 't': 0}
 
-        # and here is an example string from one of the 'pin' devices:
-        # {u'c': 1, u'b': 0, u'd': 0, u'f': 0, u'i': -1, u'h': 1, u'p': 16, u't': 0, u'x': 1}
+        # Example 'pin' device:
+        # {'c': 1, 'b': 0, 'd': 0, 'f': 0, 'i': -1, 'h': 1, 'p': 16, 't': 0, 'x': 1}
+
+        # Example Kasa smart switch:
+        # {"c":1,"b":0,"f":0,"h":6,"p":0,"x":false,"d":false,"a":"68:FF:7B:A0:3D:03","n":"","r":"Living Room Lamp"}
+
+        # Example Tilt/Inkbird bluetooth temp sensor:
+        # {"c":1,"b":0,"f":0,"h":4,"p":0,"x":false,"d":false,"a":"49:42:06:00:05:08","j":" 0.000","v":" 23.000"}
 
         # The following are defined in the code, but aren't interpreted here (for now)
         # const char DEVICE_ATTRIB_VALUE = 'v';		// print current values
@@ -222,11 +243,11 @@ class SensorDevice(models.Model):
         if 'a' in device_dict:  # const char DEVICE_ATTRIB_ADDRESS = 'a';
             new_device.address = device_dict['a']
 
-        if 'c' in device_dict:  # const char DEVICE_ATTRIB_CHAMBER = 'c';
-            new_device.chamber = device_dict['c']
-
         if 'b' in device_dict:  # const char DEVICE_ATTRIB_BEER = 'b';
             new_device.beer = device_dict['b']
+
+        if 'c' in device_dict:  # const char DEVICE_ATTRIB_CHAMBER = 'c';
+            new_device.chamber = device_dict['c']
 
         if 'd' in device_dict:  # const char DEVICE_ATTRIB_DEACTIVATED = 'd';
             new_device.deactivated = device_dict['d']
@@ -234,27 +255,33 @@ class SensorDevice(models.Model):
         if 'f' in device_dict:  # const char DEVICE_ATTRIB_FUNCTION = 'f';
             new_device.device_function = device_dict['f']
 
-        if 'i' in device_dict:  # const char DEVICE_ATTRIB_INDEX = 'i';
-            new_device.device_index = device_dict['i']
-
         # Not allowing defaulting of new_device.hardware
         # if 'h' in device_dict:  # const char DEVICE_ATTRIB_HARDWARE = 'h';
         new_device.hardware = device_dict['h']
 
+        if 'i' in device_dict:  # const char DEVICE_ATTRIB_INDEX = 'i';
+            new_device.device_index = device_dict['i']
+
         if 'j' in device_dict:  # const char DEVICE_ATTRIB_CALIBRATEADJUST = 'j';	// value to add to temp sensors to bring to correct temperature
             new_device.calibrate_adjust = device_dict['j']
 
-        #  TODO - Determine if I should error out if we don't receive 'p' back in the dict, or should allow defaulting
+        # 'n' is PIO if this is a BREWPI_DS2413 device or child_no if this is a TPLink Kasa Switch
+        if 'n' in device_dict:  # const char DEVICE_ATTRIB_PIO = 'n';
+            if new_device.hardware == 3:  # DS2413
+                new_device.pio = device_dict['n']
+            else:
+                new_device.child_no = device_dict['n']
+
         if 'p' in device_dict:  # const char DEVICE_ATTRIB_PIN = 'p';
             new_device.pin = device_dict['p']
+
+        # Alias is currently returned for Tilts and TPLink Kasa devices
+        if 'r' in device_dict:  # alias = 'r';
+            new_device.alias = device_dict['r']
 
         #  TODO - Determine if I should error out if we don't receive 't' back in the dict, or should allow defaulting
         if 't' in device_dict:  # const char DEVICE_ATTRIB_TYPE = 't';
             new_device.type = device_dict['t']
-
-        # pio is only set if BREWPI_DS2413 is enabled (OneWire actuator support)
-        if 'n' in device_dict:  # const char DEVICE_ATTRIB_PIO = 'n';
-            new_device.pio = device_dict['n']
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
             new_device.invert = int(device_dict['x'])
@@ -330,7 +357,7 @@ class SensorDevice(models.Model):
     def write_config_to_controller(self, uninstall=False):
         self.set_defaults_for_device_function()  # Bring the configuration to a consistent state
 
-        # U:{"i":"0","c":"1","b":"0","f":"5","h":"2","p":"12","a":"28FF93A7A4150307"}
+        # U{"i":"0","c":"1","b":"0","f":"5","h":"4","p":"0","a":"49:42:08:00:04:40"}
         config_dict = {}
 
         # The following options are universal for all hardware types
@@ -344,17 +371,21 @@ class SensorDevice(models.Model):
 
         if self.hardware == 1:  # Set options that are specific to pin devices
             config_dict['x'] = self.invert
-        elif self.hardware == 2:  # Set options that are specific to OneWire temp sensors
+        elif self.hardware == 2 or self.hardware == 5 or self.hardware == 6:  # Set options that are specific to OneWire & Bluetooth temp sensors
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
-
+        elif self.hardware == 7:
+            config_dict['a'] = self.address
+            config_dict['n'] = self.child_no
 
         sent_message = self.controller.send_message("applyDevice", json.dumps(config_dict))
         time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
 
         self.controller.load_sensors_from_device()
         try:
-            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices,
+                                                                          address=self.address, pin=self.pin,
+                                                                          child_no=self.child_no)
         except ValueError:
             if uninstall:
                 # If we were -trying- to uninstall the device, it's a good thing it doesn't show up in installed_devices
@@ -391,14 +422,19 @@ class SensorDevice(models.Model):
         return self.write_config_to_controller(uninstall=True)
 
     @staticmethod
-    def find_device_from_address_or_pin(device_list, address=None, pin=None):
+    def find_device_from_address_or_pin(device_list, address=None, pin=None, child_no=None):
         if device_list is None:
             raise ValueError('No sensors/pins are available for this device')
 
         if address is not None and len(address) > 0:
             for this_device in device_list:
                 if this_device.address == address:
-                    return this_device
+                    if this_device.hardware == 7:
+                        # For TPLink Kasa devices, we have to locate by address + child_no, not just address
+                        if this_device.child_no == child_no:
+                            return this_device
+                    else:
+                        return this_device
             # We weren't able to find a device with that address
             raise ValueError('Unable to find address in device_list')
         elif pin is not None:
@@ -692,7 +728,6 @@ class BrewPiDevice(models.Model):
     # controller
     def load_sensors_from_device(self):
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
-        loop_number = 1
         device_response = self.send_message("getDeviceList", read_response=True)
 
         # If the cache wasn't up to date, request that brewpi-script refresh it
@@ -700,6 +735,7 @@ class BrewPiDevice(models.Model):
             self.request_device_refresh()
 
         # This can take a few seconds. Periodically poll brewpi-script to try to get a response.
+        loop_number = 1
         while device_response == "device-list-not-up-to-date" and loop_number <= 4:
             time.sleep(5)
             device_response = self.send_message("getDeviceList", read_response=True)
