@@ -224,6 +224,7 @@ class SensorFormRevised(forms.Form):
 
     address = forms.CharField(widget=forms.HiddenInput, required=False)
     pin = forms.CharField(widget=forms.HiddenInput)
+    child_no = forms.CharField(widget=forms.HiddenInput, required=False)
     installed = forms.BooleanField(widget=forms.HiddenInput, initial=False, required=False)
 
     # perform_uninstall is just used so we can combine all the actions into this form
@@ -246,6 +247,9 @@ class SensorFormRevised(forms.Form):
         pin = int(cleaned_data.get("pin"))
         address = cleaned_data.get("address")
 
+        if not cleaned_data.get('calibration'):
+            cleaned_data['calibration'] = 0.0
+
         if cleaned_data.get("installed"):
             installed = cleaned_data.get("installed")
         else:
@@ -258,7 +262,7 @@ class SensorFormRevised(forms.Form):
                 # We don't care if we're uninstalling
                 invert = SensorDevice.INVERT_NOT_INVERTED
             else:
-                raise forms.ValidationError("Invert must be specified for non-OneWire devices")
+                raise forms.ValidationError("Invert must be specified for pin devices")
         else:
             invert = SensorDevice.INVERT_NOT_INVERTED
 

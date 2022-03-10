@@ -34,7 +34,7 @@
                 </span>
             </div>
             <div class="row">
-                Heating pin NOT set<br />Heating cannot take place<br />Configure below to correct
+                Heating pin/switch NOT set<br />Heating cannot take place<br />Configure below to correct
             {% endif %}  {# TODO - Add support for OneWire actuators #}
             </div>
         </div>
@@ -57,7 +57,7 @@
                 </span>
             </div>
             <div class="row">
-                Cooling pin NOT set<br />Cooling cannot take place<br />Configure below to correct
+                Cooling pin/switch NOT set<br />Cooling cannot take place<br />Configure below to correct
         {% endif %}  {# TODO - Add support for OneWire actuators #}
             </div>
         </div>
@@ -165,26 +165,21 @@
 {% for this_sensor in available_devices %}
 <div class="row">
     <div class="col-sm-4">
-        {% if this_sensor.hardware == 1 %}{# Pin #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-thermometer-full fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
-        </span>
+        {% if this_sensor.hardware == 1 or this_sensor.hardware == 7 %}{# Pin or TPLink Kasa Switch #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
+            </span>
+        {% elif this_sensor.hardware == 2 or this_sensor.hardware == 5 or this_sensor.hardware == 6 %}{# OneWire Temp Sensor, Inkbird Temp Sensor, or Tilt Hydrometer Temp Sensor #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-thermometer-full fa-stack-1x fa-inverse"></i>
+            </span>
+        {% elif this_sensor.hardware == 3 or this_sensor.hardware == 4 %}{# OneWire 2413 or OneWire 2408 #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+            </span>
         {% endif %}
     </div>
 
@@ -205,6 +200,22 @@
 
         {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
 
+        {% elif this_sensor.hardware == 5 %}{# Inkbird Bluetooth Temp Sensor #}
+            <div class="row col-sm-12">
+                Inkbird Temp Sensor
+            </div>
+            <div class="row col-sm-12">
+                Address {{ this_sensor.address }}
+            </div>
+
+        {% elif this_sensor.hardware == 6 %}{# Tilt Hydrometer Temp Sensor #}
+            <div class="row col-sm-12">
+                Tilt Hydrometer Temp Sensor ({{ this_sensor.alias }})
+            </div>
+        {% elif this_sensor.hardware == 7 %}{# TPLink Kasa Smart Switch #}
+            <div class="row col-sm-12">
+                TPLink Kasa Smart Switch ({{ this_sensor.alias }})
+            </div>
         {% endif %}
 
 
@@ -227,7 +238,7 @@
                         {{ this_sensor.device_form.invert }}<input type="hidden" name="pin" value="{{ this_sensor.pin }}">
                     </div>
                 </div>
-        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
+        {% elif this_sensor.hardware == 2 or this_sensor.hardware == 5 or this_sensor.hardware == 6 %}{# OneWire / Inkbird / Tilt Temp Sensor #}
                 <div class="row">
                     <label for="{{ this_sensor.device_form.device_function.id }}" data-toggle="tooltip" title="{{ this_sensor.device_form.device_function.help_text }}" class="col-sm-4">{{ this_sensor.device_form.device_function.label_tag }}</label>
                     <div class="col-sm-8">{{ this_sensor.device_form.device_function }}</div>
@@ -239,6 +250,16 @@
         {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
 
         {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
+
+        {% elif this_sensor.hardware == 7 %}{# TPLink Kasa Smart Switch #}
+                <div class="row">
+                        <label for="{{ this_sensor.device_form.device_function.id }}" data-toggle="tooltip" title="{{ this_sensor.device_form.device_function.help_text }}" class="col-sm-4">{{ this_sensor.device_form.device_function.label_tag }}</label>
+                        <div class="col-sm-8">
+{#                            <div class="select2-container form-control select select-primary">#}
+                                {{ this_sensor.device_form.device_function }}
+{#                            </div>#}
+                        </div>
+                </div>
 
         {% endif %}
 
@@ -263,26 +284,21 @@
 {% for this_sensor in installed_devices %}
 <div class="row">
     <div class="col-sm-4">
-        {% if this_sensor.hardware == 1 %}{# Pin #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 2 %}{# OneWire Temp Sensor #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-thermometer fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 3 %}{# OneWire 2413 #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
-        </span>
-        {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-circle fa-stack-2x text-info"></i>
-          <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
-        </span>
+        {% if this_sensor.hardware == 1 or this_sensor.hardware == 7 %}{# Pin or TPLink Kasa Switch #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-bolt fa-stack-1x fa-inverse"></i>
+            </span>
+        {% elif this_sensor.hardware == 2 or this_sensor.hardware == 5 or this_sensor.hardware == 6 %}{# OneWire Temp Sensor, Inkbird Temp Sensor, or Tilt Hydrometer Temp Sensor #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-thermometer-full fa-stack-1x fa-inverse"></i>
+            </span>
+        {% elif this_sensor.hardware == 3 or this_sensor.hardware == 4 %}{# OneWire 2413 or OneWire 2408 #}
+            <span class="fa-stack fa-5x">
+              <i class="fa fa-circle fa-stack-2x text-info"></i>
+              <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+            </span>
         {% endif %}
     </div>
     <div class="col-sm-8">
@@ -315,6 +331,47 @@
             OneWire 2413 {# TODO - Add support for OneWire actuators #}
         {% elif this_sensor.hardware == 4 %}{# OneWire 2408 #}
             OneWire 2408 {# TODO - Add support for OneWire actuators #}
+
+        {% elif this_sensor.hardware == 5 %}{# Inkbird Temp Sensor #}
+            <div class="row col-sm-12">
+                Inkbird Bluetooth Temp Sensor
+            </div>
+            <div class="row col-sm-12">
+                Address {{ this_sensor.address }}
+            </div>
+            {% if this_sensor.sensor_value != 0 %}
+                <div class="row col-sm-12">
+                    Temp Value: {{ this_sensor.sensor_value }}
+                </div>
+            {% endif %}
+            {% if this_sensor.calibrate_adjust != 0.0 %}
+                <div class="row col-sm-12">
+                    Temp Calibration Offset: {{ this_sensor.calibrate_adjust }}
+                </div>
+            {% endif %}
+
+        {% elif this_sensor.hardware == 6 %}{# Tilt Hydrometer Temp Sensor #}
+            <div class="row col-sm-12">
+                Tilt Hydrometer Temp Sensor
+            </div>
+            <div class="row col-sm-12">
+                {{ this_sensor.alias }} Color
+            </div>
+            {% if this_sensor.sensor_value != 0 %}
+                <div class="row col-sm-12">
+                    Temp Value: {{ this_sensor.sensor_value }}
+                </div>
+            {% endif %}
+            {% if this_sensor.calibrate_adjust != 0.0 %}
+                <div class="row col-sm-12">
+                    Temp Calibration Offset: {{ this_sensor.calibrate_adjust }}
+                </div>
+            {% endif %}
+
+        {% elif this_sensor.hardware == 7 %}{# TPLink Kasa #}
+            <div class="row col-sm-12">
+                TPLink Kasa Smart Switch - {{ this_sensor.alias }}
+            </div>
         {% endif %}
             <div class="row col-sm-12">
                 Device Function: {{ this_sensor.get_device_function_display }}
