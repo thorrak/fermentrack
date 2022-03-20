@@ -515,12 +515,12 @@ while run:
 
             cs['mode'] = 'f'
             cs['fridgeSet'] = round(newTemp, 2)
-            bg_ser.writeln("j{mode:\"f\", fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
+            cmd = f'"j{{mode:"f", fridgeSet:{json.dumps(cs["fridgeSet"])}}}"'
+            bg_ser.writeln(cmd)
             # Reload dbConfig from the database (in case we were using profiles)
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-            logMessage("Notification: Fridge temperature set to " +
-                       str(cs['fridgeSet']) +
-                       " degrees in web interface")
+            logMessage(f"Notification: Sending command {cmd} to set fridge temperature to {str(cs['fridgeSet'])} "
+                       f"degrees from web interface")
             raise socket.timeout  # go to serial communication to update controller
 
         elif messageType == "setOff":  # cs['mode'] set to OFF
@@ -656,7 +656,7 @@ while run:
         elif messageType == "resetController":
             logMessage("Resetting controller to factory defaults")
             dbConfig = refresh_dbConfig()  # Reload dbConfig from the database
-            bg_ser.writeln("E")
+            bg_ser.writeln("E{\"confirmReset\": true}")
             # request settings from controller, processed later when reply is received
             bg_ser.writeln('s')  # request control settings cs
             bg_ser.writeln('c')  # request control constants cc
