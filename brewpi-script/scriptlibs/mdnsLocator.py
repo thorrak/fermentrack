@@ -3,11 +3,6 @@
 from __future__ import print_function
 import zeroconf
 from time import sleep
-try:
-    from app.models import BrewPiDevice
-    djangoLoaded = True
-except:
-    djangoLoaded = False
 
 
 class zeroconfListener(object):
@@ -15,16 +10,22 @@ class zeroconfListener(object):
         self.brewpi_services = {}
         self.print_on_discover = print_on_discover
 
-    def remove_service(self, zeroconf_obj, type, name):
+    def remove_service(self, zeroconf_obj, service_type, name):
         if self.print_on_discover:
             print("The device at '{}' is no longer available".format(self.brewpi_services[name]['server'][:-1]))
         self.brewpi_services[name] = None
 
-    def add_service(self, zeroconf_obj, type, name):
-        info = zeroconf_obj.get_service_info(type, name)
+    def add_service(self, zeroconf_obj, service_type, name):
+        info = zeroconf_obj.get_service_info(service_type, name)
         self.brewpi_services[name] = info
         if self.print_on_discover:
-            print("Found '{}' running version '{}' of branch '{}' on a {}".format(info.server[:-1], info.properties['version'], info.properties['branch'], info.properties['board']))
+            print(f"Found '{info.server[:-1]}' running version '{info.properties['version']}' of branch "
+                  f"'{info.properties['branch']}' on a {info.properties['board']}")
+
+    def update_service(self, zeroconf_obj, service_type, name):
+        if self.print_on_discover:
+            print("The device at '{}' has updated".format(self.brewpi_services[name]['server'][:-1]))
+        self.brewpi_services[name] = None
 
 
 def locate_brewpi_services():
@@ -52,17 +53,8 @@ def find_mdns_devices():
         found_device['revision'] = services[this_service].properties[b'revision'].decode(encoding='cp437')
         found_device['version'] = services[this_service].properties[b'version'].decode(encoding='cp437')
 
-        if djangoLoaded:  # Breaking this out so that we can have this be a direct clone for brewpi-script
-            try:
-                # If we found the device, then we're golden - it's already installed (in theory)
-                found_device['device'] = BrewPiDevice.objects.get(wifi_host=found_device['mDNSname'])
-                installed_devices.append(found_device.copy())
-            except:
-                found_device['device'] = None
-                available_devices.append(found_device.copy())
-        else:
-            found_device['device'] = None
-            available_devices.append(found_device.copy())
+        found_device['device'] = None
+        available_devices.append(found_device.copy())
 
     return installed_devices, available_devices
 
