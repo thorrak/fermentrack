@@ -11,7 +11,6 @@ from django.db import transaction
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
-from lib.ftcircus.client import CircusException
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
@@ -812,8 +811,9 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
-            transaction.on_commit(active_device.restart_process)
+            messages.success(request, u'Device {} Updated.<br>Please wait up to a minute for the connection to restart'.format(active_device))
+            # TODO - Figure out how to accomplish this with the new process manager
+            # transaction.on_commit(active_device.restart_process)
 
             return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
 
@@ -940,7 +940,7 @@ def debug_connection(request, device_id):
                        'result': 'Device not active'}
     else:
         test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': PASSED,
-                       'result': 'Device active & managed by Circus'}
+                       'result': 'Device active & managed by Fermentrack'}
     tests.append(test_result)
 
 

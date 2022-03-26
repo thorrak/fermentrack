@@ -86,7 +86,7 @@
 
     <h3>Test Descriptions</h3>
     {# TODO - Update this when we actually add device status management in #}
-    <p><b>Device Status Test -</b> Checks that the device status is "active", which is the only status that triggers Circus to manage BrewPi-script for the device. If this test fails, reset the status to "active" and retry.</p>
+    <p><b>Device Status Test -</b> Checks that the device status is "active", which is the only status that triggers the Fermentrack process manager to manage BrewPi-script for the device. If this test fails, reset the status to "active" and retry.</p>
 
     {% if active_device.connection_type == 'serial' %}
 

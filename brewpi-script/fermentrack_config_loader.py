@@ -68,9 +68,9 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         self.wifi_port = brewpi_device.wifi_port
 
         # Log File Path Configuration
-        # TODO - Set this path
-        self.stderr_path = ""  # If left as an empty string, will log to stderr
-        self.stdout_path = ""  # If left as an empty string, will log to stdout
+        # TODO - Make this path relative
+        self.stderr_path = f'/app/log/dev-{brewpi_device.id}-stderr.log'  # If left as an empty string, will log to stderr
+        self.stdout_path = f'/app/log/dev-{brewpi_device.id}-stdout.log'  # If left as an empty string, will log to stdout
 
     def get_profile_temp(self) -> float or None:
         # try:

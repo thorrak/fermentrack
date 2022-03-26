@@ -10,7 +10,6 @@ import app.setup_views
 import app.beer_views
 import app.api.lcd
 import app.api.clog
-import app.circus_views
 
 import firmware_flash.urls
 import gravity.urls
@@ -77,12 +76,6 @@ urlpatterns = [
 
     url(r'^devices/(?P<device_id>\d{1,20})/debug_connection/$', app.views.debug_connection, name='device_debug_connection'),
 
-    # Circus processmanager device views, we add device_name so we don't have to do another query
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/start/$', app.circus_views.start_brewpi_device, name='device_start'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/remove/$', app.circus_views.remove_brewpi_device, name='device_remove'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/status/$', app.circus_views.status_brewpi_device, name='device_status'),
-    
 
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),

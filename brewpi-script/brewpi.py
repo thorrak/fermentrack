@@ -562,7 +562,7 @@ def BrewPiScript(config_obj):
                 # something is wrong: controller is not responding to data requests
                 logMessage("Error: controller is not responding to new data requests. Exiting.")
     
-                # In this case, we can rely on either circus (Fermentrack) or cron (brewpi-www) relaunching this script.
+                # In this case, we can rely on the process manager relaunching this script.
                 # It's better to fail loudly (in this case with an exit) than silently.
                 sys.exit(1)
     
