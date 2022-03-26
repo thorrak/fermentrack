@@ -61,3 +61,13 @@ services:
     volumes:
       - fermentrack_data:/data:z
     network_mode: "host"
+
+  # huey is the task queue
+#  huey:
+#    <<: *django
+#    image: fermentrack_huey
+#    command: /start-huey
+#    restart: unless-stopped
+#    privileged: true
+#    depends_on:
+#      - redis

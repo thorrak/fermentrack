@@ -52,6 +52,10 @@ COPY --chown=django:django ./compose/production/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
+COPY ./compose/production/django/daemons/huey/start /start-huey
+RUN sed -i 's/\r$//g' /start-huey
+RUN chmod +x /start-huey
+
 COPY --chown=django:django . /app
 
 # Add the django user to the container's dialout group
