@@ -22,6 +22,8 @@ RUN apt-get update \
   # (I am not a fan of vim. sorry.)
   # TODO - Remove this
   && apt-get install -y nano \
+  # supervisor to run the daemons without duplicating the container \
+  && apt-get install -y supervisor \
   # all the bluetooth libs
   && apt-get install -y bluez libcap2-bin libbluetooth3 libbluetooth-dev \
   # We need avahi-utils and libnss-mdns for mDNS support
@@ -55,6 +57,10 @@ RUN chmod +x /start
 COPY ./compose/production/django/daemons/huey/start /start-huey
 RUN sed -i 's/\r$//g' /start-huey
 RUN chmod +x /start-huey
+
+# Prep supervisor
+RUN mkdir -p /var/log/supervisor
+COPY ./compose/production/django/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY --chown=django:django . /app
 
