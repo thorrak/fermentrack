@@ -910,7 +910,7 @@ def almost_json_view(request, device_id, beer_id):
         f = open(filename, 'r')
         wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
         response = FileResponse(wrapper, content_type="application/json")
-        response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+        # response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response
     else:
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
