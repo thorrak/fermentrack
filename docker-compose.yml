@@ -5,6 +5,7 @@ volumes:
   postgres_data_backups: {}
   fermentrack_data: {}
   fermentrack_logs: {}
+  fermentrack_backups: {}
 
 services:
   django: &django
@@ -19,6 +20,7 @@ services:
       - /dev:/dev
       - fermentrack_data:/app/data:z
       - fermentrack_logs:/app/log:z
+      - fermentrack_backups:/app/backup_files
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
     env_file:
@@ -61,13 +63,3 @@ services:
     volumes:
       - fermentrack_data:/data:z
     network_mode: "host"
-
-  # huey is the task queue
-#  huey:
-#    <<: *django
-#    image: fermentrack_huey
-#    command: /start-huey
-#    restart: unless-stopped
-#    privileged: true
-#    depends_on:
-#      - redis

@@ -35,3 +35,9 @@ whitenoise==5.2.0  # https://github.com/evansd/whitenoise
 cryptography==3.4.6  # For the latest versions of esptool
 
 uvicorn[standard]==0.13.4  # https://github.com/encode/uvicorn
+
+
+# backup requirements
+tarsafe==0.0.3
+django-downloadview==2.1.1
+django-model-utils==4.1.1  # https://github.com/jazzband/django-model-utils
