@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -909,7 +909,7 @@ def almost_json_view(request, device_id, beer_id):
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')
         wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
-        response = HttpResponse(wrapper, content_type="application/json")
+        response = StreamingHttpResponse(wrapper, content_type="application/json")
         response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response
     else:
