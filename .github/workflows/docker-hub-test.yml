@@ -3,7 +3,7 @@ name: 'Build & Push to Docker Hub'
 on:
   push:
     branches:
-      - pyzmq
+      - circus
 
 jobs:
   buildx:
