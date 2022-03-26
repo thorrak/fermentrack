@@ -31,6 +31,9 @@ jobs:
         with:
           version: latest
       -
+        name: Pull Fermentrack from Docker Hub
+        run: docker pull jdbeeler/fermentrack:testing
+      -
         name: Build dockerfile (armv7/amd64/arm64)
         run: |
           docker buildx build \
