@@ -31,7 +31,10 @@ jobs:
         with:
           version: latest
       -
-        name: Pull Fermentrack from Docker Hub
+        name: Log in to GitHub Packages
+        run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u ${{ secrets.GH_USER }} --password-stdin
+      -
+        name: Pull Fermentrack Image
         run: docker pull jdbeeler/fermentrack:testing
       -
         name: Build dockerfile (armv7/amd64/arm64)
@@ -40,4 +43,6 @@ jobs:
           --platform=linux/arm/v7,linux/amd64,linux/i386 \
           --output "type=image,push=true" \
           --file ./compose/production/django/Dockerfile . \
-          --tag jdbeeler/fermentrack:testing
+          --tag jdbeeler/fermentrack:testing \
+          --cache-from ghcr.io/thorrak/fermentrack:testing \
+          --cache-to ghcr.io/thorrak/fermentrack:testing
