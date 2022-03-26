@@ -121,23 +121,23 @@ def run():
         treat_query_as_boolean=False  # For BrewPi we have individual brewpi-script instances for each controller
     )
 
-    tilt_process_spawner = ProcessManager(
-        prefix="tilt-",
-        device_type="Tilt",
-        command_tmpl=TILT_SCRIPT_CMD_TEMPLATE,
-        circus_endpoint=CIRCUS_ENDPOINT,
-        logfilepath=fermentrack_log_path,
-        log=LOG,
-        query_db_func=TiltConfiguration_query_db,
-        debug=args.debug,
-        treat_query_as_boolean=True  # For tilts, we only have a single process manager rather than individual ones
-    )
+    # tilt_process_spawner = ProcessManager(
+    #     prefix="tilt-",
+    #     device_type="Tilt",
+    #     command_tmpl=TILT_SCRIPT_CMD_TEMPLATE,
+    #     circus_endpoint=CIRCUS_ENDPOINT,
+    #     logfilepath=fermentrack_log_path,
+    #     log=LOG,
+    #     query_db_func=TiltConfiguration_query_db,
+    #     debug=args.debug,
+    #     treat_query_as_boolean=True  # For tilts, we only have a single process manager rather than individual ones
+    # )
 
     #### Actually run the process managers
     # Replaces run_forever for all the processes
     while 1:
         brewpi_process_spawner.startstop_once()
-        tilt_process_spawner.startstop_once()
+        # tilt_process_spawner.startstop_once()
         time.sleep(SLEEP_INTERVAL)
 
 

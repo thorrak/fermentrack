@@ -4,17 +4,18 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-export DOCKER_CONTAINER_VERSION="1"
+export DOCKER_CONTAINER_VERSION="2"
 
 python /app/manage.py collectstatic --noinput
 # TODO - Determine if I really want this here
 python /app/manage.py migrate --noinput
 
 
-#/usr/local/bin/gunicorn config.asgi --bind 0.0.0.0:5000 --chdir=/app -k uvicorn.workers.UvicornWorker
-
 # We're going to launch circus-docker directly rather than relying on the cron scripts. This might not work with the
 # upgrade workflow, but we'll find out!
-cd /app
-circusd circus-docker.ini
+#cd /app
+#circusd circus-docker.ini
 
+#/usr/local/bin/gunicorn fermentrack_django.asgi --bind 0.0.0.0:5000 --chdir=/app -k uvicorn.workers.UvicornWorker
+
+/usr/bin/supervisord

@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'firmware_flash.apps.AppConfig',
     'gravity.apps.GravityAppConfig',
     'external_push.apps.AppConfig',
+    'backups.apps.BackupsConfig',
     'constance',
     'constance.backends.database',
     'huey.contrib.djhuey',
@@ -185,6 +186,14 @@ MEDIA_ROOT = ROOT_DIR / 'media'
 
 DATA_URL = '/data/'
 DATA_ROOT = ROOT_DIR / 'data'
+
+
+# Backups
+# ------------------------------------------------------------------------------
+BACKUPS_EXCLUDE_APPS = ['backups', 'auth.permission', 'contenttypes', 'firmware_flash', 'sessions', 'admin.logentry']  # noqa: Apps exist
+BACKUP_DIR = ROOT_DIR / "backup_files"
+BACKUP_STAGING_DIR = BACKUP_DIR / "staging"
+BACKUP_DATA_DUMP_FILE_NAME = "fermentrack_data.json"
 
 
 # Constance configuration
