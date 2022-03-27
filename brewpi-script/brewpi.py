@@ -576,7 +576,7 @@ def BrewPiScript(config_obj):
                         if line[0] == 'T':
                             # print it to stdout
                             if output_temperature:
-                                print(time.strftime("%b %d %Y %H:%M:%S  ") + line[2:])
+                                print(time.strftime("%b %d %Y %H:%M:%S  ") + line[2:], flush=True)
     
                             # store time of last new data for interval check
                             prev_data_time = time.time()

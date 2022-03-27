@@ -36,7 +36,7 @@ def addSlash(path):
 
 
 def printStdErr(*objs):
-    print("", *objs, file=sys.stderr)
+    print("", *objs, file=sys.stderr, flush=True)
 
 
 def logMessage(message):

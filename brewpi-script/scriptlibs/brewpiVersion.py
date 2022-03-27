@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import  print_function
-
 import json
 import sys
 import time
@@ -29,19 +27,19 @@ def getVersionFromSerial(ser):
     oldTimeOut = ser.timeout
     startTime = time.time()
     if not ser.isOpen():
-        print("\nCannot get version from serial port that is not open.")
+        print("\nCannot get version from serial port that is not open.", flush=True)
 
     try:
         ser.timeout = 1
     except SerialException:
-        print("Could not configure port")
+        print("Could not configure port", flush=True)
         exit(1)
 
     ser.write(b'n')
 
     while retries < 10:
         retry = True
-        while 1: # Read all lines from serial
+        while 1:  # Read all lines from serial
             loopTime = time.time()
             line = None
             try:
@@ -151,14 +149,14 @@ class AvrInfo:
         try:
             j = json.loads(s)
         except json.decoder.JSONDecodeError as e:
-            print("JSON decode error: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("JSON decode error: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
         except UnicodeDecodeError as e:
-            print("Unicode decode error: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("Unicode decode error: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
         except TypeError as e:
-            print("TypeError: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("TypeError: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
 
         self.family = None
         self.board_name = None

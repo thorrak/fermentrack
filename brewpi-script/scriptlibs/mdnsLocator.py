@@ -1,6 +1,5 @@
 # This is the same exact file as brewpi-script/mdnsLocator.py
 
-from __future__ import print_function
 import zeroconf
 from time import sleep
 
