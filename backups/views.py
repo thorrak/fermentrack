@@ -98,7 +98,7 @@ class BackupDeleteView(PermissionRequiredMixin, SuccessMessageDeleteView):
 class RestoreView(PermissionRequiredMixin, FormView):
     template_name = 'backups/backup_restore.html'
     form_class = RestoreUploadFileForm
-    success_url = reverse_lazy('taplist:combined_list')
+    success_url = reverse_lazy('siteroot')
     permission_required = 'backups.restore_backup'  # Custom permission
 
     def form_valid(self, form):

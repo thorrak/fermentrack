@@ -3,6 +3,7 @@ from django.contrib import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import path, include
 
 import app.views
 import app.profile_views
@@ -116,6 +117,8 @@ urlpatterns = [
     # Site-specific views (Help, Settings, etc.)
     url(r'site/settings/$', app.views.site_settings, name="site_settings"),
     url(r'site/help/$', app.views.site_help, name="site_help"),
+
+    path("backups/", include("backups.urls", namespace="backups")),
 
 ] + static(settings.DATA_URL, document_root=settings.DATA_ROOT) + \
               firmware_flash.urls.firmware_flash_urlpatterns + gravity.urls.gravity_urlpatterns + \

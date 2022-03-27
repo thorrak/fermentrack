@@ -21,6 +21,11 @@
 {# Load the push targets list template from the external_push app #}
 {% include 'external_push/push_target_list_embeddable.html' %}
 
+<h3 class="form-header">Manage Backups</h3>
+<p>
+    <a href="{% url 'backups:backup_list' %}" class="btn btn-large btn-lg btn-primary">List/Create Backups</a>
+    <a href="{% url 'backups:backup_restore' %}" class="btn btn-large btn-lg btn-primary">Restore from Backup</a>
+</p>
 
 {% endblock %}
 

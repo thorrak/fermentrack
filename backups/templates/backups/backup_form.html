@@ -1,10 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
 
-</body>
-</html>
+{% block title %}{{ view.action|default:"Add" }} Backup{% endblock %}
+
+{% block content %}
+    <h1>{{ view.action|default:"Add" }} Backup</h1>
+
+
+    <div class="row">
+        <div class="col-xl-8">
+            <form method="post" action="." enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="card-body">
+                {{ form }}
+              </div>
+
+              <p>
+                Once a backup is created, a compressed archive will be generated containing the data in the Fermentrack
+                database and the files in the data folder - including beer log CSVs. This archive can then be downloaded
+                locally for use in restoring Fermentrack at a later point.
+              </p>
+
+                <p>
+                    <button type="submit" class="btn btn-sm btn-primary">{{ view.action|default:"Add" }} Backup</button>
+                </p>
+            </form>
+        </div>
+    </div>
+
+
+    <p>
+        <a href="{% url "backups:backup_list" %}" type="button" class="btn btn-sm btn-success">Return to List</a>
+    </p>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}
