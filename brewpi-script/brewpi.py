@@ -112,9 +112,9 @@ def BrewPiScript(config_obj):
         exit(0)
 
     if config_obj.stdout_path:
-        sys.stdout = open(config_obj.stdout_path, 'w', 0)  # overwrite stdout file on script start, unbuffered
+        sys.stdout = open(config_obj.stdout_path, 'wb', 0)  # overwrite stdout file on script start, unbuffered
     if config_obj.stderr_path:
-        sys.stderr = open(config_obj.stderr_path, 'a', 0)  # append to stderr file, unbuffered
+        sys.stderr = open(config_obj.stderr_path, 'ab', 0)  # append to stderr file, unbuffered
 
     # bytes are read from nonblocking serial into this buffer and processed when the buffer contains a full line.
     ser = BrewPiUtil.setupSerial(dbConfig=config_obj, time_out=0)

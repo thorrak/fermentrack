@@ -3,6 +3,7 @@
 
 import os
 import sys
+from pathlib import Path
 from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -68,9 +69,9 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         self.wifi_port = brewpi_device.wifi_port
 
         # Log File Path Configuration
-        # TODO - Make this path relative
-        self.stderr_path = f'/app/log/dev-{brewpi_device.id}-stderr.log'  # If left as an empty string, will log to stderr
-        self.stdout_path = f'/app/log/dev-{brewpi_device.id}-stdout.log'  # If left as an empty string, will log to stdout
+        log_path = Path(__file__).parents[1] / "log"
+        self.stderr_path = f'{log_path}/dev-{brewpi_device.id}-stderr.log'  # If left as an empty string, will log to stderr
+        self.stdout_path = f'{log_path}/dev-{brewpi_device.id}-stdout.log'  # If left as an empty string, will log to stdout
 
     def get_profile_temp(self) -> float or None:
         # try:
