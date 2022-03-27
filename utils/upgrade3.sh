@@ -93,7 +93,8 @@ stop_supervisord () {
 
 reload_supervisord () {
   supervisorctl reread
-  supervisorctl update
+#  supervisorctl update
+  supervisorctl restart
 }
 
 
@@ -119,8 +120,8 @@ printinfo "Waiting 1 second for Fermentrack to send updates if triggered from th
 sleep 1s
 
 # Next, kill the running Fermentrack instance using supervisord
-printinfo "Stopping supervisord..."
-stop_supervisord
+#printinfo "Stopping supervisord..."
+#stop_supervisord
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
@@ -165,5 +166,5 @@ printinfo "Relaunching supervisord..."
 
 
 reload_supervisord
-start_supervisord
+#start_supervisord
 printinfo "Complete!"
