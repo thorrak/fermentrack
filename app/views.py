@@ -16,6 +16,7 @@ from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
 import json, datetime, pytz, os, random, sys, subprocess
+from multiprocessing import Process
 
 import fermentrack_django.settings as settings
 
@@ -511,7 +512,7 @@ def github_trigger_upgrade(request, variant=""):
             if settings.USE_DOCKER:
                 variant_flags += "-d "
 
-            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+            cmd = f"setsid utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
             messages.success(request, "Triggered an upgrade from GitHub")
