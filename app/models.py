@@ -1931,6 +1931,8 @@ class FermentationProfilePoint(models.Model):
 
 # The old (0.2.x/Arduino) Control Constants Model
 class OldControlConstants(models.Model):
+    # class Meta:
+    #     managed = False
 
     tempSetMin = models.FloatField(
         verbose_name="Min Temperature",
