@@ -1,7 +1,7 @@
 -r base.txt
 
-#gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
-#sentry-sdk==0.19.1  # https://github.com/getsentry/sentry-python
+uvloop==0.15.2
+gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
 
 # Django
 # ------------------------------------------------------------------------------

@@ -15,16 +15,22 @@ class zeroconfListener(object):
         self.brewpi_services = {}
         self.print_on_discover = print_on_discover
 
-    def remove_service(self, zeroconf_obj, type, name):
+    def remove_service(self, zeroconf_obj, service_type, name):
         if self.print_on_discover:
             print("The device at '{}' is no longer available".format(self.brewpi_services[name]['server'][:-1]))
         self.brewpi_services[name] = None
 
-    def add_service(self, zeroconf_obj, type, name):
-        info = zeroconf_obj.get_service_info(type, name)
+    def add_service(self, zeroconf_obj, service_type, name):
+        info = zeroconf_obj.get_service_info(service_type, name)
         self.brewpi_services[name] = info
         if self.print_on_discover:
-            print("Found '{}' running version '{}' of branch '{}' on a {}".format(info.server[:-1], info.properties['version'], info.properties['branch'], info.properties['board']))
+            print(f"Found '{info.server[:-1]}' running version '{info.properties['version']}' of branch "
+                  f"'{info.properties['branch']}' on a {info.properties['board']}")
+
+    def update_service(self, zeroconf_obj, service_type, name):
+        if self.print_on_discover:
+            print("The device at '{}' has updated".format(self.brewpi_services[name]['server'][:-1]))
+        self.brewpi_services[name] = None
 
 
 def locate_brewpi_services():

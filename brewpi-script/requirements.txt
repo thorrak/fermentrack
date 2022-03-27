@@ -1,0 +1,2 @@
+pyserial==3.5
+zeroconf==0.38.4

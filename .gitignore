@@ -190,3 +190,4 @@ collected_static/*
 backup_files/*.tar.xz
 backup_files/staging/fermentrack_data.json
 /fermentrack_data.json
+/utils/upgrade_lock

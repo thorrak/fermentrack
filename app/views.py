@@ -1,22 +1,22 @@
+from pathlib import Path
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
-from lib.ftcircus.client import CircusException
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
-import json, datetime, pytz, os, random, sys, subprocess
+import datetime, os, random, subprocess
 
 import fermentrack_django.settings as settings
 
@@ -24,7 +24,6 @@ import fermentrack_django.settings as settings
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
-
 
 
 def error_notifications(request):
@@ -268,13 +267,13 @@ def sensor_list(request, device_id):
     if devices_loaded:
         for this_device in active_device.available_devices:
             data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin}
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin}
             this_device.device_form = device_forms.SensorFormRevised(data)
 
         for this_device in active_device.installed_devices:
             data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin, 'installed': True,
-                    'perform_uninstall': True}
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin,
+                    'installed': True, 'perform_uninstall': True}
             this_device.device_form = device_forms.SensorFormRevised(data)
     else:
         # If we weren't able to load devices, we should have set an error message instead. Display it.
@@ -282,8 +281,8 @@ def sensor_list(request, device_id):
         messages.error(request, active_device.error_message)
 
     return render(request, template_name="pin_list.html",
-                               context={'available_devices': active_device.available_devices, 'active_device': active_device,
-                                        'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
+                  context={'available_devices': active_device.available_devices, 'active_device': active_device,
+                           'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
 
 @login_required
@@ -306,10 +305,10 @@ def sensor_config(request, device_id):
             try:
                 if form.data['installed']:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.installed_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
                 else:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.available_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
             except ValueError:
                 messages.error(request, "Unable to confirm the pin/address on your controller. Check to ensure that " +
                                "your controller is properly connected, and reattempt assignment.")
@@ -480,6 +479,8 @@ def github_trigger_upgrade(request, variant=""):
     tags = git_integration.get_tag_info()
     local_versions = git_integration.get_local_version_numbers()
 
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
     else:
@@ -488,6 +489,9 @@ def github_trigger_upgrade(request, variant=""):
     if request.POST:
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        elif lockfile.exists():
+            messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
+                                    "delete the upgrade lock using the function below.")
         else:
             cmds = {}
 
@@ -512,7 +516,7 @@ def github_trigger_upgrade(request, variant=""):
             if settings.USE_DOCKER:
                 variant_flags += "-d "
 
-            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+            cmd = f"setsid utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
             messages.success(request, "Triggered an upgrade from GitHub")
@@ -526,7 +530,21 @@ def github_trigger_upgrade(request, variant=""):
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching,
-                                        'local_versions': local_versions})
+                                        'local_versions': local_versions, 'lockfile_exists': lockfile.exists()})
+
+@login_required
+@site_is_configured
+def delete_upgrade_lock_file(request, variant=""):
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
+    if not lockfile.exists():
+        messages.info(request, "Unable to delete lock file - file does not exist")
+    else:
+        os.remove(lockfile)
+        messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
+
+    return redirect('github_trigger_upgrade')
+
 
 @login_required
 @site_is_configured
@@ -812,8 +830,9 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
-            transaction.on_commit(active_device.restart_process)
+            messages.success(request, u'Device {} Updated.<br>Please wait up to a minute for the connection to restart'.format(active_device))
+            # TODO - Figure out how to accomplish this with the new process manager
+            # transaction.on_commit(active_device.restart_process)
 
             return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
 
@@ -909,8 +928,8 @@ def almost_json_view(request, device_id, beer_id):
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')
         wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
-        response = HttpResponse(wrapper, content_type="application/json")
-        response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+        response = FileResponse(wrapper, content_type="application/json")
+        # response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response
     else:
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
@@ -940,7 +959,7 @@ def debug_connection(request, device_id):
                        'result': 'Device not active'}
     else:
         test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': PASSED,
-                       'result': 'Device active & managed by Circus'}
+                       'result': 'Device active & managed by Fermentrack'}
     tests.append(test_result)
 
 
