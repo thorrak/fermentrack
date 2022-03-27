@@ -1,10 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
 
-</body>
-</html>
+{% block title %}Restore from Backup{% endblock %}
+
+{% block content %}
+    <h1>Restore from Backup</h1>
+
+
+
+    <form method="post" action="." enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form }}
+        <div class="row">
+          <p>
+            To restore from a previous backup of Fermentrack, select the backup file you have saved locally and
+            choose "Restore from Backup" below.
+          </p>
+          <p>
+            NOTE - Restoring from a backup is primarily intended to be done to fresh installations of Fermentrack,
+            as existing data will not be deleted from the database. If you restore from a backup into an
+            installation of Fermentrack that is already in use, the two data sets will be merged - with data from
+            the backup taking precedence over data that already exists in the database.
+          </p>
+            <p>
+                As restored data includes accounts, this may result in you being locked out of your installation of
+                Fermentrack. If this happens, simply use the "docker-create-superuser.sh" script in fermentrack-tools
+                to regain access.
+            </p>
+        </div>
+
+        <p>
+        <button type="submit" class="btn btn-sm btn-primary">Restore from Backup</button>
+        </p>
+    </form>
+
+    <p>
+        <a href="{% url "backups:backup_list" %}" type="button" class="btn btn-sm btn-success">Return to List</a>
+    </p>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}
