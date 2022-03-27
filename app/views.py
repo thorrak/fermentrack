@@ -14,7 +14,7 @@ from .decorators import site_is_configured, login_if_required_for_dashboard
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
-import json, datetime, pytz, os, random, sys, subprocess
+import datetime, os, random, subprocess
 
 import fermentrack_django.settings as settings
 
