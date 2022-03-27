@@ -516,7 +516,7 @@ def github_trigger_upgrade(request, variant=""):
             if settings.USE_DOCKER:
                 variant_flags += "-d "
 
-            cmd = f"setsid utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
             messages.success(request, "Triggered an upgrade from GitHub")
