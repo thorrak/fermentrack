@@ -4,7 +4,6 @@
 BRANCH="master"
 SILENT=0
 TAG=""
-CIRCUSCTL="python3 -m circus.circusctl --timeout 10"
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 FORCE_UPGRADE=0
 USE_DOCKER=0
@@ -87,36 +86,19 @@ shift $((OPTIND-1))
 
 
 
-stop_circus () {
-  if [ ${USE_DOCKER} -eq 1 ]
-  then
-    # For docker installs, the circus endpoint is in a different spot
-    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 stop &>> log/upgrade.log
-  else
-    python3 -m circus.circusctl --timeout 10 stop &>> log/upgrade.log
-  fi
+stop_supervisord () {
+  supervisorctl stop all
 }
 
 
-reload_circus () {
-  if [ ${USE_DOCKER} -eq 1 ]
-  then
-    # For docker installs, the circus endpoint is in a different spot
-    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 reloadconfig &>> log/upgrade.log
-  else
-    python3 -m circus.circusctl --timeout 10 reloadconfig &>> log/upgrade.log
-  fi
+reload_supervisord () {
+  supervisorctl reread
+  supervisorctl update
 }
 
 
-start_circus () {
-  if [ ${USE_DOCKER} -eq 1 ]
-  then
-    # For docker installs, the circus endpoint is in a different spot
-    python3 -m circus.circusctl --timeout 10 --endpoint tcp://127.0.0.1:7555 start &>> log/upgrade.log
-  else
-    python3 -m circus.circusctl --timeout 10 start &>> log/upgrade.log
-  fi
+start_supervisord () {
+  supervisorctl start all
 }
 
 
@@ -136,9 +118,9 @@ fi
 printinfo "Waiting 1 second for Fermentrack to send updates if triggered from the web..."
 sleep 1s
 
-# Next, kill the running Fermentrack instance using circus
-printinfo "Stopping circus..."
-stop_circus
+# Next, kill the running Fermentrack instance using supervisord
+printinfo "Stopping supervisord..."
+stop_supervisord
 
 # Pull the latest version of the script from GitHub
 printinfo "Updating from git..."
@@ -178,14 +160,10 @@ printinfo "Running manage.py collectstatic..."
 python3 manage.py collectstatic --noinput >> /dev/null
 
 
-# Finally, relaunch the Fermentrack instance using circus
-printinfo "Relaunching circus..."
+# Finally, relaunch the Fermentrack instance using supervisord
+printinfo "Relaunching supervisord..."
 
-#if [ ${FORCE_UPGRADE} -eq 1 ]
-#then
-#  ~/fermentrack/utils/updateCronCircus.sh startifstopped
-#fi
 
-reload_circus
-start_circus
+reload_supervisord
+start_supervisord
 printinfo "Complete!"
