@@ -107,11 +107,11 @@ rm log/upgrade.log
 
 printinfo "Triggering upgrade from branch ${BRANCH}"
 
-if [ ${USE_DOCKER} -eq 0 ]
-then
-  # For non-docker installs, we need to launch the virtualenv
-  source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
-fi
+#if [ ${USE_DOCKER} -eq 0 ]
+#then
+#  # For non-docker installs, we need to launch the virtualenv
+#  source ~/venv/bin/activate  # Assuming the directory based on a normal install with Fermentrack-tools
+#fi
 
 # Given that this script can be called by the webapp proper, give it 2 seconds to finish sending a reply to the
 # user if he/she initiated an upgrade through the webapp.
