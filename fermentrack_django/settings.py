@@ -190,7 +190,7 @@ DATA_ROOT = ROOT_DIR / 'data'
 
 # Backups
 # ------------------------------------------------------------------------------
-BACKUPS_EXCLUDE_APPS = ['backups', 'auth.permission', 'contenttypes', 'firmware_flash', 'sessions', 'admin.logentry', 'huey', 'database.constance']  # noqa: Apps exist
+BACKUPS_EXCLUDE_APPS = ['backups', 'auth.permission', 'contenttypes', 'firmware_flash', 'sessions', 'admin.logentry', 'database.constance']  # noqa: Apps exist
 BACKUP_DIR = ROOT_DIR / "backup_files"
 BACKUP_STAGING_DIR = BACKUP_DIR / "staging"
 BACKUP_DATA_DUMP_FILE_NAME = "fermentrack_data.json"
