@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -6,17 +8,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
-from lib.ftcircus.client import CircusException
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
-import json, datetime, pytz, os, random, sys, subprocess
+import datetime, os, random, subprocess
 
 import fermentrack_django.settings as settings
 
@@ -24,7 +24,6 @@ import fermentrack_django.settings as settings
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
-
 
 
 def error_notifications(request):
@@ -480,6 +479,8 @@ def github_trigger_upgrade(request, variant=""):
     tags = git_integration.get_tag_info()
     local_versions = git_integration.get_local_version_numbers()
 
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
     else:
@@ -488,6 +489,9 @@ def github_trigger_upgrade(request, variant=""):
     if request.POST:
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        elif lockfile.exists():
+            messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
+                                    "delete the upgrade lock using the function below.")
         else:
             cmds = {}
 
@@ -512,7 +516,7 @@ def github_trigger_upgrade(request, variant=""):
             if settings.USE_DOCKER:
                 variant_flags += "-d "
 
-            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+            cmd = f"setsid utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
 
             subprocess.call(cmd, shell=True)
             messages.success(request, "Triggered an upgrade from GitHub")
@@ -526,7 +530,21 @@ def github_trigger_upgrade(request, variant=""):
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching,
-                                        'local_versions': local_versions})
+                                        'local_versions': local_versions, 'lockfile_exists': lockfile.exists()})
+
+@login_required
+@site_is_configured
+def delete_upgrade_lock_file(request, variant=""):
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
+    if not lockfile.exists():
+        messages.info(request, "Unable to delete lock file - file does not exist")
+    else:
+        os.remove(lockfile)
+        messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
+
+    return redirect('github_trigger_upgrade')
+
 
 @login_required
 @site_is_configured
@@ -812,8 +830,9 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
-            transaction.on_commit(active_device.restart_process)
+            messages.success(request, u'Device {} Updated.<br>Please wait up to a minute for the connection to restart'.format(active_device))
+            # TODO - Figure out how to accomplish this with the new process manager
+            # transaction.on_commit(active_device.restart_process)
 
             return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
 
@@ -940,7 +959,7 @@ def debug_connection(request, device_id):
                        'result': 'Device not active'}
     else:
         test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': PASSED,
-                       'result': 'Device active & managed by Circus'}
+                       'result': 'Device active & managed by Fermentrack'}
     tests.append(test_result)
 
 

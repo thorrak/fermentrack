@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import  print_function
-
 import json
 import sys
 import time
@@ -29,19 +27,19 @@ def getVersionFromSerial(ser):
     oldTimeOut = ser.timeout
     startTime = time.time()
     if not ser.isOpen():
-        print("\nCannot get version from serial port that is not open.")
+        print("\nCannot get version from serial port that is not open.", flush=True)
 
     try:
         ser.timeout = 1
     except SerialException:
-        print("Could not configure port")
+        print("Could not configure port", flush=True)
         exit(1)
 
     ser.write(b'n')
 
     while retries < 10:
         retry = True
-        while 1: # Read all lines from serial
+        while 1:  # Read all lines from serial
             loopTime = time.time()
             line = None
             try:
@@ -105,9 +103,8 @@ class AvrInfo:
     board_spark_core = "core"
     board_photon = "photon"
     board_esp8266 = "esp8266"
-    board_esp32 = "esp32"
 
-    boards = {'l': board_leonardo, 's': board_standard, 'm': board_mega, 'x': board_spark_core, 'y': board_photon, 'e': board_esp8266, '3': board_esp32}
+    boards = {'l': board_leonardo, 's': board_standard, 'm': board_mega, 'x': board_spark_core, 'y': board_photon, 'e': board_esp8266}
 
     family_arduino = "Arduino"
     family_spark = "Particle"
@@ -118,16 +115,14 @@ class AvrInfo:
                 board_mega: family_arduino,
                 board_spark_core: family_spark,
                 board_photon: family_spark,
-                board_esp8266: family_esp8266,
-                board_esp32: family_esp8266, }
+                board_esp8266: family_esp8266}
 
     board_names = { board_leonardo: "Leonardo",
                 board_standard: "Uno",
                 board_mega: "Mega",
                 board_spark_core: "Core",
                 board_photon: "Photon",
-                board_esp8266: "ESP8266",
-                board_esp32: "ESP32" }
+                board_esp8266: "ESP8266"}
 
     def __init__(self, s=None):
         self.version = LooseVersion("0.0.0")
@@ -154,14 +149,14 @@ class AvrInfo:
         try:
             j = json.loads(s)
         except json.decoder.JSONDecodeError as e:
-            print("JSON decode error: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("JSON decode error: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
         except UnicodeDecodeError as e:
-            print("Unicode decode error: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("Unicode decode error: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
         except TypeError as e:
-            print("TypeError: %s" % str(e), file=sys.stderr)
-            print("Could not parse version number: " + s, file=sys.stderr)
+            print("TypeError: %s" % str(e), file=sys.stderr, flush=True)
+            print("Could not parse version number: " + s, file=sys.stderr, flush=True)
 
         self.family = None
         self.board_name = None

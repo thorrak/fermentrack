@@ -18,8 +18,6 @@ from decimal import Decimal
 
 from . import udev_integration
 
-from lib.ftcircus.client import CircusMgr, CircusException
-
 from fermentrack_django.settings import USE_DOCKER
 
 logger = logging.getLogger(__name__)
@@ -503,8 +501,8 @@ class BrewPiDevice(models.Model):
     STATUS_UPDATING = 'updating'
 
     STATUS_CHOICES = (
-        (STATUS_ACTIVE, 'Active, Managed by Circus'),
-        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),
+        (STATUS_ACTIVE, 'Active, Managed by Fermentrack'),
+        (STATUS_UNMANAGED, 'Active, NOT managed by Fermentrack'),
         (STATUS_DISABLED, 'Explicitly disabled, cannot be launched'),
         (STATUS_UPDATING, 'Disabled, pending an update'),
     )
@@ -972,49 +970,8 @@ class BrewPiDevice(models.Model):
         except TypeError:
             return None
 
-    def circus_parameter(self) -> int:
-        """Returns the parameter used by Circus to track this device's processes"""
-        return self.id
-
-    def _get_circusmgr(self) -> CircusMgr:
-        if USE_DOCKER:
-            return CircusMgr(circus_endpoint="tcp://127.0.0.1:7555")
-        else:
-            return CircusMgr()
-
-    def start_process(self):
-        """Start this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.start(name=circus_process_name)
-
-    def remove_process(self):
-        """Remove this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.remove(name=circus_process_name)
-
-    def stop_process(self):
-        """Stop this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.stop(name=circus_process_name)
-
-    def restart_process(self):
-        """Restart the device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.restart(name=circus_process_name)
-
-    def status_process(self):
-        """Status this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        status = fc.application_status(name=circus_process_name)
-        return status
-
     def get_cached_ip(self):
-        # This only gets called from within BrewPi-script
+        # This used to get called within BrewPi-script prior to the circus refactor. This can be safely deleted.
 
         # I really hate the name of the function, but I can't think of anything else. This basically does three things:
         # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
@@ -1054,7 +1011,7 @@ class BrewPiDevice(models.Model):
         return None
 
     def get_port_from_udev(self):
-        # This only gets called from within BrewPi-script
+        # This used to get called within BrewPi-script prior to the circus refactor. This can be safely deleted.
 
         # get_port_from_udev() looks for a USB device connected which matches self.udev_serial_number. If one is found,
         # it returns the associated device port. If one isn't found, it returns None (to prevent the cached port from

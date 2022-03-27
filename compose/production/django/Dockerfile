@@ -14,9 +14,7 @@ RUN apt-get update \
   && apt-get install -y libjpeg62 zlib1g libtiff5 libfreetype6 libjpeg62-turbo-dev zlib1g-dev libtiff5-dev libfreetype6-dev \
   # Cryptography dependencies (for esptool 3.0)
   && apt-get install -y libssl-dev libffi-dev \
-  # pyzmq dependencies
-  && apt-get install -y libzmq3-dev \
-  # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
+  # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites
   && apt-get install -y git-core avrdude ssh curl \
   # nano so that I can edit files easily inside the container while testing
   # (I am not a fan of vim. sorry.)
@@ -59,7 +57,7 @@ RUN sed -i 's/\r$//g' /start-huey
 RUN chmod +x /start-huey
 
 # Prep supervisor
-RUN mkdir -p /var/log/supervisor && chown django /var/log/supervisor && mkdir -p /var/run/supervisor && chown django /var/run/supervisor
+RUN mkdir -p /var/log/supervisor && chown django /var/log/supervisor && mkdir -p /var/run && chown django /var/run
 COPY ./compose/production/django/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY --chown=django:django . /app

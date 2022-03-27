@@ -21,28 +21,7 @@ import os
 import serial
 from . import autoSerial
 from . import tcpSerial
-
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# This is so Django knows where to find stuff.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
-sys.path.append(BASE_DIR)
-
-# This is so my local_settings.py gets loaded.
-os.chdir(BASE_DIR)
-
-from django.core.wsgi import get_wsgi_application
-
-application = get_wsgi_application()
-import app.models as models  # This is only applicable if we're working with Django-based models
-
-
-# try:
-#     import configobj
-# except ImportError:
-#     print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
-#     sys.exit(0)
+from .brewpiScriptConfig import BrewPiScriptConfig
 
 
 def addSlash(path):
@@ -56,41 +35,9 @@ def addSlash(path):
     return path
 
 
-def save_beer_log_point(db_config_object, beer_row):
-    """
-    Saves a row of data to the database (mapping the data row we are passed to Django's BeerLogPoint model)
-    :param db_config_object:
-    :param beer_row:
-    :return:
-    """
-    new_log_point = models.BeerLogPoint()
-
-    new_log_point.beer_temp = beer_row['BeerTemp']
-    new_log_point.beer_set = beer_row['BeerSet']
-    new_log_point.beer_ann = beer_row['BeerAnn']
-
-    new_log_point.fridge_temp = beer_row['FridgeTemp']
-    new_log_point.fridge_set = beer_row['FridgeSet']
-    new_log_point.fridge_ann = beer_row['FridgeAnn']
-
-    new_log_point.room_temp = beer_row['RoomTemp']
-    new_log_point.state = beer_row['State']
-
-    new_log_point.temp_format = db_config_object.temp_format
-    new_log_point.associated_beer = db_config_object.active_beer
-
-    try:
-        new_log_point.enrich_gravity_data()  # If gravity sensing is turned on, this will capture & populate everything
-    except RuntimeError:
-        # This gets tripped when there is an issue with enrich_gravity_data where the associated gravity sensor no longer
-        # exists. This shouldn't happen, but can if the user goes poking around. Don't log the point - just return.
-        return
-
-    new_log_point.save()
-
-
 def printStdErr(*objs):
-    print("", *objs, file=sys.stderr)
+    print("", *objs, file=sys.stderr, flush=True)
+
 
 def logMessage(message):
     """
@@ -101,7 +48,7 @@ def logMessage(message):
     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
 
 
-def scriptPath():
+def scriptPath():  # TODO - Get rid of this! (need to pass in paths to the brewpi-script instance)
     """
     Return the path of BrewPiUtil.py. __file__ only works in modules, not in the main script.
     That is why this function is needed.
@@ -109,21 +56,12 @@ def scriptPath():
     return os.path.dirname(__file__)
 
 
-def removeDontRunFile(path='/var/www/do_not_run_brewpi'):
-    if os.path.isfile(path):
-        os.remove(path)
-        if not sys.platform.startswith('win'):  # cron not available
-            print("BrewPi script will restart automatically.")
-    else:
-        print("File do_not_run_brewpi does not exist at " + path)
-
-
 def findSerialPort(bootLoader):
     (port, name) = autoSerial.detect_port(bootLoader)
     return port
 
 
-def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1):
+def setupSerial(dbConfig: BrewPiScriptConfig, baud_rate: int = 57600, time_out: float = 0.1):
     ser = None
     # dumpSerial = config.get('dumpSerial', False)
     dumpSerial = False
@@ -133,8 +71,8 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
     # open serial port
     tries = 0
     connection_type = dbConfig.connection_type
-    if connection_type == "serial" or connection_type == "auto":
-        if connection_type == "auto":
+    if connection_type == BrewPiScriptConfig.CONNECTION_TYPE_SERIAL or connection_type == BrewPiScriptConfig.CONNECTION_TYPE_AUTO:
+        if connection_type == BrewPiScriptConfig.CONNECTION_TYPE_AUTO:
             logMessage("Connection type set to 'auto' - Attempting serial first")
         else:
             logMessage("Connection type Serial selected. Opening serial port.")
@@ -144,9 +82,9 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
 
             # If we have a udevPort (from a dbconfig object, found via the udev serial number) use that as the first
             # option - replacing config['port'].
-            udevPort = dbConfig.get_port_from_udev()
-            if udevPort is not None:
-                ports_to_try.append(udevPort)
+            udev_port = dbConfig.get_port_from_udev()
+            if udev_port is not None:
+                ports_to_try.append(udev_port)
             else:
                 ports_to_try.append(dbConfig.serial_port)
 
@@ -155,7 +93,7 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
                 ports_to_try.append(dbConfig.serial_alt_port)
 
             for portSetting in ports_to_try:
-                if portSetting == None or portSetting == 'None' or portSetting == "none":
+                if portSetting == None or portSetting == 'None' or portSetting == "none" or portSetting == "":
                     continue  # skip None setting
                 if portSetting == "auto":
                     port = findSerialPort(bootLoader=False)
@@ -167,7 +105,7 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
                 try:
                     ser = serial.Serial(port, baudrate=baud_rate, timeout=time_out, write_timeout=0)
                     if ser:
-                        logMessage("Connected via serial to port {}".format(port))
+                        logMessage(f"Connected via serial to port {port}")
                         break
                 except (IOError, OSError, serial.SerialException) as e:
                     # error += '0}.\n({1})'.format(portSetting, str(e))
@@ -175,12 +113,12 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
             if ser:
                 break
             tries += 1
-            time.sleep(1)
+            time.sleep(1)  # TODO - Make sure this is OK
 
-    if connection_type == "wifi" or connection_type == "auto":
-        if not(ser):
-            tries=0
-            if connection_type == "auto":
+    if connection_type == BrewPiScriptConfig.CONNECTION_TYPE_WIFI or connection_type == BrewPiScriptConfig.CONNECTION_TYPE_AUTO:
+        if not ser:
+            tries = 0
+            if connection_type == BrewPiScriptConfig.CONNECTION_TYPE_AUTO:
                 logMessage("No serial attached BrewPi found.  Trying TCP serial (WiFi)")
             else:
                 logMessage("Connection type WiFi selected.  Trying TCP serial (WiFi)")
@@ -188,7 +126,7 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
                 error = ""
 
                 if dbConfig.wifi_port is None:
-                    logMessage("Invalid WiFi configuration - Port '{}' cannot be converted to integer".format(dbConfig.wifi_port))
+                    logMessage(f"Invalid WiFi configuration - Port '{dbConfig.wifi_port}' cannot be converted to integer")
                     logMessage("Exiting.")
                     exit(1)
                 port = dbConfig.wifi_port
@@ -213,11 +151,11 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
                 if ser:
                     break
                 tries += 1
-                time.sleep(1)
+                time.sleep(1)  # TODO - Make sure this is OK
 
-    if not(ser):  # At this point, we've tried both serial & WiFi. Need to die.
+    if not ser:  # At this point, we've tried both serial & WiFi. Need to die.
         logMessage("Unable to connect via Serial or WiFi. Exiting.")
-        exit(1)
+        exit(1)  # TODO - Change this to raise
 
     if ser:
         # discard everything in serial buffers
@@ -226,6 +164,7 @@ def setupSerial(dbConfig: models.BrewPiDevice, baud_rate:int=57600, time_out=0.1
     else:
         logMessage("Errors while opening serial port: \n" + error)
         sys.exit(0)  # Die if we weren't able to connect
+        # TODO - Change the above to raise
 
     # yes this is monkey patching, but I don't see how to replace the methods on a dynamically instantiated type any other way
     if dumpSerial:

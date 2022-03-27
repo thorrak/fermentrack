@@ -85,12 +85,7 @@ def flash_firmware(flash_request_id):
     for this_device in devices_to_disable:
         this_device.status = BrewPiDevice.STATUS_UPDATING
         this_device.save()
-        try:
-            this_device.stop_process()
-        except:
-            # Depending on how quickly circus checks, this may cause a race condition as the process gets
-            # stopped twice
-            pass
+        time.sleep(10)  # Give the process manager time to refresh & disable the script
 
     # And now, let's call the actual flasher
     try:
@@ -105,8 +100,7 @@ def flash_firmware(flash_request_id):
     for this_device in devices_to_disable:
         this_device.status = BrewPiDevice.STATUS_ACTIVE
         this_device.save()
-        # We'll let Circus restart the process on the next cycle
-        # this_device.start_process()
+        # We'll let the process manager restart the process on the next cycle
 
     flash_request.succeed("Flash completed successfully", output_text)
 

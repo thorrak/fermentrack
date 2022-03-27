@@ -1,6 +1,5 @@
 # wraps a tcp socket stream in a object that looks like a serial port
 # this allows seemless integration with exsiting brewpi-script code
-from __future__ import print_function
 
 import socket, errno
 from . import mdnsLocator
@@ -9,7 +8,7 @@ import os, sys, time
 
 # Copying this in from BrewPiUtil to prevent chained imports
 def printStdErr(*objs):
-    print("", *objs, file=sys.stderr)
+    print("", *objs, file=sys.stderr, flush=True)
 
 def logMessage(message):
     """

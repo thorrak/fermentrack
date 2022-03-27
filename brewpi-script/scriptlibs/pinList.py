@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with BrewPi.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 import json
 
 
@@ -165,7 +164,7 @@ def getPinList(boardType, shieldType):
                    {'val': 13, 'text': '13 (OneWire)', 'type': 'onewire'}, ]
         # {'val': 0, 'text': 'D3 (Buzzer)', 'type': 'beep'}, ]
     else:
-        print('Unknown controller or board type')
+        print('Unknown controller or board type', flush=True)
         pinList = {}
     return pinList
 
@@ -175,7 +174,7 @@ def getPinListJson(boardType, shieldType):
         pinList = getPinList(boardType, shieldType)
         return json.dumps(pinList)
     except json.JSONDecodeError:
-        print("Cannot process pin list JSON")
+        print("Cannot process pin list JSON", flush=True)
         return 0
 
 def pinListTest():

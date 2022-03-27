@@ -18,8 +18,8 @@ Want to see it in action? See videos of key Fermentrack features on [YouTube](ht
 * **Fermentrack** - Django-based fermentation tracking and control interface. Replaces brewpi-www. Licensed under MIT license.
 * **brewpi-script** - Installed alongside Fermentrack to control BrewPi controllers. Licensed under GPL v3.
 * **nginx** - A reverse proxy/webserver. Licensed under 2-Clause BSD-like license.
-* **circusd** - A python-based process manager. Licensed under the Apache license, v2.0.
-* **chaussette** - A wsgi server. Licensed under the Apache license, v2.0.
+* **redis** - A key/value store. Licensed under the three clause BSD license.
+* **postgresql** - A database server. Licensed under the Postgresql license.
 
 ## New Features
 
