@@ -57,7 +57,7 @@ RUN sed -i 's/\r$//g' /start-huey
 RUN chmod +x /start-huey
 
 # Prep supervisor
-RUN mkdir -p /var/log/supervisor && chown django /var/log/supervisor && mkdir -p /var/run/supervisor && chown django /var/run/supervisor
+RUN mkdir -p /var/log/supervisor && chown django /var/log/supervisor && mkdir -p /var/run && chown django /var/run
 COPY ./compose/production/django/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY --chown=django:django . /app
