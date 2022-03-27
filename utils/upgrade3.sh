@@ -8,6 +8,16 @@ SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 FORCE_UPGRADE=0
 USE_DOCKER=0
 
+# We don't want to execute multiple upgrades at once, so use a lockfile to signify if an upgrade is in progress.
+LOCKFILE="${SCRIPTPATH}/upgrade_lock"
+if test -f "LOCKFILE"; then
+  echo "$LOCKFILE exists - upgrade is already in progress. Delete $LOCKFILE to continue."
+  exit 1
+fi
+
+touch "${LOCKFILE}"
+
+
 # Colors (for printinfo/error/warn below)
 green=$(tput setaf 76)
 red=$(tput setaf 1)
@@ -87,19 +97,19 @@ shift $((OPTIND-1))
 
 
 stop_supervisord () {
-  supervisorctl stop all
+#  supervisorctl stop all
 }
 
 
 reload_supervisord () {
   supervisorctl reread
-  supervisorctl update
-#  supervisorctl restart
+#  supervisorctl update
+  supervisorctl restart
 }
 
 
 start_supervisord () {
-  supervisorctl start all
+#  supervisorctl start all
 }
 
 
@@ -168,3 +178,4 @@ printinfo "Relaunching supervisord..."
 reload_supervisord
 start_supervisord
 printinfo "Complete!"
+rm "${LOCKFILE}"

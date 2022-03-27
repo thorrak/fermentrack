@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -477,6 +479,8 @@ def github_trigger_upgrade(request, variant=""):
     tags = git_integration.get_tag_info()
     local_versions = git_integration.get_local_version_numbers()
 
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
     else:
@@ -485,6 +489,9 @@ def github_trigger_upgrade(request, variant=""):
     if request.POST:
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        elif lockfile.exists():
+            messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
+                                    "delete the upgrade lock using the function below.")
         else:
             cmds = {}
 
@@ -523,7 +530,21 @@ def github_trigger_upgrade(request, variant=""):
                                context={'commit_info': commit_info, 'app_is_current': app_is_current,
                                         'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
                                         'allow_git_branch_switching': allow_git_branch_switching,
-                                        'local_versions': local_versions})
+                                        'local_versions': local_versions, 'lockfile_exists': lockfile.exists()})
+
+@login_required
+@site_is_configured
+def delete_upgrade_lock_file(request, variant=""):
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
+    if not lockfile.exists():
+        messages.info(request, "Unable to delete lock file - file does not exist")
+    else:
+        os.remove(lockfile)
+        messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
+
+    return redirect('github_trigger_upgrade')
+
 
 @login_required
 @site_is_configured
