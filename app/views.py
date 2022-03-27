@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
@@ -16,7 +15,6 @@ from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
 import json, datetime, pytz, os, random, sys, subprocess
-from multiprocessing import Process
 
 import fermentrack_django.settings as settings
 
@@ -24,7 +22,6 @@ import fermentrack_django.settings as settings
 from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
-
 
 
 def error_notifications(request):
