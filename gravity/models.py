@@ -103,7 +103,7 @@ class GravitySensor(models.Model):
     temp_format = models.CharField(max_length=1, choices=TEMP_FORMAT_CHOICES, default='F',
                                    help_text="Temperature units")
 
-    sensor_type = models.CharField(max_length=10, default=SENSOR_MANUAL, choices=SENSOR_TYPE_CHOICES,
+    sensor_type = models.CharField(max_length=14, default=SENSOR_MANUAL, choices=SENSOR_TYPE_CHOICES,
                                    help_text="Type of gravity sensor used")
 
     status = models.CharField(max_length=15, default=STATUS_ACTIVE, choices=STATUS_CHOICES,
@@ -117,9 +117,9 @@ class GravitySensor(models.Model):
     assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL,
                                                   related_name='gravity_sensor')
 
-    log_gravity = models.BooleanField(default=True, help_text="For sensors (such as Plaato) that primarily log things "
-                                                              "other than gravity do we want to log the (estimated) "
-                                                              "gravity readings they make available?")
+    log_gravity = models.BooleanField(default=True, help_text="For sensors (such as Brew Bubbles) that primarily log "
+                                                              "things other than gravity do we want to log the "
+                                                              "(estimated) gravity readings they make available?")
 
     log_temp = models.BooleanField(default=True, help_text="Although most gravity sensors provide temperature readings,"
                                                            "we may not always want to log them. Set this false to"
@@ -923,68 +923,68 @@ class IspindelConfiguration(models.Model):
 
 
 ### Brew Bubbles specific models
-class BrewBubblesConfiguration(models.Model):
-
-    PRIMARY_TEMP_TEMP = "temp"
-    PRIMARY_TEMP_AMBIENT = "ambient"
-
-    PRIMARY_TEMP_CHOICES = (
-        (PRIMARY_TEMP_TEMP, 'Connected Temp Sensor'),
-        (PRIMARY_TEMP_AMBIENT, 'Ambient Sensor'),
-    )
-
-
-    sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
-                                  related_name="brewbubbles_configuration")
-
-    name_on_device = models.CharField(max_length=64, unique=True,
-                                      help_text="The name configured on the Brew Bubbles device itself")
-
-    primary_temp_sensor = models.CharField(max_length=32, choices=PRIMARY_TEMP_CHOICES, unique=True,
-                                           help_text="The temp sensor that should be treated as the 'primary' temp "
-                                                     "in readings")
-
-    def __str__(self) -> str:
-        return self.name_on_device
-
-    def save_extras_to_redis(self):
-        # {
-        #     "api_key": "Brew Bubbles",
-        #     "device_source": "Brew Bubbles",
-        #     "name": "{1-32 UTF-8}",
-        #     "bpm": 99.999,
-        #     "ambient": 70.3625,
-        #     "temp": -196.6,
-        #     "temp_unit": "F",
-        #     "datetime": "2019-11-16T23:59:01.123Z"
-        # }
-
-        # This saves the current (presumably complete) object as the 'current' point to redis
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-
-        extras = {
-            'ambient': getattr(self, 'ambient', None),
-            'temp': getattr(self, 'temp', None),
-        }
-
-        r.set('brewbubbles_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
-
-    def load_extras_from_redis(self) -> dict:
-        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
-        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
-
-        if redis_response is None:
-            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
-            return {}
-
-        redis_response = redis_response.decode(encoding="utf-8")
-        extras = json.loads(redis_response)
-
-        if 'ambient' in extras:
-            self.ambient = extras['ambient']
-        if 'temp' in extras:
-            self.temp = extras['temp']
-
-        return extras
-
-    # TODO - Check if I need load_last_log_time_from_redis here
+# class BrewBubblesConfiguration(models.Model):
+#
+#     PRIMARY_TEMP_TEMP = "temp"
+#     PRIMARY_TEMP_AMBIENT = "ambient"
+#
+#     PRIMARY_TEMP_CHOICES = (
+#         (PRIMARY_TEMP_TEMP, 'Connected Temp Sensor'),
+#         (PRIMARY_TEMP_AMBIENT, 'Ambient Sensor'),
+#     )
+#
+#
+#     sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
+#                                   related_name="brewbubbles_configuration")
+#
+#     name_on_device = models.CharField(max_length=64, unique=True,
+#                                       help_text="The name configured on the Brew Bubbles device itself")
+#
+#     primary_temp_sensor = models.CharField(max_length=32, choices=PRIMARY_TEMP_CHOICES, unique=True,
+#                                            help_text="The temp sensor that should be treated as the 'primary' temp "
+#                                                      "in readings")
+#
+#     def __str__(self) -> str:
+#         return self.name_on_device
+#
+#     def save_extras_to_redis(self):
+#         # {
+#         #     "api_key": "Brew Bubbles",
+#         #     "device_source": "Brew Bubbles",
+#         #     "name": "{1-32 UTF-8}",
+#         #     "bpm": 99.999,
+#         #     "ambient": 70.3625,
+#         #     "temp": -196.6,
+#         #     "temp_unit": "F",
+#         #     "datetime": "2019-11-16T23:59:01.123Z"
+#         # }
+#
+#         # This saves the current (presumably complete) object as the 'current' point to redis
+#         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+#
+#         extras = {
+#             'ambient': getattr(self, 'ambient', None),
+#             'temp': getattr(self, 'temp', None),
+#         }
+#
+#         r.set('brewbubbles_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
+#
+#     def load_extras_from_redis(self) -> dict:
+#         r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+#         redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+#
+#         if redis_response is None:
+#             # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+#             return {}
+#
+#         redis_response = redis_response.decode(encoding="utf-8")
+#         extras = json.loads(redis_response)
+#
+#         if 'ambient' in extras:
+#             self.ambient = extras['ambient']
+#         if 'temp' in extras:
+#             self.temp = extras['temp']
+#
+#         return extras
+#
+#     # TODO - Check if I need load_last_log_time_from_redis here
