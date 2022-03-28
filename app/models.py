@@ -560,13 +560,8 @@ class BrewPiDevice(models.Model):
     # devices_are_loaded = False
 
     def __str__(self):
-        # TODO - Make this test if the name is unicode, and return a default name if that is the case
         return self.device_name
 
-    def __unicode__(self):
-        return self.device_name
-    
-    
     def read_lcd_from_device(self):
         pass
 
@@ -1097,9 +1092,6 @@ class Beer(models.Model):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
-        return self.__str__()
-
     def column_headers(self, which='base_csv', human_readable=False):
         if which == 'base_csv':
             if human_readable:
@@ -1491,9 +1483,6 @@ class FermentationProfile(models.Model):
                              help_text="Notes about the fermentation profile (Optional)")
 
     def __str__(self):
-        return self.name
-
-    def __unicode__(self):
         return self.name
 
     # Test if this fermentation profile is currently being used by a beer

@@ -71,9 +71,6 @@ class DeviceFamily(models.Model):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
-        return self.name
-
     @staticmethod
     def load_from_website():
         try:
@@ -188,9 +185,6 @@ class Firmware(models.Model):
 
     def __str__(self):
         return self.name + " - " + self.version + " - " + self.revision + " - " + self.variant
-
-    def __unicode__(self):
-        return self.__str__()
 
     @staticmethod
     def load_from_website():

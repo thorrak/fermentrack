@@ -72,22 +72,17 @@ class GravitySensor(models.Model):
     TEMP_FAHRENHEIT = 'F'
     TEMP_FORMAT_CHOICES = ((TEMP_FAHRENHEIT, 'Fahrenheit'), (TEMP_CELSIUS, 'Celsius'))
 
-    TEMP_ALWAYS_ESTIMATE = 'estimate (automatic)'
-    TEMP_SOMETIMES_ESTIMATE = 'unknown (manual)'
-    TEMP_NEVER_ESTIMATE = 'exact (automatic)'
-
-    TEMP_ESTIMATE_CHOICES = (
-        (TEMP_ALWAYS_ESTIMATE, 'Temp is always estimate'),
-        (TEMP_SOMETIMES_ESTIMATE, 'Temp is sometimes estimate'),
-        (TEMP_NEVER_ESTIMATE, 'Temp is never estimate'),
-    )
-
     SENSOR_TILT = 'tilt'
     SENSOR_MANUAL = 'manual'
     SENSOR_ISPINDEL = 'ispindel'
+    SENSOR_BREWBUBBLES = 'brewbubbles'
+    SENSOR_PLAATO = 'plaato'
+
     SENSOR_TYPE_CHOICES = (
         (SENSOR_TILT, 'Tilt Hydrometer'),
         (SENSOR_ISPINDEL, 'iSpindel'),
+        (SENSOR_BREWBUBBLES, 'brewbubbles'),
+        (SENSOR_PLAATO, 'plaato'),
         (SENSOR_MANUAL, 'Manual'),
     )
 
@@ -122,11 +117,15 @@ class GravitySensor(models.Model):
     assigned_brewpi_device = models.OneToOneField(BrewPiDevice, null=True, default=None, on_delete=models.SET_NULL,
                                                   related_name='gravity_sensor')
 
-    def __str__(self) -> str:
-        # TODO - Make this test if the name is unicode, and return a default name if that is the case
-        return self.name
+    log_gravity = models.BooleanField(default=True, help_text="For sensors (such as Plaato) that primarily log things "
+                                                              "other than gravity do we want to log the (estimated) "
+                                                              "gravity readings they make available?")
 
-    def __unicode__(self) -> str:
+    log_temp = models.BooleanField(default=True, help_text="Although most gravity sensors provide temperature readings,"
+                                                           "we may not always want to log them. Set this false to"
+                                                           "ignore them.")
+
+    def __str__(self) -> str:
         return self.name
 
     def is_gravity_sensor(self) -> bool:  # This is a hack used in the site template so we can display relevant functionality
@@ -138,6 +137,7 @@ class GravitySensor(models.Model):
         Returns:
             True
         """
+        # TODO - See if I can refactor this out of existence
         return True
 
     # retrieve_latest_point does just that - retrieves the latest (full) data point from redis
@@ -145,11 +145,16 @@ class GravitySensor(models.Model):
         return GravityLogPoint.load_from_redis(self.id)
 
     # Latest gravity & latest temp mean exactly that. Generally what we want is loggable - not latest.
-    def retrieve_latest_gravity(self) -> float:
+    def retrieve_latest_gravity(self) -> float or None:
+        if not self.log_gravity:  # If the sensor cannot log gravity, return nothing
+            return None
         point = self.retrieve_latest_point()
+        # TODO - Check if we should round point.latest_gravity to 3 places
         return None if point is None else point.latest_gravity
 
-    def retrieve_latest_temp(self) -> (float, str):
+    def retrieve_latest_temp(self) -> (float or None, str or None):
+        if not self.log_temp:  # If the sensor cannot (or the user prefers not to) log temp, return nothing
+            return None, None
         point = self.retrieve_latest_point()
         if point is None:
             return None, None
@@ -157,21 +162,25 @@ class GravitySensor(models.Model):
             return point.latest_temp, point.temp_format
 
     # Loggable gravity & loggable temp are what we generally want. These can have smoothing/filtering applied.
-    def retrieve_loggable_gravity(self) -> float:
+    def retrieve_loggable_gravity(self) -> float or None:
+        if not self.log_gravity:  # If the sensor cannot log gravity, return nothing
+            return None
         point = self.retrieve_latest_point()
         if point is None:
             return None
         else:
             return None if point.gravity is None else round(point.gravity, 3)
 
-    def retrieve_loggable_temp(self) -> (float, str):
+    def retrieve_loggable_temp(self) -> (float or None, str or None):
+        if not self.log_temp:  # If the sensor cannot (or the user prefers not to) log temp, return nothing
+            return None, None
         # So temp needs units... we'll return a tuple (temp, temp_format)
         point = self.retrieve_latest_point()
         if point is None:
             return None, None
         else:
             # Changing to one degree of precision - more precise is nonsensical
-            return None if point.temp is None else round(point.temp, 1), point.temp_format
+            return None, None if point.temp is None else round(point.temp, 1), point.temp_format
 
     def create_log_and_start_logging(self, name: str):
         # First, create the new gravity log
@@ -195,6 +204,14 @@ class GravitySensor(models.Model):
             return (temp-32) * 5 / 9, self.temp_format
         else:
             raise ValueError
+
+    def addl_data_cols(self) -> int:
+        if self.sensor_type == self.SENSOR_BREWBUBBLES:
+            return 1
+        elif self.sensor_type == self.SENSOR_PLAATO:
+            return 2
+        else:
+            return 0
 
 
 class GravityLog(models.Model):
@@ -220,29 +237,26 @@ class GravityLog(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def __unicode__(self) -> str:
-        return self.__str__()
-
-    @staticmethod
-    def column_headers(which: str='base_csv', human_readable: bool=False) -> list or None:
+    def column_headers(self, which: str='base_csv', human_readable: bool=False) -> list or None:
+        headers = None
         if which == 'base_csv':
             if human_readable:
-                return ['Log Time', 'Specific Gravity', 'Temp']
+                headers = ['Log Time', 'Specific Gravity', 'Temp']
             else:
-                return ['log_time', 'gravity', 'temp']
-        elif which == 'full_csv':
-            if human_readable:
-                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'gravity_latest',
-                        'temp_latest', 'extra_data', 'log_id']
-            else:
-                return ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'gravity_latest',
-                        'temp_latest', 'extra_data', 'log_id']
-        else:
-            return None
+                headers = ['log_time', 'gravity', 'temp']
 
-    @staticmethod
-    def column_headers_to_graph_string(which: str='base_csv') -> str:
-        col_headers = GravityLog.column_headers(which, True)
+        elif which == 'full_csv':
+            # There is no human_readable concept for the full CSV
+            headers = ['log_time', 'gravity', 'temp', 'temp_format', 'temp_is_estimate', 'gravity_latest',
+                       'temp_latest', 'extra_data', 'log_id']
+
+            for x in range(1, self.device.addl_data_cols()+1):
+                headers.append("addl_data{}".format(x))
+
+        return headers
+
+    def column_headers_to_graph_string(self, which: str='base_csv') -> str:
+        col_headers = self.column_headers(which, True)
 
         graph_string = ""
 
@@ -339,6 +353,15 @@ class GravityLogPoint(models.Model):
     temp_latest = models.DecimalField(max_digits=13, decimal_places=10, null=True, default=None,
                                       help_text="The latest temperature (without smoothing/filtering if applicable)")
 
+    # For some sensors (e.g. BrewBubbles, Plaato) there are other data points that we might want to log in the full CSV,
+    # but that aren't explicitly a temperature or gravity reading (e.g. bubbles per minute, total bubbles).
+    # Interpreting these will be up to the user.
+    addl_data_point1 = models.DecimalField(max_digits=13, decimal_places=6, null=True, default=None,
+                                         help_text="(Optional) Additional logged data point 1 (e.g. bpm)")
+    addl_data_point2 = models.DecimalField(max_digits=13, decimal_places=6, null=True, default=None,
+                                         help_text="(Optional) Additional logged data point 1 (e.g. total bubbles)")
+
+
     # Associated log is intended to be the collection of log points associated with the gravity sensor's latest
     # logging efforts. That said, we're also using the model to store the latest gravity info in the absence of an
     # active logging effort, hence the null=True.
@@ -381,8 +404,15 @@ class GravityLogPoint(models.Model):
         if data_format == 'base_csv':
             return [time_value, self.gravity, temp]
         elif data_format == 'full_csv':
-            return [time_value, self.gravity, temp, temp_format, self.temp_is_estimate, gravity_latest,
-                    temp_latest, extra_data, self.associated_log]
+            data_list = [time_value, self.gravity, temp, temp_format, self.temp_is_estimate, gravity_latest,
+                         temp_latest, extra_data, self.associated_log]
+            # For devices that have additional data columns, append them to the full_csv
+            if self.associated_device.addl_data_cols() >= 1:
+                data_list.append(self.addl_data_point1)
+            if self.associated_device.addl_data_cols() >= 2:
+                data_list.append(self.addl_data_point2)
+            return data_list
+
         elif data_format == 'annotation_json':
             # Annotations are just the extra data (for now)
             retval = []
@@ -659,9 +689,6 @@ class TiltConfiguration(models.Model):
     def __str__(self) -> str:
         return self.color
 
-    def __unicode__(self) -> str:
-        return str(self)
-
     def circus_parameter(self) -> str:
         """Returns the parameter used by Circus to track this device's processes"""
         # TODO - Check if this is still used
@@ -776,9 +803,6 @@ class TiltBridge(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def __unicode__(self) -> str:
-        return self.name
-
     def update_fermentrack_url_on_tiltbridge(self, fermentrack_host) -> bool:
         # fermentrack_host = request.META['HTTP_HOST']
         try:
@@ -840,9 +864,6 @@ class IspindelConfiguration(models.Model):
     def __str__(self) -> str:
         return self.name_on_device
 
-    def __unicode__(self) -> str:
-        return str(self)
-
     def save_extras_to_redis(self):
         # This saves the current (presumably complete) object as the 'current' point to redis
         r = redis.Redis.from_url(url=settings.REDIS_URL)
@@ -895,7 +916,75 @@ class IspindelConfiguration(models.Model):
         if 'fields' in t[0]:
             if 'log_time' in t[0]['fields']:
                 # return last time the ispindel was heard from
-                dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") ) 
+                dt = datetime.datetime.fromisoformat( t[0]['fields']['log_time'].replace("Z","") )
                 return datetime.datetime.strftime( dt, "%c" )
 
         return None
+
+
+### Brew Bubbles specific models
+class BrewBubblesConfiguration(models.Model):
+
+    PRIMARY_TEMP_TEMP = "temp"
+    PRIMARY_TEMP_AMBIENT = "ambient"
+
+    PRIMARY_TEMP_CHOICES = (
+        (PRIMARY_TEMP_TEMP, 'Connected Temp Sensor'),
+        (PRIMARY_TEMP_AMBIENT, 'Ambient Sensor'),
+    )
+
+
+    sensor = models.OneToOneField(GravitySensor, on_delete=models.CASCADE, primary_key=True,
+                                  related_name="brewbubbles_configuration")
+
+    name_on_device = models.CharField(max_length=64, unique=True,
+                                      help_text="The name configured on the Brew Bubbles device itself")
+
+    primary_temp_sensor = models.CharField(max_length=32, choices=PRIMARY_TEMP_CHOICES, unique=True,
+                                           help_text="The temp sensor that should be treated as the 'primary' temp "
+                                                     "in readings")
+
+    def __str__(self) -> str:
+        return self.name_on_device
+
+    def save_extras_to_redis(self):
+        # {
+        #     "api_key": "Brew Bubbles",
+        #     "device_source": "Brew Bubbles",
+        #     "name": "{1-32 UTF-8}",
+        #     "bpm": 99.999,
+        #     "ambient": 70.3625,
+        #     "temp": -196.6,
+        #     "temp_unit": "F",
+        #     "datetime": "2019-11-16T23:59:01.123Z"
+        # }
+
+        # This saves the current (presumably complete) object as the 'current' point to redis
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+
+        extras = {
+            'ambient': getattr(self, 'ambient', None),
+            'temp': getattr(self, 'temp', None),
+        }
+
+        r.set('brewbubbles_{}_extras'.format(self.sensor_id), json.dumps(extras).encode(encoding="utf-8"))
+
+    def load_extras_from_redis(self) -> dict:
+        r = redis.Redis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD)
+        redis_response = r.get('ispindel_{}_extras'.format(self.sensor_id))
+
+        if redis_response is None:
+            # If we didn't get anything back (i.e. no data has been saved to redis yet) then return None
+            return {}
+
+        redis_response = redis_response.decode(encoding="utf-8")
+        extras = json.loads(redis_response)
+
+        if 'ambient' in extras:
+            self.ambient = extras['ambient']
+        if 'temp' in extras:
+            self.temp = extras['temp']
+
+        return extras
+
+    # TODO - Check if I need load_last_log_time_from_redis here
