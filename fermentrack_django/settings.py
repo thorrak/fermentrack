@@ -51,7 +51,7 @@ except git.exc.InvalidGitRepositoryError:
     ENABLE_SENTRY = False
     GIT_BRANCH = 'dev'
 
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 # Application definition
