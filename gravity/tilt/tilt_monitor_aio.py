@@ -22,15 +22,15 @@ LOG.setLevel(logging.INFO)
 
 # We're having environment issues - Check the environment before continuing
 import aioblescan as aiobs
-import pkg_resources
-from packaging import version
-
-for package in pkg_resources.working_set:
-    if package.project_name == 'aioblescan':
-        # This is ridiculous but package.parsed_version doesn't return the right type of Version.
-        if version.parse(package.parsed_version.public) < version.parse("0.2.6"):
-            LOG.error("Incorrect aioblescan version installed - unable to run")
-            exit(1)
+# import pkg_resources
+# from packaging import version
+#
+# for package in pkg_resources.working_set:
+#     if package.project_name == 'aioblescan':
+#         # This is ridiculous but package.parsed_version doesn't return the right type of Version.
+#         if version.parse(package.parsed_version.public) < version.parse("0.2.6"):
+#             LOG.error("Incorrect aioblescan version installed - unable to run")
+#             exit(1)
 
 # done before importing django app as it does setup
 from . import tilt_monitor_utils
