@@ -1,3 +1,6 @@
+import shlex
+import subprocess
+
 from django.db import models
 import django.core.management
 from django.apps import apps
@@ -103,7 +106,7 @@ class Backup(TimeStampedModel):
             f.extractall(path=settings.ROOT_DIR)
 
     def load_database_from_file(self):
-        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
+        data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         django.core.management.call_command('loaddata', data_dump_file)
 
     def perform_restore(self):
