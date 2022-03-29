@@ -385,10 +385,10 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         beer_file_url = beer_obj.data_file_url('base_csv')
 
-    if beer_obj is None:
-        column_headers = {}
-    else:
-        column_headers = beer_obj.column_headers_to_graph_string('base_csv')
+    # if beer_obj is None:
+    #     column_headers = {}
+    # else:
+    #     column_headers = beer_obj.column_headers_to_graph_string('base_csv')
 
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,
