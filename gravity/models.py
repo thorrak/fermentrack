@@ -15,8 +15,6 @@ from fermentrack_django import settings
 import re
 import redis
 
-# from lib.ftcircus.client import CircusMgr, CircusException
-
 from app.models import BrewPiDevice
 
 # if typing.TYPE_CHECKING:
@@ -92,8 +90,8 @@ class GravitySensor(models.Model):
     STATUS_UPDATING = 'updating'
 
     STATUS_CHOICES = (
-        (STATUS_ACTIVE, 'Active, Managed by Circus'),
-        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),  # STATUS_UNMANAGED also applies for manual sensors /w no agent
+        (STATUS_ACTIVE, 'Active, Managed by Fermentrack'),
+        (STATUS_UNMANAGED, 'Active, NOT managed by Fermentrack'),  # STATUS_UNMANAGED also applies for manual sensors /w no agent
         (STATUS_DISABLED, 'Explicitly disabled, cannot be launched'),
         (STATUS_UPDATING, 'Disabled, pending an update'),
     )
@@ -687,11 +685,6 @@ class TiltConfiguration(models.Model):
             raise NotImplementedError
 
     def __str__(self) -> str:
-        return self.color
-
-    def circus_parameter(self) -> str:
-        """Returns the parameter used by Circus to track this device's processes"""
-        # TODO - Check if this is still used
         return self.color
 
     # TODO - Eliminate the xxx_redis_reload_flag functions
