@@ -18,6 +18,8 @@ RUN apt-get update \
   && apt-get install -y libzmq3-dev \
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites, cron for maintaining circus
   && apt-get install -y git-core avrdude ssh curl \
+  # numpy dependencies
+  && apt-get install -y libopenblas-dev \
   # nano so that I can edit files easily inside the container while testing
   # (I am not a fan of vim. sorry.)
   # TODO - Remove this
