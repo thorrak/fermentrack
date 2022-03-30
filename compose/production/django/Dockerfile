@@ -17,7 +17,7 @@ RUN apt-get update \
   # Git for updates, avrdude for flashing arduinos, ssh/curl for accessing sites
   && apt-get install -y git-core avrdude ssh curl \
   # numpy dependencies
-  &&  apt-get install libopenblas-dev \
+  && apt-get install -y libopenblas-dev \
   # nano so that I can edit files easily inside the container while testing
   # (I am not a fan of vim. sorry.)
   # TODO - Remove this
