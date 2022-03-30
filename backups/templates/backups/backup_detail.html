@@ -1,0 +1,29 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Backup Detail{% endblock %}
+
+{% block content %}
+    <h1>Backup Detail</h1>
+
+    <h4>Backup: {{ backup }}</h4>
+
+    <p>
+        Please download the backup file by clicking the button below and save it somewhere safe in order to be able to
+        restore from it at a later date.
+    </p>
+
+    <p>
+        <a href="{% url 'backups:backup_download' backup.pk %}" class="btn btn-sm btn-primary">Download Backup</a>
+    </p>
+
+    <div class="row">
+        <div class="col-12">
+          <a href="{% url 'backups:backup_delete' backup.pk %}" class="btn btn-sm btn-danger">Delete Backup</a>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}List Backups{% endblock %}
+
+{% block content %}
+    <h1>Available Backups</h1>
+
+
+
+    <div class="table-responsive">
+      <!-- Backup table -->
+      <table class="table align-items-center table-flush">
+        <thead class="thead-light">
+          <tr>
+            <th scope="col">Backup Prefix</th>
+            <th scope="col">Created On</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if backup_list %}
+            {% for backup in backup_list %}
+              <tr>
+                <th scope="row">
+                  <a href="{% url 'backups:backup_detail' backup.pk %}">{{ backup }}</a>
+                </th>
+                <td>
+                  {{ backup.created }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+              <tr>
+                <th scope="row" colspan="2">
+                  No Available Backups
+                </th>
+              </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+        <a href="{% url "backups:backup_add" %}" type="button" class="btn btn-sm btn-success">Create New Backup</a>
+        <a href="{% url "backups:backup_restore" %}" type="button" class="btn btn-sm btn-default">Restore Backup</a>
+    </p>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}
