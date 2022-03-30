@@ -28,7 +28,13 @@ from django.contrib.auth.models import User
 
 
 def error_notifications(request):
-    if config.GIT_UPDATE_TYPE != "none":
+
+    if not settings.USE_DOCKER:
+        messages.warning(request, "You are currently using the legacy, non-docker version of Fermentrack that is no "
+                                  "longer being developed/supported. It is highly recommended that you"
+                                  "<a href=\"http://todocker.fermentrack.com/\">migrate to a docker-based "
+                                  "installation</a> if possible.")
+    elif config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
         # Check the git status at least every 6 hours
         now_time = timezone.now()
         try:
