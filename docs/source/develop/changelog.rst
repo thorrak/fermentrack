@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - Backup & Restore
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Added
+---------------------
+
+- Backup & Restore functionality
+
+
+Changed
+-------
+
+- Removed "upgrade" notice from non-docker installs
+- Added warning to non-docker installs about a lack of future support
+
+
 [2021-12-08] - Compatibility Enhancements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
