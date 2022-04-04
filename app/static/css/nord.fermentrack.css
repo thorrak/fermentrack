@@ -166,6 +166,10 @@ a:hover, a:focus {
     border-top: 1px solid #ddd;
 }
 
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: var(--bgcolor);
+}
+
 .form-control, .select2-search input[type=text] {
     border: 2px solid var(--bordercolor);
 }
