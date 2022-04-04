@@ -176,6 +176,10 @@ a:hover, a:focus {
     color: var(--textcolor);
 }
 
+.list-group-item {
+    background-color: var(--legendrow);
+}
+
 .panel-footer {
     background-color: var(--legendrow);
     border-top: 1px solid #ddd;
