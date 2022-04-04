@@ -172,6 +172,8 @@ a:hover, a:focus {
 
 .form-control, .select2-search input[type=text] {
     border: 2px solid var(--bordercolor);
+    background-color: var(--legendrow);
+    color: var(--textcolor);
 }
 
 .panel-footer {
