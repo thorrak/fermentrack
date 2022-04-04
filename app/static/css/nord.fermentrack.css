@@ -193,6 +193,10 @@ pre {
     background-color: var(--inputfield);
 }
 
+.modal-content {
+    background-color: var(--bgcolor);
+}
+
 .panel-footer {
     background-color: var(--legendrow);
     border-top: 1px solid #ddd;
