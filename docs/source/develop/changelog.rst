@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - TBC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**NOTE** - This is the first version of Fermentrack that explicitly DOES NOT support "dockerless" installation. Installation is intended to be via the official Fermentrack images on Docker Hub.
+
+Added
+---------------------
+
+- BrewPi-Script instances are now controlled via a custom process manager
+- Officially added arm64v8 to supported platforms
+
+
+Changed
+-------
+
+- Removed Circus support in favor of managing processes via Supervisord
+- Removed libzmq requirement
+- Added support for new versions of the BrewPi Firmware for certain ESP-based BrewPi Controllers
+- Removed environment tests for Tilt hydrometers (Obviated via Docker)
+- Switch to use latest LTS version of Django
+- Update to Python 3.9
+
+
+
 [2022-04-05] - Last Dockerless Version & Backup & Restore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
