@@ -237,7 +237,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 {% if active_device.assigned_brewpi_device %}
     {# Modal for when there is an attached device #}
-                <h4 class="modal-title" id="logModalLabel" style="color: #000;">Attached to Device</h4>
+                <h4 class="modal-title" id="logModalLabel">Attached to Device</h4>
             </div>
 
 
@@ -266,7 +266,7 @@
 
 {% elif not active_device.active_log %}
     {# Modal for when nothing is logging (start logging) -- and we aren't attached to a temperature controller #}
-                <h4 class="modal-title" id="logModalLabel" style="color: #000;">Start Logging</h4>
+                <h4 class="modal-title" id="logModalLabel">Start Logging</h4>
             </div>
 
 

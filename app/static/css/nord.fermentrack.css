@@ -20,6 +20,7 @@
     --textalert: #e5e9f0; /* Pop-up alert text color */
     --bghovermenu: #88c0d0; /* Menu hover color */
     --legendrow: #4c566a; /* Legend row background color */
+    --inputfield: #4c566a; /* Input field background color */
     --bordercolor: #d8dee9; /* Border color for legend row */
     --caret: #4c566a; /* Menu caret color */
   }
@@ -166,8 +167,34 @@ a:hover, a:focus {
     border-top: 1px solid #ddd;
 }
 
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: var(--bgcolor);
+}
+
 .form-control, .select2-search input[type=text] {
     border: 2px solid var(--bordercolor);
+    background-color: var(--legendrow);
+    color: var(--textcolor);
+}
+
+.list-group-item {
+    background-color: var(--legendrow);
+}
+
+textarea {
+    background-color: var(--inputfield);
+}
+
+input {
+    background-color: var(--inputfield);
+}
+
+pre {
+    background-color: var(--inputfield);
+}
+
+.modal-content {
+    background-color: var(--bgcolor);
 }
 
 .panel-footer {
