@@ -217,7 +217,7 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     return render(request, template_name="gravity/gravity_dashboard.html",
                   context={'active_device': active_device, 'log_create_form': log_create_form,
                            'active_log': active_log, 'temp_display_format': config.DATE_TIME_FORMAT_DISPLAY,
-                           'column_headers': active_log.column_headers_to_graph_string('base_csv'),
+                           # 'column_headers': active_log.column_headers_to_graph_string('base_csv'),
                            'log_file_url': log_file_url, 'available_logs': available_logs,
                            'selected_log_id': log_id, 'manual_add_form': manual_add_form,
                            'gravity_display_format': config.GRAVITY_DISPLAY_FORMAT})
