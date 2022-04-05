@@ -6,13 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unreleased] - Backup & Restore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2022-04-05] - Last Dockerless Version & Backup & Restore
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**NOTE** - This is the last version of Fermentrack that will explicitly support "dockerless" installation. All future installations are encouraged to use (and all existing users are encouraged to migrate) to docker-based installations of Fermentrack to ensure compatibility going forward.
 
 Added
 ---------------------
 
-- Backup & Restore functionality
+- Backup & Restore functionality (Gear Menu > Manage Backups)
 
 
 Changed
@@ -20,6 +22,12 @@ Changed
 
 - Removed "upgrade" notice from non-docker installs
 - Added warning to non-docker installs about a lack of future support
+
+
+Fixed
+-----
+
+- Adjusted elements that were preventing dark mode from being as dark as it could be (Thanks @carjed)
 
 
 [2021-12-08] - Compatibility Enhancements
