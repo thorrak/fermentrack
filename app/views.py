@@ -28,7 +28,13 @@ from django.contrib.auth.models import User
 
 
 def error_notifications(request):
-    if config.GIT_UPDATE_TYPE != "none":
+
+    if not settings.USE_DOCKER:
+        messages.warning(request, "You are currently using the legacy, non-docker version of Fermentrack that is no "
+                                  "longer being developed/supported. It is highly recommended that you"
+                                  "<a href=\"http://todocker.fermentrack.com/\">migrate to a docker-based "
+                                  "installation</a> if possible.")
+    elif config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
         # Check the git status at least every 6 hours
         now_time = timezone.now()
         try:
@@ -386,10 +392,10 @@ def device_dashboard(request, device_id, beer_id=None):
     else:
         beer_file_url = beer_obj.data_file_url('base_csv')
 
-    if beer_obj is None:
-        column_headers = {}
-    else:
-        column_headers = beer_obj.column_headers_to_graph_string('base_csv')
+    # if beer_obj is None:
+    #     column_headers = {}
+    # else:
+    #     column_headers = beer_obj.column_headers_to_graph_string('base_csv')
 
     return render(request, template_name="device_dashboard.html",
                                context={'active_device': active_device, 'beer_create_form': beer_create_form,

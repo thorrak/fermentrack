@@ -1,0 +1,26 @@
+{% extends "sitewide/flat_ui_template.html" %}
+{% load custom_tags %}
+
+{% block title %}Delete Backup{% endblock %}
+
+{% block content %}
+    <h1>Confirm Deletion</h1>
+
+
+    <form method="post" action=".">
+        {% csrf_token %}
+
+        <h4 class="text-danger">Are you sure you want to delete "{{ object }}"?</h4>
+
+        <div class="row">
+            <div class="col-xs-6"><a href="{% url "backups:backup_list" %}" class="btn btn-sm btn-primary">Do Not Delete</a></div>
+            <div class="col-xs-6"><input type="submit" class="btn btn-sm btn-danger" value="Confirm"></div>
+
+        </div>
+
+    </form>
+
+{% endblock %}
+
+
+{% block scripts %}{% endblock %}
