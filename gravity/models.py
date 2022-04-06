@@ -178,9 +178,10 @@ class GravitySensor(models.Model):
         point = self.retrieve_latest_point()
         if point is None:
             return None, None
+        elif point.temp is None:
+            return None, None
         else:
-            # Changing to one degree of precision - more precise is nonsensical
-            return None, None if point.temp is None else round(point.temp, 1), point.temp_format
+            return round(point.temp, 1), point.temp_format
 
     def create_log_and_start_logging(self, name: str):
         # First, create the new gravity log
