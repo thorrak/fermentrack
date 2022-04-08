@@ -33,10 +33,10 @@
                     {# WiFi Connection Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="wifiPill">
                         {% if device_family == "ESP8266" %} {# Only ESP8266 devices are supported for WiFi #}
-                            <p>Awesome. ESP8266 + WiFi = Fantastic.</p>
+                            <p>Awesome. ESP + WiFi = Fantastic.</p>
 
                             <p>
-                                Clicking the button below will scan your network for ESP8266-based BrewPi devices,
+                                Clicking the button below will scan your network for ESP8266- or ESP32-based BrewPi devices,
                                 giving you an option to connect any that aren't already set up.
                             </p>
 
@@ -63,8 +63,7 @@
 {#                                <a href="{% url 'device_add' %}" class="btn btn-large btn-primary">Add Device via Advanced Setup</a>#}
                             {% else %}
                                 <p>Unfortunately, Fermentrack doesn't (officially) support {{ device_family }}-based devices via
-                                serial just yet. We're working on it, and hope to add support in v2 or v3. Sit tight,
-                                and keep an eye on the discussion on HomeBrewTalk.</p>
+                                serial just yet.</p>
 
                                 <p>If you're feeling adventurous, you can always try installing it manually via the
                                 <a href="{% url 'device_add' %}">Advanced Setup</a> workflow. If it ends up working please

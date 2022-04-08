@@ -170,7 +170,10 @@ class GuidedSetupConfigForm(forms.Form):
 
 class GuidedDeviceSelectForm(forms.Form):
     DEVICE_FAMILY_CHOICES = (
-        ('ESP8266', 'ESP8266'),
+        ('ESP8266', 'ESP8266/ESP32'),
+        # ('ESP32', 'ESP32'),
+        # ('esp32s2', 'ESP32-S2'),
+        # ('esp32c3', 'ESP32-C3'),
         ('Arduino', 'Arduino Uno (and compatible)'),  # TODO - Add Leonardo support
         ('Spark', 'Spark Core'),
         ('Fuscus', 'Native Python (Fuscus)'),

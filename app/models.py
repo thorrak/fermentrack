@@ -482,6 +482,9 @@ class BrewPiDevice(models.Model):
     BOARD_TYPE_CHOICES = (
         ('uno', 'Arduino Uno (or compatible)'),
         ('esp8266', 'ESP8266'),
+        ('esp32', 'ESP32'),
+        ('esp32s2', 'ESP32-S2'),
+        ('esp32c3', 'ESP32-C3'),
         ('leonardo', 'Arduino Leonardo'),
         ('core', 'Core'),
         ('photon', 'Photon'),
@@ -492,7 +495,7 @@ class BrewPiDevice(models.Model):
 
     CONNECTION_TYPE_CHOICES = (
         (CONNECTION_SERIAL, 'Serial (Arduino and others)'),
-        (CONNECTION_WIFI, 'WiFi (ESP8266)'),
+        (CONNECTION_WIFI, 'WiFi (ESP8266/ESP32)'),
     )
 
     STATUS_ACTIVE = 'active'

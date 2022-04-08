@@ -27,7 +27,7 @@ One of the key reasons to write Fermentrack was to incorporate features that are
 
 * Native multi-chamber support
 * Cleaner, more intuitive controller setup
-* Integrated support for ESP8266-based controllers
+* Integrated support for ESP8266- and ESP32-based controllers
 * Official support for "legacy" controllers
 * Native support (including mDNS autodetection) for WiFi controllers
 * Integrated specific gravity sensor support, including for Tilt Hydrometers and iSpindel devices
@@ -49,7 +49,7 @@ Full documentation for Fermentrack (including complete installation instructions
 
 ## Requirements
 
-Fermentrack is designed to be run as part of a Docker compose stack and should be able to run on most armv7/x86/x64-based systems that are capable of running docker-compose. Most users, however, will install Fermentrack on a Raspberry Pi.
+Fermentrack is designed to be run as part of a Docker compose stack and should be able to run on most armv7/armv8/x86/x64-based systems that are capable of running docker-compose. Most users, however, will install Fermentrack on a Raspberry Pi.
 
 **For Raspberry Pi-based Installs:**
 * Raspberry Pi 2 B, 3, 4, 400, or later /w Internet Connection

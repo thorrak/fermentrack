@@ -52,8 +52,7 @@
 
                             {% else %}
                                 Unfortunately, this version of Fermentrack isn't quite smart enough to support that
-                                device family yet. Pay attention to the discussions on HomeBrewTalk - Support for
-                                {{ device_family }} is coming soon. (either v2 or v3)
+                                device family yet.
                             {% endif %}
                         </form>
                     </div>{# Yes - Already Flashed Pane #}
@@ -70,8 +69,9 @@
                             <p>
                                 Alternatively, you can manually flash the device without using Fermentrack.
                             {% if device_family == "ESP8266" %}
-                                For ESP8266-based devices, those instructions can be found
-                                <a href="https://github.com/thorrak/brewpi-esp8266/blob/master/docs/Installing%20the%20Firmware.md">here.</a>
+                                For ESP8266- and ESP32-based devices, those instructions can be found
+                                <a href="https://github.com/thorrak/brewpi-esp8266/blob/master/docs/Installing%20the%20Firmware.md">here</a>, or you
+                                can use <a href="https://www.brewflasher.com/">BrewFlasher</a> or <a href="https://web.brewflasher.com">BrewFlasher Web Edition</a>.
                             {% else %}
                                 {# I don't have a good link for manual flashing instructions for Arduino, unfortunately #}
                             {% endif %}
