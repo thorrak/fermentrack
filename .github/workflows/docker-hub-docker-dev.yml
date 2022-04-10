@@ -33,9 +33,9 @@ jobs:
       -
         name: Log in to GitHub Packages
         run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u ${{ secrets.GH_USER }} --password-stdin
-#      -
-#        name: Pull Fermentrack Image
-#        run: docker pull jdbeeler/fermentrack:docker-dev
+      -
+        name: Pull Fermentrack Image
+        run: docker pull jdbeeler/fermentrack:docker-dev
       -
         name: Build dockerfile (arm32v7/amd64/arm64v8/i386)
         run: |
