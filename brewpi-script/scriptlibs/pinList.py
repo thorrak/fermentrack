@@ -151,13 +151,13 @@ def getPinList(boardType, shieldType):
                    {'val': 11, 'text': 'Output 2 (A1)', 'type': 'act'},
                    {'val': 10, 'text': 'Output 3 (A0)', 'type': 'act'},
                    {'val': 0, 'text': 'OneWire', 'type': 'onewire'}]
-    elif (boardType == "esp8266"):  # Note - Excluding shield definition for now
+    elif boardType == "esp8266":  # Note - Excluding shield definition for now
         pinList = [{'val': 16, 'text': '  D0 (Heat)', 'type': 'act'},
                    {'val': 14, 'text': '  D5 (Cool)', 'type': 'act'},
                    {'val': 13, 'text': '  D7 (Door)', 'type': 'door'},
                    {'val': 12, 'text': 'D6 (OneWire)', 'type': 'onewire'},
                    {'val': 0, 'text': 'D3 (Buzzer)', 'type': 'beep'}, ]
-    elif (boardType == "esp32"):  # Note - Excluding shield definition for now
+    elif boardType == "esp32":  # Note - Excluding shield definition for now
         pinList = [{'val': 25, 'text': '  25 (Heat)', 'type': 'act'},
                    {'val': 26, 'text': '  26 (Cool)', 'type': 'act'},
                    {'val': 13, 'text': '  34 (Door)', 'type': 'door'},

@@ -37,7 +37,7 @@
 
     <p><a href="{% url 'device_debug_connection' active_device.id %}" class="btn btn-primary btn-large btn-lg">Debug Device Connection</a></p>
 
-<h3 class="page-header">Update Device Settings</h3>
+<h3 class="page-header">Update Fermentrack Settings for Device</h3>
 
 <form action="{% url "device_manage" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
 
@@ -88,6 +88,29 @@
     <input type="submit" value="Submit" class="btn btn-primary" />
 </form>
 
+
+
+{% if active_device.board_type == "esp32" or active_device.board_type == "esp32s2" or active_device.board_type == "esp32c3" or active_device.board_type == "esp8266" %}
+    {# TODO - Add some kind of version check or something here #}
+
+    <h3 class="page-header">Update Extended Settings on Device</h3>
+
+    <form action="{% url "device_extended_settings" active_device.id %}" class="form-horizontal" method="post">{% csrf_token %}
+        {% for hidden in extended_settings_form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+
+    <div id="extendedSettingsSection">
+{#?        <h4 class="form-header">Device Constants</h4>#}
+        {% form_generic extended_settings_form.invertTFT %}
+{#        {% form_generic extended_settings_form.glycol %}#}
+{#        {% form_generic extended_settings_form.lowDelay %}#}
+    </div>
+
+    <input type="submit" value="Submit" class="btn btn-primary" />
+</form>
+
+{% endif %}
 
 
 

@@ -6,7 +6,14 @@
 {% block content %}
 
 <h1 class="page-header">Flash</h1>
-    <h3>Setting up a new {{ device_family }}</h3>
+    <h3>Setting up a new
+        {% if device_family == "ESP8266" %}
+            {# For the device setup workflow, we don't differentiate between ESP8266 and ESP32 #}
+            ESP8266 / ESP32
+        {% else %}
+            {{ device_family }}
+        {% endif %}
+    </h3>
 
           <div class="container-fluid">
             <div class="row">
@@ -32,7 +39,7 @@
 
                     {# WiFi Connection Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="wifiPill">
-                        {% if device_family == "ESP8266" %} {# Only ESP8266 devices are supported for WiFi #}
+                        {% if device_family == "ESP8266" or device_family == "ESP32" or device_family == "ESP32C3" or device_family == "ESP32S2" %} {# Only ESP8266 & ESP32 devices are supported for WiFi #}
                             <p>Awesome. ESP + WiFi = Fantastic.</p>
 
                             <p>
@@ -50,7 +57,7 @@
                     {# Serial Pane #}
                     <div role="pillpanel" class="col-md-8 tab-pane" id="serialPill">
                         <form action="{% url "device_guided_flash_prompt" device_family %}" method="post" >{% csrf_token %}
-                            {% if device_family == "ESP8266" or device_family == "Arduino" %}
+                            {% if device_family == "ESP8266" or device_family == "Arduino"  or device_family == "ESP32" or device_family == "ESP32C3" or device_family == "ESP32S2" %}
                                 <p>Wonderful. It's hard to misplace a controller when you're connected via a USB cable.</p>
 
                                 <p>

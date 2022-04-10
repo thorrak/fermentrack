@@ -104,8 +104,20 @@ class AvrInfo:
     board_photon = "photon"
     board_esp8266 = "esp8266"
     board_esp32 = "esp32"
+    board_esp32c3 = "esp32c3"
+    board_esp32s2 = "esp32s2"
 
-    boards = {'l': board_leonardo, 's': board_standard, 'm': board_mega, 'x': board_spark_core, 'y': board_photon, 'e': board_esp8266}
+    boards = {
+        'l': board_leonardo,
+        's': board_standard,
+        'm': board_mega,
+        'x': board_spark_core,
+        'y': board_photon,
+        'e': board_esp8266,
+        '3': board_esp32,
+        'c': board_esp32c3,
+        '2': board_esp32s2,
+    }
 
     family_arduino = "Arduino"
     family_spark = "Particle"
@@ -120,6 +132,8 @@ class AvrInfo:
         board_photon: family_spark,
         board_esp8266: family_esp8266,
         board_esp32: family_esp32,
+        board_esp32c3: family_esp32,
+        board_esp32s2: family_esp32,
     }
 
     board_names = {
@@ -130,6 +144,8 @@ class AvrInfo:
         board_photon: "Photon",
         board_esp8266: "ESP8266",
         board_esp32: "ESP32",
+        board_esp32c3: "ESP32-C3",
+        board_esp32s2: "ESP32-S2",
     }
 
     def __init__(self, s=None):
@@ -141,6 +157,8 @@ class AvrInfo:
         self.shield = None
         self.log = 0
         self.parse(s)
+        self.family = ""
+        self.board_name = ""
 
     def parse(self, s):
         if s is None or len(s) == 0:
@@ -227,12 +245,14 @@ class AvrInfo:
 
     def familyName(self):
         family = AvrInfo.families.get(self.board)
+        # TODO - Error/exit
         if family == None:
             family = "????"
         return family
 
     def boardName(self):
         board = AvrInfo.board_names.get(self.board)
+        # TODO - Error/exit
         if board == None:
             board = "????"
         return board

@@ -99,6 +99,7 @@ def BrewPiScript(config_obj):
 
     cs = dict(mode='b', beerSet=20.0, fridgeSet=20.0)  # Control Settings
     cc = dict()  # Control Constants
+    es = dict()  # Extended Settings
     cv = "{}"  # Control variables (json string, sent directly to browser without decoding)
 
     # listState = "", "d", "h", "dh" to reflect whether the list is up to date for installed (d) and available (h)
@@ -178,7 +179,8 @@ def BrewPiScript(config_obj):
         bg_ser.writeln('s')  # request control settings cs
         bg_ser.writeln('c')  # request control constants cc
         bg_ser.writeln('v')  # request control variables cv
-    
+        bg_ser.writeln('x')  # request control constants es
+
         # refresh the device list
         bg_ser.writeln("d{r:1}")  # request installed devices
         bg_ser.writeln("h{u:-1,v:1}")  # request available, but not installed devices
@@ -312,6 +314,8 @@ def BrewPiScript(config_obj):
                 conn.send(json.dumps(cs['beerSet']).encode(encoding="cp437"))
             elif message_type == "getControlConstants":
                 conn.send(json.dumps(cc).encode(encoding="cp437"))
+            elif message_type == "getExtendedSettings":
+                conn.send(json.dumps(es).encode(encoding="cp437"))
             elif message_type == "getControlSettings":
                 # TODO - See where/if we call getControlSettings (and fix the cs['profile'] response below)
                 # if cs['mode'] == "p":
@@ -330,6 +334,9 @@ def BrewPiScript(config_obj):
                 raise socket.timeout
             elif message_type == "refreshControlVariables":
                 bg_ser.writeln("v")
+                raise socket.timeout
+            elif message_type == "refreshExtendedSettings":
+                bg_ser.writeln("x")
                 raise socket.timeout
             elif message_type == "loadDefaultControlSettings":
                 bg_ser.writeln("S")
@@ -382,6 +389,14 @@ def BrewPiScript(config_obj):
                     bg_ser.writeln("j" + json.dumps(decoded))
                     if 'tempFormat' in decoded:
                         refresh_and_check(config_obj, run)  # Reload dbConfig from the database
+                except ValueError:
+                    logMessage("Error: invalid JSON parameter string received: " + value)
+                raise socket.timeout
+            elif message_type == "setExtendedSettings":
+                # receive JSON key:value pairs to set extended settings on the controller
+                try:
+                    decoded = json.loads(value)
+                    bg_ser.writeln("X" + json.dumps(decoded))
                 except ValueError:
                     logMessage("Error: invalid JSON parameter string received: " + value)
                 raise socket.timeout
@@ -507,6 +522,7 @@ def BrewPiScript(config_obj):
                 bg_ser.writeln('s')  # request control settings cs
                 bg_ser.writeln('c')  # request control constants cc
                 bg_ser.writeln('v')  # request control variables cv
+                bg_ser.writeln('x')  # request control variables es
                 trigger_refresh(True)  # Refresh the device list cache (will also raise socket.timeout)
     
             elif message_type == "restartController":
@@ -615,6 +631,9 @@ def BrewPiScript(config_obj):
                         elif line[0] == 'V':
                             # Control settings received
                             cv = line[2:]  # keep as string, do not decode
+                        elif line[0] == 'X':
+                            # Extended settings received
+                            es = json.loads(line[2:])
                         elif line[0] == 'N':
                             pass  # version number received. Do nothing, just ignore
                         elif line[0] == 'h':

@@ -343,12 +343,11 @@ class SensorDevice(models.Model):
             self.device_index = self.get_next_available_device_index()
 
         if self.device_function > 0:  # If the device has a function, set the default chamber/beer
-            # For the ESP8266 implementation, this same logic is enforced on the controller, as well
+            # For the ESP8266/ESP32 implementation, this same logic is enforced on the controller, as well
             self.chamber = 1  # Default the chamber to 1
             self.beer = 0  # Default the beer to 0
-            if self.device_function >= 9 and self.device_function <=15:
+            if 9 <= self.device_function <= 15:
                 self.beer = 1  # ...unless this is an actual beer device, in which case default the beer to 1
-
 
     # This uses the "updateDevice" message. There is also a "writeDevice" message which is used to -create- devices.
     # (Used for "manual" actuators, aka buttons)
@@ -716,6 +715,14 @@ class BrewPiDevice(models.Model):
             return control_constants, self.is_legacy(version=version)
         return None, None
 
+    def retrieve_extended_settings(self):
+        # If we're dealing with a legacy controller, we need to work with the old control constants.
+        extended_settings = ExtendedSettings()
+        extended_settings.load_from_controller(self)
+
+        extended_settings.controller = self
+        return extended_settings
+
     def request_device_refresh(self):
         self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
         time.sleep(0.1)
@@ -961,6 +968,12 @@ class BrewPiDevice(models.Model):
 
     def set_parameters(self, parameters):
         return self.send_message("setParameters", json.dumps(parameters))
+
+    def get_extended_settings(self):
+        return json.loads(self.send_message("getExtendedSettings", read_response=True))
+
+    def set_extended_settings(self, parameters):
+        return self.send_message("setExtendedSettings", json.dumps(parameters))
 
     def get_dashpanel_info(self):
         try:  # This is apparently failing when being called in a loop for external_push - Wrapping in a try/except so the loop doesn't die
@@ -1913,7 +1926,6 @@ class FermentationProfilePoint(models.Model):
         return time_delta
 
 
-
 # The old (0.2.x/Arduino) Control Constants Model
 class OldControlConstants(models.Model):
     # class Meta:
@@ -2216,6 +2228,71 @@ class NewControlConstants(models.Model):
             return True
         except:
             return False
+
+
+# Extended settings only relevant to ESP32-based controllers
+class ExtendedSettings(models.Model):
+    class Meta:
+        managed = False
+
+    invertTFT = models.BooleanField(verbose_name="Invert TFT", default=False,
+                                    help_text="Should the TFT be inverted? Only applies to builds with TFT screens.")
+    glycol = models.BooleanField(verbose_name="Glycol Mode", default=False,
+                                 help_text="Should 'glycol mode' be enabled?")
+    lowDelay = models.BooleanField(verbose_name="Low Delay Mode", default=False,
+                                   help_text="Should 'low delay' mode be enabled?")
+
+    # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
+    # To make it easy to iterate over those fields, going to list them out here
+    firmware_field_list = ['invertTFT', 'glycol', 'lowDelay']
+
+    def load_from_controller(self, controller):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return: boolean
+        """
+        # try:
+        # Load the control constants dict from the controller
+        es = controller.get_extended_settings()
+
+        for this_field in self.firmware_field_list:
+            try:
+                # In case we don't get every field back
+                setattr(self, this_field, es[this_field])
+            except:
+                pass
+        return True
+
+    def save_to_controller(self, controller, attribute):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return:
+        """
+
+        value_to_send = {attribute: getattr(self, attribute)}
+        return controller.set_extended_settings(value_to_send)
+
+    def save_all_to_controller(self, controller, prior_extended_settings=None):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return: boolean
+        """
+
+        if prior_extended_settings is None:
+            # Load the preexisting control constants from the controller
+            prior_extended_settings = ExtendedSettings()
+            prior_extended_settings.load_from_controller(controller)
+
+        for this_field in self.firmware_field_list:
+            # Now loop through and check each field to find out what changed
+            if getattr(self, this_field) != getattr(prior_extended_settings, this_field):
+                # ...and only update those fields
+                self.save_to_controller(controller, this_field)
+        return True
+
 
 # TODO - Determine if we care about controlSettings
 # # There may only be a single control settings object between both revisions of the firmware, but I'll break it out

@@ -358,3 +358,13 @@ class TempControlForm(forms.Form):
         else:
             raise forms.ValidationError("Temperature control mode must be specified!")
 
+
+class BrewPiDeviceExtendedSettingsForm(forms.Form):
+    invertTFT = forms.BooleanField(initial=False, required=False,
+                                   help_text="Should the TFT be inverted? Only applies to TFT-based builds.")
+
+    # glycol = forms.BooleanField(initial=False, required=False, help_text="Use Glycol mode on controller?")
+
+    lowDelay = forms.BooleanField(initial=False, required=False,
+                                  help_text="Use Low Delay mode on the controller? "
+                                            "Warning - Should not be used with compressor-based cooling.")

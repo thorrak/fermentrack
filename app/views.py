@@ -21,7 +21,7 @@ import datetime, os, random, subprocess
 import fermentrack_django.settings as settings
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer, ExtendedSettings
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
 
@@ -804,6 +804,7 @@ def device_manage(request, device_id):
     # Forms posted back to device_manage are explicitly settings update forms
     if request.POST:
         form = device_forms.BrewPiDeviceModifyForm(request.POST)
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
 
         if form.is_valid():
             # Update the device settings based on what we were passed via the form
@@ -815,7 +816,8 @@ def device_manage(request, device_id):
                         messages.error(request, u'A device already exists with the name {}'.format(
                                              form.cleaned_data['device_name']))
                         return render(request, template_name='device_manage.html',
-                                      context={'form': form, 'active_device': active_device})
+                                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                                               'active_device': active_device})
                 except ObjectDoesNotExist:
                     # There was no existing device - we're good. Set the new name.
                     pass
@@ -836,15 +838,19 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, u'Device {} Updated.<br>Please wait up to a minute for the connection to restart'.format(active_device))
+            messages.success(request, f'Device {active_device} Updated.<br>Please wait up to a minute for the '
+                                      f'connection to restart')
             # TODO - Figure out how to accomplish this with the new process manager
             # transaction.on_commit(active_device.restart_process)
 
-            return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
 
         else:
             return render(request, template_name='device_manage.html',
-                          context={'form': form, 'active_device': active_device})
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
     else:
         # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
         # refactoring it. Project for later if need be.
@@ -866,8 +872,85 @@ def device_manage(request, device_id):
         }
 
         form = device_forms.BrewPiDeviceModifyForm(initial=initial_values)
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
         return render(request, template_name='device_manage.html',
-                                   context={'form': form, 'active_device': active_device})
+                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                               'active_device': active_device})
+
+
+@login_required
+@site_is_configured
+def device_extended_settings(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    initial_values = {
+        'device_name': active_device.device_name,
+        'temp_format': active_device.temp_format,
+        'data_point_log_interval': active_device.data_point_log_interval,
+        'connection_type': active_device.connection_type,
+        'useInetSocket': active_device.useInetSocket,
+        'socketPort': active_device.socketPort,
+        'socketHost': active_device.socketHost,
+        'serial_port': active_device.serial_port,
+        'serial_alt_port': active_device.serial_alt_port,
+        'board_type': active_device.board_type,
+        'socket_name': active_device.socket_name,
+        'wifi_host': active_device.wifi_host,
+        'wifi_port': active_device.wifi_port,
+        'modify_not_create': True,
+    }
+
+    form = device_forms.BrewPiDeviceModifyForm(initial=initial_values)
+
+    # Forms posted back to device_extended_settings are explicitly extended settings update forms
+    if request.POST:
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm(request.POST)
+
+        if extended_settings_form.is_valid():
+
+            es = ExtendedSettings(
+                invertTFT=extended_settings_form.cleaned_data['invertTFT'],
+                # glycol=extended_settings_form.cleaned_data['glycol'],
+                # lowDelay=extended_settings_form.cleaned_data['lowDelay'],
+            )
+
+            es.save_all_to_controller(active_device)
+
+            if es.lowDelay:
+                messages.warning(request, "Low Delay mode enabled. This may damage and should not be used with "
+                                          "compressor-based builds!")
+
+            if es.glycol:
+                messages.warning(request, "Glycol mode enabled. This may damage and should not be used with "
+                                          "compressor-based builds!")
+
+            messages.success(request, "Set updated extended settings to device")
+
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
+
+        else:
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
+    else:
+        # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
+        # refactoring it. Project for later if need be.
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
+
+        return render(request, template_name='device_manage.html',
+                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                               'active_device': active_device})
 
 
 @login_required
