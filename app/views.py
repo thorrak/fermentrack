@@ -28,32 +28,21 @@ from django.contrib.auth.models import User
 
 def error_notifications(request):
 
-    if not settings.USE_DOCKER:
-        messages.warning(request, "You are currently using the legacy, non-docker version of Fermentrack that is no "
-                                  "longer being developed/supported. It is highly recommended that you "
-                                  "<a href=\"http://todocker.fermentrack.com/\">migrate to a docker-based "
-                                  "installation</a> if possible.")
-    elif config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
+    if config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
         # Check the git status at least every 6 hours
         now_time = timezone.now()
-        try:
-            if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-
-                try:
-                    if git_integration.app_is_current():
-                        config.LAST_GIT_CHECK = now_time
-                    else:
-                        messages.info(request, "This app is not at the latest version! " +
-                                      '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
-                except:
-                    # If we can't check for the latest version info, skip and move on
-                    pass
-        except:
-            # So here's the deal. On Python3 conversion, any datetime.datetime objects stored in Constance end up
-            # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
-            # overwrite it. Git check can happen on next refresh.
-            config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
-            config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
+        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+            try:
+                if git_integration.app_is_current():
+                    config.LAST_GIT_CHECK = now_time
+                else:
+                    messages.info(request, "This app is not at the latest version! " +
+                                  '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+            except:
+                # If we can't check for the latest version info, skip and move on
+                pass
+                # config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
+                # config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
         if not config.ALLOW_GIT_BRANCH_SWITCHING:
             # Ths user is using one of the two "default" branches (dev or master). Make sure that the branch he/she is
@@ -61,7 +50,8 @@ def error_notifications(request):
 
             # Don't check if the user has custom branch switching though, as they should be allowed to pick whatever
             # branch he/she wants.
-            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE:
+            # TODO - Fix the below once we eliminate docker-dev
+            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE != 'dev'):
                 if config.GIT_UPDATE_TYPE not in [x for x,_ in settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices']]:
                     # TODO - Fix this to pick up the default
                     config.GIT_UPDATE_TYPE = "dev"
@@ -69,19 +59,6 @@ def error_notifications(request):
                     messages.warning(request, "You selected to update from the {} code ".format(config.GIT_UPDATE_TYPE) +
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
-
-    # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
-    # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
-    # TODO - Readd this check
-    # if os.path.isfile("/var/run/sshwarn"):
-    #     messages.warning(request, "You have SSH enabled on the Raspberry Pi, but the default (pi) user's password is "
-    #                               "unchanged! This is potentially a major security issue. Please SSH in, change the "
-    #                               "password, and SSH in one more time to test that it worked. Otherwise, we'll keep "
-    #                               "annoying you until you do.")
-
-    if not config.SQLITE_OK_DJANGO_2:
-        messages.error(request, "Fermentrack has upgraded to a newer copy of Django which requires an additional step to complete. " +
-                      '<a href="/fix_sqlite"">Click here</a> to trigger this step and restart Fermentrack.')
 
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
@@ -505,7 +482,8 @@ def github_trigger_upgrade(request, variant=""):
                 # I'm not doing "if git_update_type == config.GIT_UPDATE_TYPE" so users who have update set to 'none'
                 # can still update from the "master" branch.
                 if git_update_type == "dev":
-                    branch_to_use = "dev"
+                    # TODO - Change back to dev once we eliminate docker-dev
+                    branch_to_use = "docker-dev"
                 else:
                     # Assume if they have anything other than "dev" they want master
                     branch_to_use = "master"
@@ -533,10 +511,9 @@ def github_trigger_upgrade(request, variant=""):
             messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render(request, template_name="github_trigger_upgrade.html",
-                               context={'commit_info': commit_info, 'app_is_current': app_is_current,
-                                        'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
-                                        'allow_git_branch_switching': allow_git_branch_switching,
-                                        'local_versions': local_versions, 'lockfile_exists': lockfile.exists()})
+                  context={'commit_info': commit_info, 'app_is_current': app_is_current, 'branch_info': branch_info,
+                           'tags': tags, 'git_update_type': git_update_type, 'lockfile_exists': lockfile.exists(),
+                           'allow_git_branch_switching': allow_git_branch_switching, 'local_versions': local_versions,})
 
 @login_required
 @site_is_configured
@@ -648,7 +625,6 @@ def site_settings(request):
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
-            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack

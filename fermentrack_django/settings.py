@@ -260,8 +260,6 @@ CONSTANCE_CONFIG = {
     'GRAPH_ROOM_TEMP_COLOR': ("#610345", 'What color do you want the room temperature line on the graph?', str),
     'GRAPH_GRAVITY_COLOR': ("#95190C", 'What color do you want the specific gravity line on the graph?', str),
     'GRAPH_GRAVITY_TEMP_COLOR': ("#280003", 'What color do you want the gravity sensor temperature line on the graph?', str),
-    'SQLITE_OK_DJANGO_2': (False, 'Has the Django 2.0+ SQLite migration been run?',
-                                   bool),
     'CUSTOM_THEME': ('default', 'What color theme would you like to use for Fermentrack?', 'custom_theme_select'),
 
 }
@@ -275,10 +273,9 @@ CONSTANCE_CONFIG_FIELDSETS = {
                      'GRAPH_FRIDGE_SET_COLOR', 'GRAPH_ROOM_TEMP_COLOR', 'GRAPH_GRAVITY_COLOR',
                      'GRAPH_GRAVITY_TEMP_COLOR'),
 
-    'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION',
-                       'SQLITE_OK_DJANGO_2'),
+    'Internal Items': ('FIRMWARE_LIST_LAST_REFRESHED', 'LAST_GIT_CHECK', 'USER_HAS_COMPLETED_CONFIGURATION',),
 
-    'Advanced Options': ('ALLOW_GIT_BRANCH_SWITCHING','GIT_UPDATE_TYPE')
+    'Advanced Options': ('ALLOW_GIT_BRANCH_SWITCHING', 'GIT_UPDATE_TYPE')
 }
 
 

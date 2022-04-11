@@ -85,7 +85,6 @@ def setup_config(request):
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
             config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
-            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
