@@ -16,6 +16,9 @@ Added
 
 - BrewPi-Script instances are now controlled via a custom process manager
 - Officially added arm64v8 to supported platforms
+- Added support for new versions of the BrewPi Firmware for certain ESP-based BrewPi Controllers
+- Added support for extended settings on new BrewPi Firmware for certain ESP-based BrewPi Controllers
+- Added board types for ESP32, ESP32-C3, and ESP32-S2
 
 
 Changed
@@ -23,10 +26,10 @@ Changed
 
 - Removed Circus support in favor of managing processes via Supervisord
 - Removed libzmq requirement
-- Added support for new versions of the BrewPi Firmware for certain ESP-based BrewPi Controllers
 - Removed environment tests for Tilt hydrometers (Obviated via Docker)
 - Switch to use latest LTS version of Django
 - Update to Python 3.9
+- Changed most references to ESP8266 to reference ESP32 as appropriate
 
 
 
