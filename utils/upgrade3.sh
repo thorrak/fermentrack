@@ -98,6 +98,7 @@ shift $((OPTIND-1))
 
 stop_supervisord () {
 #  supervisorctl stop all
+echo ""
 }
 
 
@@ -110,6 +111,7 @@ reload_supervisord () {
 
 start_supervisord () {
 #  supervisorctl start all
+echo ""
 }
 
 
