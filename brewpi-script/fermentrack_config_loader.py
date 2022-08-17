@@ -81,11 +81,11 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         return self.brewpi_device.get_profile_temp()
 
     def is_past_end_of_profile(self) -> bool:
-        # try:
-        #     brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
-        # except ObjectDoesNotExist:
-        #     return False  # cannot load the object from the database (deleted?)
-        return self.brewpi_device.is_past_end_of_profile()
+        try:
+            is_past_end = self.brewpi_device.is_past_end_of_profile()
+        except StopIteration:
+            is_past_end = False
+        return is_past_end
 
     def reset_profile(self):
         try:
