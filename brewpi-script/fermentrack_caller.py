@@ -31,9 +31,13 @@ if __name__ == '__main__':
             if this_id not in process_list:
                 # The process hasn't been spawned. Spawn it.
                 # print(f"Launching process for BrewPiDevice #{this_id}")
-                brewpi_config = FermentrackBrewPiScriptConfig(brewpi_device_id=this_id)
-                brewpi_config.load_from_fermentrack(False)
-                process_list[this_id] = Process(target=BrewPiScript, args=(brewpi_config, ))
-                process_list[this_id].start()
+                try:
+                    brewpi_config = FermentrackBrewPiScriptConfig(brewpi_device_id=this_id)
+                    brewpi_config.load_from_fermentrack(False)
+                except StopIteration:
+                    pass
+                else:
+                    process_list[this_id] = Process(target=BrewPiScript, args=(brewpi_config, ))
+                    process_list[this_id].start()
 
         time.sleep(5)

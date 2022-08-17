@@ -32,6 +32,8 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
         except ObjectDoesNotExist:
             return False  # cannot load the object from the database (deleted?)
+        except StopIteration:
+            return False
 
         self.brewpi_device = brewpi_device
 
