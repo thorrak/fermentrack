@@ -69,7 +69,7 @@ def check_python_packages() -> (bool, bool, list):
         ]
     else:
         package_list = [
-            {'name': 'aioblescan', 'version': version.parse("0.2.6")},
+            {'name': 'aioblescan', 'version': version.parse("0.2.13")},
             {'name': 'redis', 'version': version.parse("3.4.1")},
         ]
 
