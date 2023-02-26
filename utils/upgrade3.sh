@@ -103,9 +103,9 @@ echo ""
 
 
 reload_supervisord () {
-  supervisorctl reread
+  supervisorctl reload
 #  supervisorctl update
-  supervisorctl restart
+#  supervisorctl restart
 }
 
 

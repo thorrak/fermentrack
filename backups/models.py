@@ -79,6 +79,7 @@ class Backup(TimeStampedModel):
             'use_natural_primary_keys': False,
             'use_base_manager': False,
             'primary_keys': None,
+            'verbosity': 0,
         }
 
         cmd = dumpdata.Command()

@@ -367,7 +367,12 @@ class SensorDevice(models.Model):
         # config_dict['d'] = self.deactivated
 
         if self.hardware == 1:  # Set options that are specific to pin devices
-            config_dict['x'] = self.invert
+            if self.invert == "1":
+                config_dict['x'] = 1
+            elif self.invert == "0":
+                config_dict['x'] = 0
+            else:
+                config_dict['x'] = int(self.invert)
         elif self.hardware == 2 or self.hardware == 5 or self.hardware == 6:  # Set options that are specific to OneWire & Bluetooth temp sensors
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
@@ -375,7 +380,11 @@ class SensorDevice(models.Model):
             config_dict['a'] = self.address
             config_dict['n'] = self.child_no
 
-        sent_message = self.controller.send_message("applyDevice", json.dumps(config_dict))
+        message_to_send = json.dumps(config_dict)
+        message_to_send.replace("\"x\": \"1\"", "\"x\": 1")
+        message_to_send.replace("\"x\": \"0\"", "\"x\": 0")
+
+        sent_message = self.controller.send_message("applyDevice", message_to_send)
         time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
 
         self.controller.load_sensors_from_device()

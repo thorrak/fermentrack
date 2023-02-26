@@ -3,7 +3,7 @@ name: 'Build & Push to Docker Hub'
 on:
   push:
     branches:
-      - v14
+      - docker_dev
 
 jobs:
   buildx:
