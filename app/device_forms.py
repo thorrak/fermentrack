@@ -257,7 +257,7 @@ class SensorFormRevised(forms.Form):
 
         if len(address) <= 0:
             if cleaned_data.get("invert"):
-                invert = cleaned_data.get("invert")
+                invert = int(cleaned_data.get("invert"))
             elif perform_uninstall is True:
                 # We don't care if we're uninstalling
                 invert = SensorDevice.INVERT_NOT_INVERTED
@@ -267,7 +267,7 @@ class SensorFormRevised(forms.Form):
             invert = SensorDevice.INVERT_NOT_INVERTED
 
         # All the fields that MAY have been omitted have been set - return cleaned_data
-        cleaned_data['invert'] = invert
+        cleaned_data['invert'] = int(invert)
         cleaned_data['device_function'] = int(device_function)
         cleaned_data['installed'] = installed
         cleaned_data['pin'] = pin  # To handle the int conversion
