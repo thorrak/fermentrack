@@ -369,7 +369,7 @@ class SensorDevice(models.Model):
         if self.hardware == 1:  # Set options that are specific to pin devices
             if self.invert == "1":
                 config_dict['x'] = 1
-            elif self.invert == "1":
+            elif self.invert == "0":
                 config_dict['x'] = 0
             else:
                 config_dict['x'] = int(self.invert)

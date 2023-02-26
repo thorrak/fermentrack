@@ -194,18 +194,6 @@ class NewCCModelForm(ModelForm):
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
 
-class SensorForm(ModelForm):
-    # TODO - Delete if no longer required
-    class Meta:
-        model = SensorDevice
-        fields = ['device_function', 'invert', 'pin', 'address']
-
-    def __init__(self, *args, **kwargs):
-        super(SensorForm, self).__init__(*args, **kwargs)
-        for this_field in self.fields:
-            self.fields[this_field].widget.attrs['class'] = "form-control"
-
-
 class SensorFormRevised(forms.Form):
     # TODO - Overwrite the DEVICE_FUNCTION_CHOICES to match the type of device being configured
     device_function = forms.ChoiceField(label="Device Function",
