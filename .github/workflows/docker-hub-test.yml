@@ -3,7 +3,7 @@ name: 'Build & Push to Docker Hub'
 on:
   push:
     branches:
-      - recover_brewpi
+      - docker_dev
 
 jobs:
   buildx:
