@@ -474,7 +474,7 @@ def github_trigger_upgrade(request, variant=""):
 
     if request.POST:
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
-            messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit 10:11")
+            messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
         elif lockfile.exists():
             messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
                                     "delete the upgrade lock using the function below.")
@@ -511,7 +511,7 @@ def github_trigger_upgrade(request, variant=""):
     else:
         # We'll display this error message if the page is being accessed and no form has been posted
         if app_is_current:
-            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit 10:25")
 
     return render(request, template_name="github_trigger_upgrade.html",
                   context={'commit_info': commit_info, 'app_is_current': app_is_current, 'branch_info': branch_info,
