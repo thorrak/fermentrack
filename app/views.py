@@ -511,7 +511,7 @@ def github_trigger_upgrade(request, variant=""):
     else:
         # We'll display this error message if the page is being accessed and no form has been posted
         if app_is_current:
-            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit 10:25")
+            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render(request, template_name="github_trigger_upgrade.html",
                   context={'commit_info': commit_info, 'app_is_current': app_is_current, 'branch_info': branch_info,
