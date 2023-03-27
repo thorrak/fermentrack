@@ -27,7 +27,7 @@ urllib3<1.26    # Requirement for the new pip resolver
 
 
 # Reminder - Update the version checks in gravity/tilt/tilt_tests.py when changing versions for the BT/Tilt pkgs
-redis==3.4.1           # for huey & gravity sensor support
+redis==4.5.3           # for huey & gravity sensor support
 aioblescan==0.2.6      # Replacement for beacontools for Tilt support
 
 django-environ==0.4.5  # https://github.com/joke2k/django-environ
