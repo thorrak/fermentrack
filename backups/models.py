@@ -23,6 +23,7 @@ from app.models import Beer
 from backups import backup_funcs
 from gravity.models import GravityLog
 
+BACKUP_FILE_VERSION = "2.0.0"
 
 def default_filename_prefix():
     return timezone.now().strftime('%Y-%m-%dT%H.%M.%S')
@@ -70,6 +71,7 @@ class Backup(TimeStampedModel):
     @classmethod
     def generate_backup_dict(cls):
         backup_dict = {
+            'file_version': BACKUP_FILE_VERSION,
             'fermentrack_options': backup_funcs.dump_fermentrack_configuration_options(),
 
             'brewpi_devices': backup_funcs.dump_brewpi_devices(),
@@ -137,14 +139,30 @@ class Backup(TimeStampedModel):
         with tarsafe.open(self.outfile_path, mode="r:*") as f:
             f.extractall(path=settings.ROOT_DIR)
 
-    def load_database_from_file(self):
+    # The next function is the "legacy" loader, which is used for backups created when the django core management
+    # commands were used to create the backup.
+    @staticmethod
+    def load_legacy_database_from_file():
         data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         django.core.management.call_command('loaddata', data_dump_file)
 
+    @staticmethod
+    def get_backup_file_version(file_path) -> str:
+        """Get the version of the backup file"""
+        with open(file_path, "r") as data_dump_file:
+            backup_dict = json.load(data_dump_file)
+            if 'file_version' not in backup_dict:
+                return "1.0.0"  # If the file version is not present, assume it's 1.0.0 (which is "Legacy")
+            return backup_dict['file_version']
+
     def perform_restore(self):
         self.decompress_backup_file()
-        self.load_database_from_file()
-
+        file_version = self.get_backup_file_version(settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME)
+        if file_version == "1.0.0":
+            # This is a legacy backup. Call the legacy loader
+            self.load_legacy_database_from_file()
+        else:
+            raise NotImplementedError("Backup file version not supported")
 
 @receiver(post_delete, sender=Backup)
 def backup_delete(sender, instance, **kwargs):
