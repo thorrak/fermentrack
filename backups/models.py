@@ -19,7 +19,9 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from pathlib import Path
 
+from app.models import Beer
 from backups import backup_funcs
+from gravity.models import GravityLog
 
 
 def default_filename_prefix():
@@ -66,29 +68,6 @@ class Backup(TimeStampedModel):
         return excluded_models + settings.BACKUPS_EXCLUDE_APPS
 
     @classmethod
-    def dump_database_to_file(cls):
-        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
-
-        exclude_models = cls.get_exclude_list()
-
-        options = {
-            'format': 'json',
-            'indent': '  ',
-            'exclude': exclude_models,
-            'output': str(data_dump_file),  # Convert back from path to string
-            'database': DEFAULT_DB_ALIAS,
-            'traceback': True,
-            'use_natural_foreign_keys': False,
-            'use_natural_primary_keys': False,
-            'use_base_manager': False,
-            'primary_keys': None,
-            'verbosity': 0,
-        }
-
-        cmd = dumpdata.Command()
-        cmd.handle(*[], **options)
-
-    @classmethod
     def generate_backup_dict(cls):
         backup_dict = {
             'fermentrack_options': backup_funcs.dump_fermentrack_configuration_options(),
@@ -113,6 +92,28 @@ class Backup(TimeStampedModel):
         backup_dict = cls.generate_backup_dict()
         return json.dumps(backup_dict)
 
+    @classmethod
+    def write_backup_to_file(cls):
+        """Write the JSON from generate_backup_json to a file"""
+        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
+        with open(data_dump_file, "w") as f:
+            f.write(cls.generate_backup_json())
+
+    @classmethod
+    def add_logs_to_file(cls, t_cls, f: tarfile.TarFile, arc_prefix:str="data/"):
+        """Add all the log files associated with GravityLog objects to the tarfile, changing their name to match the
+         UUID of the GravityLog object"""
+        log_types = ['base_csv', 'full_csv','annotation_json']
+        file_name_base = settings.ROOT_DIR / settings.DATA_ROOT
+
+        # Loop through each of the three log types for each of the beer objects, and add the CSV file to the tarfile
+        for obj in t_cls.objects.all():
+            for log_type in log_types:
+                csv_path = file_name_base / obj.full_filename(log_type)
+                if os.path.isfile(csv_path):
+                    f.add(csv_path, arcname=f"{arc_prefix}{obj.uuid}_{log_type}.csv")
+
+
     @property
     def outfile_path(self) -> Path:
         return settings.BACKUP_STAGING_DIR.parent / (self.filename_prefix + ".tar.xz")
@@ -122,10 +123,12 @@ class Backup(TimeStampedModel):
         with tarfile.open(self.outfile_path, mode="w:xz") as f:
             f.add(data_dump_file, arcname=settings.BACKUP_DATA_DUMP_FILE_NAME)
             # f.add(settings.MEDIA_ROOT, arcname="media/")
-            f.add(settings.DATA_ROOT, arcname="data/")
+            # f.add(settings.DATA_ROOT, arcname="data/")
+            self.add_logs_to_file(Beer, f, arc_prefix="data/")
+            self.add_logs_to_file(GravityLog, f, arc_prefix="data/")
 
     def perform_backup(self):
-        self.dump_database_to_file()
+        self.write_backup_to_file()
         self.compress_staging_to_file()
 
     def decompress_backup_file(self):
