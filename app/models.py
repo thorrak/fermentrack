@@ -1158,7 +1158,9 @@ class BrewPiDevice(models.Model):
         device.wifi_host_ip = input_dict['wifi_host_ip']
         device.wifi_port = input_dict['wifi_port']
 
-        # active_beer and active_profile need to be lazy-loaded due to circular references
+        # I'm not going to load active beer or active_profile as I don't want loading a backup to inadvertently trigger
+        # temperature control.
+        # If I did want to load that, however, I would need to lazy-load it due to circular references
         # device.active_beer = Beer.objects.get(uuid=input_dict['active_beer_uuid'])
         # device.active_profile = Profile.objects.get(uuid=input_dict['active_profile_uuid'])
         # device.time_profile_started = input_dict['time_profile_started']
@@ -1343,7 +1345,7 @@ class Beer(models.Model):
         beer.gravity_enabled = input_dict['gravity_enabled']
         beer.format = input_dict['temp_format']
         beer.uuid = input_dict['uuid']
-        if input_dict['device_uuid'] is None:
+        if input_dict['device_uuid'] == "None":
             beer.device = None
         else:
             try:

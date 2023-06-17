@@ -224,7 +224,7 @@ class GravitySensor(models.Model):
             'sensor_type': self.sensor_type,
             'temp_format': self.temp_format,
             'active_log': self.active_log.to_dict() if self.active_log is not None else None,
-            'assigned_brewpi_device': self.assigned_brewpi_device.to_dict() if self.assigned_brewpi_device is not None else None,
+            'assigned_brewpi_device_uuid': str(self.assigned_brewpi_device.uuid if self.assigned_brewpi_device is not None else None),
             'log_gravity': self.log_gravity,
             'log_temp': self.log_temp,
             'uuid': str(self.uuid),
@@ -253,9 +253,11 @@ class GravitySensor(models.Model):
         sensor.log_temp = input_dict['log_temp']
         sensor.uuid = input_dict['uuid']
 
-        # We have to lazy-load these because they're circular references
+        # I don't want to load active_log as I don't want to inadvertently trigger logging to continue unexpectedly.
+        # If I did, however, I would need to lazy-load it later as this would create a circular reference
         # sensor.active_log = GravityLog.from_dict(input_dict['active_log'], update)
-        # sensor.assigned_brewpi_device = BrewPiDevice.from_dict(input_dict['assigned_brewpi_device'], update)
+        sensor.assigned_brewpi_device = BrewPiDevice.objects.get(uuid=input_dict['assigned_brewpi_device_uuid']) if \
+            input_dict['assigned_brewpi_device_uuid'] != "None" else None
 
         return sensor
 
@@ -962,7 +964,7 @@ class TiltConfiguration(models.Model):
         tilt_config.grav_constant_term = input_dict['grav_constant_term']
         tilt_config.coefficients_up_to_date = input_dict['coefficients_up_to_date']
         tilt_config.sensor = GravitySensor.objects.get(uuid=input_dict['sensor_uuid'])
-        tilt_config.tiltbridge = TiltBridge.objects.get(uuid=input_dict['tiltbridge_uuid']) if input_dict['tiltbridge_uuid'] else None
+        tilt_config.tiltbridge = TiltBridge.objects.get(uuid=input_dict['tiltbridge_uuid']) if input_dict['tiltbridge_uuid'] != "None" else None
         tilt_config.uuid = input_dict['uuid']
 
         return tilt_config

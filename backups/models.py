@@ -20,7 +20,7 @@ from django.dispatch import receiver
 from pathlib import Path
 
 from app.models import Beer
-from backups import backup_funcs
+from backups import backup_funcs, restore_funcs
 from gravity.models import GravityLog
 
 BACKUP_FILE_VERSION = "2.0.0"
@@ -146,6 +146,54 @@ class Backup(TimeStampedModel):
         data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         django.core.management.call_command('loaddata', data_dump_file)
 
+    def load_database_from_file(self):
+        data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
+        update = True  # Hardcoding this for now, but eventually we'll want to make this a user option
+
+        # Load the JSON
+        with open(data_dump_file, "r") as data_dump_file:
+            backup_dict = json.load(data_dump_file)
+
+        # Load the data from the backup file. Note that the order matters here.
+        restore_result = {}
+        if 'fermentrack_options' in backup_dict:
+            restore_result['fermentrack_options'] = restore_funcs.restore_fermentrack_configuration_options(
+                backup_dict['fermentrack_options'])
+
+        if 'brewpi_devices' in backup_dict:
+            restore_result['brewpi_devices'] = restore_funcs.restore_brewpi_devices(backup_dict['brewpi_devices'],
+                                                                                    update=update)
+        if 'beers' in backup_dict:
+            restore_result['beers'] = restore_funcs.restore_beers(backup_dict['beers'], update=update)
+        if 'profiles' in backup_dict:
+            restore_result['profiles'] = restore_funcs.restore_fermentation_profiles(backup_dict['profiles'],
+                                                                                     update=update)
+        if 'gravity_sensors' in backup_dict:
+            restore_result['gravity_sensors'] = restore_funcs.restore_gravity_sensors(backup_dict['gravity_sensors'],
+                                                                                      update=update)
+        if 'gravity_logs' in backup_dict:
+            restore_result['gravity_logs'] = restore_funcs.restore_gravity_logs(backup_dict['gravity_logs'],
+                                                                                update=update)
+        if 'tiltbridges' in backup_dict:
+            restore_result['tiltbridges'] = restore_funcs.restore_tiltbridges(backup_dict['tiltbridges'], update=update)
+        if 'tilts' in backup_dict:
+            restore_result['tilts'] = restore_funcs.restore_tilt_configurations(backup_dict['tilts'], update=update)
+        if 'tilt_temp_calibration_points' in backup_dict:
+            restore_result['tilt_temp_calibration_points'] = restore_funcs.restore_tilt_temp_calibration_points(
+                backup_dict['tilt_temp_calibration_points'], update=update)
+        if 'tilt_gravity_calibration_points' in backup_dict:
+            restore_result['tilt_gravity_calibration_points'] = restore_funcs.restore_tilt_gravity_calibration_points(
+                backup_dict['tilt_gravity_calibration_points'], update=update)
+        if 'ispindels' in backup_dict:
+            restore_result['ispindels'] = restore_funcs.restore_ispindel_configurations(backup_dict['ispindels'],
+                                                                                        update=update)
+        if 'ispindel_gravity_calibration_points' in backup_dict:
+            restore_result['ispindel_gravity_calibration_points'] = \
+                restore_funcs.restore_ispindel_gravity_calibration_points(
+                    backup_dict['ispindel_gravity_calibration_points'], update=update)
+
+
+
     @staticmethod
     def get_backup_file_version(file_path) -> str:
         """Get the version of the backup file"""
@@ -161,6 +209,9 @@ class Backup(TimeStampedModel):
         if file_version == "1.0.0":
             # This is a legacy backup. Call the legacy loader
             self.load_legacy_database_from_file()
+        elif file_version == "2.0.0":
+            # This is a current backup. Call the current loader
+            self.load_database_from_file()
         else:
             raise NotImplementedError("Backup file version not supported")
 
