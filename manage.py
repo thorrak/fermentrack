@@ -21,11 +21,4 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
-    try:
-        execute_from_command_line(sys.argv)
-    except IntegrityError:
-        # If we have an integrity error, it's most likely because of the Django 2 SQLite issue. Trigger the fix, then
-        # reattempt the initial migration.
-        execute_from_command_line(['manage.py', 'fix_sqlite_for_django_2'])
-        execute_from_command_line(sys.argv)
-
+    execute_from_command_line(sys.argv)
