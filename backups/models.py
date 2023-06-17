@@ -1,3 +1,4 @@
+import json
 import shlex
 import subprocess
 
@@ -17,6 +18,8 @@ import tarsafe  # Provides safer extract functions
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from pathlib import Path
+
+from backups import backup_funcs
 
 
 def default_filename_prefix():
@@ -84,6 +87,31 @@ class Backup(TimeStampedModel):
 
         cmd = dumpdata.Command()
         cmd.handle(*[], **options)
+
+    @classmethod
+    def generate_backup_dict(cls):
+        backup_dict = {
+            'fermentrack_options': backup_funcs.dump_fermentrack_configuration_options(),
+
+            'brewpi_devices': backup_funcs.dump_brewpi_devices(),
+            'beers': backup_funcs.dump_beers(),
+            'profiles': backup_funcs.dump_fermentation_profiles(),
+
+            'gravity_sensors': backup_funcs.dump_gravity_sensors(),
+            'gravity_logs': backup_funcs.dump_gravity_logs(),
+            'tiltbridges': backup_funcs.dump_tiltbridges(),
+            'tilts': backup_funcs.dump_tilt_configurations(),
+            'tilt_temp_calibration_points': backup_funcs.dump_tilt_temp_calibration_points(),
+            'tilt_gravity_calibration_points': backup_funcs.dump_tilt_gravity_calibration_points(),
+            'ispindels': backup_funcs.dump_ispindel_configurations(),
+            'ispindel_gravity_calibration_points': backup_funcs.dump_ispindel_gravity_calibration_points(),
+        }
+        return backup_dict
+
+    @classmethod
+    def generate_backup_json(cls):
+        backup_dict = cls.generate_backup_dict()
+        return json.dumps(backup_dict)
 
     @property
     def outfile_path(self) -> Path:

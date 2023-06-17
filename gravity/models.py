@@ -364,7 +364,7 @@ class GravityLog(models.Model):
         return {
             'name': self.name,
             'device_uuid': str(self.device.uuid),
-            'created': self.created,
+            'created': self.created.isoformat(),
             'format': self.format,
             'model_version': self.model_version,
             'display_extra_data_as_annotation': self.display_extra_data_as_annotation,
@@ -388,7 +388,7 @@ class GravityLog(models.Model):
 
         log.name = input_dict['name']
         log.device = GravitySensor.objects.get(uuid=input_dict['device_uuid'])
-        log.created = input_dict['created']
+        log.created = datetime.datetime.fromisoformat(input_dict['created'])
         log.format = input_dict['format']
         log.model_version = input_dict['model_version']
         log.display_extra_data_as_annotation = input_dict['display_extra_data_as_annotation']
@@ -682,7 +682,7 @@ class TiltTempCalibrationPoint(models.Model):
             'orig_value': str(self.orig_value),
             'actual_value': str(self.actual_value),
             'temp_format': self.sensor.sensor.temp_format,
-            'created': self.created,
+            'created': self.created.isoformat(),
             'uuid': str(self.uuid),
             'sensor_uuid': str(self.sensor.sensor.uuid),
         }
@@ -700,7 +700,7 @@ class TiltTempCalibrationPoint(models.Model):
         obj.orig_value = Decimal(input_dict['orig_value'])
         obj.actual_value = Decimal(input_dict['actual_value'])
         obj.temp_format = input_dict['temp_format']
-        obj.created = input_dict['created']
+        obj.created = datetime.datetime.fromisoformat(input_dict['created'])
         obj.uuid = input_dict['uuid']
         obj.sensor = TiltConfiguration.objects.get(uuid=input_dict['sensor_uuid'])
 
@@ -720,13 +720,13 @@ class TiltGravityCalibrationPoint(models.Model):
         return {
             'actual_gravity': str(self.actual_gravity),
             'tilt_measured_gravity': str(self.tilt_measured_gravity),
-            'created': self.created,
+            'created': self.created.isoformat(),
             'uuid': str(self.uuid),
-            'sensor_uuid': str(self.sensor.sensor.uuid),
+            'sensor_uuid': str(self.sensor.uuid),
         }
 
     @classmethod
-    def from_dict(cls, input_dict, update=False) -> 'TiltGravityCalibrationPoint':
+    def from_dict(cls, input_dict, update=False) -> 'TiltGravityCalibrationPoint' or None:
         try:
             obj = cls.objects.get(uuid=input_dict['uuid'])
             if not update:
@@ -737,7 +737,7 @@ class TiltGravityCalibrationPoint(models.Model):
 
         obj.actual_gravity = Decimal(input_dict['actual_gravity'])
         obj.tilt_measured_gravity = Decimal(input_dict['tilt_measured_gravity'])
-        obj.created = input_dict['created']
+        obj.created = datetime.datetime.fromisoformat(input_dict['created'])
         obj.uuid = input_dict['uuid']
         obj.sensor = TiltConfiguration.objects.get(uuid=input_dict['sensor_uuid'])
 
@@ -1063,7 +1063,7 @@ class IspindelGravityCalibrationPoint(models.Model):
         return {
             'angle': str(self.angle),
             'gravity': str(self.gravity),
-            'created': self.created,
+            'created': self.created.isoformat(),
             'sensor_uuid': str(self.sensor.uuid),
             'uuid': str(self.uuid),
         }
@@ -1085,7 +1085,7 @@ class IspindelGravityCalibrationPoint(models.Model):
 
         calibration_point.angle = Decimal(input_dict['angle'])
         calibration_point.gravity = Decimal(input_dict['gravity'])
-        calibration_point.created = input_dict['created']
+        calibration_point.created = datetime.datetime.fromisoformat(input_dict['created'])
         calibration_point.sensor = IspindelConfiguration.objects.get(uuid=input_dict['sensor_uuid'])
         calibration_point.uuid = input_dict['uuid']
 
