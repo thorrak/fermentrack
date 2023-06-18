@@ -9,8 +9,8 @@ ready to go. Otherwise, just follow these instructions to get on your way.
 
 #. Go to your Fermentrack installation's main page, and click "View Dashboard" underneath the device you wish to configure.
 #. From the menu at the top with your device's name, choose "Configure Sensors/Pins/Devices"
-#. A screen will appear showing you the configuration status of your device. At a minimum, you need to have a heating pin, cooling pin, and chamber sensor set for your device to operate.
-#. Configure each of the devices listed under "Available Devices" - so long as
+#. A screen will appear showing you the configuration status of your device. At a minimum, you need to have a cooling pin and chamber sensor set for your device to operate.
+#. Configure each of the devices listed under "Available Devices" that you plan to use.
 
 
 Heating/Cooling/Door Sensor Pin
