@@ -1,6 +1,5 @@
 # wraps a tcp socket stream in a object that looks like a serial port
 # this allows seemless integration with exsiting brewpi-script code
-from __future__ import print_function
 
 import socket, errno
 from . import mdnsLocator
@@ -9,7 +8,7 @@ import os, sys, time
 
 # Copying this in from BrewPiUtil to prevent chained imports
 def printStdErr(*objs):
-    print("", *objs, file=sys.stderr)
+    print("", *objs, file=sys.stderr, flush=True)
 
 def logMessage(message):
     """
@@ -50,14 +49,14 @@ class TCPSerial(object):
         return
 
     def read(self, size=1):
-        #Returns:    Bytes read from the port.
-        #Read size bytes_read from the serial port. If a timeout is set it may return less characters as requested. With no timeout it will block until the requested number of bytes_read is read.
-        bytes_read=None
+        # Returns:    Bytes read from the port.
+        # Read size bytes_read from the serial port. If a timeout is set it may return less characters as requested. With no timeout it will block until the requested number of bytes_read is read.
+        bytes_read = None
         try: 
-            bytes_read=self.sock.recv(size)
-        except socket.timeout: # timeout on receive just means there is nothing in the buffer.  This is not an error
+            bytes_read = self.sock.recv(size)
+        except socket.timeout:  # timeout on receive just means there is nothing in the buffer.  This is not an error
             return None
-        except socket.error: # other socket errors probably mean we lost our connection.  try to recover it.
+        except socket.error:  # other socket errors probably mean we lost our connection.  try to recover it.
             bytes_read = b''
         # Because an empty buffer returns socket.timeout, bytes_read being none or a blank bytestring means that we're
         # disconnected. Print a message & attempt to reconnect

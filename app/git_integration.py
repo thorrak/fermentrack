@@ -11,7 +11,8 @@ def app_is_current(tagged_commits_only=False, branch_to_check=None):
     remote_repo = local_repo.remote()
     local_commit = local_repo.commit()
 
-    if not config.ALLOW_GIT_BRANCH_SWITCHING and settings.GIT_BRANCH != config.GIT_UPDATE_TYPE:
+    if not config.ALLOW_GIT_BRANCH_SWITCHING and settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and not \
+            (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE == 'dev'):
         # The branch is set to "master" and update type is "dev" or vice-versa
         return False
 

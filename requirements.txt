@@ -1,1 +1,3 @@
+--extra-index-url https://wheels.fermentrack.com/simple
+
 -r requirements/base.txt

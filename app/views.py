@@ -1,60 +1,48 @@
+from pathlib import Path
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 
 from constance import config  # For the explicitly user-configurable stuff
 from .decorators import site_is_configured, login_if_required_for_dashboard
 
-from lib.ftcircus.client import CircusException
 
 from . import device_forms, profile_forms, beer_forms, setup_forms
 from . import setup_views, mdnsLocator, almost_json, git_integration, connection_debug, udev_integration
 
-import json, datetime, pytz, os, random, sys, subprocess
+import datetime, os, random, subprocess
 
 import fermentrack_django.settings as settings
 
 
-from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer
+from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, PinDevice, SensorDevice, BeerLogPoint, Beer, ExtendedSettings
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
 
 
-
 def error_notifications(request):
 
-    if not settings.USE_DOCKER:
-        messages.warning(request, "You are currently using the legacy, non-docker version of Fermentrack that is no "
-                                  "longer being developed/supported. It is highly recommended that you "
-                                  "<a href=\"http://todocker.fermentrack.com/\">migrate to a docker-based "
-                                  "installation</a> if possible.")
-    elif config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
+    if config.GIT_UPDATE_TYPE != "none" and settings.USE_DOCKER:
         # Check the git status at least every 6 hours
         now_time = timezone.now()
-        try:
-            if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
-
-                try:
-                    if git_integration.app_is_current():
-                        config.LAST_GIT_CHECK = now_time
-                    else:
-                        messages.info(request, "This app is not at the latest version! " +
-                                      '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
-                except:
-                    # If we can't check for the latest version info, skip and move on
-                    pass
-        except:
-            # So here's the deal. On Python3 conversion, any datetime.datetime objects stored in Constance end up
-            # getting unpickled poorly. It's truly quite a pickle! Ahhhahahahaha, I crack myself up. Anyways, just
-            # overwrite it. Git check can happen on next refresh.
-            config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
-            config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
+        if config.LAST_GIT_CHECK < now_time - datetime.timedelta(hours=6):
+            try:
+                if git_integration.app_is_current():
+                    config.LAST_GIT_CHECK = now_time
+                else:
+                    messages.info(request, "This app is not at the latest version! " +
+                                  '<a href="/upgrade"">Upgrade from GitHub</a> to receive the latest version.')
+            except:
+                # If we can't check for the latest version info, skip and move on
+                pass
+                # config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
+                # config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
         if not config.ALLOW_GIT_BRANCH_SWITCHING:
             # Ths user is using one of the two "default" branches (dev or master). Make sure that the branch he/she is
@@ -62,7 +50,8 @@ def error_notifications(request):
 
             # Don't check if the user has custom branch switching though, as they should be allowed to pick whatever
             # branch he/she wants.
-            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE:
+            # TODO - Fix the below once we eliminate docker-dev
+            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE != 'dev'):
                 if config.GIT_UPDATE_TYPE not in [x for x,_ in settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices']]:
                     # TODO - Fix this to pick up the default
                     config.GIT_UPDATE_TYPE = "dev"
@@ -70,19 +59,6 @@ def error_notifications(request):
                     messages.warning(request, "You selected to update from the {} code ".format(config.GIT_UPDATE_TYPE) +
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
-
-    # This is a good idea to do, but unfortunately sshwarn doesn't get removed when the password is changed, only when
-    # the user logs in a second time. Once I have time to make a "help" page for this, I'll readd this check
-    # TODO - Readd this check
-    # if os.path.isfile("/var/run/sshwarn"):
-    #     messages.warning(request, "You have SSH enabled on the Raspberry Pi, but the default (pi) user's password is "
-    #                               "unchanged! This is potentially a major security issue. Please SSH in, change the "
-    #                               "password, and SSH in one more time to test that it worked. Otherwise, we'll keep "
-    #                               "annoying you until you do.")
-
-    if not config.SQLITE_OK_DJANGO_2:
-        messages.error(request, "Fermentrack has upgraded to a newer copy of Django which requires an additional step to complete. " +
-                      '<a href="/fix_sqlite"">Click here</a> to trigger this step and restart Fermentrack.')
 
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
@@ -273,14 +249,14 @@ def sensor_list(request, device_id):
 
     if devices_loaded:
         for this_device in active_device.available_devices:
-            data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin}
+            data = {'device_function': this_device.device_function, 'invert': int(this_device.invert),
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin}
             this_device.device_form = device_forms.SensorFormRevised(data)
 
         for this_device in active_device.installed_devices:
-            data = {'device_function': this_device.device_function, 'invert': this_device.invert,
-                    'address': this_device.address, 'pin': this_device.pin, 'installed': True,
-                    'perform_uninstall': True}
+            data = {'device_function': this_device.device_function, 'invert': int(this_device.invert),
+                    'child_no': this_device.child_no, 'address': this_device.address, 'pin': this_device.pin,
+                    'installed': True, 'perform_uninstall': True}
             this_device.device_form = device_forms.SensorFormRevised(data)
     else:
         # If we weren't able to load devices, we should have set an error message instead. Display it.
@@ -288,8 +264,8 @@ def sensor_list(request, device_id):
         messages.error(request, active_device.error_message)
 
     return render(request, template_name="pin_list.html",
-                               context={'available_devices': active_device.available_devices, 'active_device': active_device,
-                                        'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
+                  context={'available_devices': active_device.available_devices, 'active_device': active_device,
+                           'installed_devices': active_device.installed_devices, 'devices_loaded': devices_loaded})
 
 
 @login_required
@@ -312,17 +288,20 @@ def sensor_config(request, device_id):
             try:
                 if form.data['installed']:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.installed_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
                 else:
                     sensor_to_adjust = SensorDevice.find_device_from_address_or_pin(active_device.available_devices,
-                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'])
+                                                                                    address=form.cleaned_data['address'], pin=form.cleaned_data['pin'], child_no=form.cleaned_data['child_no'])
             except ValueError:
                 messages.error(request, "Unable to confirm the pin/address on your controller. Check to ensure that " +
                                "your controller is properly connected, and reattempt assignment.")
                 return redirect('sensor_list', device_id=device_id)
 
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
-            sensor_to_adjust.invert = form.cleaned_data['invert']
+            # if form.cleaned_data['invert'] == "1":
+            #     sensor_to_adjust.invert = SensorDevice.INVERT_INVERTED
+            # else:
+            #     sensor_to_adjust.invert = SensorDevice.INVERT_NOT_INVERTED
             sensor_to_adjust.calibrate_adjust = form.cleaned_data['calibration']
 
             if form.cleaned_data['perform_uninstall']:
@@ -486,6 +465,8 @@ def github_trigger_upgrade(request, variant=""):
     tags = git_integration.get_tag_info()
     local_versions = git_integration.get_local_version_numbers()
 
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
     else:
@@ -494,6 +475,9 @@ def github_trigger_upgrade(request, variant=""):
     if request.POST:
         if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
             messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+        elif lockfile.exists():
+            messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
+                                    "delete the upgrade lock using the function below.")
         else:
             cmds = {}
 
@@ -501,7 +485,8 @@ def github_trigger_upgrade(request, variant=""):
                 # I'm not doing "if git_update_type == config.GIT_UPDATE_TYPE" so users who have update set to 'none'
                 # can still update from the "master" branch.
                 if git_update_type == "dev":
-                    branch_to_use = "dev"
+                    # TODO - Change back to dev once we eliminate docker-dev
+                    branch_to_use = "docker-dev"
                 else:
                     # Assume if they have anything other than "dev" they want master
                     branch_to_use = "master"
@@ -529,10 +514,23 @@ def github_trigger_upgrade(request, variant=""):
             messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render(request, template_name="github_trigger_upgrade.html",
-                               context={'commit_info': commit_info, 'app_is_current': app_is_current,
-                                        'branch_info': branch_info, 'tags': tags, 'git_update_type': git_update_type,
-                                        'allow_git_branch_switching': allow_git_branch_switching,
-                                        'local_versions': local_versions})
+                  context={'commit_info': commit_info, 'app_is_current': app_is_current, 'branch_info': branch_info,
+                           'tags': tags, 'git_update_type': git_update_type, 'lockfile_exists': lockfile.exists(),
+                           'allow_git_branch_switching': allow_git_branch_switching, 'local_versions': local_versions,})
+
+@login_required
+@site_is_configured
+def delete_upgrade_lock_file(request, variant=""):
+    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+
+    if not lockfile.exists():
+        messages.info(request, "Unable to delete lock file - file does not exist")
+    else:
+        os.remove(lockfile)
+        messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
+
+    return redirect('github_trigger_upgrade')
+
 
 @login_required
 @site_is_configured
@@ -630,7 +628,6 @@ def site_settings(request):
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
-            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
@@ -786,6 +783,7 @@ def device_manage(request, device_id):
     # Forms posted back to device_manage are explicitly settings update forms
     if request.POST:
         form = device_forms.BrewPiDeviceModifyForm(request.POST)
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
 
         if form.is_valid():
             # Update the device settings based on what we were passed via the form
@@ -797,7 +795,8 @@ def device_manage(request, device_id):
                         messages.error(request, u'A device already exists with the name {}'.format(
                                              form.cleaned_data['device_name']))
                         return render(request, template_name='device_manage.html',
-                                      context={'form': form, 'active_device': active_device})
+                                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                                               'active_device': active_device})
                 except ObjectDoesNotExist:
                     # There was no existing device - we're good. Set the new name.
                     pass
@@ -818,14 +817,19 @@ def device_manage(request, device_id):
 
             active_device.save()
 
-            messages.success(request, u'Device {} Updated.<br>Please wait a few seconds for the connection to restart'.format(active_device))
-            transaction.on_commit(active_device.restart_process)
+            messages.success(request, f'Device {active_device} Updated.<br>Please wait up to a minute for the '
+                                      f'connection to restart')
+            # TODO - Figure out how to accomplish this with the new process manager
+            # transaction.on_commit(active_device.restart_process)
 
-            return render(request, template_name='device_manage.html', context={'form': form, 'active_device': active_device})
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
 
         else:
             return render(request, template_name='device_manage.html',
-                          context={'form': form, 'active_device': active_device})
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
     else:
         # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
         # refactoring it. Project for later if need be.
@@ -847,8 +851,85 @@ def device_manage(request, device_id):
         }
 
         form = device_forms.BrewPiDeviceModifyForm(initial=initial_values)
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
         return render(request, template_name='device_manage.html',
-                                   context={'form': form, 'active_device': active_device})
+                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                               'active_device': active_device})
+
+
+@login_required
+@site_is_configured
+def device_extended_settings(request, device_id):
+    # TODO - Add user permissioning
+    # if not request.user.has_perm('app.edit_device'):
+    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
+    #     return redirect("/")
+
+    try:
+        active_device = BrewPiDevice.objects.get(id=device_id)
+    except ObjectDoesNotExist:
+        messages.error(request, "Unable to load device with ID {}".format(device_id))
+        return redirect('siteroot')
+
+    initial_values = {
+        'device_name': active_device.device_name,
+        'temp_format': active_device.temp_format,
+        'data_point_log_interval': active_device.data_point_log_interval,
+        'connection_type': active_device.connection_type,
+        'useInetSocket': active_device.useInetSocket,
+        'socketPort': active_device.socketPort,
+        'socketHost': active_device.socketHost,
+        'serial_port': active_device.serial_port,
+        'serial_alt_port': active_device.serial_alt_port,
+        'board_type': active_device.board_type,
+        'socket_name': active_device.socket_name,
+        'wifi_host': active_device.wifi_host,
+        'wifi_port': active_device.wifi_port,
+        'modify_not_create': True,
+    }
+
+    form = device_forms.BrewPiDeviceModifyForm(initial=initial_values)
+
+    # Forms posted back to device_extended_settings are explicitly extended settings update forms
+    if request.POST:
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm(request.POST)
+
+        if extended_settings_form.is_valid():
+
+            es = ExtendedSettings(
+                invertTFT=extended_settings_form.cleaned_data['invertTFT'],
+                # glycol=extended_settings_form.cleaned_data['glycol'],
+                # lowDelay=extended_settings_form.cleaned_data['lowDelay'],
+            )
+
+            es.save_all_to_controller(active_device)
+
+            if es.lowDelay:
+                messages.warning(request, "Low Delay mode enabled. This may damage and should not be used with "
+                                          "compressor-based builds!")
+
+            if es.glycol:
+                messages.warning(request, "Glycol mode enabled. This may damage and should not be used with "
+                                          "compressor-based builds!")
+
+            messages.success(request, "Set updated extended settings to device")
+
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
+
+        else:
+            return render(request, template_name='device_manage.html',
+                          context={'form': form, 'extended_settings_form': extended_settings_form,
+                                   'active_device': active_device})
+    else:
+        # This would probably be easier if I was to use ModelForm instead of Form, but at this point I don't feel like
+        # refactoring it. Project for later if need be.
+        extended_settings_form = device_forms.BrewPiDeviceExtendedSettingsForm()
+
+        return render(request, template_name='device_manage.html',
+                      context={'form': form, 'extended_settings_form': extended_settings_form,
+                               'active_device': active_device})
 
 
 @login_required
@@ -915,8 +996,8 @@ def almost_json_view(request, device_id, beer_id):
     if os.path.isfile(filename):  # If there are no annotations, return an empty JsonResponse
         f = open(filename, 'r')
         wrapper = almost_json.AlmostJsonWrapper(f, closing_string=json_close)
-        response = HttpResponse(wrapper, content_type="application/json")
-        response['Content-Length'] = os.path.getsize(filename) + len(json_close)
+        response = FileResponse(wrapper, content_type="application/json")
+        # response['Content-Length'] = os.path.getsize(filename) + len(json_close)
         return response
     else:
         return JsonResponse(empty_array, safe=False, json_dumps_params={'indent': 4})
@@ -946,7 +1027,7 @@ def debug_connection(request, device_id):
                        'result': 'Device not active'}
     else:
         test_result = {'name': 'Device Status Test', 'parameter': active_device.status, 'status': PASSED,
-                       'result': 'Device active & managed by Circus'}
+                       'result': 'Device active & managed by Fermentrack'}
     tests.append(test_result)
 
 

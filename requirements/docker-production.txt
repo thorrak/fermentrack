@@ -1,13 +1,13 @@
 -r base.txt
 
-#gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
-#sentry-sdk==0.19.1  # https://github.com/getsentry/sentry-python
+uvloop==0.15.2
+gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
 
 # Django
 # ------------------------------------------------------------------------------
 #django-anymail[mailgun]==8.1  # https://github.com/anymail/django-anymail
 
-psycopg2==2.8.6  # https://github.com/psycopg/psycopg2
+psycopg2==2.9.6  # https://github.com/psycopg/psycopg2
 
-numpy==1.21.5   # These are custom wheels on RPis (wheels.fermentrack.com)
-scipy==1.5.4  # These are custom wheels on RPis (wheels.fermentrack.com)
+numpy==1.22.3   # These are custom wheels on RPis (wheels.fermentrack.com)
+scipy==1.8.0  # These are custom wheels on RPis (wheels.fermentrack.com)

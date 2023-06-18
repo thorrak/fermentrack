@@ -112,18 +112,18 @@
       <td><a href="{% url "get_app_log" "text" "huey" "stdout" %}">{% log_file_path "huey" "stdout" %}</a></td>
     </tr>
     <tr>
-      <th scope="row">Circus Daemon (Process Monitor)</th>
-      <td><a href="{% url "get_app_log" "text" "circusd" "stderr" %}">{% log_file_path "circusd" "stderr" %}</a></td>
+      <th scope="row">Supervisord Daemon (Process Monitor)</th>
+      <td><a href="{% url "get_app_log" "text" "supervisord" "stderr" %}">{% log_file_path "supervisord" "stderr" %}</a></td>
     </tr>
   </tbody>
 </table>
 
 
-<h4>Other troubleshooting tools</h4>
-
-<p>
-    <a href="{% url "gravity_tilt_test" %}" class="btn btn-primary">Troubleshoot Tilt/Bluetooth Support</a>
-</p>
+{#<h4>Other troubleshooting tools</h4>#}
+{##}
+{#<p>#}
+{#    <a href="{% url "gravity_tilt_test" %}" class="btn btn-primary">Troubleshoot Tilt/Bluetooth Support</a>#}
+{#</p>#}
 
 {% endblock %}
 

@@ -57,7 +57,7 @@ def getVersion():
         if 'BREWPI_LOG_MESSAGES_VERSION ' in line:
             splitLine = line.split('BREWPI_LOG_MESSAGES_VERSION')
             return int(splitLine[1])  # return version number
-    print("ERROR: could not find version number in log messages header file")
+    print("ERROR: could not find version number in log messages header file", flush=True)
     return 0
 
 
