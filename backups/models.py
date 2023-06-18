@@ -1,5 +1,6 @@
 import json
 import shlex
+import shutil
 import subprocess
 
 from django.db import models
@@ -134,10 +135,9 @@ class Backup(TimeStampedModel):
         self.compress_staging_to_file()
 
     def decompress_backup_file(self):
-        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
-
+        """Decompress the backup file to the staging directory"""
         with tarsafe.open(self.outfile_path, mode="r:*") as f:
-            f.extractall(path=settings.ROOT_DIR)
+            f.extractall(settings.BACKUP_STAGING_DIR)
 
     # The next function is the "legacy" loader, which is used for backups created when the django core management
     # commands were used to create the backup.
@@ -145,6 +145,20 @@ class Backup(TimeStampedModel):
     def load_legacy_database_from_file():
         data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         django.core.management.call_command('loaddata', data_dump_file)
+
+    @staticmethod
+    def restore_log_files():
+        """Restore the log files from the backup"""
+        backup_root = settings.BACKUP_STAGING_DIR / "data"
+        for cls in [Beer, GravityLog]:
+            for obj in cls.objects.all():
+                for log_type in ['base_csv', 'full_csv', 'annotation_json']:
+                    if Backup.is_legacy():
+                        csv_path = backup_root / obj.full_filename(log_type)
+                    else:
+                        csv_path = backup_root / f"{obj.uuid}_{log_type}.csv"
+                    if os.path.isfile(csv_path):
+                        shutil.copy(csv_path, settings.ROOT_DIR / settings.DATA_ROOT / obj.full_filename(log_type))
 
     def load_database_from_file(self):
         data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
@@ -203,17 +217,20 @@ class Backup(TimeStampedModel):
                 return "1.0.0"  # If the file version is not present, assume it's 1.0.0 (which is "Legacy")
             return backup_dict['file_version']
 
+    @staticmethod
+    def is_legacy() -> bool:
+        """Return True if the backup file is a legacy backup"""
+        return Backup.get_backup_file_version(settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME) == "1.0.0"
+
     def perform_restore(self):
         self.decompress_backup_file()
-        file_version = self.get_backup_file_version(settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME)
-        if file_version == "1.0.0":
+        if self.is_legacy():
             # This is a legacy backup. Call the legacy loader
             self.load_legacy_database_from_file()
-        elif file_version == "2.0.0":
+        else:
             # This is a current backup. Call the current loader
             self.load_database_from_file()
-        else:
-            raise NotImplementedError("Backup file version not supported")
+        self.restore_log_files()
 
 @receiver(post_delete, sender=Backup)
 def backup_delete(sender, instance, **kwargs):

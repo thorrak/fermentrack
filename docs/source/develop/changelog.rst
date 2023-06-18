@@ -33,6 +33,7 @@ Changed
 - Update to Python 3.9
 - Changed most references to ESP8266 to reference ESP32 as appropriate
 - Rewrote backup & restore functions to no longer rely on Django management code
+- Changed restoration of legacy backups to explicitly utilize the staging folder
 
 
 

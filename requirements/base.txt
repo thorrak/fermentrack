@@ -31,6 +31,6 @@ cryptography==36.0.2  # For the latest versions of esptool
 
 
 # backup requirements
-tarsafe==0.0.3
+tarsafe==0.0.5
 django-downloadview==2.3.0
 django-model-utils==4.2.0  # https://github.com/jazzband/django-model-utils
