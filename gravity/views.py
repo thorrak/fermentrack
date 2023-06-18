@@ -454,10 +454,10 @@ def gravity_uninstall(request, sensor_id):
 
                 sensor.delete()
 
-                if tiltbridge_device is not None:
-                    if tiltbridge_device.tiltconfiguration_set.count() == 0:
-                        # Sure enough, the tiltbridge no longer has any attached devices. Delete it.
-                        tiltbridge_device.delete()
+                # if tiltbridge_device is not None:
+                #     if tiltbridge_device.tiltconfiguration_set.count() == 0:
+                #         # Sure enough, the tiltbridge no longer has any attached devices. Delete it.
+                #         tiltbridge_device.delete()
 
                 messages.success(request, u"The device '{}' was successfully uninstalled.".format(sensor))
                 return redirect("siteroot")
