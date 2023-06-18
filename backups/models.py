@@ -161,7 +161,7 @@ class Backup(TimeStampedModel):
                         shutil.copy(csv_path, settings.ROOT_DIR / settings.DATA_ROOT / obj.full_filename(log_type))
 
     def load_database_from_file(self):
-        data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
+        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         update = True  # Hardcoding this for now, but eventually we'll want to make this a user option
 
         # Load the JSON
