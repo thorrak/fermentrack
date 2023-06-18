@@ -119,7 +119,7 @@ class Backup(TimeStampedModel):
 
     @property
     def outfile_path(self) -> Path:
-        return settings.BACKUP_STAGING_DIR.parent / (self.filename_prefix + ".tar.xz")
+        return settings.BACKUP_DIR / (self.filename_prefix + ".tar.xz")
 
     def compress_staging_to_file(self):
         data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
@@ -143,7 +143,7 @@ class Backup(TimeStampedModel):
     # commands were used to create the backup.
     @staticmethod
     def load_legacy_database_from_file():
-        data_dump_file = settings.ROOT_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
+        data_dump_file = settings.BACKUP_STAGING_DIR / settings.BACKUP_DATA_DUMP_FILE_NAME
         django.core.management.call_command('loaddata', data_dump_file)
 
     @staticmethod
