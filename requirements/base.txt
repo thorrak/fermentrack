@@ -27,7 +27,7 @@ django-environ==0.8.1  # https://github.com/joke2k/django-environ
 whitenoise==6.0.0  # https://github.com/evansd/whitenoise
 cryptography==36.0.2  # For the latest versions of esptool
 
-uvicorn[standard]==0.17.6  # https://github.com/encode/uvicorn
+# uvicorn[standard]==0.17.6  # https://github.com/encode/uvicorn
 
 
 # backup requirements
