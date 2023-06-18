@@ -4,7 +4,7 @@ configobj==5.0.8       # required by brewpi.py
 # numpy==1.18.4 --no-binary=numpy  # The wheel for numpy also has issues (at least on Stretch)
 
 pytz==2023.3                # required by manage.py migrate
-sentry-sdk==1.5.8           # used for debugging
+sentry-sdk==1.25.1          # used for debugging
 django-constance[database]  # for managing user-configured constants
 GitPython==3.1.31           # for managing git integration
 zeroconf==0.38.4            # for locating ESP8266 devices
@@ -17,7 +17,7 @@ requests==2.31.0        # for loading firmware data from websites
 
 esptool==2.8         # for flashing ESP8266 devices
 
-urllib3==1.26.9    # Requirement for the new pip resolver
+#urllib3==1.26.9    # Requirement for the new pip resolver
 
 
 redis==4.5.5           # for huey & gravity sensor support

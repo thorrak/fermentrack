@@ -9,7 +9,7 @@ from sentry_sdk import init, capture_exception
 # This is the sentry queue for Fermentrack
 #init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
 # Breaking this out into its own Sentry queue for now
-init('http://12b1f08408de4586a18db78e7dbe27e4:323dad0efed24058b06cacd13a990987@sentry.optictheory.com:9000/10')
+init('http://ed5037d74b6e45a4b971dccccd95aace@sentry.optictheory.com:9000/11')
 
 import time, datetime, getopt, pid
 from typing import List, Dict
