@@ -159,8 +159,7 @@ def gravity_add_point(request, manual_sensor_id):
             new_point = form.save(commit=False)
             if sensor.active_log is not None:
                 new_point.associated_log = sensor.active_log
-            else:
-                new_point.associated_device = sensor
+            new_point.associated_device = sensor
 
             new_point.save()
 
