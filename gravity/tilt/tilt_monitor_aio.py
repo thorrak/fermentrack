@@ -148,10 +148,12 @@ def processBLEBeacon(data):
 event_loop = asyncio.get_event_loop()
 
 # First create and configure a raw socket
+# TODO - Determine if I want to loop here or just exit on failure
 try:
     mysocket = aiobs.create_bt_socket(mydev)
 except OSError as e:
-    LOG.error("Unable to create socket - {}".format(e))
+    LOG.error("Unable to create socket - {}. Is there a bluetooth adapter attached in this configuration?".format(e))
+    time.sleep(60)  # Sleep for 60 seconds so we don't spam the logs
     exit(1)
 
 # create a connection with the raw socket (Uses _create_connection_transport instead of create_connection as this now
