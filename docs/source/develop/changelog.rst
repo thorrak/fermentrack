@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unreleased] - TBC
+[Unreleased] - ESP32 Support & new BrewPi-Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **NOTE** - This is the first version of Fermentrack that explicitly DOES NOT support "dockerless" installation. Installation is intended to be via the official Fermentrack images on Docker Hub.
@@ -19,6 +19,8 @@ Added
 - Added support for new versions of the BrewPi Firmware for certain ESP-based BrewPi Controllers
 - Added support for extended settings on new BrewPi Firmware for certain ESP-based BrewPi Controllers
 - Added board types for ESP32, ESP32-C3, and ESP32-S2
+- Added examples for HTTPS support (Thanks @HuggableShark)
+- Added UUIDs to most exportable objects to allow for easier import/export
 
 
 Changed
@@ -30,6 +32,7 @@ Changed
 - Switch to use latest LTS version of Django
 - Update to Python 3.9
 - Changed most references to ESP8266 to reference ESP32 as appropriate
+- Rewrote backup & restore functions to no longer rely on Django management code
 
 
 
