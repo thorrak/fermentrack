@@ -1,9 +1,9 @@
-name: 'Build & Push to Docker Hub (docker-dev)'
+name: 'Build & Push to Docker Hub (dev)'
 
 on:
   push:
     branches:
-      - docker-dev
+      - dev
 
 jobs:
   buildx:
