@@ -63,3 +63,15 @@ services:
     volumes:
       - fermentrack_data:/data:z
     network_mode: "host"
+
+  tiltbridge-junior:
+    image: jdbeeler/tiltbridge-junior:latest
+    restart: unless-stopped
+    network_mode: "host"
+    env_file:
+      - ./.envs/.production/.tiltbridge-jr
+    volumes:
+      - /dev:/dev
+      - fermentrack_logs:/app/log:z
+    command: ["/start", "--privileged"]
+    privileged: true

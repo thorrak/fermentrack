@@ -1,0 +1,11 @@
+# TiltBridge Junior Configuration options
+# Verbose mode will print out information to the log files as Tilts are seen
+TILTBRIDGE_JR_VERBOSE=false
+# Bluetooth interface number -- typically 0. If you have multiple Bluetooth adapters, you may need to change this.
+TILTBRIDGE_JR_BLUETOOTH_DEVICE=0
+
+# Fermentrack Data Target Options
+# Set to 'true' to enable sending data to Legacy Fermentrack
+FERMENTRACK_LEGACY_TARGET_ENABLED=true
+# Full URL for the legacy fermentrack data target
+FERMENTRACK_LEGACY_TARGET_URL=http://127.0.0.1:80/tiltbridge/
