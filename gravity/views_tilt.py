@@ -345,6 +345,7 @@ def gravity_tilt_guided_calibration(request, sensor_id, step):
         return render(request, template_name='gravity/gravity_tilt_calibrate_end.html', context=context)
 
 
+@csrf_exempt
 def tiltbridge_handler(request):
     if request.body is None:
         logger.error("No data in TiltBridge request body")
