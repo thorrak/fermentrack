@@ -194,18 +194,6 @@ class NewCCModelForm(ModelForm):
             self.fields[this_field].widget.attrs['class'] = "form-control"
 
 
-class SensorForm(ModelForm):
-    # TODO - Delete if no longer required
-    class Meta:
-        model = SensorDevice
-        fields = ['device_function', 'invert', 'pin', 'address']
-
-    def __init__(self, *args, **kwargs):
-        super(SensorForm, self).__init__(*args, **kwargs)
-        for this_field in self.fields:
-            self.fields[this_field].widget.attrs['class'] = "form-control"
-
-
 class SensorFormRevised(forms.Form):
     # TODO - Overwrite the DEVICE_FUNCTION_CHOICES to match the type of device being configured
     device_function = forms.ChoiceField(label="Device Function",
@@ -224,6 +212,7 @@ class SensorFormRevised(forms.Form):
 
     address = forms.CharField(widget=forms.HiddenInput, required=False)
     pin = forms.CharField(widget=forms.HiddenInput)
+    child_no = forms.CharField(widget=forms.HiddenInput, required=False)
     installed = forms.BooleanField(widget=forms.HiddenInput, initial=False, required=False)
 
     # perform_uninstall is just used so we can combine all the actions into this form
@@ -246,6 +235,9 @@ class SensorFormRevised(forms.Form):
         pin = int(cleaned_data.get("pin"))
         address = cleaned_data.get("address")
 
+        if not cleaned_data.get('calibration'):
+            cleaned_data['calibration'] = 0.0
+
         if cleaned_data.get("installed"):
             installed = cleaned_data.get("installed")
         else:
@@ -253,17 +245,17 @@ class SensorFormRevised(forms.Form):
 
         if len(address) <= 0:
             if cleaned_data.get("invert"):
-                invert = cleaned_data.get("invert")
+                invert = int(cleaned_data.get("invert"))
             elif perform_uninstall is True:
                 # We don't care if we're uninstalling
                 invert = SensorDevice.INVERT_NOT_INVERTED
             else:
-                raise forms.ValidationError("Invert must be specified for non-OneWire devices")
+                raise forms.ValidationError("Invert must be specified for pin devices")
         else:
             invert = SensorDevice.INVERT_NOT_INVERTED
 
         # All the fields that MAY have been omitted have been set - return cleaned_data
-        cleaned_data['invert'] = invert
+        cleaned_data['invert'] = int(invert)
         cleaned_data['device_function'] = int(device_function)
         cleaned_data['installed'] = installed
         cleaned_data['pin'] = pin  # To handle the int conversion
@@ -354,3 +346,13 @@ class TempControlForm(forms.Form):
         else:
             raise forms.ValidationError("Temperature control mode must be specified!")
 
+
+class BrewPiDeviceExtendedSettingsForm(forms.Form):
+    invertTFT = forms.BooleanField(initial=False, required=False,
+                                   help_text="Should the TFT be inverted? Only applies to TFT-based builds.")
+
+    # glycol = forms.BooleanField(initial=False, required=False, help_text="Use Glycol mode on controller?")
+
+    lowDelay = forms.BooleanField(initial=False, required=False,
+                                  help_text="Use Low Delay mode on the controller? "
+                                            "Warning - Should not be used with compressor-based cooling.")

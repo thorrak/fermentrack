@@ -9,7 +9,7 @@ from sentry_sdk import init, capture_exception
 # This is the sentry queue for Fermentrack
 #init('http://3a1cc1f229ae4b0f88a4c6f7b5d8f394:c10eae5fd67a43a58957887a6b2484b1@sentry.optictheory.com:9000/2')
 # Breaking this out into its own Sentry queue for now
-init('http://12b1f08408de4586a18db78e7dbe27e4:323dad0efed24058b06cacd13a990987@sentry.optictheory.com:9000/10')
+init('http://ed5037d74b6e45a4b971dccccd95aace@sentry.optictheory.com:9000/11')
 
 import time, datetime, getopt, pid
 from typing import List, Dict
@@ -22,15 +22,15 @@ LOG.setLevel(logging.INFO)
 
 # We're having environment issues - Check the environment before continuing
 import aioblescan as aiobs
-import pkg_resources
-from packaging import version
-
-for package in pkg_resources.working_set:
-    if package.project_name == 'aioblescan':
-        # This is ridiculous but package.parsed_version doesn't return the right type of Version.
-        if version.parse(package.parsed_version.public) < version.parse("0.2.6"):
-            LOG.error("Incorrect aioblescan version installed - unable to run")
-            exit(1)
+# import pkg_resources
+# from packaging import version
+#
+# for package in pkg_resources.working_set:
+#     if package.project_name == 'aioblescan':
+#         # This is ridiculous but package.parsed_version doesn't return the right type of Version.
+#         if version.parse(package.parsed_version.public) < version.parse("0.2.6"):
+#             LOG.error("Incorrect aioblescan version installed - unable to run")
+#             exit(1)
 
 # done before importing django app as it does setup
 from . import tilt_monitor_utils
@@ -148,10 +148,12 @@ def processBLEBeacon(data):
 event_loop = asyncio.get_event_loop()
 
 # First create and configure a raw socket
+# TODO - Determine if I want to loop here or just exit on failure
 try:
     mysocket = aiobs.create_bt_socket(mydev)
 except OSError as e:
-    LOG.error("Unable to create socket - {}".format(e))
+    LOG.error("Unable to create socket - {}. Is there a bluetooth adapter attached in this configuration?".format(e))
+    time.sleep(60)  # Sleep for 60 seconds so we don't spam the logs
     exit(1)
 
 # create a connection with the raw socket (Uses _create_connection_transport instead of create_connection as this now

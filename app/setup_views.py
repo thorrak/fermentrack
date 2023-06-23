@@ -85,7 +85,6 @@ def setup_config(request):
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
             config.GIT_UPDATE_TYPE = f['update_preference']
             config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
-            config.SQLITE_OK_DJANGO_2 = True  # If they are completing the configuration workflow, assume that its a new install
 
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
@@ -232,20 +231,16 @@ def device_guided_add_mdns(request, mdns_id):
     #     messages.error(request, 'Your account is not permissioned to add devices. Please contact an admin')
     #     return redirect("/")
 
-    # Originally I thought we needed to rescan the network, but so long as ESP8266 is the only device that supports WiFi
-    # We can use mdns_id alone to handle the initial values
+    installed_devices, available_devices = mdnsLocator.find_mdns_devices()
+    mdns_device = None
 
-    # installed_devices, available_devices = mdnsLocator.find_mdns_devices()
-    #
-    # mdns_device = None
-    #
-    # for this_device in available_devices:
-    #     if this_device['mDNSname'] == mdns_id:
-    #         mdns_device = this_device
-    #
-    # if mdns_device is None:
-    #     redirect('device_guided_mdns')
+    for this_device in available_devices:
+        if this_device['mDNSname'] == mdns_id:
+            mdns_device = this_device
 
+    if mdns_device is None:
+        messages.warning(request, "Unable to locate that device. Please try again.")
+        redirect('device_guided_mdns')
 
     if request.POST:
         form = device_forms.BrewPiDeviceCreateForm(request.POST)
@@ -274,11 +269,11 @@ def device_guided_add_mdns(request, mdns_id):
         else:
             return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
     else:
-        random_port = random.randint(2000,3000)
+        random_port = random.randint(2000, 3000)
         # If we were just passed to the form, provide the initial values
-        initial_values = {'board_type': 'esp8266', 'wifi_host': mdns_id, 'wifi_port': 23, 'connection_type': 'wifi',
-                          'socketPort': random_port, 'temp_format': config.TEMPERATURE_FORMAT,
-                          'modify_not_create': False}
+        initial_values = {'board_type': mdns_device['board'].lower(), 'wifi_host': mdns_id, 'wifi_port': 23,
+                          'connection_type': 'wifi', 'socketPort': random_port,
+                          'temp_format': config.TEMPERATURE_FORMAT, 'modify_not_create': False}
 
         form = device_forms.BrewPiDeviceCreateForm(initial=initial_values)
         return render(request, template_name='setup/device_guided_add_mdns.html', context={'form': form})
@@ -355,8 +350,8 @@ def device_guided_serial_autodetect(request, device_family):
                 random_port = random.randint(2000,3000)
                 # If we were just passed to the form, provide the initial values
                 # TODO - Correctly determine 'board_type'
-                if device_family == 'ESP8266':
-                    board_type = 'esp8266'
+                if device_family == 'ESP8266' or device_family[:5] == "ESP32":
+                    board_type = device_family.lower()
                 elif device_family == 'Arduino':
                     board_type = 'uno'
                 else:

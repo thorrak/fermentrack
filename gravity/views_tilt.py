@@ -15,7 +15,6 @@ from gravity.models import GravitySensor, GravityLog, GravityLogPoint, TiltGravi
 
 from gravity import mdnsLocator
 
-import gravity.tilt.tilt_tests as tilt_tests
 import gravity.gravity_debug as gravity_debug
 
 import csv
@@ -353,7 +352,7 @@ def tiltbridge_handler(request):
         return JsonResponse({'status': 'failed', 'message': "No data in request body"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    # This should look like this:
+    # Data from a traditional TiltBridge should look like this:
     # {
     #   'mdns_id': 'mDNS ID goes here',
     #   'tilts': {'color': 'Purple', 'temp': 74, 'gravity': 1.043},
@@ -366,45 +365,82 @@ def tiltbridge_handler(request):
         return JsonResponse({'status': 'failed', 'message': "Malformed JSON - Unable to parse!"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    try:
-        if 'mdns_id' in tiltbridge_data:
-            tiltbridge_obj = TiltBridge.objects.get(mdns_id=tiltbridge_data['mdns_id'])
-        else:
-            logger.error(u"Malformed TiltBridge JSON - No mdns ID provided!")
-            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No mDNS ID provided!"}, safe=False,
-                                json_dumps_params={'indent': 4})
-    except ObjectDoesNotExist:
-        logger.error(u"Unable to load TiltBridge with mDNS ID {}".format(tiltbridge_data['mdns_id']))
-        return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
-                            json_dumps_params={'indent': 4})
 
-    if tiltbridge_data['tilts'] is None:
+    tilts_data = tiltbridge_data.get('tilts')
+    if not tilts_data:
         # The TiltBridge has no connected Tilts. Return success (but note as such)
         return JsonResponse({'status': 'success', 'message': "No Tilts in TiltBridge data to process"}, safe=False,
                             json_dumps_params={'indent': 4})
 
-    for this_tilt in tiltbridge_data['tilts']:
+    tiltbridge_junior = tiltbridge_data.get('tiltbridge_junior', False)
+    if tiltbridge_junior:
+        # There is assumed to be only one TiltBridge Junior connected to a copy of Fermentrack (and is the equivalent
+        # of the former "bluetooth" connection)
+        tiltbridge_obj = None
+    else:
+        # A normal Tiltbridge (rather than the Docker container) will have an mDNS ID. Let's use that to find the
+        # device.
+        mdns_id = tiltbridge_data.get('mdns_id')
+        if not mdns_id:
+            logger.error("Malformed TiltBridge JSON - No mdns ID provided!")
+            return JsonResponse({'status': 'failed', 'message': "Malformed JSON - No mDNS ID provided!"}, safe=False,
+                                json_dumps_params={'indent': 4})
+
         try:
-            tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
-                                                     tiltbridge=tiltbridge_obj, color__iexact=this_tilt)
+            tiltbridge_obj = TiltBridge.objects.get(mdns_id=mdns_id)
         except ObjectDoesNotExist:
-            # We received data for an invalid tilt from TiltBridge
-            continue
+            logger.error("Unable to load TiltBridge with mDNS ID {}".format(mdns_id))
+            return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
+                                json_dumps_params={'indent': 4})
 
-        raw_temp = float(tiltbridge_data['tilts'][this_tilt]['temp'])
-        converted_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(float(raw_temp), tiltbridge_data['tilts'][this_tilt]['tempUnit'])
+    for tilt_data in tilts_data:
+        if tiltbridge_junior:
+            try:
+                tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BLUETOOTH,
+                                                         color__iexact=tilt_data['color'])
+            except ObjectDoesNotExist:
+                # We received data for an invalid tilt from TiltBridge Junior
+                continue
+        else:
+            try:
+                tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
+                                                         tiltbridge=tiltbridge_obj, color__iexact=tilt_data['color'])
+            except ObjectDoesNotExist:
+                # We received data for an invalid tilt from TiltBridge
+                continue
 
-        raw_gravity = float(tiltbridge_data['tilts'][this_tilt]['gravity'])
-        normalized_gravity = tilt_obj.apply_gravity_calibration(raw_gravity)
+
+        if tiltbridge_junior:  # TODO - Change this to look for a key that is sent by updated TiltBridges/TiltBridge Juniors
+            raw_temp = float(tilt_data['smoothed_temp'])
+            converted_smoothed_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(raw_temp,
+                                                                                                 tilt_data['temp_format'])
+
+            smoothed_gravity = float(tilt_data['smoothed_gravity'])
+            normalized_smoothed_gravity = tilt_obj.apply_gravity_calibration(smoothed_gravity)
+
+            # We actually have a raw/smoothed split here, so we need to use the raw gravity to calculate the latest
+            latest_gravity = tilt_obj.apply_gravity_calibration(float(tilt_data['raw_gravity']))
+            latest_temp, _ = tilt_obj.sensor.convert_temp_to_sensor_format(float(tilt_data['raw_temp']),
+                                                                           tilt_data['temp_format'])
+        else:
+            raw_temp = float(tilt_data['temp'])
+            converted_smoothed_temp, temp_format = tilt_obj.sensor.convert_temp_to_sensor_format(raw_temp,
+                                                                                                 tilt_data['tempUnit'])
+            smoothed_gravity = float(tilt_data['gravity'])
+            normalized_smoothed_gravity = tilt_obj.apply_gravity_calibration(smoothed_gravity)
+
+            latest_gravity = normalized_smoothed_gravity
+            latest_temp = converted_smoothed_temp
+
 
         new_point = GravityLogPoint(
-            gravity=normalized_gravity,
-            temp=converted_temp,
+            gravity=normalized_smoothed_gravity,
+            temp=converted_smoothed_temp,
             temp_format=temp_format,
             temp_is_estimate=False,
             associated_device=tilt_obj.sensor,
-            gravity_latest=normalized_gravity,
-            temp_latest=converted_temp,
+            gravity_latest=latest_gravity,
+            temp_latest=latest_temp,
         )
 
         if tilt_obj.sensor.active_log is not None:
@@ -412,13 +448,27 @@ def tiltbridge_handler(request):
 
         new_point.save()
 
-        # Now that the point is saved, save out the 'extra' data so we can use it later for calibration
-        tilt_obj.raw_gravity = raw_gravity
+        # Now that the point is saved, save out the 'extra' data, so we can use it later for calibration
+        tilt_obj.raw_gravity = smoothed_gravity
         tilt_obj.raw_temp = raw_temp  # TODO - Determine if we want to record this in F or sensor_format
 
+        # TiltBridge Junior (and, potentially, future versions of TiltBridge) send the following. Save them.
+        if 'rssi' in tilt_data:
+            tilt_obj.rssi = tilt_data['rssi']
+        if 'raw_gravity' in tilt_data:
+            tilt_obj.raw_gravity = tilt_data['raw_gravity']
+        if 'raw_temp' in tilt_data:
+            tilt_obj.raw_temp = tilt_data['raw_temp']
+        if 'tilt_pro' in tilt_data:
+            tilt_obj.tilt_pro = tilt_data['tilt_pro']
+        if 'sends_battery' in tilt_data:
+            tilt_obj.sends_battery = tilt_data['sends_battery']
+        if 'weeks_on_battery' in tilt_data:
+            tilt_obj.weeks_on_battery = tilt_data['weeks_on_battery']
+        if 'firmware_version' in tilt_data:
+            tilt_obj.firmware_version = tilt_data['firmware_version']
+
         tilt_obj.save_extras_to_redis()
-
-
 
     return JsonResponse({'status': 'success', 'message': "TiltBridge data processed successfully"}, safe=False,
                         json_dumps_params={'indent': 4})
@@ -525,39 +575,3 @@ def gravity_tiltbridge_urlerror(request, tiltbridge_id):
     return render(request, template_name='gravity/gravity_tiltbridge_urlerror.html',
                   context={'tiltbridge': selected_tiltbridge, 'fermentrack_url': fermentrack_url,})
 
-
-
-
-@login_required
-@site_is_configured
-def gravity_tilt_test(request):
-    # TODO - Add user permissioning
-    # if not request.user.has_perm('app.edit_device'):
-    #     messages.error(request, 'Your account is not permissioned to edit devices. Please contact an admin')
-    #     return redirect("/")
-
-    # Check if we are on a system that actually has apt (e.g. Raspbian, Debian, Ubuntu, etc.)
-    has_apt = tilt_tests.has_apt()
-    if has_apt:
-        has_apt_packages, apt_test_results = tilt_tests.check_apt_packages()
-    else:
-        messages.error(request, u"Unable to locate dpkg - Cannot test for system packages")
-        has_apt_packages = False
-        apt_test_results = []
-
-    # Next, check the python packages
-    has_packaging, has_python_packages, python_test_results = tilt_tests.check_python_packages()
-
-    # Also check that python has the right setcap flags
-    has_setcap_flags, python_executable_path, getcap_values = tilt_tests.check_python_setcap()
-
-    # Then check Redis support
-    redis_installed, able_to_connect_to_redis, redis_key_test = gravity_debug.try_redis()
-
-    return render(request, template_name='gravity/gravity_tilt_test.html',
-                  context={'has_apt': has_apt, 'has_apt_packages': has_apt_packages, 'apt_test_results': apt_test_results,
-                           'has_python_packages': has_python_packages, 'python_test_results': python_test_results,
-                           'redis_installed': redis_installed, 'able_to_connect_to_redis': able_to_connect_to_redis,
-                           'redis_key_test': redis_key_test, 'has_packaging': has_packaging,
-                           'has_setcap_flags': has_setcap_flags, 'python_executable_path': python_executable_path,
-                           'getcap_values': getcap_values, })

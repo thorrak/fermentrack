@@ -11,7 +11,6 @@ import app.setup_views
 import app.beer_views
 import app.api.lcd
 import app.api.clog
-import app.circus_views
 
 import firmware_flash.urls
 import gravity.urls
@@ -31,9 +30,8 @@ urlpatterns = [
     url(r'^$', app.views.siteroot, name='siteroot'),
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
-    url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
-    url(r'^upgrade/reload/$', app.views.trigger_requirements_reload, name='trigger_requirements_reload'),
-    url(r'^fix_sqlite/$', app.views.trigger_sqlite_fix, name='trigger_sqlite_fix'),
+    # url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
+    # url(r'^upgrade/delete_lock/$', app.views.delete_upgrade_lock_file, name='delete_upgrade_lock_file'),
 
     ### Device Views
     url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),
@@ -66,6 +64,7 @@ urlpatterns = [
     url(r'^devices/(?P<device_id>\d{1,20})/wifi_reset/$', app.views.device_wifi_reset, name='device_wifi_reset'),
     url(r'^devices/(?P<device_id>\d{1,20})/restart/$', app.views.device_restart, name='device_restart'),
     url(r'^devices/(?P<device_id>\d{1,20})/manage/$', app.views.device_manage, name='device_manage'),
+    url(r'^devices/(?P<device_id>\d{1,20})/extended_settings/$', app.views.device_extended_settings, name='device_extended_settings'),
     url(r'^devices/(?P<device_id>\d{1,20})/uninstall/$', app.views.device_uninstall, name='device_uninstall'),
 
     # Device Utility & Internal Views
@@ -78,12 +77,6 @@ urlpatterns = [
 
     url(r'^devices/(?P<device_id>\d{1,20})/debug_connection/$', app.views.debug_connection, name='device_debug_connection'),
 
-    # Circus processmanager device views, we add device_name so we don't have to do another query
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/start/$', app.circus_views.start_brewpi_device, name='device_start'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/stop/$', app.circus_views.stop_brewpi_device, name='device_stop'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/remove/$', app.circus_views.remove_brewpi_device, name='device_remove'),
-    url(r'^devices/(?P<device_id>\d{1,20})/proc/status/$', app.circus_views.status_brewpi_device, name='device_status'),
-    
 
     # Fermentation Profile Views
     url(r'^fermentation_profile/list/$', app.profile_views.profile_list, name='profile_list'),

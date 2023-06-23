@@ -33,12 +33,12 @@ class Command(BaseCommand):
         backup_prefix = str(options['filename'])[:-7]
         print(f"Backup prefix: {backup_prefix}")
 
-        # If we already have a backup with this prefix, we don't want to override it. Print an error and kick back.
-        try:
-            backup_obj = backups.models.Backup.objects.get(filename_prefix=backup_prefix)
-            print(f"Backup object {backup_prefix} already exists. Please rename the file and attempt to restore again.")
-        except ObjectDoesNotExist:
-            pass
+        backups.models.Backup.objects.filter(filename_prefix=backup_prefix).delete()
+        # try:
+        #     backup_obj = backups.models.Backup.objects.get(filename_prefix=backup_prefix)
+        #     print(f"Backup object {backup_prefix} already exists. Please rename the file and attempt to restore again.")
+        # except ObjectDoesNotExist:
+        #     pass
 
         # Otherwise, create the backup object, copy the file to the backup staging area, and perform the restore
         backup_obj = backups.models.Backup(filename_prefix=backup_prefix)

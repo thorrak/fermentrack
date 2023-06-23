@@ -1,9 +1,9 @@
-name: 'Build & Push to Docker Hub'
+name: 'Build & Push to Docker Hub (Testing)'
 
 on:
   push:
     branches:
-      - pyzmq
+      - separate-tilt
 
 jobs:
   buildx:
@@ -11,10 +11,10 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.5.3
       -
         name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2.2.0
         with:
           platforms: all
       -
@@ -27,14 +27,22 @@ jobs:
       -
         name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2.7.0
         with:
           version: latest
       -
-        name: Build dockerfile (armv7/amd64/arm64)
+        name: Log in to GitHub Packages
+        run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u ${{ secrets.GH_USER }} --password-stdin
+      -
+        name: Pull Fermentrack Image
+        run: docker pull jdbeeler/fermentrack:testing
+      -
+        name: Build dockerfile (arm32v7/amd64/arm64v8/i386)
         run: |
           docker buildx build \
-          --platform=linux/arm/v7,linux/amd64,linux/i386 \
+          --platform=linux/arm/v7,linux/amd64,linux/i386,linux/arm64/v8 \
           --output "type=image,push=true" \
           --file ./compose/production/django/Dockerfile . \
-          --tag jdbeeler/fermentrack:testing
+          --tag jdbeeler/fermentrack:testing \
+          --cache-from ghcr.io/thorrak/fermentrack:testing \
+          --cache-to ghcr.io/thorrak/fermentrack:testing

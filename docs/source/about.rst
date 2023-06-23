@@ -65,7 +65,8 @@ All Fermentrack installations require the following:
 * A Debian Buster or later-based-OS (e.g. Ubuntu, Debian, RPi OS for x86)
 * 2GB of free space available
 
-Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support. (For Raspberry Pi installations, the adapter built into a Pi 3+ is sufficient)
+Additionally, a Bluetooth receiver is required for `Tilt Hydrometer`_ support. (For Raspberry Pi installations, the
+adapter built into a Pi 3+ is sufficient)
 
 Getting Started with Fermentrack
 ---------------------------------

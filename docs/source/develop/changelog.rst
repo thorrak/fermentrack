@@ -6,6 +6,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - ESP32 Support & new BrewPi-Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**NOTE** - This is the first version of Fermentrack that explicitly DOES NOT support "dockerless" installation. Installation is intended to be via the official Fermentrack images on Docker Hub.
+
+Added
+---------------------
+
+- BrewPi-Script instances are now controlled via a custom process manager
+- Officially added arm64v8 to supported platforms
+- Added support for new versions of the BrewPi Firmware for certain ESP-based BrewPi Controllers
+- Added support for extended settings on new BrewPi Firmware for certain ESP-based BrewPi Controllers
+- Added board types for ESP32, ESP32-C3, and ESP32-S2
+- Added examples for HTTPS support (Thanks @HuggableShark)
+- Added UUIDs to most exportable objects to allow for easier import/export
+- Added "TiltBridge Jr." (new Tilt bluetooth daemon) support
+
+
+Changed
+-------
+
+- Removed Circus support in favor of managing processes via Supervisord
+- Removed libzmq requirement
+- Removed environment tests for Tilt hydrometers (Obviated via Docker)
+- Switch to use latest LTS version of Django
+- Update to Python 3.9
+- Changed most references to ESP8266 to reference ESP32 as appropriate
+- Rewrote backup & restore functions to no longer rely on Django management code
+- Changed restoration of legacy backups to explicitly utilize the staging folder
+- Removed GitHub upgrade workflow from UI
+
+
+Removed
+-------
+
+- Removed Fermentrack-specific Bluetooth daemon - now handled by TiltBridge Jr.
+
+
+
 [2022-04-05] - Last Dockerless Version & Backup & Restore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

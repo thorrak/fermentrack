@@ -1,15 +1,18 @@
-brewpi-script
-=============
+brewpi-script-daemon
+====================
 
-This is a pared down version of the custom brewpi-script that was created for interfacing with ESP8266 BrewPi controllers. Brewpi-script logs the data, monitors the temperature profile and communicates with the BrewPi slave and the web server.
+BrewPi-Script-Daemon is a process daemon for managing BrewPi-Script instances. It was initially designed for Fermentrack, in order to replace the use of Circus. 
 
-BrewPi-Script was originally created by Elco as part of the [BrewPi project](https://github.com/BrewPi/brewpi-script). 
+BrewPi-Script-Daemon consists of two components:
 
-This version has been modified by Thorrak & stone to add additional features, including being upgraded to become Python 3 compatible. 
+* BrewPi-Script - The script which interfaces between a web interface (e.g. Fermentrack) and BrewPi controllers running BrewPi firmware. BrewPi-Script was originally created by Elco as part of the [BrewPi project](https://github.com/BrewPi/brewpi-script). Modifications have been made by Thorrak to enable daemonization.
+* Process daemon - The daemon which monitors for calls to create BrewPi-Script instances and spawns/manages them.
 
 
 Licensing
 -------
-BrewPi-script is licensed under the **GPL v3**, a copy of which is included in LICENSE.md. 
+BrewPi-Script is licensed under the **GPL v3**, a copy of which is included in LICENSE.md. 
 
-This license may differ from that used for other associated projects, including the BrewPi firmware, BrewPi-www, Fermentrack, etc.
+The process daemons and other code *not* part of BrewPi-Script are licensed under MIT.
+
+These licenses may differ from that used for other associated projects, including the BrewPi firmware, BrewPi-www, Fermentrack, etc.

@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import uuid
+
 from django.db import models, transaction
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
@@ -17,8 +19,6 @@ import re
 from decimal import Decimal
 
 from . import udev_integration
-
-from lib.ftcircus.client import CircusMgr, CircusException
 
 from fermentrack_django.settings import USE_DOCKER
 
@@ -148,6 +148,10 @@ class SensorDevice(models.Model):
     # DEVICE_HARDWARE_PIN = 1, // a digital pin, either input or output
     # DEVICE_HARDWARE_ONEWIRE_TEMP = 2, // a onewire temperature sensor
     # DEVICE_HARDWARE_ONEWIRE_2413 = 3 // a onewire 2 - channel PIO input or output.
+    # DEVICE_HARDWARE_BLUETOOTH_INKBIRD = 5,  // Inkbird temp sensor
+    # DEVICE_HARDWARE_BLUETOOTH_TILT = 6,
+    # DEVICE_HARDWARE_TPLINK_SWITCH = 7,
+
 
     DEVICE_HARDWARE_CHOICES = (
         (0, 'NONE'),
@@ -155,6 +159,9 @@ class SensorDevice(models.Model):
         (2, 'ONEWIRE_TEMP'),
         (3, 'ONEWIRE_2413'),
         (4, 'ONEWIRE_2408/Valve'),
+        (5, 'Bluetooth Inkbird'),
+        (6, 'Bluetooth Tilt'),
+        (7, 'TPLink Kasa Switch'),
     )
 
     DEVICE_TYPE_CHOICES = (
@@ -171,7 +178,9 @@ class SensorDevice(models.Model):
         (INVERT_INVERTED,       'Inverted'),
     )
 
-    address = models.CharField(max_length=16, blank=True, default="")
+    address = models.CharField(max_length=18, blank=True, default="")
+    alias = models.CharField(max_length=32, blank=True, default="")
+    child_no = models.CharField(max_length=3, blank=True, default="")
     device_index = models.IntegerField(default=-1)
     type = models.IntegerField(default=0)
     chamber = models.IntegerField(default=0)
@@ -195,13 +204,19 @@ class SensorDevice(models.Model):
     # Defining the name as something readable for debugging
     def __str__(self):
         if self.hardware == 1:
-            return "Pin {}".format(self.pin)
+            return f"Pin {self.pin}"
         elif self.hardware == 2:
-            return "TempSensor " + self.address
+            return f"OneWire Temp Sensor {self.address}"
         elif self.hardware == 3:
-            return "OneWire 2413 " + self.address
+            return f"OneWire 2413 {self.address}"
         elif self.hardware == 4:
-            return "OneWire 2408 " + self.address
+            return f"OneWire 2408 {self.address}"
+        elif self.hardware == 5:
+            return f"Inkbird Bluetooth Temp Sensor {self.address}"
+        elif self.hardware == 6:
+            return f"Tilt Hydrometer {self.alias}"
+        elif self.hardware == 7:
+            return f"TPLink Kasa {self.alias}"
 
 
     # This factory method is used to allow us to quickly create an instance from a dict loaded from the firmware
@@ -210,10 +225,16 @@ class SensorDevice(models.Model):
         new_device = cls()
 
         # An example string is as below (from one of my (unconfigured) onewire temperature sensors)
-        # {u'a': u'28FF93A7A4150307', u'c': 1, u'b': 0, u'd': 0, u'f': 0, u'i': -1, u'h': 2, u'j': 0.0, u'p': 12, u't': 0}
+        # {'a': '28FF93A7A4150307', 'c': 1, 'b': 0, 'd': 0, 'f': 0, 'i': -1, 'h': 2, 'j': 0.0, 'p': 12, 't': 0}
 
-        # and here is an example string from one of the 'pin' devices:
-        # {u'c': 1, u'b': 0, u'd': 0, u'f': 0, u'i': -1, u'h': 1, u'p': 16, u't': 0, u'x': 1}
+        # Example 'pin' device:
+        # {'c': 1, 'b': 0, 'd': 0, 'f': 0, 'i': -1, 'h': 1, 'p': 16, 't': 0, 'x': 1}
+
+        # Example Kasa smart switch:
+        # {"c":1,"b":0,"f":0,"h":6,"p":0,"x":false,"d":false,"a":"68:FF:7B:A0:3D:03","n":"","r":"Living Room Lamp"}
+
+        # Example Tilt/Inkbird bluetooth temp sensor:
+        # {"c":1,"b":0,"f":0,"h":4,"p":0,"x":false,"d":false,"a":"49:42:06:00:05:08","j":" 0.000","v":" 23.000"}
 
         # The following are defined in the code, but aren't interpreted here (for now)
         # const char DEVICE_ATTRIB_VALUE = 'v';		// print current values
@@ -222,11 +243,11 @@ class SensorDevice(models.Model):
         if 'a' in device_dict:  # const char DEVICE_ATTRIB_ADDRESS = 'a';
             new_device.address = device_dict['a']
 
-        if 'c' in device_dict:  # const char DEVICE_ATTRIB_CHAMBER = 'c';
-            new_device.chamber = device_dict['c']
-
         if 'b' in device_dict:  # const char DEVICE_ATTRIB_BEER = 'b';
             new_device.beer = device_dict['b']
+
+        if 'c' in device_dict:  # const char DEVICE_ATTRIB_CHAMBER = 'c';
+            new_device.chamber = device_dict['c']
 
         if 'd' in device_dict:  # const char DEVICE_ATTRIB_DEACTIVATED = 'd';
             new_device.deactivated = device_dict['d']
@@ -234,27 +255,33 @@ class SensorDevice(models.Model):
         if 'f' in device_dict:  # const char DEVICE_ATTRIB_FUNCTION = 'f';
             new_device.device_function = device_dict['f']
 
-        if 'i' in device_dict:  # const char DEVICE_ATTRIB_INDEX = 'i';
-            new_device.device_index = device_dict['i']
-
         # Not allowing defaulting of new_device.hardware
         # if 'h' in device_dict:  # const char DEVICE_ATTRIB_HARDWARE = 'h';
         new_device.hardware = device_dict['h']
 
+        if 'i' in device_dict:  # const char DEVICE_ATTRIB_INDEX = 'i';
+            new_device.device_index = device_dict['i']
+
         if 'j' in device_dict:  # const char DEVICE_ATTRIB_CALIBRATEADJUST = 'j';	// value to add to temp sensors to bring to correct temperature
             new_device.calibrate_adjust = device_dict['j']
 
-        #  TODO - Determine if I should error out if we don't receive 'p' back in the dict, or should allow defaulting
+        # 'n' is PIO if this is a BREWPI_DS2413 device or child_no if this is a TPLink Kasa Switch
+        if 'n' in device_dict:  # const char DEVICE_ATTRIB_PIO = 'n';
+            if new_device.hardware == 3:  # DS2413
+                new_device.pio = device_dict['n']
+            else:
+                new_device.child_no = device_dict['n']
+
         if 'p' in device_dict:  # const char DEVICE_ATTRIB_PIN = 'p';
             new_device.pin = device_dict['p']
+
+        # Alias is currently returned for Tilts and TPLink Kasa devices
+        if 'r' in device_dict:  # alias = 'r';
+            new_device.alias = device_dict['r']
 
         #  TODO - Determine if I should error out if we don't receive 't' back in the dict, or should allow defaulting
         if 't' in device_dict:  # const char DEVICE_ATTRIB_TYPE = 't';
             new_device.type = device_dict['t']
-
-        # pio is only set if BREWPI_DS2413 is enabled (OneWire actuator support)
-        if 'n' in device_dict:  # const char DEVICE_ATTRIB_PIO = 'n';
-            new_device.pio = device_dict['n']
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
             new_device.invert = int(device_dict['x'])
@@ -318,19 +345,18 @@ class SensorDevice(models.Model):
             self.device_index = self.get_next_available_device_index()
 
         if self.device_function > 0:  # If the device has a function, set the default chamber/beer
-            # For the ESP8266 implementation, this same logic is enforced on the controller, as well
+            # For the ESP8266/ESP32 implementation, this same logic is enforced on the controller, as well
             self.chamber = 1  # Default the chamber to 1
             self.beer = 0  # Default the beer to 0
-            if self.device_function >= 9 and self.device_function <=15:
+            if 9 <= self.device_function <= 15:
                 self.beer = 1  # ...unless this is an actual beer device, in which case default the beer to 1
-
 
     # This uses the "updateDevice" message. There is also a "writeDevice" message which is used to -create- devices.
     # (Used for "manual" actuators, aka buttons)
     def write_config_to_controller(self, uninstall=False):
         self.set_defaults_for_device_function()  # Bring the configuration to a consistent state
 
-        # U:{"i":"0","c":"1","b":"0","f":"5","h":"2","p":"12","a":"28FF93A7A4150307"}
+        # U{"i":"0","c":"1","b":"0","f":"5","h":"4","p":"0","a":"49:42:08:00:04:40"}
         config_dict = {}
 
         # The following options are universal for all hardware types
@@ -343,18 +369,31 @@ class SensorDevice(models.Model):
         # config_dict['d'] = self.deactivated
 
         if self.hardware == 1:  # Set options that are specific to pin devices
-            config_dict['x'] = self.invert
-        elif self.hardware == 2:  # Set options that are specific to OneWire temp sensors
+            if self.invert == "1":
+                config_dict['x'] = 1
+            elif self.invert == "0":
+                config_dict['x'] = 0
+            else:
+                config_dict['x'] = int(self.invert)
+        elif self.hardware == 2 or self.hardware == 5 or self.hardware == 6:  # Set options that are specific to OneWire & Bluetooth temp sensors
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
+        elif self.hardware == 7:
+            config_dict['a'] = self.address
+            config_dict['n'] = self.child_no
 
+        message_to_send = json.dumps(config_dict)
+        message_to_send.replace("\"x\": \"1\"", "\"x\": 1")
+        message_to_send.replace("\"x\": \"0\"", "\"x\": 0")
 
-        sent_message = self.controller.send_message("applyDevice", json.dumps(config_dict))
+        sent_message = self.controller.send_message("applyDevice", message_to_send)
         time.sleep(3)  # There's a 2.5 second delay in re-reading values within BrewPi Script - We'll give it 0.5s more
 
         self.controller.load_sensors_from_device()
         try:
-            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices, address=self.address, pin=self.pin)
+            updated_device = SensorDevice.find_device_from_address_or_pin(self.controller.installed_devices,
+                                                                          address=self.address, pin=self.pin,
+                                                                          child_no=self.child_no)
         except ValueError:
             if uninstall:
                 # If we were -trying- to uninstall the device, it's a good thing it doesn't show up in installed_devices
@@ -391,14 +430,19 @@ class SensorDevice(models.Model):
         return self.write_config_to_controller(uninstall=True)
 
     @staticmethod
-    def find_device_from_address_or_pin(device_list, address=None, pin=None):
+    def find_device_from_address_or_pin(device_list, address=None, pin=None, child_no=None):
         if device_list is None:
             raise ValueError('No sensors/pins are available for this device')
 
         if address is not None and len(address) > 0:
             for this_device in device_list:
                 if this_device.address == address:
-                    return this_device
+                    if this_device.hardware == 7:
+                        # For TPLink Kasa devices, we have to locate by address + child_no, not just address
+                        if this_device.child_no == child_no:
+                            return this_device
+                    else:
+                        return this_device
             # We weren't able to find a device with that address
             raise ValueError('Unable to find address in device_list')
         elif pin is not None:
@@ -448,6 +492,9 @@ class BrewPiDevice(models.Model):
     BOARD_TYPE_CHOICES = (
         ('uno', 'Arduino Uno (or compatible)'),
         ('esp8266', 'ESP8266'),
+        ('esp32', 'ESP32'),
+        ('esp32s2', 'ESP32-S2'),
+        ('esp32c3', 'ESP32-C3'),
         ('leonardo', 'Arduino Leonardo'),
         ('core', 'Core'),
         ('photon', 'Photon'),
@@ -458,7 +505,7 @@ class BrewPiDevice(models.Model):
 
     CONNECTION_TYPE_CHOICES = (
         (CONNECTION_SERIAL, 'Serial (Arduino and others)'),
-        (CONNECTION_WIFI, 'WiFi (ESP8266)'),
+        (CONNECTION_WIFI, 'WiFi (ESP8266/ESP32)'),
     )
 
     STATUS_ACTIVE = 'active'
@@ -467,8 +514,8 @@ class BrewPiDevice(models.Model):
     STATUS_UPDATING = 'updating'
 
     STATUS_CHOICES = (
-        (STATUS_ACTIVE, 'Active, Managed by Circus'),
-        (STATUS_UNMANAGED, 'Active, NOT managed by Circus'),
+        (STATUS_ACTIVE, 'Active, Managed by Fermentrack'),
+        (STATUS_UNMANAGED, 'Active, NOT managed by Fermentrack'),
         (STATUS_DISABLED, 'Explicitly disabled, cannot be launched'),
         (STATUS_UPDATING, 'Disabled, pending an update'),
     )
@@ -531,6 +578,9 @@ class BrewPiDevice(models.Model):
 
     # The time the fermentation profile was applied (all our math is based on this)
     time_profile_started = models.DateTimeField(null=True, blank=True, default=None)
+
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False,
+                            help_text="Universally unique identifier for this temperature controller")
 
     def is_temp_controller(self):  # This is a hack used in the site template so we can display relevant functionality
         return True
@@ -679,6 +729,14 @@ class BrewPiDevice(models.Model):
             return control_constants, self.is_legacy(version=version)
         return None, None
 
+    def retrieve_extended_settings(self):
+        # If we're dealing with a legacy controller, we need to work with the old control constants.
+        extended_settings = ExtendedSettings()
+        extended_settings.load_from_controller(self)
+
+        extended_settings.controller = self
+        return extended_settings
+
     def request_device_refresh(self):
         self.send_message("refreshDeviceList")  # refreshDeviceList refreshes the cache within brewpi-script
         time.sleep(0.1)
@@ -687,7 +745,6 @@ class BrewPiDevice(models.Model):
     # controller
     def load_sensors_from_device(self):
         # Note - getDeviceList actually is reading the cache from brewpi-script - not the firmware itself
-        loop_number = 1
         device_response = self.send_message("getDeviceList", read_response=True)
 
         # If the cache wasn't up to date, request that brewpi-script refresh it
@@ -695,6 +752,7 @@ class BrewPiDevice(models.Model):
             self.request_device_refresh()
 
         # This can take a few seconds. Periodically poll brewpi-script to try to get a response.
+        loop_number = 1
         while device_response == "device-list-not-up-to-date" and loop_number <= 4:
             time.sleep(5)
             device_response = self.send_message("getDeviceList", read_response=True)
@@ -925,55 +983,20 @@ class BrewPiDevice(models.Model):
     def set_parameters(self, parameters):
         return self.send_message("setParameters", json.dumps(parameters))
 
+    def get_extended_settings(self):
+        return json.loads(self.send_message("getExtendedSettings", read_response=True))
+
+    def set_extended_settings(self, parameters):
+        return self.send_message("setExtendedSettings", json.dumps(parameters))
+
     def get_dashpanel_info(self):
         try:  # This is apparently failing when being called in a loop for external_push - Wrapping in a try/except so the loop doesn't die
             return json.loads(self.send_message("getDashInfo", read_response=True))
         except TypeError:
             return None
 
-    def circus_parameter(self) -> int:
-        """Returns the parameter used by Circus to track this device's processes"""
-        return self.id
-
-    def _get_circusmgr(self) -> CircusMgr:
-        if USE_DOCKER:
-            return CircusMgr(circus_endpoint="tcp://127.0.0.1:7555")
-        else:
-            return CircusMgr()
-
-    def start_process(self):
-        """Start this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.start(name=circus_process_name)
-
-    def remove_process(self):
-        """Remove this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.remove(name=circus_process_name)
-
-    def stop_process(self):
-        """Stop this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.stop(name=circus_process_name)
-
-    def restart_process(self):
-        """Restart the device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        fc.restart(name=circus_process_name)
-
-    def status_process(self):
-        """Status this device process, raises CircusException if error"""
-        fc = self._get_circusmgr()
-        circus_process_name = u"dev-{}".format(self.circus_parameter())
-        status = fc.application_status(name=circus_process_name)
-        return status
-
     def get_cached_ip(self):
-        # This only gets called from within BrewPi-script
+        # This used to get called within BrewPi-script prior to the circus refactor. This can be safely deleted.
 
         # I really hate the name of the function, but I can't think of anything else. This basically does three things:
         # 1. Looks up the mDNS hostname (if any) set as self.wifi_host and gets the IP address
@@ -1013,7 +1036,7 @@ class BrewPiDevice(models.Model):
         return None
 
     def get_port_from_udev(self):
-        # This only gets called from within BrewPi-script
+        # This used to get called within BrewPi-script prior to the circus refactor. This can be safely deleted.
 
         # get_port_from_udev() looks for a USB device connected which matches self.udev_serial_number. If one is found,
         # it returns the associated device port. If one isn't found, it returns None (to prevent the cached port from
@@ -1064,6 +1087,87 @@ class BrewPiDevice(models.Model):
         # We failed to look up the udev serial number.
         return False
 
+    def to_dict(self) -> dict:
+        if self.active_beer:
+            active_beer_uuid = self.active_beer.uuid
+        else:
+            active_beer_uuid = None
+
+        if self.active_profile:
+            active_profile_uuid = self.active_profile.uuid
+        else:
+            active_profile_uuid = None
+
+        device_dict = {
+            'device_name': self.device_name,
+            'temp_format': self.temp_format,
+            'data_point_log_interval': self.data_point_log_interval,
+            'useInetSocket': self.useInetSocket,
+            'socketPort': self.socketPort,
+            'socketHost': self.socketHost,
+            'logging_status': self.logging_status,
+            'serial_port': self.serial_port,
+            'serial_alt_port': self.serial_alt_port,
+            'udev_serial_number': self.udev_serial_number,
+            'prefer_connecting_via_udev': self.prefer_connecting_via_udev,
+            'board_type': self.board_type,
+            'status': self.status,
+            'socket_name': self.socket_name,
+            'connection_type': self.connection_type,
+            'wifi_host': self.wifi_host,
+            'wifi_host_ip': self.wifi_host_ip,
+            'wifi_port': self.wifi_port,
+            'active_beer_uuid': str(active_beer_uuid),
+            'active_profile_uuid': str(active_profile_uuid),
+            'time_profile_started': self.time_profile_started,
+            'uuid': str(self.uuid)
+        }
+        return device_dict
+
+    @classmethod
+    def from_dict(cls, input_dict:dict, update:bool=False) -> 'BrewPiDevice' or None:
+        """
+        Parse an input_dict generated by the to_dict function above, and return an instance of BrewPiDevice generated
+        using the inputs passed in input_dict.
+        Start by querying the database to see if an object with input_dict.uuid exists. If one does, and update is False
+        then return None. Otherwise, update the located object with the fields passed in as part of input_dict.
+        """
+        try:
+            device = cls.objects.get(uuid=input_dict['uuid'])
+            if not update:
+                return None
+        except cls.DoesNotExist:
+            device = cls()
+
+        device.device_name = input_dict['device_name']
+        device.temp_format = input_dict['temp_format']
+        device.data_point_log_interval = input_dict['data_point_log_interval']
+        device.useInetSocket = input_dict['useInetSocket']
+        device.socketPort = input_dict['socketPort']
+        device.socketHost = input_dict['socketHost']
+        device.logging_status = input_dict['logging_status']
+        device.serial_port = input_dict['serial_port']
+        device.serial_alt_port = input_dict['serial_alt_port']
+        device.udev_serial_number = input_dict['udev_serial_number']
+        device.prefer_connecting_via_udev = input_dict['prefer_connecting_via_udev']
+        device.board_type = input_dict['board_type']
+        device.status = input_dict['status']
+        device.socket_name = input_dict['socket_name']
+        device.connection_type = input_dict['connection_type']
+        device.wifi_host = input_dict['wifi_host']
+        device.wifi_host_ip = input_dict['wifi_host_ip']
+        device.wifi_port = input_dict['wifi_port']
+
+        # I'm not going to load active beer or active_profile as I don't want loading a backup to inadvertently trigger
+        # temperature control.
+        # If I did want to load that, however, I would need to lazy-load it due to circular references
+        # device.active_beer = Beer.objects.get(uuid=input_dict['active_beer_uuid'])
+        # device.active_profile = Profile.objects.get(uuid=input_dict['active_profile_uuid'])
+        # device.time_profile_started = input_dict['time_profile_started']
+        device.uuid = input_dict['uuid']
+
+        return device
+
 
 class Beer(models.Model):
     # Beers are unique based on the combination of their name & the original device
@@ -1088,6 +1192,10 @@ class Beer(models.Model):
     model_version = models.IntegerField(default=2, help_text='Version # used for the logged file format')
 
     gravity_enabled = models.BooleanField(default=False, help_text='Is gravity logging enabled for this beer log?')
+
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False,
+                            help_text="Universally unique identifier for this beer log")
+
 
     def __str__(self):
         return self.name
@@ -1200,6 +1308,52 @@ class Beer(models.Model):
             return False
         return True
 
+
+    def to_dict(self) -> dict:
+        """Generates a dict that represents this Beer object"""
+        if self.device is None:
+            device_uuid = None
+        else:
+            device_uuid = self.device.uuid
+        beer_dict = {
+            'name': self.name,
+            'device_uuid': str(device_uuid),
+            'model_version': self.model_version,
+            'gravity_enabled': self.gravity_enabled,
+            'uuid': str(self.uuid),
+            'temp_format': self.format
+        }
+        return beer_dict
+
+    @classmethod
+    def from_dict(cls, input_dict:dict, update:bool=False) -> 'Beer' or None:
+        """
+        Parse an input_dict generated by the to_dict function above, and return an instance of Beer generated
+        using the inputs passed in input_dict.
+        Start by querying the database to see if an object with input_dict.uuid exists. If one does, and update is False
+        then return None. Otherwise, update the located object with the fields passed in as part of input_dict.
+        """
+        try:
+            beer = cls.objects.get(uuid=input_dict['uuid'])
+            if not update:
+                return None
+        except cls.DoesNotExist:
+            beer = cls()
+
+        beer.name = input_dict['name']
+        beer.model_version = input_dict['model_version']
+        beer.gravity_enabled = input_dict['gravity_enabled']
+        beer.format = input_dict['temp_format']
+        beer.uuid = input_dict['uuid']
+        if input_dict['device_uuid'] == "None":
+            beer.device = None
+        else:
+            try:
+                beer.device = BrewPiDevice.objects.get(uuid=input_dict['device_uuid'])
+            except BrewPiDevice.DoesNotExist:
+                # TODO - Decide if I want to do this here, as this implies a device was expected to exist
+                beer.device = None
+        return beer
 
     # def base_csv_url(self):
     #     return self.data_file_url('base_csv')
@@ -1481,6 +1635,10 @@ class FermentationProfile(models.Model):
 
     notes = models.TextField(default="", blank=True, null=False,
                              help_text="Notes about the fermentation profile (Optional)")
+
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False,
+                            help_text="Universally unique identifier for this profile")
+
 
     def __str__(self):
         return self.name
@@ -1807,6 +1965,54 @@ class FermentationProfile(models.Model):
 
         return new_profile
 
+    def to_dict(self) -> dict:
+        profile_dict = {
+            'name': self.name,
+            'profile_type': self.profile_type,
+            'status': self.status,
+            'notes': self.notes,
+            'uuid': str(self.uuid),
+            'points': []  # List of the dict representation of each FermentationProfilePoint belonging to this Profile
+        }
+        profile_points = self.fermentationprofilepoint_set.all()
+        for profile_point in profile_points:
+            profile_dict['points'].append(profile_point.to_dict())
+        return profile_dict
+
+    @classmethod
+    def load_from_dict(cls, input_dict:dict, update:bool=False) -> 'FermentationProfile' or None:
+        """
+        Parse an input_dict generated by the to_dict function above, and return an instance of FermentationProfile
+        generated using the inputs passed in input_dict.
+        Start by querying the database to see if an object with input_dict.uuid exists. If one does, and update is False
+        then return None. Otherwise, update the located object with the fields passed in as part of input_dict.
+
+        Note - This is load_from_dict rather than from_dict since we save the profile/points as part of this function.
+        """
+        try:
+            profile = cls.objects.get(uuid=input_dict['uuid'])
+            if not update:
+                return None
+        except cls.DoesNotExist:
+            profile = cls()
+
+        profile.name = input_dict['name']
+        profile.profile_type = input_dict['profile_type']
+        profile.status = input_dict['status']
+        profile.notes = input_dict['notes']
+        profile.uuid = input_dict['uuid']
+        profile.save()
+
+        # Delete all existing FermentationProfilePoints for this profile
+        profile.fermentationprofilepoint_set.all().delete()
+
+        # Load all the points from input_dict
+        for point in input_dict['points']:
+            new_point = FermentationProfilePoint.from_dict(point, profile.uuid)
+            new_point.save()
+
+        return profile
+
 
 class FermentationProfilePoint(models.Model):
     TEMP_FORMAT_CHOICES = (('C', 'Celsius'), ('F', 'Fahrenheit'))
@@ -1916,7 +2122,32 @@ class FermentationProfilePoint(models.Model):
 
         return time_delta
 
+    def to_dict(self) -> dict:
+        point_dict = {
+            'temperature_setting': str(self.temperature_setting),
+            'temp_format': self.temp_format,
+            'ttl': self.ttl_to_string(),
+            'profile_uuid': str(self.profile.uuid),
+        }
+        return point_dict
 
+    @classmethod
+    def from_dict(cls, input_dict, profile_uuid=None) -> 'FermentationProfilePoint':
+        """Generate a new FermentationProfilePoint from an input_dict that was generated by to_dict() above.
+        If profile_uuid is passed in, it will be used to look up the profile object. Otherwise, it will be looked up
+        using the profile_uuid in the input_dict.
+        """
+        if profile_uuid is None:
+            profile_uuid = input_dict['profile_uuid']
+        profile = FermentationProfile.objects.get(uuid=profile_uuid)
+
+        point = cls(
+            temperature_setting=Decimal(input_dict['temperature_setting']),
+            temp_format=input_dict['temp_format'],
+            ttl=cls.string_to_ttl(input_dict['ttl']),
+            profile=profile,
+        )
+        return point
 
 # The old (0.2.x/Arduino) Control Constants Model
 class OldControlConstants(models.Model):
@@ -2220,6 +2451,71 @@ class NewControlConstants(models.Model):
             return True
         except:
             return False
+
+
+# Extended settings only relevant to ESP32-based controllers
+class ExtendedSettings(models.Model):
+    class Meta:
+        managed = False
+
+    invertTFT = models.BooleanField(verbose_name="Invert TFT", default=False,
+                                    help_text="Should the TFT be inverted? Only applies to builds with TFT screens.")
+    glycol = models.BooleanField(verbose_name="Glycol Mode", default=False,
+                                 help_text="Should 'glycol mode' be enabled?")
+    lowDelay = models.BooleanField(verbose_name="Low Delay Mode", default=False,
+                                   help_text="Should 'low delay' mode be enabled?")
+
+    # In a lot of cases we're selectively loading/sending/comparing the fields that are known by the firmware
+    # To make it easy to iterate over those fields, going to list them out here
+    firmware_field_list = ['invertTFT', 'glycol', 'lowDelay']
+
+    def load_from_controller(self, controller):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return: boolean
+        """
+        # try:
+        # Load the control constants dict from the controller
+        es = controller.get_extended_settings()
+
+        for this_field in self.firmware_field_list:
+            try:
+                # In case we don't get every field back
+                setattr(self, this_field, es[this_field])
+            except:
+                pass
+        return True
+
+    def save_to_controller(self, controller, attribute):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return:
+        """
+
+        value_to_send = {attribute: getattr(self, attribute)}
+        return controller.set_extended_settings(value_to_send)
+
+    def save_all_to_controller(self, controller, prior_extended_settings=None):
+        """
+        :param controller: models.BrewPiDevice
+        :type controller: BrewPiDevice
+        :return: boolean
+        """
+
+        if prior_extended_settings is None:
+            # Load the preexisting control constants from the controller
+            prior_extended_settings = ExtendedSettings()
+            prior_extended_settings.load_from_controller(controller)
+
+        for this_field in self.firmware_field_list:
+            # Now loop through and check each field to find out what changed
+            if getattr(self, this_field) != getattr(prior_extended_settings, this_field):
+                # ...and only update those fields
+                self.save_to_controller(controller, this_field)
+        return True
+
 
 # TODO - Determine if we care about controlSettings
 # # There may only be a single control settings object between both revisions of the firmware, but I'll break it out

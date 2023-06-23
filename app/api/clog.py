@@ -1,4 +1,6 @@
 import os
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.conf import settings
 from app.models import BrewPiDevice
@@ -11,8 +13,8 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None
     if device_type == "brewpi":
         try:
             device = BrewPiDevice.objects.get(id=device_id)
-            log_filename = 'dev-{}-{}.log'.format(str(device.circus_parameter()).lower(), logfile)
-        except:
+            log_filename = f'dev-{device.id}-{logfile}.log'
+        except ObjectDoesNotExist:
             # Unable to load the device
             raise ValueError("No brewpi device with id {}".format(device_id))
 
@@ -24,10 +26,10 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None
         log_filename = 'ispindel_raw_output.log'
     elif device_type == "huey":
         log_filename = f'huey-{logfile}.log'  # Logfile is stderr or stdout
-    elif device_type == "upgrade":
-        log_filename = 'upgrade.log'
-    elif device_type == "circusd":
-        log_filename = 'circusd.log'
+    elif device_type == "tiltbridgejr":
+        log_filename = 'tiltbridge-jr.log'
+    elif device_type == "supervisord":
+        log_filename = 'supervisord.log'
     else:
         return None
 
@@ -37,11 +39,7 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None
 
 
 def get_device_log_combined(req, return_type, device_type, logfile, device_id=None, lines=100):
-    """Read the log files created by circus for spawned controllers"""
-
-    # TODO - THIS IS A HACK. This needs to be fixed properly, but that will require some refactoring
-    if(device_type=="upgrade"):
-        lines = 1000
+    """Read the log files created by brewpi-script for spawned controllers"""
 
     # Although the urlpattern checks if the logfile type is valid, this gets used in the filename we're reading so
     # recheck it here just to be safe.
@@ -52,13 +50,13 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # Device_type determines the other part of the logfile to read. Valid options are:
     # brewpi - A BrewPiDevice object
     # gravity - A specific gravity sensor object
-    # spawner - the circus spawner (not the daemon)
+    # spawner - the brewpi-script spawner (not the scripts themselves, or supervisord)
     # fermentrack - Fermentrack itself
     # ispindel - iSpindel raw log
     # upgrade - The log of the upgrade process (from Git)
     # huey - The Huey (task manager) logs
-    # circusd - The log for Circusd itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey', 'circusd']
+    # supervisord - The log for supervisord itself
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'tiltbridgejr', 'huey', 'supervisord']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)
@@ -70,7 +68,7 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
         logfile_fd = open(logfile_path)
         ret = tail(logfile_fd, int(lines))
         logfile_fd.close()
-    except (IOError) as e:
+    except IOError as e:
         # Generally if we hit this the log file doesn't exist
         return HttpResponse("Error opening {} logfile: {}".format(logfile_path, str(e)), status=500)
 
