@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
-[Unreleased] - ESP32 Support & new BrewPi-Script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2023-06-23] - ESP32 Support, TiltBridge Jr & new BrewPi-Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **NOTE** - This is the first version of Fermentrack that explicitly DOES NOT support "dockerless" installation. Installation is intended to be via the official Fermentrack images on Docker Hub.
 
