@@ -221,14 +221,6 @@ class TiltCreateForm(forms.Form):
             except ObjectDoesNotExist:
                 pass
         return self.cleaned_data['name']
-
-    def clean_connection_type(self):
-        if self.cleaned_data.get('connection_type'):
-            if self.cleaned_data.get('connection_type') == TiltConfiguration.CONNECTION_BLUETOOTH and not bluetooth_loaded:
-                raise forms.ValidationError('Bluetooth packages for python have not been installed. Tilt Hydrometers '
-                                            'cannot be connected via Bluetooth.')
-        return self.cleaned_data['connection_type']
-
     def clean(self):
         cleaned_data = self.cleaned_data
 

@@ -125,12 +125,6 @@ def gravity_list(request):
     # This handles generating the list of grav sensors
     # Loading the actual data for the sensors is handled by Vue.js which loads the data via calls to api/sensors.py
 
-    if not bluetooth_loaded:
-        # TODO - Only display this error message when Bluetooth Tilts are present
-        messages.warning(request, 'Bluetooth packages for python have not been installed. Tilt support will not work. '
-                                  'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
-                                  'to resolve this issue.')
-
     all_devices = GravitySensor.objects.all()
     return render(request, template_name="gravity/gravity_list.html", context={'all_devices': all_devices})
 
@@ -184,13 +178,6 @@ def gravity_dashboard(request, sensor_id, log_id=None):
     except ObjectDoesNotExist:
         messages.error(request, u"Unable to load gravity sensor with ID {}".format(sensor_id))
         return redirect('gravity_list')
-
-    if active_device.sensor_type == GravitySensor.SENSOR_TILT:
-        if not bluetooth_loaded and active_device.tilt_configuration.connection_type == TiltConfiguration.CONNECTION_BLUETOOTH:
-            messages.warning(request,
-                             'Bluetooth packages for python have not been installed. Tilt support will not work. '
-                             'Click <a href=\"http://www.fermentrack.com/help/bluetooth/\">here</a> to learn how '
-                             'to resolve this issue.')
 
     log_create_form = forms.GravityLogCreateForm()
     manual_add_form = forms.ManualPointForm()
