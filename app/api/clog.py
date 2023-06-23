@@ -26,8 +26,8 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None
         log_filename = 'ispindel_raw_output.log'
     elif device_type == "huey":
         log_filename = f'huey-{logfile}.log'  # Logfile is stderr or stdout
-    elif device_type == "upgrade":
-        log_filename = 'upgrade.log'
+    elif device_type == "tiltbridgejr":
+        log_filename = 'tiltbridge-jr.log'
     elif device_type == "supervisord":
         log_filename = 'supervisord.log'
     else:
@@ -40,10 +40,6 @@ def get_filepath_to_log(device_type, logfile="", device_id=None) -> Path or None
 
 def get_device_log_combined(req, return_type, device_type, logfile, device_id=None, lines=100):
     """Read the log files created by brewpi-script for spawned controllers"""
-
-    # TODO - THIS IS A HACK. This needs to be fixed properly, but that will require some refactoring
-    if(device_type=="upgrade"):
-        lines = 1000
 
     # Although the urlpattern checks if the logfile type is valid, this gets used in the filename we're reading so
     # recheck it here just to be safe.
@@ -60,7 +56,7 @@ def get_device_log_combined(req, return_type, device_type, logfile, device_id=No
     # upgrade - The log of the upgrade process (from Git)
     # huey - The Huey (task manager) logs
     # supervisord - The log for supervisord itself
-    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'upgrade', 'huey', 'supervisord']
+    valid_device_types = ['brewpi', 'gravity', 'spawner', 'fermentrack', 'ispindel', 'tiltbridgejr', 'huey', 'supervisord']
     if device_type not in valid_device_types:
         # TODO - Log this
         return HttpResponse("Cannot read log files for devices of type {} ".format(device_type), status=500)
