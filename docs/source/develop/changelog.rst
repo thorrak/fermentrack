@@ -21,6 +21,7 @@ Added
 - Added board types for ESP32, ESP32-C3, and ESP32-S2
 - Added examples for HTTPS support (Thanks @HuggableShark)
 - Added UUIDs to most exportable objects to allow for easier import/export
+- Added "TiltBridge Jr." (new Tilt bluetooth daemon) support
 
 
 Changed
@@ -34,6 +35,13 @@ Changed
 - Changed most references to ESP8266 to reference ESP32 as appropriate
 - Rewrote backup & restore functions to no longer rely on Django management code
 - Changed restoration of legacy backups to explicitly utilize the staging folder
+- Removed GitHub upgrade workflow from UI
+
+
+Removed
+-------
+
+- Removed Fermentrack-specific Bluetooth daemon - now handled by TiltBridge Jr.
 
 
 

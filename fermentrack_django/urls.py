@@ -30,10 +30,8 @@ urlpatterns = [
     url(r'^$', app.views.siteroot, name='siteroot'),
 
     url(r'^upgrade/$', app.views.github_trigger_upgrade, name='github_trigger_upgrade'),
-    url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
-    url(r'^upgrade/reload/$', app.views.trigger_requirements_reload, name='trigger_requirements_reload'),
-    url(r'^upgrade/delete_lock/$', app.views.delete_upgrade_lock_file, name='delete_upgrade_lock_file'),
-    url(r'^fix_sqlite/$', app.views.trigger_sqlite_fix, name='trigger_sqlite_fix'),
+    # url(r'^upgrade/force/$', app.views.github_trigger_force_upgrade, name='github_trigger_force_upgrade'),
+    # url(r'^upgrade/delete_lock/$', app.views.delete_upgrade_lock_file, name='delete_upgrade_lock_file'),
 
     ### Device Views
     url(r'^devices/$', app.views.device_lcd_list, name='device_lcd_list'),

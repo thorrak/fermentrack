@@ -5,8 +5,8 @@ Copy both your self-signed .crt and .key files to this folder and uncomment the 
 
 Total workflow:
 1) Copy both your self-signed .crt and .key files to this folder
-2) Uncommnent necessary lines in Dockerfile in this folder and change .crt and .key names to your file names
-3) Uncommnent necessary lines in nginx.conf and change .crt and .key names to your file names
+2) Uncomment necessary lines in Dockerfile in this folder and change .crt and .key names to your file names
+3) Uncomment necessary lines in nginx.conf and change .crt and .key names to your file names
 4) Change to fementrack-tools root directory again
 5) `cd ~/fermentrack-tools/`
 6) Rebuild the nginx container to push the cert files and updated nginx.conf file to the docker container
