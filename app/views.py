@@ -465,107 +465,78 @@ def github_trigger_upgrade(request, variant=""):
     tags = git_integration.get_tag_info()
     local_versions = git_integration.get_local_version_numbers()
 
-    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+    # lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
 
     if allow_git_branch_switching:
         branch_info = git_integration.get_remote_branch_info()
     else:
         branch_info = {}
 
-    if request.POST:
-        if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
-            messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
-        elif lockfile.exists():
-            messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
-                                    "delete the upgrade lock using the function below.")
-        else:
-            cmds = {}
-
-            if not allow_git_branch_switching:
-                # I'm not doing "if git_update_type == config.GIT_UPDATE_TYPE" so users who have update set to 'none'
-                # can still update from the "master" branch.
-                if git_update_type == "dev":
-                    # TODO - Change back to dev once we eliminate docker-dev
-                    branch_to_use = "docker-dev"
-                else:
-                    # Assume if they have anything other than "dev" they want master
-                    branch_to_use = "master"
-            elif 'new_branch' not in request.POST:
-                # Branch switching is enabled, but we weren't provided with a branch. Use the current branch.
-                branch_to_use = commit_info['local_branch']
-            else:
-                # Branch switching is enabled & the user provided a branch. Use it.
-                branch_to_use = request.POST.get('new_branch', "master")
-
-            variant_flags = ""
-            if variant == "force":  # Does git reset --hard
-                variant_flags += "-f "
-            if settings.USE_DOCKER:
-                variant_flags += "-d "
-
-            cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
-
-            subprocess.call(cmd, shell=True)
-            messages.success(request, "Triggered an upgrade from GitHub")
-
-    else:
-        # We'll display this error message if the page is being accessed and no form has been posted
-        if app_is_current:
-            messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+    # if request.POST:
+    #     if app_is_current and 'new_branch' not in request.POST and 'tag' not in request.POST:
+    #         messages.error(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
+    #     elif lockfile.exists():
+    #         messages.error(request, "Cannot upgrade - upgrade appears to be in progress. To upgrade anyways, "
+    #                                 "delete the upgrade lock using the function below.")
+    #     else:
+    #         cmds = {}
+    #
+    #         if not allow_git_branch_switching:
+    #             # I'm not doing "if git_update_type == config.GIT_UPDATE_TYPE" so users who have update set to 'none'
+    #             # can still update from the "master" branch.
+    #             if git_update_type == "dev":
+    #                 # TODO - Change back to dev once we eliminate docker-dev
+    #                 branch_to_use = "docker-dev"
+    #             else:
+    #                 # Assume if they have anything other than "dev" they want master
+    #                 branch_to_use = "master"
+    #         elif 'new_branch' not in request.POST:
+    #             # Branch switching is enabled, but we weren't provided with a branch. Use the current branch.
+    #             branch_to_use = commit_info['local_branch']
+    #         else:
+    #             # Branch switching is enabled & the user provided a branch. Use it.
+    #             branch_to_use = request.POST.get('new_branch', "master")
+    #
+    #         variant_flags = ""
+    #         if variant == "force":  # Does git reset --hard
+    #             variant_flags += "-f "
+    #         if settings.USE_DOCKER:
+    #             variant_flags += "-d "
+    #
+    #         cmd = f"nohup utils/upgrade3.sh {variant_flags} -b \"{branch_to_use}\" &"
+    #
+    #         subprocess.call(cmd, shell=True)
+    #         messages.success(request, "Triggered an upgrade from GitHub")
+    #
+    # else:
+    #     # We'll display this error message if the page is being accessed and no form has been posted
+    #     if app_is_current:
+    #         messages.warning(request, "Nothing to upgrade - Local copy and GitHub are at same commit")
 
     return render(request, template_name="github_trigger_upgrade.html",
                   context={'commit_info': commit_info, 'app_is_current': app_is_current, 'branch_info': branch_info,
-                           'tags': tags, 'git_update_type': git_update_type, 'lockfile_exists': lockfile.exists(),
+                           'tags': tags, 'git_update_type': git_update_type,
                            'allow_git_branch_switching': allow_git_branch_switching, 'local_versions': local_versions,})
 
-@login_required
-@site_is_configured
-def delete_upgrade_lock_file(request, variant=""):
-    lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
-
-    if not lockfile.exists():
-        messages.info(request, "Unable to delete lock file - file does not exist")
-    else:
-        os.remove(lockfile)
-        messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
-
-    return redirect('github_trigger_upgrade')
-
-
-@login_required
-@site_is_configured
-def github_trigger_force_upgrade(request):
-    # TODO - Get rid of this in favor of a better urlpattern
-    return github_trigger_upgrade(request, variant="force")
+# @login_required
+# @site_is_configured
+# def delete_upgrade_lock_file(request, variant=""):
+#     lockfile = Path(settings.ROOT_DIR) / "utils" / "upgrade_lock"
+#
+#     if not lockfile.exists():
+#         messages.info(request, "Unable to delete lock file - file does not exist")
+#     else:
+#         os.remove(lockfile)
+#         messages.success(request, "Successfully cleared lockfile. Ready to upgrade.")
+#
+#     return redirect('github_trigger_upgrade')
 
 
-
-@login_required
-@site_is_configured
-def trigger_requirements_reload(request):
-    # TODO - Add permission check here
-
-    # All that this view does is trigger the utils/fix_python_requirements.sh shell script and return a message letting
-    # the user know that Fermentrack will take a few minutes to restart.
-    cmd = "nohup utils/cleanup_utils/fix_python_requirements.sh &"
-    messages.success(request, "Triggered a reload of your Python packages")
-    subprocess.call(cmd, shell=True)
-
-    return render(request, template_name="trigger_requirements_reload.html", context={})
-
-
-@login_required
-@site_is_configured
-def trigger_sqlite_fix(request):
-    # TODO - Add permission check here
-
-    # All that this view does is trigger the utils/fix_sqlite_for_django_2.sh shell script and return a message letting
-    # the user know that Fermentrack will take a few minutes to restart.
-    cmd = "nohup utils/cleanup_utils/fix_sqlite_for_django_2.sh &"
-    messages.success(request, "Triggered the management command to fix the SQLite database post-Django 2.0+ migration")
-    subprocess.call(cmd, shell=True)
-
-    return render(request, template_name="trigger_requirements_reload.html", context={})
+# @login_required
+# @site_is_configured
+# def github_trigger_force_upgrade(request):
+#     # TODO - Get rid of this in favor of a better urlpattern
+#     return github_trigger_upgrade(request, variant="force")
 
 
 def login(request, next=None):

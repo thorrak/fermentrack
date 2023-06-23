@@ -9,9 +9,9 @@
 <h1>Upgrade from GitHub</h1>
 
 
-{% if allow_git_branch_switching %}
-    <h3>Update Current Branch</h3>
-{% endif %}
+{#{% if allow_git_branch_switching %}#}
+{#    <h3>Update Current Branch</h3>#}
+{#{% endif %}#}
 
 <h4>Local Commit Info:</h4>
 <table>
@@ -29,27 +29,39 @@
 </table>
 
 
-{% if lockfile_exists %}
-    <div class="row">
-        <h4>Upgrade in Progress</h4>
-        An upgrade appears to currently be in progress, and further upgrades cannot be triggered at this time. If you
-        believe that this has been detected in error, click the button below to reenable triggering an upgrade from
-        this interface.
-    </div>
+{#{% if lockfile_exists %}#}
+{#    <div class="row">#}
+{#        <h4>Upgrade in Progress</h4>#}
+{#        An upgrade appears to currently be in progress, and further upgrades cannot be triggered at this time. If you#}
+{#        believe that this has been detected in error, click the button below to reenable triggering an upgrade from#}
+{#        this interface.#}
+{#    </div>#}
+{##}
+{#    <div class="row">#}
+{#    <a href="{% url 'delete_upgrade_lock_file' %}" class="btn btn-danger">Remove Lock</a>#}
+{#    </div>#}
+
+{% if not app_is_current %}
+{#<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}#}
+{#    <input type="submit" value="Click Here to Upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />#}
+{#</form>#}
+{##}
+{#    <p>Having trouble upgrading? You can also try this, which is a bit more forceful in triggering the upgrade:</p>#}
+{#<form action="{% url "github_trigger_force_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}#}
+{#    <input type="submit" value="Click Here to force an upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />#}
+{#</form>#}
 
     <div class="row">
-    <a href="{% url 'delete_upgrade_lock_file' %}" class="btn btn-danger">Remove Lock</a>
+    <h4>Upgrade Available</h4>
+
+    <ol>
+        <li>(Optional) <a href="{% url 'backups:backup_list' %}" class="">Back up</a> your data from Fermentrack</li>
+        <li>Log into your Raspberry Pi via SSH</li>
+        <li>Change to the fermentrack-tools directory - Typically by typing: <pre>cd fermentrack-tools</pre></li>
+        <li>Run the install script and follow the prompts to upgrade: <pre>./install.sh</pre></li>
+    </ol>
+
     </div>
-
-{% elif not app_is_current %}
-<form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
-    <input type="submit" value="Click Here to Upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />
-</form>
-
-    <p>Having trouble upgrading? You can also try this, which is a bit more forceful in triggering the upgrade:</p>
-<form action="{% url "github_trigger_force_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
-    <input type="submit" value="Click Here to force an upgrade from GitHub" class="btn btn-block btn-lg btn-primary" />
-</form>
 
 
 {% endif %}
@@ -73,35 +85,35 @@
 {% endif %}
 
 
-{% if allow_git_branch_switching %}
-
-    <h3>Switch Branch</h3>
-    <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}
-        <div class="row">
-            <div class="col-xs-4">Current Branch:</div>
-            <div class="col-xs-8">{{ branch_info.local_branch }}</div>
-        </div>
-
-        <div class="row">
-            <div class="col-xs-4">New Branch:</div>
-            <div class="col-xs-8">
-                <select name="new_branch">
-                    {% for this_branch in branch_info.remote_branches %}
-                        <option value="{{ this_branch }}">{{ this_branch }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-    {% if not lockfile_exists %}
-        <div class="row">
-            <div class="col-xs-2"><input type="submit" value="Switch Branch" class="btn btn-block btn-lg btn-danger" /></div>
-        </div>
-    {% endif %}
-
-    </form>
-
-{% endif %}
+{#{% if allow_git_branch_switching %}#}
+{##}
+{#    <h3>Switch Branch</h3>#}
+{#    <form action="{% url "github_trigger_upgrade" %}" class="form-horizontal" method="post">{% csrf_token %}#}
+{#        <div class="row">#}
+{#            <div class="col-xs-4">Current Branch:</div>#}
+{#            <div class="col-xs-8">{{ branch_info.local_branch }}</div>#}
+{#        </div>#}
+{##}
+{#        <div class="row">#}
+{#            <div class="col-xs-4">New Branch:</div>#}
+{#            <div class="col-xs-8">#}
+{#                <select name="new_branch">#}
+{#                    {% for this_branch in branch_info.remote_branches %}#}
+{#                        <option value="{{ this_branch }}">{{ this_branch }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#    {% if not lockfile_exists %}#}
+{#        <div class="row">#}
+{#            <div class="col-xs-2"><input type="submit" value="Switch Branch" class="btn btn-block btn-lg btn-danger" /></div>#}
+{#        </div>#}
+{#    {% endif %}#}
+{##}
+{#    </form>#}
+{##}
+{#{% endif %}#}
 
 {% endblock %}
 
