@@ -60,6 +60,11 @@ def error_notifications(request):
                                      "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
                                      'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
+        django_env_version = env.int("ENV_DJANGO_VERSION", default=-1)
+        if django_env_version < 2:
+            msg = 'You are running an installation of Fermentrack that was installed using an old version of Fermentrack Tools. To fix this, please <a href="https://github.com/thorrak/fermentrack/issues/727">follow the instructions here</a>. Tilt functionality will not work until this is fixed, and other features may break in future updates if this is not resolved.'
+            messages.warning(request, msg)
+
 
 # Siteroot is a lazy way of determining where to direct the user when they go to http://devicename.local/
 def siteroot(request):
