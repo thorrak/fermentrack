@@ -92,11 +92,11 @@ class GuidedSetupConfigForm(forms.Form):
         # widget=forms.RadioSelect(),
         )
 
-    update_preference = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
-        choices=update_options,
-        help_text="What type of updates would you like to receive for Fermentrack?"
-        # widget=forms.RadioSelect(),
-        )
+    # update_preference = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+    #     choices=update_options,
+    #     help_text="What type of updates would you like to receive for Fermentrack?"
+    #     # widget=forms.RadioSelect(),
+    #     )
 
     enable_sentry_support = forms.ChoiceField(  # initial=settings.ENABLE_SENTRY
         choices=true_false,
