@@ -83,7 +83,7 @@ def setup_config(request):
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
-            config.GIT_UPDATE_TYPE = f['update_preference']
+            # config.GIT_UPDATE_TYPE = f['update_preference']
             config.GRAVITY_DISPLAY_FORMAT = f['gravity_display_format']
 
 

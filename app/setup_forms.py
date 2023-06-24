@@ -57,7 +57,6 @@ class GuidedSetupConfigForm(forms.Form):
     ]
     theme_select = settings.CONSTANCE_ADDITIONAL_FIELDS['custom_theme_select'][1]['choices']
 
-    update_options = settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices'][1:]
 
     # Fields for our form, the initial value taken from configuration.
 
@@ -93,11 +92,11 @@ class GuidedSetupConfigForm(forms.Form):
         # widget=forms.RadioSelect(),
         )
 
-    update_preference = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
-        choices=update_options,
-        help_text="What type of updates would you like to receive for Fermentrack?"
-        # widget=forms.RadioSelect(),
-        )
+    # update_preference = forms.ChoiceField(  # initial=config.GRAVITY_SUPPORT_ENABLED
+    #     choices=update_options,
+    #     help_text="What type of updates would you like to receive for Fermentrack?"
+    #     # widget=forms.RadioSelect(),
+    #     )
 
     enable_sentry_support = forms.ChoiceField(  # initial=settings.ENABLE_SENTRY
         choices=true_false,
@@ -118,7 +117,6 @@ class GuidedSetupConfigForm(forms.Form):
         self.fields['temperature_format'].initial = config.TEMPERATURE_FORMAT
         self.fields['preferred_timezone'].initial = config.PREFERRED_TIMEZONE
         self.fields['enable_gravity_support'].initial = config.GRAVITY_SUPPORT_ENABLED
-        self.fields['update_preference'].initial = config.GIT_UPDATE_TYPE
         self.fields['gravity_display_format'].initial = config.GRAVITY_DISPLAY_FORMAT
         self.fields['enable_sentry_support'].initial = settings.ENABLE_SENTRY
 
