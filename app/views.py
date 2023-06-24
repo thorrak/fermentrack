@@ -44,21 +44,21 @@ def error_notifications(request):
                 # config.LAST_GIT_CHECK = now_time - datetime.timedelta(hours=18)
                 # config.FIRMWARE_LIST_LAST_REFRESHED = now_time - datetime.timedelta(hours=72)
 
-        if not config.ALLOW_GIT_BRANCH_SWITCHING:
-            # Ths user is using one of the two "default" branches (dev or master). Make sure that the branch he/she is
-            # actually using is the same as the one that he/she wanted.
-
-            # Don't check if the user has custom branch switching though, as they should be allowed to pick whatever
-            # branch he/she wants.
-            # TODO - Fix the below once we eliminate docker-dev
-            if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE != 'dev'):
-                if config.GIT_UPDATE_TYPE not in [x for x,_ in settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices']]:
-                    # TODO - Fix this to pick up the default
-                    config.GIT_UPDATE_TYPE = "dev"
-                else:
-                    messages.warning(request, "You selected to update from the {} code ".format(config.GIT_UPDATE_TYPE) +
-                                     "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
-                                     'Click <a href="/upgrade">here</a> to update to the correct branch.')
+        # if not config.ALLOW_GIT_BRANCH_SWITCHING:
+        #     # Ths user is using one of the two "default" branches (dev or master). Make sure that the branch he/she is
+        #     # actually using is the same as the one that he/she wanted.
+        #
+        #     # Don't check if the user has custom branch switching though, as they should be allowed to pick whatever
+        #     # branch he/she wants.
+        #     # TODO - Fix the below once we eliminate docker-dev
+        #     if settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE != 'dev'):
+        #         if config.GIT_UPDATE_TYPE not in [x for x,_ in settings.CONSTANCE_ADDITIONAL_FIELDS['git_update_type_select'][1]['choices']]:
+        #             # TODO - Fix this to pick up the default
+        #             config.GIT_UPDATE_TYPE = "dev"
+        #         else:
+        #             messages.warning(request, "You selected to update from the {} code ".format(config.GIT_UPDATE_TYPE) +
+        #                              "branch, but you are currently using the {} branch. ".format(settings.GIT_BRANCH) +
+        #                              'Click <a href="/upgrade">here</a> to update to the correct branch.')
 
         django_env_version = env.int("ENV_DJANGO_VERSION", default=-1)
         if django_env_version < 2:
@@ -603,7 +603,7 @@ def site_settings(request):
             config.PREFERRED_TIMEZONE = f['preferred_timezone']
             config.USER_HAS_COMPLETED_CONFIGURATION = True  # Toggle once they've completed the configuration workflow
             config.GRAVITY_SUPPORT_ENABLED = f['enable_gravity_support']
-            config.GIT_UPDATE_TYPE = f['update_preference']
+            # config.GIT_UPDATE_TYPE = f['update_preference']
 
             if f['enable_sentry_support'] != settings.ENABLE_SENTRY:
                 # The user changed the "Enable Sentry" value - but this doesn't actually take effect until Fermentrack
