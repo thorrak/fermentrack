@@ -25,6 +25,10 @@ from app.models import BrewPiDevice, OldControlConstants, NewControlConstants, P
 from external_push.views import external_push_list
 from django.contrib.auth.models import User
 
+import environ
+
+env = environ.Env()
+
 
 def error_notifications(request):
 
