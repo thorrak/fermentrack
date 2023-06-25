@@ -11,22 +11,16 @@ def app_is_current(tagged_commits_only=False, branch_to_check=None):
     remote_repo = local_repo.remote()
     local_commit = local_repo.commit()
 
-    if not config.ALLOW_GIT_BRANCH_SWITCHING and settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and not \
-            (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE == 'dev'):
-        # The branch is set to "master" and update type is "dev" or vice-versa
-        return False
+    # if not config.ALLOW_GIT_BRANCH_SWITCHING and settings.GIT_BRANCH != config.GIT_UPDATE_TYPE and not \
+    #         (settings.GIT_BRANCH == 'docker-dev' and config.GIT_UPDATE_TYPE == 'dev'):
+    #     # The branch is set to "master" and update type is "dev" or vice-versa
+    #     return False
 
-    if tagged_commits_only:
-        # Functionality no longer exists, but leaving the code in case we reenable it later. This should generally never
-        # be reached.
-        tags = get_tag_info()
-        return tags['latest_tag']['committed_datetime'] <= local_commit.committed_datetime
-    else:
-        # We don't want to upgrade if the local commit is newer than the remote commit (IE - we're doing development
-        # on the local copy)
-        remote_fetch = remote_repo.fetch()
-        remote_commit = remote_fetch[0].commit
-        return remote_commit.committed_datetime <= local_commit.committed_datetime
+    # We don't want to upgrade if the local commit is newer than the remote commit (IE - we're doing development
+    # on the local copy)
+    remote_fetch = remote_repo.fetch()
+    remote_commit = remote_fetch[0].commit
+    return remote_commit.committed_datetime <= local_commit.committed_datetime
 
 
 def get_local_remote_commit_info():

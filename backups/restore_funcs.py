@@ -129,8 +129,8 @@ def restore_fermentrack_configuration_options(obj_dict:dict):
         config.GRAVITY_SUPPORT_ENABLED = obj_dict['GRAVITY_SUPPORT_ENABLED']
     # if 'LAST_GIT_CHECK' in obj_dict:
     #     config.LAST_GIT_CHECK = obj_dict['LAST_GIT_CHECK']
-    if 'GIT_UPDATE_TYPE' in obj_dict:
-        config.GIT_UPDATE_TYPE = obj_dict['GIT_UPDATE_TYPE']
+    # if 'GIT_UPDATE_TYPE' in obj_dict:
+    #     config.GIT_UPDATE_TYPE = obj_dict['GIT_UPDATE_TYPE']
     if 'ALLOW_GIT_BRANCH_SWITCHING' in obj_dict:
         config.ALLOW_GIT_BRANCH_SWITCHING = obj_dict['ALLOW_GIT_BRANCH_SWITCHING']
     if 'PREFERRED_TIMEZONE' in obj_dict:

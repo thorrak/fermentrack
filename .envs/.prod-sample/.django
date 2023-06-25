@@ -41,4 +41,4 @@ REDIS_URL=redis://127.0.0.1:6379/0
 
 # Version Management
 # ------------------------------------------------------------------------------
-ENV_DJANGO_VERSION=1
+ENV_DJANGO_VERSION=2
