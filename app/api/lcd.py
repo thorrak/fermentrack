@@ -30,10 +30,10 @@ def getLCD(req, device_id):
 
 def getPanel(req, device_id):
     def temp_text(temp, temp_format):
-        if (temp is None) or (temp == 0):
-            return "--&deg; {}".format(temp_format)
-        else:
+        if isinstance(temp, float):
             return "{:.1f}&deg; {}".format(temp, temp_format)
+        else:
+            return "--&deg; {}".format(temp_format)
 
     ret = []
     try:
