@@ -32,7 +32,7 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
         except ObjectDoesNotExist:
             return False  # cannot load the object from the database (deleted?)
-        except StopIteration:
+        except RuntimeError:
             return False
 
         self.brewpi_device = brewpi_device
@@ -86,6 +86,8 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         try:
             is_past_end = self.brewpi_device.is_past_end_of_profile()
         except StopIteration:
+            is_past_end = False
+        except RuntimeError:
             is_past_end = False
         return is_past_end
 
