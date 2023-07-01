@@ -1739,39 +1739,37 @@ class FermentationProfile(models.Model):
         # the profile point's format to the device's format.
         profile_points = self.fermentationprofilepoint_set.order_by('ttl')
 
-        past_first_point=False  # There's guaranteed to be a better way to do this
         previous_setpoint = Decimal("0.0")
-        previous_ttl = 0.0
+        previous_ttl = timezone.timedelta(seconds=0)
         current_time = timezone.now()
 
+        # If the first point in the profile has a TTL other than 0, then we assume we hold that temp from assignment
+        # until then.
+        if current_time <= (time_started + profile_points[0].ttl):
+            return float(profile_points[0].convert_temp(temp_format))
+
         for this_point in profile_points:
-            if not past_first_point:
-                # If we haven't hit the first TTL yet, we are in the initial lag period where we hold a constant
-                # temperature. Return the temperature setting
-                if current_time < (time_started + this_point.ttl):
-                    return float(this_point.convert_temp(temp_format))
-                past_first_point = True
-            else:
-                # Test if we are in this period
-                if current_time < (time_started + this_point.ttl):
-                    # We are - Check if we need to interpolate, or if we can just use the static temperature
-                    if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
-                        return float(this_point.convert_temp(temp_format))
-                    else:  # We have to interpolate
-                        duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
-                        delta = (this_point.convert_temp(temp_format) - previous_setpoint)
-                        slope = float(delta) / duration
+            # Test if we are in this period
+            if current_time < (time_started + this_point.ttl):
+                # this_point is in the future. Check if this is a "hold temp" block or a "ramp" block
+                if this_point.convert_temp(temp_format) == previous_setpoint:  # We can just use the static temperature
+                    # This is a "hold temp" block (previous point's temp = current point's temp)
+                    return float(previous_setpoint)
+                else:  # We have to interpolate
+                    duration = this_point.ttl.total_seconds() - previous_ttl.total_seconds()
+                    delta = (this_point.convert_temp(temp_format) - previous_setpoint)
+                    slope = float(delta) / duration
 
-                        seconds_into_point = (current_time - (time_started + previous_ttl)).total_seconds()
+                    seconds_into_point = (current_time - (time_started + previous_ttl)).total_seconds()
 
-                        return round(seconds_into_point * slope + float(previous_setpoint), 1)
+                    return round(seconds_into_point * slope + float(previous_setpoint), 1)
 
             previous_setpoint = this_point.convert_temp(temp_format)
             previous_ttl = this_point.ttl
 
         # If we hit this point, we looped through all the setpoints & aren't between two (or on the first one)
         # That is to say - we're at the end. Just return the last setpoint.
-        return previous_setpoint
+        return float(previous_setpoint)
 
     # past_end_of_profile allows us to test if we're in the last stage of a profile (which is effectively beer constant
     # mode) so we can switch to explicitly be in beer constant mode
