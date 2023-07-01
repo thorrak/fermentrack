@@ -43,5 +43,6 @@ if __name__ == '__main__':
                 else:
                     process_list[this_id] = Process(target=BrewPiScript, args=(config_list[this_id], ))
                     process_list[this_id].start()
+                time.sleep(10)  # Give each controller 10 seconds to start up
 
-        time.sleep(5)
+        time.sleep(5)  # Wait 5 seconds in each loop

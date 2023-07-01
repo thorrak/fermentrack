@@ -115,6 +115,19 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         # except ObjectDoesNotExist:
         #     return  # cannot load the object from the database (deleted?)
 
+        # If we have devices that have a conflicting wifi_host_ip to the one we are about to save, then either those
+        # devices or this device are incorrect. Since we presumably just looked this device up, assume those are wrong.
+        # Unset their wifi_host_ip as otherwise we will get confused if mDNS lookup fails and attempt to treat those
+        # devices as being the same as this one.
+        try:
+            brewpi_devices = app.models.BrewPiDevice.objects.filter(wifi_host_ip=ip_to_save)
+        except ObjectDoesNotExist:
+            return  # cannot load the object from the database (deleted?)
+
+        for brewpi_device in brewpi_devices:
+            brewpi_device.wifi_host_ip = None
+            brewpi_device.save()
+
         self.wifi_host_ip = ip_to_save
         # brewpi_device.wifi_host_ip = ip_to_save
         # brewpi_device.save()
