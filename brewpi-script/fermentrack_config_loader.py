@@ -39,8 +39,9 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         if self.uuid is None:
             self.uuid = brewpi_device.uuid
         else:
-            if brewpi_device != self.uuid:
+            if brewpi_device.uuid != self.uuid:
                 # Something went really, really wrong.
+                raise RuntimeError(f"BrewPiDevice {self.brewpi_device_id} ({brewpi_device.id}) has UUID {brewpi_device.uuid} which doesn't match cached UUID of {self.uuid}")
                 return False
 
         self.brewpi_device = brewpi_device

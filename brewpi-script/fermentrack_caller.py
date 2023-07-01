@@ -9,6 +9,15 @@ from multiprocessing import Process
 from fermentrack_config_loader import FermentrackBrewPiScriptConfig, get_active_brewpi_devices
 from brewpi import BrewPiScript
 
+import sentry_sdk
+sentry_sdk.init(
+    "http://645d7f33bc4f427daf87fbe57289a3fc@sentry.optictheory.com:9000/13",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=0.0
+)
 
 if __name__ == '__main__':
     process_list = {}
