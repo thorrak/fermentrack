@@ -26,6 +26,7 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         super().__init__()
         self.brewpi_device_id = brewpi_device_id
         self.brewpi_device = None
+        self.uuid = None
 
     def load_from_fermentrack(self, false_on_connection_changes=False) -> bool:
         try:
@@ -34,6 +35,13 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             return False  # cannot load the object from the database (deleted?)
         except RuntimeError:
             return False
+
+        if self.uuid is None:
+            self.uuid = brewpi_device.uuid
+        else:
+            if brewpi_device != self.uuid:
+                # Something went really, really wrong.
+                return False
 
         self.brewpi_device = brewpi_device
 
@@ -102,14 +110,16 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         return self.load_from_fermentrack(True)
 
     def save_host_ip(self, ip_to_save):
-        try:
-            brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
-        except ObjectDoesNotExist:
-            return  # cannot load the object from the database (deleted?)
+        # try:
+        #     brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
+        # except ObjectDoesNotExist:
+        #     return  # cannot load the object from the database (deleted?)
 
-        brewpi_device.wifi_host_ip = ip_to_save
         self.wifi_host_ip = ip_to_save
-        brewpi_device.save()
+        # brewpi_device.wifi_host_ip = ip_to_save
+        # brewpi_device.save()
+        self.brewpi_device.wifi_host_ip = ip_to_save
+        self.brewpi_device.save()
 
     def save_serial_port(self, serial_port_to_save):
         try:
@@ -169,7 +179,7 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         new_log_point.save()
 
 
-def get_active_brewpi_devices() -> List:
+def get_active_brewpi_devices() -> List[int]:
     active_devices = app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE
                                                             ).values_list('id', flat=True)
     return active_devices
