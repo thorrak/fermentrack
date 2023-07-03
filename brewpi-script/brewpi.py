@@ -36,6 +36,17 @@ from scriptlibs import pinList
 from scriptlibs import expandLogMessage
 from scriptlibs.backgroundserial import BackGroundSerial
 
+import sentry_sdk
+sentry_sdk.init(
+    "http://645d7f33bc4f427daf87fbe57289a3fc@sentry.optictheory.com:9000/13",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=0.0
+)
+
+
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
 

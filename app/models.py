@@ -2049,7 +2049,7 @@ class FermentationProfilePoint(models.Model):
         elif self.temp_format == 'C' and desired_temp_format == 'F':
             return self.temp_to_f()
         else:
-            logger.error("Invalid temperature format {} specified".format(desired_temp_format))
+            logger.error("Invalid temperature format {} specified (current temp format {})".format(desired_temp_format, self.temp_format))
             return self.temperature_setting
 
     def ttl_to_string(self, short_code=False):
