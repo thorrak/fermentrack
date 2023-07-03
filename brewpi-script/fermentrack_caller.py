@@ -47,11 +47,10 @@ if __name__ == '__main__':
                 try:
                     config_list[this_id] = FermentrackBrewPiScriptConfig(brewpi_device_id=this_id)
                     config_list[this_id].load_from_fermentrack(False)
-                except StopIteration:
-                    pass
-                else:
                     process_list[this_id] = Process(target=BrewPiScript, args=(config_list[this_id], ))
                     process_list[this_id].start()
-                time.sleep(10)  # Give each controller 10 seconds to start up
+                    time.sleep(10)  # Give each controller 10 seconds to start up
+                except StopIteration:
+                    pass
 
         time.sleep(5)  # Wait 5 seconds in each loop
