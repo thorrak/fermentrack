@@ -32,7 +32,7 @@ if __name__ == '__main__':
         for this_process in processes_to_delete:
             # Do this as step 2 since we can't change the process list mid-iteration
             # print(f"Deleting process for BrewPiDevice #{this_process}")
-            # process_list[this_process].join(5)  # Join the completed process
+            process_list[this_process].join(10)  # Join the completed process
             del process_list[this_process]
 
         active_device_ids = get_active_brewpi_devices()
