@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Copyright 2012 BrewPi
 # This file is part of BrewPi.
-
+import datetime
 # BrewPi is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -35,6 +35,17 @@ from scriptlibs import brewpiVersion
 from scriptlibs import pinList
 from scriptlibs import expandLogMessage
 from scriptlibs.backgroundserial import BackGroundSerial
+
+import sentry_sdk
+sentry_sdk.init(
+    "http://645d7f33bc4f427daf87fbe57289a3fc@sentry.optictheory.com:9000/13",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=0.0
+)
+
 
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
@@ -668,30 +679,33 @@ def BrewPiScript(config_obj):
                 logMessage("Error receiving mode from controller - restarting")
                 sys.exit(1)
             if cs['mode'] == 'p':
-                new_temp = config_obj.get_profile_temp()
-    
-                if new_temp is None:  # If we had an error loading a temperature (from dbConfig) disable temp control
-                    cs['mode'] = 'o'
-                    bg_ser.writeln("j{mode:\"o\"}")
-                    logMessage("Notification: Error in profile mode - turning off temp control")
-                    # raise socket.timeout  # go to serial communication to update controller
-                elif round(new_temp, 2) != cs['beerSet']:
-                    try:
-                        new_temp = float(new_temp)
-                        cs['beerSet'] = round(new_temp, 2)
-                    except ValueError:
-                        logMessage("Cannot convert temperature '" + new_temp + "' to float")
-                        continue
-                    # if temperature has to be updated send settings to controller
-                    bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
-    
-                if config_obj.is_past_end_of_profile():
-                    bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
-                    cs['mode'] = 'b'
-                    refresh_and_check(config_obj, run)  # Reload dbConfig from the database
-                    config_obj.reset_profile()
-                    logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
-                               " degrees at end of profile")
+                # Limit profile updates to once every 30 seconds (prevents hammering the database)
+                if datetime.datetime.now() > (config_obj.last_profile_temp_check + datetime.timedelta(seconds=30)):
+                    config_obj.last_profile_temp_check = datetime.datetime.now()  # Update the last check time
+                    new_temp = config_obj.get_profile_temp()
+
+                    if new_temp is None:  # If we had an error loading a temperature (from dbConfig) disable temp control
+                        cs['mode'] = 'o'
+                        bg_ser.writeln("j{mode:\"o\"}")
+                        logMessage("Notification: Error in profile mode - turning off temp control")
+                        # raise socket.timeout  # go to serial communication to update controller
+                    elif round(new_temp, 2) != cs['beerSet']:
+                        try:
+                            new_temp = float(new_temp)
+                            cs['beerSet'] = round(new_temp, 2)
+                        except ValueError:
+                            logMessage("Cannot convert temperature '" + new_temp + "' to float")
+                            continue
+                        # if temperature has to be updated send settings to controller
+                        bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
+
+                    if config_obj.is_past_end_of_profile():
+                        bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
+                        cs['mode'] = 'b'
+                        refresh_and_check(config_obj, run)  # Reload dbConfig from the database
+                        config_obj.reset_profile()
+                        logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
+                                   " degrees at end of profile")
     
         except socket.error as e:
             logMessage("Socket error(%d): %s" % (e.errno, e.strerror))

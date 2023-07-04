@@ -30,11 +30,16 @@ def generic_push_target_push(target_id):
         else:
             print_for_logs("FAILED - Unable to log data to generic push target")
     except MissingSchema:
-        print_for_logs(f"FAILED - Missing schema from logging URL '{push_target.logging_url}'. Attempting update to logging URL")
+        error_message = f"FAILED - Missing schema from target host '{push_target.target_host}'."
+        print_for_logs(error_message + " Attempting update to target host.")
         if push_target.check_target_host():
-            print_for_logs(f"Updated schema - new logging URL '{push_target.logging_url}'")
+            print_for_logs(f"Updated schema - new target host '{push_target.target_host}'")
         else:
             print_for_logs("Unable to update schema")
+            # Update the target with the error message
+            push_target.last_error = error_message
+            push_target.status = push_target.STATUS_ERROR
+            push_target.save()
 
     return None
 

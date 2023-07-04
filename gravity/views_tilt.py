@@ -393,18 +393,20 @@ def tiltbridge_handler(request):
             return JsonResponse({'status': 'failed', 'message': "Unable to load TiltBridge with that mdns_id"}, safe=False,
                                 json_dumps_params={'indent': 4})
 
-    for tilt_data in tilts_data:
+    for tilt_row in tilts_data:
         if tiltbridge_junior:
             try:
                 tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BLUETOOTH,
-                                                         color__iexact=tilt_data['color'])
+                                                         color__iexact=tilt_row['color'])
+                tilt_data = tilt_row
             except ObjectDoesNotExist:
                 # We received data for an invalid tilt from TiltBridge Junior
                 continue
         else:
             try:
                 tilt_obj = TiltConfiguration.objects.get(connection_type=TiltConfiguration.CONNECTION_BRIDGE,
-                                                         tiltbridge=tiltbridge_obj, color__iexact=tilt_data['color'])
+                                                         tiltbridge=tiltbridge_obj, color__iexact=tilt_row)
+                tilt_data = tilts_data[tilt_row]
             except ObjectDoesNotExist:
                 # We received data for an invalid tilt from TiltBridge
                 continue
