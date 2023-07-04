@@ -1,3 +1,5 @@
+import os
+
 from git import Repo
 import fermentrack_django.settings as settings
 from constance import config  # For the explicitly user-configurable stuff
@@ -24,6 +26,13 @@ def app_is_current(tagged_commits_only=False, branch_to_check=None):
 
 
 def get_local_remote_commit_info():
+    file_path = "/app/.git/refs/remotes/origin/dev.lock"
+
+    # Check if the file exists
+    if os.path.exists(file_path):
+        # Delete the file
+        os.remove(file_path)
+
     local_repo = Repo(path=settings.ROOT_DIR)
     remote_repo = local_repo.remote()
 
