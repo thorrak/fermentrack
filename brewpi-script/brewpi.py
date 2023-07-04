@@ -698,7 +698,6 @@ def BrewPiScript(config_obj):
                             continue
                         # if temperature has to be updated send settings to controller
                         bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
-                        j{'beerSet': 20.0}
 
                     if config_obj.is_past_end_of_profile():
                         bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
