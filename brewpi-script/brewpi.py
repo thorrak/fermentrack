@@ -679,8 +679,8 @@ def BrewPiScript(config_obj):
                 logMessage("Error receiving mode from controller - restarting")
                 sys.exit(1)
             if cs['mode'] == 'p':
-                # Limit profile updates to once per minute (prevents hammering the database)
-                if datetime.datetime.now() > (config_obj.last_profile_temp_check + datetime.timedelta(minutes=1)):
+                # Limit profile updates to once every 30 seconds (prevents hammering the database)
+                if datetime.datetime.now() > (config_obj.last_profile_temp_check + datetime.timedelta(seconds=30)):
                     config_obj.last_profile_temp_check = datetime.datetime.now()  # Update the last check time
                     new_temp = config_obj.get_profile_temp()
 
@@ -698,6 +698,7 @@ def BrewPiScript(config_obj):
                             continue
                         # if temperature has to be updated send settings to controller
                         bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
+                        j{'beerSet': 20.0}
 
                     if config_obj.is_past_end_of_profile():
                         bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
