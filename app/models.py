@@ -764,11 +764,11 @@ class BrewPiDevice(models.Model):
             self.installed_devices = None
             if not device_response:
                 # We weren't able to reach brewpi-script
-                self.error_message = "Unable to reach brewpi-script. Try restarting brewpi-script."
+                self.error_message = "Unable to reach brewpi-script. Try restarting the controller. If that fails, restart Fermentrack."
             else:
                 # We were able to reach brewpi-script, but it wasn't able to reach the controller
                 self.error_message = "BrewPi-script wasn't able to load sensors from the controller. "
-                self.error_message += "Try restarting brewpi-script. If that fails, try restarting the controller."
+                self.error_message += "Try restarting the controller. If that fails, restart Fermentrack."
             return False  # False
 
         # Devices loaded
