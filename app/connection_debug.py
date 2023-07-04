@@ -34,6 +34,9 @@ def test_telnet(hostname, port):
         return False, False, None
     except ConnectionRefusedError:
         return False, False, None
+    except OSError:
+        # e.g. [Errno 113] No route to host
+        return False, False, None
 
     try:
         tn.write(b"n\r\n")
