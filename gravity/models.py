@@ -365,7 +365,7 @@ class GravityLog(models.Model):
         """Creates a Python dict representation of this object"""
         return {
             'name': self.name,
-            'device_uuid': str(self.device.uuid),
+            'device_uuid': str(self.device.uuid) if self.device else None,
             'created': self.created.isoformat(),
             'format': self.format,
             'model_version': self.model_version,
@@ -388,8 +388,12 @@ class GravityLog(models.Model):
         except cls.DoesNotExist:
             log = cls()
 
+        try:
+            log.device = GravitySensor.objects.get(uuid=input_dict['device_uuid'])
+        except GravitySensor.DoesNotExist:
+            log.device = None
+
         log.name = input_dict['name']
-        log.device = GravitySensor.objects.get(uuid=input_dict['device_uuid'])
         log.created = datetime.datetime.fromisoformat(input_dict['created'])
         log.format = input_dict['format']
         log.model_version = input_dict['model_version']

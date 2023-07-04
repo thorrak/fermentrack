@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[2023-07-04] - BrewPi-Script Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changed
+-------
+
+- Changes the message when a BrewPi device cannot be reached
+- Only allow BrewPi-Script to check for profile updates once every 30 seconds
+- Prevents two BrewPi devices from being able to have the same cached IP address
+
+
+Fixed
+-------
+
+- Resolves an error that would cause debugging connections to controllers to periodically raise an exception
+- Resolves an error where a missing schema on a generic push target would not get corrected to http://
+- Allow GravityLog.device to be None in backups, fixing errors that could prevent backups from being properly generated
+- BrewPi-Script processes are now launched in a manner that allows StopIteration exceptions to be properly handled
+
+
+
 [2023-06-23] - ESP32 Support, TiltBridge Jr & new BrewPi-Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

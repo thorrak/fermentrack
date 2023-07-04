@@ -1,4 +1,6 @@
 import socket
+import datetime
+
 from . import udev_integration
 
 
@@ -49,6 +51,7 @@ class BrewPiScriptConfig:
         # Log File Path Configuration
         self.stderr_path = ""  # If left as an empty string, will log to stderr
         self.stdout_path = ""  # If left as an empty string, will log to stdout
+        self.last_profile_temp_check = datetime.datetime.now() - datetime.timedelta(days=1)  # Initialize in the past to immediately trigger an update
 
     def get_profile_temp(self) -> float or None:
         raise NotImplementedError("Must implement in subclass!")
