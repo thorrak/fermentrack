@@ -10,4 +10,4 @@ gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
 psycopg2==2.9.6  # https://github.com/psycopg/psycopg2
 
 numpy==1.22.3   # These are custom wheels on RPis (wheels.fermentrack.com)
-scipy==1.8.0  # These are custom wheels on RPis (wheels.fermentrack.com)
+scipy==1.10.0  # These are custom wheels on RPis (wheels.fermentrack.com)
