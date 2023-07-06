@@ -299,6 +299,8 @@ def BrewPiScript(config_obj):
         # When nothing is received, socket.timeout will be raised after
         # serialCheckInterval seconds. Serial receive will be done then.
         # When messages are expected on serial, the timeout is raised 'manually'
+        if config_obj.error_count > 5:
+            exit(1)
         try:
             conn, addr = s.accept()
             conn.setblocking(True)
@@ -681,8 +683,17 @@ def BrewPiScript(config_obj):
             if cs['mode'] == 'p':
                 # Limit profile updates to once every 30 seconds (prevents hammering the database)
                 if datetime.datetime.now() > (config_obj.last_profile_temp_check + datetime.timedelta(seconds=30)):
+                    try:
+                        new_temp = config_obj.get_profile_temp()
+                    except StopIteration:
+                        config_obj.error_count += 1
+                        continue
+                    except RuntimeError:
+                        config_obj.error_count += 1
+                        continue
+                    else:
+                        config_obj.error_count = 0  # Reset the error count
                     config_obj.last_profile_temp_check = datetime.datetime.now()  # Update the last check time
-                    new_temp = config_obj.get_profile_temp()
 
                     if new_temp is None:  # If we had an error loading a temperature (from dbConfig) disable temp control
                         cs['mode'] = 'o'
@@ -699,14 +710,24 @@ def BrewPiScript(config_obj):
                         # if temperature has to be updated send settings to controller
                         bg_ser.writeln("j{beerSet:" + json.dumps(cs['beerSet']) + "}")
 
-                    if config_obj.is_past_end_of_profile():
-                        bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
-                        cs['mode'] = 'b'
-                        refresh_and_check(config_obj, run)  # Reload dbConfig from the database
-                        config_obj.reset_profile()
-                        logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
-                                   " degrees at end of profile")
-    
+
+                    try:
+                        if config_obj.is_past_end_of_profile():
+                            bg_ser.writeln("j{mode:\"b\", beerSet:" + json.dumps(cs['beerSet']) + "}")
+                            cs['mode'] = 'b'
+                            refresh_and_check(config_obj, run)  # Reload dbConfig from the database
+                            config_obj.reset_profile()
+                            logMessage("Notification: Beer temperature set to constant " + str(cs['beerSet']) +
+                                       " degrees at end of profile")
+                    except StopIteration:
+                        config_obj.error_count += 1
+                        continue
+                    except RuntimeError:
+                        config_obj.error_count += 1
+                        continue
+                    else:
+                        config_obj.error_count = 0  # Reset the error count
+
         except socket.error as e:
             logMessage("Socket error(%d): %s" % (e.errno, e.strerror))
             traceback.print_exc()

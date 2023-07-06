@@ -1,4 +1,4 @@
-Django==3.2.19
+Django==3.2.20
 configobj==5.0.8       # required by brewpi.py
 
 # numpy==1.18.4 --no-binary=numpy  # The wheel for numpy also has issues (at least on Stretch)
