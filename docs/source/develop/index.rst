@@ -15,6 +15,8 @@ Changelog, Licensing, and Development
     changelog
     components
     contribute
+    devenv
+    devcmd
     push_support
     license
 
