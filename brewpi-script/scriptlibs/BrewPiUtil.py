@@ -134,7 +134,7 @@ def setupSerial(dbConfig: BrewPiScriptConfig, baud_rate: int = 57600, time_out: 
                 ip_address = dbConfig.get_cached_ip()  # Resolve wifi_host to an IP address or get the cached IP
 
                 if ip_address is None:
-                    logMessage(f"Invalid WiFi configuration - Cannot resolve wifi_host '{dbConfig.wifi_host}' and no wifi_host_ip set")
+                    logMessage(f"Invalid WiFi configuration for device {dbConfig.name} - Cannot resolve wifi_host '{dbConfig.wifi_host}' and no wifi_host_ip set")
                     logMessage("Exiting.")
                     exit(1)
 
