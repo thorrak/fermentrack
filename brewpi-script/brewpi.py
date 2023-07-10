@@ -622,8 +622,15 @@ def BrewPiScript(config_obj):
                             # getDashInfo will return the default temp values (0)
                             if config_obj.logging_status == config_obj.DATA_LOGGING_ACTIVE:
                                 # All this is handled by the model
-                                config_obj.save_beer_log_point(new_row)
-    
+                                try:
+                                    config_obj.save_beer_log_point(new_row)
+                                except StopIteration:
+                                    config_obj.error_count += 1
+                                    continue
+                                except RuntimeError:
+                                    config_obj.error_count += 1
+                                    continue
+
                         elif line[0] == 'D':
                             # debug message received, should already been filtered out, but print anyway here.
                             logMessage("Finding a log message here should not be possible, report to the devs!")

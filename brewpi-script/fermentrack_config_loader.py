@@ -46,6 +46,8 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
 
         self.brewpi_device = brewpi_device
 
+        self.name = brewpi_device.device_name
+
         self.status = brewpi_device.status
         self.logging_status = brewpi_device.logging_status
         self.temp_format = brewpi_device.temp_format
