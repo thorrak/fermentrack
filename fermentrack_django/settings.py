@@ -309,8 +309,8 @@ HUEY = {
     }
 }
 
-SENTRY_LEGACY_DSN = 'http://bec41edb175f4f9aaec468a38dafff94@sentry.optictheory.com:9000/3'
-SENTRY_DOCKER_DSN = 'http://f7b1022ab147414eba1fc2bc5f7d3b66@sentry.optictheory.com:9000/2'
+SENTRY_LEGACY_DSN = 'https://a353ca3975e047938058fa913a4f9aef@sentry.optictheory.com/5'
+SENTRY_DOCKER_DSN = 'https://6cb9c4c4a65c47fe824cd089bab5a793@sentry.optictheory.com/6'
 
 SENTRY_DSN_MAP = {
     'http://99c0c3b2c3214cec950891d07ac6b4fb@sentry.optictheory.com:9000/6': SENTRY_LEGACY_DSN,  # Former "legacy" install DSN
@@ -318,6 +318,9 @@ SENTRY_DSN_MAP = {
 
     'http://bfcd360610c44449aa8fc6b0a6bccc3b@sentry.optictheory.com:9000/2': SENTRY_LEGACY_DSN,  # Former "legacy" install DSN
     'http://1157cb94d5ae42eab8d718f23228093e@sentry.optictheory.com:9000/3': SENTRY_DOCKER_DSN,  # Former "docker" install DSN
+
+    'http://bec41edb175f4f9aaec468a38dafff94@sentry.optictheory.com:9000/3': SENTRY_LEGACY_DSN,  # Former "legacy" install DSN
+    'http://f7b1022ab147414eba1fc2bc5f7d3b66@sentry.optictheory.com:9000/2': SENTRY_DOCKER_DSN,  # Former "docker" install DSN
 }
 
 
