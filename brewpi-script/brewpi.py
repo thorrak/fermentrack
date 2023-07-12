@@ -38,7 +38,7 @@ from scriptlibs.backgroundserial import BackGroundSerial
 
 import sentry_sdk
 sentry_sdk.init(
-    "http://645d7f33bc4f427daf87fbe57289a3fc@sentry.optictheory.com:9000/13",
+    "https://f22697f646434bdca503eb1394f5bdc7@sentry.optictheory.com/4",
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
