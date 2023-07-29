@@ -183,13 +183,13 @@ class GenericPushTarget(models.Model):
                     # Because not every device will have temp sensors, only serialize the sensors that exist.
                     # Have to coerce temps to floats, as Decimals aren't json serializable
                     if device_info['BeerTemp'] is not None:
-                        if device_info['BeerTemp'] != 0:
+                        if device_info['BeerTemp'] != 0 and device_info['BeerTemp'] != '':
                             data_to_send['beer_temp'] = float(device_info['BeerTemp'])
                     if device_info['FridgeTemp'] is not None:
-                        if device_info['FridgeTemp'] != 0:
+                        if device_info['FridgeTemp'] != 0 and device_info['FridgeTemp'] != '':
                             data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
                     if device_info['RoomTemp'] is not None:
-                        if device_info['RoomTemp'] != 0:
+                        if device_info['RoomTemp'] != 0 and device_info['RoomTemp'] != '':
                             data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
                     if device_info['BeerSet'] is not None:
