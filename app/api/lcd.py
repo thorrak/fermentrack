@@ -18,12 +18,17 @@ def getLCDs(req):
 
 def getLCD(req, device_id):
     ret = []
-    dev = BrewPiDevice.objects.get(id=device_id)
+    try:
+        dev = BrewPiDevice.objects.get(id=device_id)
+        ret.append({"device_name": dev.device_name, "lcd_data": dev.read_lcd(),
+                    'device_url': reverse('device_dashboard', kwargs={'device_id': device_id, }),
+                    'backlight_url': reverse('device_toggle_backlight', kwargs={'device_id': device_id, }),
+                    'modal_name': f'#tempControl{device_id}'})
+    except BrewPiDevice.DoesNotExist:
+        ret.append({"device_name": "N/A", "lcd_data": ["Device is no longer", "installed or ID is", "invalid. Please",
+                                                       "refresh this page"],
+                    'device_url': "#", 'backlight_url': "#", 'modal_name': f'#tempControl{device_id}'})
 
-    ret.append({"device_name": dev.device_name, "lcd_data": dev.read_lcd(),
-                'device_url': reverse('device_dashboard', kwargs={'device_id': dev.id, }),
-                'backlight_url': reverse('device_toggle_backlight', kwargs={'device_id': dev.id, }),
-                'modal_name': '#tempControl{}'.format(dev.id)})
 
     return JsonResponse(ret, safe=False, json_dumps_params={'indent': 4})
 
