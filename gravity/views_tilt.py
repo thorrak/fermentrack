@@ -62,9 +62,20 @@ def gravity_tilt_coefficients(request, sensor_id):
         tilt_coefficient_form = forms.TiltCoefficientForm(request.POST)
         if tilt_coefficient_form.is_valid():
             # sensor.tilt_configuration.grav_third_degree_coefficient = tilt_coefficient_form.cleaned_data['a']
-            sensor.tilt_configuration.grav_second_degree_coefficient = tilt_coefficient_form.cleaned_data['b']
-            sensor.tilt_configuration.grav_first_degree_coefficient = tilt_coefficient_form.cleaned_data['c']
-            sensor.tilt_configuration.grav_constant_term = tilt_coefficient_form.cleaned_data['d']
+            if tilt_coefficient_form.cleaned_data['b'] is None:
+                sensor.tilt_configuration.grav_second_degree_coefficient = 0
+            else:
+                sensor.tilt_configuration.grav_second_degree_coefficient = tilt_coefficient_form.cleaned_data['b']
+
+            if tilt_coefficient_form.cleaned_data['c'] is None:
+                sensor.tilt_configuration.grav_first_degree_coefficient = 1
+            else:
+                sensor.tilt_configuration.grav_first_degree_coefficient = tilt_coefficient_form.cleaned_data['c']
+
+            if tilt_coefficient_form.cleaned_data['d'] is None:
+                sensor.tilt_configuration.grav_constant_term = 0
+            else:
+                sensor.tilt_configuration.grav_constant_term = tilt_coefficient_form.cleaned_data['d']
 
             if sensor.tilt_configuration.coefficients_up_to_date:
                 # If we are manually setting the coefficients, then we'll assume they're up to date

@@ -183,13 +183,13 @@ class GenericPushTarget(models.Model):
                     # Because not every device will have temp sensors, only serialize the sensors that exist.
                     # Have to coerce temps to floats, as Decimals aren't json serializable
                     if device_info['BeerTemp'] is not None:
-                        if device_info['BeerTemp'] != 0:
+                        if device_info['BeerTemp'] != 0 and device_info['BeerTemp'] != '':
                             data_to_send['beer_temp'] = float(device_info['BeerTemp'])
                     if device_info['FridgeTemp'] is not None:
-                        if device_info['FridgeTemp'] != 0:
+                        if device_info['FridgeTemp'] != 0 and device_info['FridgeTemp'] != '':
                             data_to_send['fridge_temp'] = float(device_info['FridgeTemp'])
                     if device_info['RoomTemp'] is not None:
-                        if device_info['RoomTemp'] != 0:
+                        if device_info['RoomTemp'] != 0 and device_info['RoomTemp'] != '':
                             data_to_send['room_temp'] = float(device_info['RoomTemp'])
 
                     if device_info['BeerSet'] is not None:
@@ -529,17 +529,17 @@ class BrewfatherPushTarget(models.Model):
                         # Cache the BrewPi's temp format as we want to convert to use the gravity sensor's format in case they
                         # happen to be different
                         brewpi_temp_format = latest_log_point.associated_device.assigned_brewpi_device.temp_format
-                        if device_info['BeerTemp'] is not None:
+                        if device_info['BeerTemp'] is not None and len(device_info['BeerTemp']) > 0:
                             if device_info['BeerTemp'] != 0:
                                 # If we have an explicit beer temp from a BrewPi controller, we're going to use that instead
                                 # of a temp from the gravity sensor.
                                 to_send['temp'] = temp_convert(float(device_info['BeerTemp']), brewpi_temp_format,
                                                             latest_log_point.temp_format)
-                        if device_info['FridgeTemp'] is not None:
+                        if device_info['FridgeTemp'] is not None and len(device_info['FridgeTemp']) > 0:
                             if device_info['FridgeTemp'] != 0:
                                 to_send['aux_temp'] = temp_convert(float(device_info['FridgeTemp']),
                                                                 brewpi_temp_format, latest_log_point.temp_format)
-                        if device_info['RoomTemp'] is not None:
+                        if device_info['RoomTemp'] is not None and len(device_info['RoomTemp']) > 0:
                             if device_info['RoomTemp'] != 0:
                                 to_send['ext_temp'] = temp_convert(float(device_info['RoomTemp']),
                                                                 brewpi_temp_format, latest_log_point.temp_format)
@@ -573,15 +573,15 @@ class BrewfatherPushTarget(models.Model):
                     to_send['temp_unit'] = brewpi.temp_format
 
                     if 'BeerTemp' in device_info:
-                        if device_info['BeerTemp'] is not None:
+                        if device_info['BeerTemp'] is not None and len(device_info['BeerTemp']) > 0:
                             to_send['temp'] = float(device_info['BeerTemp'])
 
                     if 'FridgeTemp' in device_info:
-                        if device_info['FridgeTemp'] is not None:
+                        if device_info['FridgeTemp'] is not None and len(device_info['FridgeTemp']) > 0:
                             to_send['aux_temp'] = float(device_info['FridgeTemp'])
 
                     if 'RoomTemp' in device_info:
-                        if device_info['RoomTemp'] is not None:
+                        if device_info['RoomTemp'] is not None and len(device_info['RoomTemp']) > 0:
                             to_send['ext_temp'] = float(device_info['RoomTemp'])
 
                     if brewpi.active_beer is not None:
