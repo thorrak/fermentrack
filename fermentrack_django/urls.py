@@ -11,6 +11,7 @@ import app.setup_views
 import app.beer_views
 import app.api.lcd
 import app.api.clog
+import app.api.devices
 
 import firmware_flash.urls
 import gravity.urls
@@ -107,7 +108,7 @@ urlpatterns = [
     url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/$', app.api.clog.get_device_log_combined, name="get_app_log"),
     url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/l(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_combined, name="get_app_log_lines"),
     # api/gravity views are located in the gravity app
-
+    url(r'^api/devices/$', app.api.devices.get_devices, name="getDevices"),  # For all devices/LCDs
 
     # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL
