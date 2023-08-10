@@ -4,6 +4,7 @@
 import os
 import sys
 from pathlib import Path
+from time import sleep
 from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -196,6 +197,10 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
 
 
 def get_active_brewpi_devices() -> List[int]:
-    active_devices = app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE
-                                                            ).values_list('id', flat=True)
+    try:
+        active_devices = app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE
+                                                                ).values_list('id', flat=True)
+    except:
+        sleep(5)
+        exit(1)
     return active_devices
