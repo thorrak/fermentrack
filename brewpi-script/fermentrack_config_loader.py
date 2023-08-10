@@ -7,6 +7,7 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
+import requests
 from django.core.exceptions import ObjectDoesNotExist
 
 # Load up the Django specific stuff
@@ -197,10 +198,26 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
 
 
 def get_active_brewpi_devices() -> List[int]:
+    # TODO - Figure out how to get this to toggle between port 8000 and 5000 in a local environment vs a hosted one
+    url = "http://127.0.0.1:5000/api/devices/"
+
     try:
-        active_devices = app.models.BrewPiDevice.objects.filter(status=app.models.BrewPiDevice.STATUS_ACTIVE
-                                                                ).values_list('id', flat=True)
-    except:
+        response = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print(f"Unable to access Fermentrack API at {url} - Exiting.")
         sleep(5)
         exit(1)
+
+    # Ensure the request was successful and the content type is JSON
+    response.raise_for_status()
+    if "json" not in response.headers.get("content-type", "").lower():
+        raise ValueError("API response is not in JSON format")
+
+    # Decode the JSON content to a Python list
+    active_devices = response.json()
+
+    # Check if the result is a list of integers
+    if not all(isinstance(item, int) for item in active_devices):
+        raise ValueError("API response is not a list of integers")
+
     return active_devices

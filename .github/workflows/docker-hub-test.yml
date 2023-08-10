@@ -3,7 +3,7 @@ name: 'Build & Push to Docker Hub (Testing)'
 on:
   push:
     branches:
-      - script
+      - dev_api
 
 jobs:
   buildx:
