@@ -128,6 +128,10 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             brewpi_devices = app.models.BrewPiDevice.objects.filter(wifi_host_ip=ip_to_save)
         except ObjectDoesNotExist:
             return  # cannot load the object from the database (deleted?)
+        except:
+            # To try to avoid the deadlocking
+            # TODO - Remove this catch-all
+            exit(1)
 
         for brewpi_device in brewpi_devices:
             brewpi_device.wifi_host_ip = None
@@ -169,6 +173,10 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
         except ObjectDoesNotExist:
             return  # cannot load the object from the database (deleted?)
+        except:
+            # To try to avoid the deadlocking
+            # TODO - Remove this catch-all
+            exit(1)
 
         new_log_point = app.models.BeerLogPoint()
 
