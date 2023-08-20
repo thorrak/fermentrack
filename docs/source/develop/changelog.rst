@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[2023-08-20] - Additional BrewPi-Script Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changed
+-------
+
+- Changed BrewPi-Script process manager to get list of devices via an HTTP API rather than directly querying the database
+- Force BrewPi-Script process manager to restart in certain cases where a deadlock is detected
+
+
 [2023-07-04] - BrewPi-Script Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
