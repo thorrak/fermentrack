@@ -307,10 +307,7 @@ def sensor_config(request, device_id):
                 return redirect('sensor_list', device_id=device_id)
 
             sensor_to_adjust.device_function = form.cleaned_data['device_function']
-            # if form.cleaned_data['invert'] == "1":
-            #     sensor_to_adjust.invert = SensorDevice.INVERT_INVERTED
-            # else:
-            #     sensor_to_adjust.invert = SensorDevice.INVERT_NOT_INVERTED
+            sensor_to_adjust.invert = form.cleaned_data['invert']
             sensor_to_adjust.calibrate_adjust = form.cleaned_data['calibration']
 
             if form.cleaned_data['perform_uninstall']:
