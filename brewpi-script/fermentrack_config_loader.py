@@ -138,8 +138,9 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             exit(1)
 
         for brewpi_device in brewpi_devices:
-            brewpi_device.wifi_host_ip = None
-            brewpi_device.save()
+            if brewpi_device.wifi_host_ip != "":
+                brewpi_device.wifi_host_ip = ""
+                brewpi_device.save()
 
         self.wifi_host_ip = ip_to_save
         # brewpi_device.wifi_host_ip = ip_to_save
