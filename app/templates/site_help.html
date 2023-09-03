@@ -92,11 +92,7 @@
       <td><a href="{% url "get_app_log" "text" "fermentrack" "stderr" %}">{% log_file_path "fermentrack" "stderr" %}</a></td>
     </tr>
     <tr>
-      <th scope="row">BrewPi Script Spawner - Stdout</th>
-      <td><a href="{% url "get_app_log" "text" "spawner" "stderr" %}">{% log_file_path "spawner" "stdout" %}</a></td>
-    </tr>
-    <tr>
-      <th scope="row">BrewPi Script Spawner - Stderr</th>
+      <th scope="row">BrewPi Script Spawner</th>
       <td><a href="{% url "get_app_log" "text" "spawner" "stderr" %}">{% log_file_path "spawner" "stderr" %}</a></td>
     </tr>
     <tr> {# TODO - Delete this once debugging is complete #}
