@@ -113,7 +113,7 @@ urlpatterns = [
     url(r'^api/devices/$', app.api.devices.get_devices, name="getDevices"),  # To retrieve a BrewPiDevice
     url(r'^api/save_point/$', app.api.devices.create_beer_log_point, name="savePoint"),  # To create a BeerLogPoint
 
-                  # Login/Logout Views
+    # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL
     url(r'^accounts/logout/$', app.views.logout, name='logout'),
 
