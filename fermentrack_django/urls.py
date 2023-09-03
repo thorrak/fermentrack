@@ -108,7 +108,10 @@ urlpatterns = [
     url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/$', app.api.clog.get_device_log_combined, name="get_app_log"),
     url(r'^api/log/(?P<return_type>text|json)/(?P<device_type>\w{1,20})/(?P<logfile>stdout|stderr)/l(?P<lines>\d{1,20})/$', app.api.clog.get_device_log_combined, name="get_app_log_lines"),
     # api/gravity views are located in the gravity app
-    url(r'^api/devices/$', app.api.devices.get_devices, name="getDevices"),  # For all devices/LCDs
+
+    # These API endpoints are used by the BrewPi Script Caller
+    url(r'^api/devices/$', app.api.devices.get_devices, name="getDevices"),  # To retrieve a BrewPiDevice
+    url(r'^api/save_point/$', app.api.devices.create_beer_log_point, name="savePoint"),  # To create a BeerLogPoint
 
     # Login/Logout Views
     url(r'^accounts/login/$', app.views.login, name='login'),  # This is also settings.LOGIN_URL
