@@ -1,6 +1,6 @@
 # This is an implementation of brewpiScriptConfig for Fermentrack. This manages loading BrewPiDevices from Fermentrack
 # and populating their configuration data into a BrewPiScriptConfig object that can then be passed to BrewPi-Script
-
+import json
 import os
 import sys
 from pathlib import Path
@@ -12,6 +12,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 # Load up the Django specific stuff
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+api_port = 5000 # Prod
+# api_port = 8000 # Local dev
+
 # This is so Django knows where to find stuff.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fermentrack_django.settings")
 sys.path.append(BASE_DIR)
@@ -134,8 +138,9 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
             exit(1)
 
         for brewpi_device in brewpi_devices:
-            brewpi_device.wifi_host_ip = None
-            brewpi_device.save()
+            if brewpi_device.wifi_host_ip != "":
+                brewpi_device.wifi_host_ip = ""
+                brewpi_device.save()
 
         self.wifi_host_ip = ip_to_save
         # brewpi_device.wifi_host_ip = ip_to_save
@@ -169,45 +174,35 @@ class FermentrackBrewPiScriptConfig(BrewPiScriptConfig):
         :param beer_row:
         :return:
         """
+        point_repr = {
+            'beer_temp': beer_row['BeerTemp'],
+            'beer_set': beer_row['BeerSet'],
+            'beer_ann': beer_row['BeerAnn'],
+            'fridge_temp': beer_row['FridgeTemp'],
+            'fridge_set': beer_row['FridgeSet'],
+            'fridge_ann': beer_row['FridgeAnn'],
+            'room_temp': beer_row['RoomTemp'],
+            'state': beer_row['State'],
+            'brewpi_device_id': self.brewpi_device_id,
+        }
+
+        url = f"http://127.0.0.1:{api_port}/api/save_point/"
+
         try:
-            brewpi_device = app.models.BrewPiDevice.objects.get(id=self.brewpi_device_id)
-        except ObjectDoesNotExist:
-            return  # cannot load the object from the database (deleted?)
-        except:
-            # To try to avoid the deadlocking
-            # TODO - Remove this catch-all
+            response = requests.post(url, json=point_repr)
+        except requests.exceptions.ConnectionError:
+            print(f"Unable to access Fermentrack API at {url} - Exiting.")
+            sleep(5)
             exit(1)
 
-        new_log_point = app.models.BeerLogPoint()
-
-        new_log_point.beer_temp = beer_row['BeerTemp']
-        new_log_point.beer_set = beer_row['BeerSet']
-        new_log_point.beer_ann = beer_row['BeerAnn']
-
-        new_log_point.fridge_temp = beer_row['FridgeTemp']
-        new_log_point.fridge_set = beer_row['FridgeSet']
-        new_log_point.fridge_ann = beer_row['FridgeAnn']
-
-        new_log_point.room_temp = beer_row['RoomTemp']
-        new_log_point.state = beer_row['State']
-
-        new_log_point.temp_format = brewpi_device.temp_format
-        new_log_point.associated_beer = brewpi_device.active_beer
-
-        try:
-            new_log_point.enrich_gravity_data()  # If gravity sensing is on, this will capture & populate everything
-        except RuntimeError:
-            # This gets tripped when there is an issue with enrich_gravity_data where the associated gravity sensor no
-            # longer exists. This shouldn't happen, but can if the user goes poking around. Don't log the point - just
-            # return.
-            return
-
-        new_log_point.save()
+        if response.status_code != 201:
+            print(f"Unable to save point to Fermentrack API at {url} - Exiting.")
+            sleep(5)
+            exit(1)
 
 
 def get_active_brewpi_devices() -> List[int]:
-    # TODO - Figure out how to get this to toggle between port 8000 and 5000 in a local environment vs a hosted one
-    url = "http://127.0.0.1:5000/api/devices/"
+    url = f"http://127.0.0.1:{api_port}/api/devices/"
 
     try:
         response = requests.get(url)

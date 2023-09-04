@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) because it was the first relatively standard format to pop up when I googled "changelog formats".
 
 
+[Unreleased] - Additional Bugfixes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changed
+-------
+
+- Changed BrewPi-Script process manager to log data points via an HTTP API rather than directly querying the database
+- Add additional cleanup steps to BrewPi-Script process manager
+- Clarify links to BrewPi Process Spawner logs on help page
+
+
+Fixed
+-----
+
+- Resolved issue that would prevent the "invert" flag from being properly applied to BrewPi-ESP devices running recent firmware
+
+
 [2023-08-20] - Additional BrewPi-Script Bugfixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

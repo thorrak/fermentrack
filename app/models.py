@@ -284,7 +284,15 @@ class SensorDevice(models.Model):
             new_device.type = device_dict['t']
 
         if 'x' in device_dict:  # const char DEVICE_ATTRIB_INVERT = 'x';
-            new_device.invert = int(device_dict['x'])
+            # BrewPi-ESP converted from using int to bool for the JSON representation here. This maintains backwards
+            # compatibility
+            if isinstance(device_dict['x'], bool):
+                if device_dict['x']:
+                    new_device.invert = 1
+                else:
+                    new_device.invert = 0
+            else:
+                new_device.invert = int(device_dict['x'])
 
         if 'v' in device_dict:  # Temperature value (if we read values when we queried devices from the controller)
             new_device.sensor_value = device_dict['v']
@@ -369,12 +377,7 @@ class SensorDevice(models.Model):
         # config_dict['d'] = self.deactivated
 
         if self.hardware == 1:  # Set options that are specific to pin devices
-            if self.invert == "1":
-                config_dict['x'] = 1
-            elif self.invert == "0":
-                config_dict['x'] = 0
-            else:
-                config_dict['x'] = int(self.invert)
+            config_dict['x'] = int(self.invert)
         elif self.hardware == 2 or self.hardware == 5 or self.hardware == 6:  # Set options that are specific to OneWire & Bluetooth temp sensors
             config_dict['j'] = self.calibrate_adjust
             config_dict['a'] = self.address
