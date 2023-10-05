@@ -7,7 +7,7 @@ RUN apt-get update \
   # dependencies for building Python packages
   && apt-get install -y build-essential \
   # psycopg2 dependencies
-  && apt-get install -y libpq-dev \
+  && apt-get install -y libpq5 \
   # Translations dependencies
   && apt-get install -y gettext \
   # Pillow dependencies
