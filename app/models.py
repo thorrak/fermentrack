@@ -2126,7 +2126,7 @@ class FermentationProfilePoint(models.Model):
         point_dict = {
             'temperature_setting': str(self.temperature_setting),
             'temp_format': self.temp_format,
-            'ttl': self.ttl_to_string(),
+            'ttl': self.ttl.total_seconds(),
             'profile_uuid': str(self.profile.uuid),
         }
         return point_dict
@@ -2144,9 +2144,17 @@ class FermentationProfilePoint(models.Model):
         point = cls(
             temperature_setting=Decimal(input_dict['temperature_setting']),
             temp_format=input_dict['temp_format'],
-            ttl=cls.string_to_ttl(input_dict['ttl']),
             profile=profile,
         )
+
+        # Check if input_dict['ttl'] is numeric, and if so, assume it is in seconds
+        if isinstance(input_dict['ttl'], (int, float)):
+            # Convert to timedelta
+            point.ttl = timezone.timedelta(seconds=input_dict['ttl'])
+        else:
+            # Assume it is a "legacy style" string (e.g. '10 hours') and run through string_to_ttl
+            point.ttl=cls.string_to_ttl(input_dict['ttl']),
+
         return point
 
 # The old (0.2.x/Arduino) Control Constants Model
