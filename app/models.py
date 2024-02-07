@@ -379,7 +379,7 @@ class SensorDevice(models.Model):
         if self.hardware == 1:  # Set options that are specific to pin devices
             config_dict['x'] = int(self.invert)
         elif self.hardware == 2 or self.hardware == 5 or self.hardware == 6:  # Set options that are specific to OneWire & Bluetooth temp sensors
-            config_dict['j'] = self.calibrate_adjust
+            config_dict['j'] = str(self.calibrate_adjust)
             config_dict['a'] = self.address
         elif self.hardware == 7:
             config_dict['a'] = self.address
